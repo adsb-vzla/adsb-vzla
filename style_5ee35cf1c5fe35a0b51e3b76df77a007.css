@@ -7,7 +7,7 @@
     --FS2: calc( 13px * var(--SCALE));
     --FS3: calc( 17px * var(--SCALE));
     --TXTCOLOR1: #003f4b;
-    --TXTCOLOR2: #050505;
+    --TXTCOLOR2: rgb(5, 5, 5);
     --TXTCOLOR3: #101010;
 }
 
@@ -22,6 +22,105 @@ html, body {
     overflow: hidden;
     height: 100%;
     color: var(--TXTCOLOR2);
+}
+
+#navbar{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc( 38px * var(--SCALE));
+    background-color: rgb(5, 5, 5, 0.7);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    box-shadow:
+        0 2px 2px -1px rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: space-between;
+}
+
+#button_container {
+    margin-left: auto;
+    display: flex; 
+    align-items: center;
+}
+
+#navbar button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 5px;
+    padding: 0;
+    position: relative;
+    width: calc(30px * var(--SCALE)); 
+    height: calc(30px * var(--SCALE));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#navbar svg {
+    fill: white;
+    width: calc( 28px * var(--SCALE));
+    height: calc( 28px * var(--SCALE));
+    transition: opacity 0.2s ease;
+    
+}
+
+
+
+#name_container {
+    display: flex;
+    align-items: center;
+}
+#name_container img {
+    height: calc( 28px * var(--SCALE));
+    margin-left: calc( 5px * var(--SCALE));
+    margin-right: calc( 10px * var(--SCALE));
+    filter: invert(100%);
+}
+
+#name_container span {
+    color: white;
+    font-size: var(--FS3);
+    font-weight: bold;
+    font-family: Trebuchet MS;
+}
+
+/* Aseguramos que la X NO exista por defecto */
+#toggle_sidebar_button::before,
+#toggle_sidebar_button::after {
+    content: none; 
+}
+
+/* 2. ESTADO: MENÚ ABIERTO (Cuando tiene la clase .show_sidebar) */
+
+/* OCULTAMOS la hamburguesa */
+#toggle_sidebar_button.hide_sidebar svg {
+    display: none !important;
+}
+
+/* CREAMOS la X solo aquí */
+#toggle_sidebar_button.hide_sidebar::before,
+#toggle_sidebar_button.hide_sidebar::after {
+    content: ""; /* Aquí activamos las líneas */
+    position: absolute;
+    width: calc(20px * var(--SCALE)); 
+    height: 2px;
+    background-color: white;
+    border-radius: 5px;
+    top: 50%;
+    left: 50%;
+}
+
+/* Posicionamiento exacto de la X */
+#toggle_sidebar_button.hide_sidebar::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+#toggle_sidebar_button.hide_sidebar::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 select {
@@ -117,15 +216,6 @@ select {
     background-position: center;
 
     border: none;
-}
-
-#toggle_sidebar_button.show_sidebar {
-    transform: scaleX(-1);
-    background-image: url("images/hide_sidebar.png");
-}
-
-#toggle_sidebar_button.hide_sidebar {
-    background-image: url("images/hide_sidebar.png");
 }
 
 #shrink_sidebar_button {
@@ -499,6 +589,7 @@ select.error, textarea.error, input.error {
     display: block;
     margin: calc( 1px * var(--SCALE));
     text-align: center;
+    margin-top: 100px;
 }
 .buttonSpacer {
     margin: calc( 9px * var(--SCALE));
