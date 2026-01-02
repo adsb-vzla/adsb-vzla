@@ -2503,6 +2503,7 @@ function webglInit() {
     });
 }
 
+//Inicializa OpenLayers para controlar el mapa
 function ol_map_init() {
 
     if (0) {
@@ -2606,7 +2607,7 @@ function ol_map_init() {
     OLMap.addControl(new ol.control.LayerSwitcher({
         groupSelectStyle: 'none',
         activationMode: 'click', // click sucks in the current implementation
-        target: 'map_canvas',
+        target: 'sidebar_container',
     }));
 
     OLMap.on('movestart', function(event) {
