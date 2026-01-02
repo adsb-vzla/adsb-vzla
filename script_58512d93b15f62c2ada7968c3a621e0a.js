@@ -9112,3 +9112,12 @@ globeRateUpdate();
 
 parseURLIcaos();
 initialize();
+
+function updateTime() {
+    const now = new Date();
+    const h = String(now.getUTCHours()).padStart(2, '0');
+    const m = String(now.getUTCMinutes()).padStart(2, '0');
+    document.getElementById('utc_clock').innerHTML = `${h}:${m} <span>UTC</span>`;
+}
+setInterval(updateTime, 1000);
+updateTime();

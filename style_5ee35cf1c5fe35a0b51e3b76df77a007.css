@@ -33,16 +33,83 @@ html, body {
     
     background: linear-gradient(
         to bottom, 
-        rgba(5, 5, 5, 0.9) 0%,   /* Casi negro arriba */
-        rgba(5, 5, 5, 0.6) 50%,  /* Se va aclarando */
-        rgba(5, 5, 5, 0) 100%    /* Totalmente transparente al final */
+        rgba(0, 0, 0, 0.8) 0%,   /* Menos opaco arriba */
+        rgba(0, 0, 0, 0.4) 40%,  /* Se aclara más rápido */
+        rgba(0, 0, 0, 0) 100%    /* Transparencia total */
     );
-
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
     box-shadow: none; 
+}
+
+#right_controls {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espacio entre reloj, buscador y menú */
+}
+
+/* Reloj UTC */
+#utc_clock {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+#utc_clock span {
+    font-size: 10px;
+    color: #aaa;
+    margin-left: 2px;
+}
+
+/* Cápsula del buscador */
+#search_form_navbar{
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px; /* Bordes más redondeados para suavizar */
+    padding: 2px 12px;
+    width: 200px;
+    transition: width 0.3s ease; /* Efecto opcional de expansión */
+}
+
+/* El input de texto */
+#search_input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 13px;
+    width: 100%;
+    color: #333;
+}
+
+/* El botón de la lupa */
+#search_submit_btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#search_submit_btn svg {
+    width: 18px;
+    height: 18px;
+    fill: #000000 !important;
+    transition: fill 0.2s;
+}
+
+#search_submit_btn:hover svg {
+    fill: rgb(255, 136, 1); /* Cambia a azul al pasar el mouse */
+}
+
+
+#toggle_sidebar_button svg {
+    width: 25px;
+    height: 25px;
+    fill: white;
 }
 
 #button_container {
@@ -91,7 +158,7 @@ html, body {
     color: white;
     font-size: var(--FS3);
     font-weight: bold;
-    font-family: Trebuchet MS;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 /* Aseguramos que la X NO exista por defecto */
