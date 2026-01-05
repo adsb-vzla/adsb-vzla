@@ -600,6 +600,7 @@ select.error, textarea.error, input.error {
     background: var(--ACCENT);
     border-top: 1px solid rgb(168, 82, 1);
     border-bottom: 0.5px solid rgb(168, 82, 1);
+    border-radius: 0.5rem;
     padding: 0.5rem;
     margin-left: 0.4rem;
 }
@@ -721,7 +722,7 @@ select.error, textarea.error, input.error {
 }
 
 .highlightedTitle {
-    border-bottom: calc( 1px * var(--SCALE)) solid rgb(168, 82, 1);
+    border-bottom: calc( 2px * var(--SCALE)) solid rgb(168, 82, 1);
     display: inline-block;
     width: 90%;
 }
@@ -1118,7 +1119,17 @@ input{
   grid-area: speedHint;
 }
 
-#photo_container img {
-    border: 1px solid rgb(168, 82, 1);
-    border-radius: 0.5rem;
+
+#export_kml_block button {
+  background-color: rgb(227, 148, 74);
+  border-radius: 0.5rem;
+  border: 2.5px solid rgb(168, 82, 1);
+  margin: 0.2rem;
+  display: flex;
+  flex-direction: row;
+  width: 90%;
+  color: #fff;
+  margin-left: 0.6rem;
+  font-weight: bold;
+  font-size: 0.8rem;
 }

@@ -9167,6 +9167,8 @@ document.addEventListener('DOMContentLoaded', () => {
         block.style.opacity = '0';
         block.style.paddingTop = collapsedPad;
         block.style.paddingBottom = collapsedPad;
+        block.style.display = 'block';
+        block.style.boxSizing = 'border-box';
 
         const setState = (expanded) => {
             btn.setAttribute('aria-expanded', expanded);
@@ -9176,6 +9178,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (expanded) {
                 block.style.paddingTop = initialPadTop;
                 block.style.paddingBottom = initialPadBottom;
+                const targetHeight = startHeight > 0 ? startHeight : 'auto';
+
                 block.style.height = startHeight + 'px';
                 block.style.opacity = '1';
                 const onEnd = (e) => {
