@@ -48,6 +48,12 @@ let SelectedAllPlanes = false;
 let HighlightedPlane = null;
 let FollowSelected = false;
 let followPos = [];
+let distanceBetweenPlanesMode = false;
+let selectedPlanesForDistance = [];
+let distanceLineLayer = null;
+let distanceLineFeature = null;
+let distanceOverlay = null;
+let distanceUpdateInterval = null;
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -183,6 +189,70 @@ let badDot;
 let badDotMlat;
 
 let showingReplayBar = false;
+
+function haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371 / 1.852; // Radio de la Tierra en millas náuticas
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+function updateDistanceLine() {
+    if (selectedPlanesForDistance.length !== 2) return;
+
+    let p1 = selectedPlanesForDistance[0];
+    let p2 = selectedPlanesForDistance[1];
+
+    // Obtener posiciones actuales
+    let plane1 = g.planes[p1.hex];
+    let plane2 = g.planes[p2.hex];
+    if (!plane1 || !plane2 || !plane1.position || !plane2.position) return;
+
+    let coords1 = plane1.position;
+    let coords2 = plane2.position;
+
+    // Calcular distancia
+    let distance = haversineDistance(coords1[1], coords1[0], coords2[1], coords2[0]);
+    let altDiff = Math.abs(plane1.altitude - plane2.altitude);
+
+    // Crear o actualizar línea
+    let lineCoords = [ol.proj.fromLonLat(coords1), ol.proj.fromLonLat(coords2)];
+    if (!distanceLineFeature) {
+        distanceLineFeature = new ol.Feature({
+            geometry: new ol.geom.LineString(lineCoords)
+        });
+        distanceLineLayer.getSource().addFeature(distanceLineFeature);
+    } else {
+        distanceLineFeature.getGeometry().setCoordinates(lineCoords);
+    }
+
+    // Crear o actualizar overlay con texto
+    let midPoint = [(coords1[0] + coords2[0]) / 2, (coords1[1] + coords2[1]) / 2];
+    let midPointProj = ol.proj.fromLonLat(midPoint);
+
+    if (!distanceOverlay) {
+        let element = document.createElement('div');
+        element.style.background = 'rgba(255, 255, 255, 0.8)';
+        element.style.border = '1px solid black';
+        element.style.padding = '5px';
+        element.style.fontSize = '12px';
+        element.style.color = 'black';
+        element.style.pointerEvents = 'none';
+        distanceOverlay = new ol.Overlay({
+            element: element,
+            positioning: 'bottom-center',
+            offset: [0, -10]
+        });
+        OLMap.addOverlay(distanceOverlay);
+    }
+
+    distanceOverlay.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+    distanceOverlay.setPosition(midPointProj);
+}
 
 function processAircraft(ac, init, uat) {
     const isArray = Array.isArray(ac);
@@ -2716,9 +2786,26 @@ function ol_map_init() {
             gotoTime(trailTS);
         }
         //console.log(`planeHex: ${planeHex} trailHex: ${trailHex}`);
-        if (planeHex) {
+        if (distanceBetweenPlanesMode && planeHex && selectedPlanesForDistance.length < 2) {
+            let plane = g.planes[planeHex];
+            if (plane && plane.position && plane.altitude !== null) {
+                selectedPlanesForDistance.push({
+                    hex: planeHex,
+                    coords: plane.position,
+                    altitude: plane.altitude
+                });
+                console.log(`Avión seleccionado para distancia: ${planeHex}, Coords: ${plane.position}, Altitud: ${plane.altitude}`);
+                if (selectedPlanesForDistance.length === 2) {
+                    // Calcular distancia y dibujar línea
+                    updateDistanceLine();
+                    // Iniciar actualización cada 5 segundos
+                    if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
+                    distanceUpdateInterval = setInterval(updateDistanceLine, 5000);
+                }
+            }
+        } else if (planeHex && (!distanceBetweenPlanesMode || selectedPlanesForDistance.length < 2)) {
             selectPlaneByHex(planeHex, { noDeselect: dblclick, follow: dblclick });
-        } else if (trailHex) {
+        } else if (trailHex && (!distanceBetweenPlanesMode || selectedPlanesForDistance.length < 2)) {
             selectPlaneByHex(trailHex, { noDeselect: true });
         }
 
@@ -2897,6 +2984,18 @@ function initMap() {
         renderBuffer: renderBuffer,
     });
     layers.push(iconLayer);
+
+    distanceLineLayer = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        style: new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: 'red',
+                width: 2
+            })
+        }),
+        zIndex: 300
+    });
+    layers.push(distanceLineLayer);
 
 
     ol_map_init();
@@ -9288,3 +9387,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+function DistanceBetweenPlanes(){
+    distanceBetweenPlanesMode = !distanceBetweenPlanesMode;
+    if (distanceBetweenPlanesMode) {
+        console.log("Modo DistanceBetweenPlanes activado. Haz clic en dos aviones para calcular la distancia.");
+        selectedPlanesForDistance = [];
+        // Limpiar línea y overlay anteriores
+        if (distanceLineFeature) {
+            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
+            distanceLineFeature = null;
+        }
+        if (distanceOverlay) {
+            OLMap.removeOverlay(distanceOverlay);
+            distanceOverlay = null;
+        }
+        if (distanceUpdateInterval) {
+            clearInterval(distanceUpdateInterval);
+            distanceUpdateInterval = null;
+        }
+    } else {
+        console.log("Modo DistanceBetweenPlanes desactivado.");
+        selectedPlanesForDistance = [];
+        // Limpiar línea y overlay
+        if (distanceLineFeature) {
+            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
+            distanceLineFeature = null;
+        }
+        if (distanceOverlay) {
+            OLMap.removeOverlay(distanceOverlay);
+            distanceOverlay = null;
+        }
+        if (distanceUpdateInterval) {
+            clearInterval(distanceUpdateInterval);
+            distanceUpdateInterval = null;
+        }
+    }
+}
