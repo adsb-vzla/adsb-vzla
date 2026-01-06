@@ -223,7 +223,10 @@ select {
     width:  calc(180px * var(--SCALE));
     height: 100%;
     overflow: auto;
+    overflow-x: hidden;
     z-index: 12;
+    overflow-y: auto;
+    max-height: 100vh;
     background-color: #131313 !important;
 }
 .aggregator-selected-bg:before {
@@ -243,9 +246,9 @@ select {
 }
 #infoblock-container {
     position:relative;
-    overflow: auto;
+    overflow: visible;
     height: 100%;
-    z-index:3;
+    z-index: 3;
 }
 #sidebar_canvas {
     padding: calc( 5px * var(--SCALE));
@@ -1018,6 +1021,7 @@ table.infoSectionTable tr td {
 #copyrightInfo {
   position: Relative;
   font-size: var(--FS1);
+  padding: 0.5rem;
 
 }
 #selected_photo{
@@ -1133,4 +1137,66 @@ input{
   font-weight: bold;
   font-size: 0.8rem;
   cursor: pointer;
+}
+
+#selected_photo {
+  margin: 0 auto;
+  border-radius: 0.5rem;
+  border: 2px solid rgb(168, 82, 1);
+}
+
+#selected_photo img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0.3rem;
+  display: block;
+}
+
+#selected_infoblock .highlightedTitle {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  background-color: #131313;
+  width: 95%;
+}
+
+@supports selector(:has(*)) {
+  #selected_infoblock .infoSectionTable tr td:has(.infoHeading):has(.infoData) {
+    display: grid;
+    grid-template-columns: minmax(9rem, max-content) 1fr;
+    column-gap: calc(8px * var(--SCALE));
+    align-items: center;
+  }
+  #selected_infoblock .infoSectionTable .infoHeading {
+    white-space: nowrap;
+    align-self: center;
+  }
+  #selected_infoblock .infoSectionTable .infoData {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    align-self: start;
+  }
+}
+
+@supports not (selector(:has(*))) {
+  #selected_infoblock .infoSectionTable tr td {
+    display: flex;
+    align-items: center;
+    gap: calc(8px * var(--SCALE));
+    min-width: 0;
+  }
+  #selected_infoblock .infoSectionTable .infoHeading {
+    flex: 0 0 9rem;
+    white-space: nowrap;
+    align-self: center;
+  }
+  #selected_infoblock .infoSectionTable .infoData {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    align-self: flex-start;
+  }
 }
