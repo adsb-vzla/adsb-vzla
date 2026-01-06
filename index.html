@@ -27,44 +27,44 @@
 <body>
   <!-- BODY_ANCHOR -->
   <div id="layout_container">
-
+    <!-- Card con info del avion (se muestra al hacer hover sobre uno) -->
     <div id="highlighted_infoblock" style="pointer-events: none">
       <div class="highlightedTitle infoBlockSection">
         <div>
           <span class="identLarge"><span id="highlighted_callsign">n/a</span></span>
         </div>
         <div>
-          <span class="identSmall"><span id="highlighted_pf_route"></span></span>
+          <span class="identSmall"><span id="highlighted_pf_route">n/a</span></span>
         </div>
       </div>
       <div class="infoBlockSection">
         <div>
-          <div class="infoHeading"><span>Reg.: </span></div>
+          <div class="infoHeading"><span>Matrícula: </span></div>
           <div class="infoData"><span id="highlighted_registration">n/a</span></div>
         </div>
         <div>
-          <div class="infoHeading"><span>Type code: </span></div>
+          <div class="infoHeading"><span>Tipo: </span></div>
           <div class="infoData"><span id="highlighted_icaotype">n/a</span></div>
         </div>
         <div>
           <div id="routeRowHighlight" class="infoHeading"><span
-              title="Reported flight origin and destination according to adsbdb.com">Route</span>:</div>
-          <div class="infoData"><span id="highlighted_route"></span></div>
+              title="Reported flight origin and destination according to adsbdb.com">Ruta: </span></div>
+          <div class="infoData"><span id="highlighted_route">n/a</span></div>
         </div>
         <div class="rSpacer">
         </div>
         <div>
-          <div class="infoHeading"><span>Altitude: </span></div>
+          <div class="infoHeading"><span>Altitud: </span></div>
           <div class="infoData"><span id="highlighted_altitude">n/a</span></div>
         </div>
         <div>
-          <div class="infoHeading"><span>Speed: </span></div>
+          <div class="infoHeading"><span>Velocidad: </span></div>
           <div class="infoData"><span id="highlighted_speed">n/a</span></div>
         </div>
         <div class="rSpacer">
         </div>
         <div>
-          <div class="infoHeading"><span>Source: </span></div>
+          <div class="infoHeading"><span>Fuente: </span></div>
           <div class="infoData"><span id="highlighted_source">n/a</span></div>
         </div>
         <div>
@@ -73,6 +73,7 @@
         </div>
       </div>
     </div>
+    <!-- Fin card con info del avion -->
 
     <!-- Sidebar izquierdo con información del avión (al hacer click sobre uno) -->
     <div id="selected_infoblock" style="display: none">
@@ -1285,6 +1286,9 @@
   <script src="script_58512d93b15f62c2ada7968c3a621e0a.js"></script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">
+
+  </body>
+  </html>
 
 </body>
 

@@ -5277,10 +5277,10 @@ function showSearchWarning(message) {
 // 1. La función principal (Definida fuera para que sea global)
 function unifiedSearch(e) {
     if (e) e.preventDefault();
-    
+
     const inputField = jQuery("#search_input");
     const query = inputField.val().trim();
-    
+
     if (!query) return;
 
     // Limpiar UI
@@ -5315,12 +5315,12 @@ function onJump() {
 }
 
 // 3. Inicialización de los eventos
-jQuery(document).ready(function() {
+jQuery(document).ready(function () {
     // Ahora 'unifiedSearch' sí existe en el scope global
     jQuery("#search_form").on("submit", unifiedSearch);
-    
+
     // Limpieza de antiguos botones si existen
-    jQuery("#search_clear_button").click(function() {
+    jQuery("#search_clear_button").click(function () {
         jQuery("#search_input").val("");
     });
 });
@@ -5328,14 +5328,14 @@ jQuery(document).ready(function() {
 // 4. Funciones de apoyo (executeJump y searchAirport se quedan como las tienes)
 function executeJump(coords) {
     OLMap.getView().setCenter(ol.proj.fromLonLat([coords[1], coords[0]]));
-    if (g.zoomLvl >= 7) fetchData({force: true});
+    if (g.zoomLvl >= 7) fetchData({ force: true });
     refreshFilter();
     hideSearchWarning();
 }
 
 function searchAirport(airport) {
     if (!g.airport_cache) {
-        jQuery.getJSON(databaseFolder + "/airport-coords.js").done(function(data) {
+        jQuery.getJSON(databaseFolder + "/airport-coords.js").done(function (data) {
             g.airport_cache = data;
             searchAirport(airport);
         });
@@ -9288,3 +9288,43 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// Función que coloca una imagen genérica al selected_infoblock si el avión no tiene imagen
+(function () {
+    const fallbackSrc = 'images/no-plane.jpg';
+    const container = document.getElementById('selected_photo');
+    if (!container) return;
+
+    function bindError(img) {
+        if (!img || img.dataset.fallbackBound) return;
+        img.addEventListener('error', () => {
+            if (!img.src.endsWith('no-plane.jpg')) img.src = fallbackSrc;
+        });
+        img.dataset.fallbackBound = '1';
+    }
+
+    function ensurePhoto() {
+        const img = container.querySelector('img');
+        if (!img) {
+            const el = new Image();
+            el.src = fallbackSrc;
+            el.alt = 'No photo available';
+            el.loading = 'lazy';
+            el.style.maxWidth = '100%';
+            el.style.height = 'auto';
+            el.style.display = 'block';
+            container.innerHTML = '';
+            container.appendChild(el);
+        } else {
+            bindError(img);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensurePhoto, { once: true });
+    } else {
+        ensurePhoto();
+    }
+
+    new MutationObserver(ensurePhoto).observe(container, { childList: true, subtree: true });
+})();

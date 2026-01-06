@@ -651,14 +651,14 @@ select.error, textarea.error, input.error {
 }
 
 .svgButton {
-    background-color: var(--ACCENT);
+    background-color: rgb(232, 112, 0);
     width: calc( 27px * var(--SCALE));
     height: calc( 27px * var(--SCALE));
     cursor: pointer;
     background-position: center;
     margin: calc( 2px * var(--SCALE));
     display: inline-block;
-    border-radius: calc( 2px * var(--SCALE));
+    border-radius: calc( 5px * var(--SCALE));
 }
 
 .fullscreenButton {
@@ -673,10 +673,10 @@ select.error, textarea.error, input.error {
 
 
 .button {
-    background-color: var(--ACCENT);
+    background-color: rgb(232, 112, 0);
     width: calc( 27px * var(--SCALE));
     height: calc( 27px * var(--SCALE));
-    border-radius: calc( 2px * var(--SCALE));
+    border-radius: calc( 5px * var(--SCALE));
     margin: calc( 2px * var(--SCALE));
     display: inline-block;
     cursor: pointer;
@@ -712,7 +712,7 @@ select.error, textarea.error, input.error {
 }
 
 #highlighted_infoblock {
-    background-color: var(--BGCOLOR1);
+    background-color: #131313 !important;
     position: absolute;
     left: calc( 40px * var(--SCALE));
     top: calc( 60px * var(--SCALE));
@@ -722,6 +722,7 @@ select.error, textarea.error, input.error {
     cursor: pointer;
     z-index: 9999;
     display: none;
+    border-radius: 0.5rem;
 }
 
 .highlightedTitle {
