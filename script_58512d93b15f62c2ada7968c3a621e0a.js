@@ -1234,13 +1234,15 @@ function earlyInitPage() {
     jQuery("#flag_filter_reset_button").click(onResetFlagFilter);
 
     // Initialize other controls
-    jQuery("#search_form").submit(onSearch);
+    jQuery("#search_form").submit(unifiedSearch);
     jQuery("#search_clear_button").click(onSearchClear);
-    jQuery("#jump_clear_button").click(function () {
+    /*
+    jQuery("#jump_clear_button").click(function() {
         jQuery("#jump_input").val("");
         jQuery("#jump_input").blur();
     });
     jQuery("#jump_form").submit(onJump);
+    */
 
     jQuery("#show_trace").click(toggleShowTrace);
     jQuery("#trace_back_1d").click(function () { shiftTrace(-1) });
@@ -5188,6 +5190,7 @@ function toggleMultiSelect(newState) {
     buttonActive('#M', multiSelect);
 }
 
+/*
 function onJump(e) {
     toggleFollow(false);
     if (e) {
@@ -5233,6 +5236,24 @@ function onJump(e) {
     }
 }
 
+function onSearch(e) {
+    e.preventDefault();
+    const searchTerm = jQuery("#search_input").val().trim();
+    jQuery("#search_input").val("");
+    jQuery("#search_input").blur();
+    let results = [];
+    if (searchTerm)
+        results = findPlanes(searchTerm, "byIcao", "byCallsign", "byReg", "byType", true);
+    if (results.length > 0 && haveTraces) {
+        toggleIsolation("on");
+        if (results.length < 100) {
+            getTrace(null, null, {list: results});
+        }
+    }
+    return false;
+}
+*/
+
 function hideSearchWarning() {
     const searchWarning = jQuery('#search_warning');
     if (searchWarning.css('display') !== 'none') {
@@ -5251,22 +5272,80 @@ function showSearchWarning(message) {
     setTimeout(() => hideSearchWarning(), 15000);
 }
 
-function onSearch(e) {
-    e.preventDefault();
-    const searchTerm = jQuery("#search_input").val().trim();
-    jQuery("#search_input").val("");
-    jQuery("#search_input").blur();
-    let results = [];
-    if (searchTerm)
-        results = findPlanes(searchTerm, "byIcao", "byCallsign", "byReg", "byType", true);
-    if (results.length > 0 && haveTraces) {
-        toggleIsolation("on");
-        if (results.length < 100) {
-            getTrace(null, null, { list: results });
+
+
+// 1. La función principal (Definida fuera para que sea global)
+function unifiedSearch(e) {
+    if (e) e.preventDefault();
+    
+    const inputField = jQuery("#search_input");
+    const query = inputField.val().trim();
+    
+    if (!query) return;
+
+    // Limpiar UI
+    inputField.val("").blur();
+    toggleFollow(false);
+
+    // --- 1. INTENTAR COORDENADAS ---
+    if (query.indexOf(",") >= 0) {
+        const values = query.split(',');
+        const lat = parseFloat(values[0]);
+        const lon = parseFloat(values[1]);
+        if (!isNaN(lat) && !isNaN(lon)) {
+            executeJump([lat, lon]);
+            return;
         }
     }
-    return false;
+
+    // --- 2. INTENTAR AVIONES ---
+    const planeResults = findPlanes(query, "byIcao", "byCallsign", "byReg", "byType", false);
+
+    // --- 3. SI NO HUBO AVIONES, INTENTAR AEROPUERTO ---
+    if (!planeResults || planeResults.length === 0) {
+        searchAirport(query.toUpperCase());
+    }
 }
+
+// 2. Función puente para compatibilidad con URL (?airport=...)
+function onJump() {
+    if (typeof onJumpInput !== 'undefined' && onJumpInput) {
+        searchAirport(onJumpInput.trim().toUpperCase());
+    }
+}
+
+// 3. Inicialización de los eventos
+jQuery(document).ready(function() {
+    // Ahora 'unifiedSearch' sí existe en el scope global
+    jQuery("#search_form").on("submit", unifiedSearch);
+    
+    // Limpieza de antiguos botones si existen
+    jQuery("#search_clear_button").click(function() {
+        jQuery("#search_input").val("");
+    });
+});
+
+// 4. Funciones de apoyo (executeJump y searchAirport se quedan como las tienes)
+function executeJump(coords) {
+    OLMap.getView().setCenter(ol.proj.fromLonLat([coords[1], coords[0]]));
+    if (g.zoomLvl >= 7) fetchData({force: true});
+    refreshFilter();
+    hideSearchWarning();
+}
+
+function searchAirport(airport) {
+    if (!g.airport_cache) {
+        jQuery.getJSON(databaseFolder + "/airport-coords.js").done(function(data) {
+            g.airport_cache = data;
+            searchAirport(airport);
+        });
+        return;
+    }
+    const coords = g.airport_cache[airport];
+    if (coords) executeJump(coords);
+    else showSearchWarning('No se encontró: ' + airport);
+}
+
 function onSearchClear(e) {
     deselectAllPlanes();
     toggleIsolation("off");

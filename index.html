@@ -938,18 +938,27 @@
               </button>
             </form>
           </div>
-          <div id="button_container toggle_sidebar_control">
-            <button id="toggle_sidebar_button" class="show_sidebar sidebar_button">
-              <svg id="hamburger-menu" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="50" height="50"
-                viewBox="0 0 50 50">
-                <path
-                  d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z">
-                </path>
-              </svg>
-            </button>
-          </div>
+          <div id="right_controls">
+            <div id="utc_clock">00:00 <span>UTC</span></div>
+            <div id="tab-search-navbar">
+              <form id="search_form">
+                <input id="search_input" name="searchBox" type="text" placeholder="Buscar vuelos, aeropuertos..." maxlength="128">
+                <button type="submit" id="search_submit_btn">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+            <div id="button_container toggle_sidebar_control">
+              <button id="toggle_sidebar_button" class="show_sidebar sidebar_button">
+                <svg id="hamburger-menu" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="50" height="50" viewBox="0 0 50 50">
+                  <path d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z"></path>
+                </svg>
+              </button>
+            </div>
         </div>
-        <!--
+      <!--
           <div class="buttonContainer">
             <span id="U" title="only show the U2 and other military planes" class="button inActiveButton" onclick="toggleMilitary();"><span class="buttonText">U</span></span>
             <span id="H" title="(H)ome / Reset Map" class="button inActiveButton" onclick="resetMap();"><span class="buttonText">H</span></span>
@@ -1120,63 +1129,61 @@
 
           <!-- ABOVE_TABS_ANCHOR -->
 
-          <div id="tabs" style="min-height: 10px; overflow: auto">
-            <ul>
-              <li><a href="#tab-search">Search</a></li>
-              <li><a href="#tab-filters">Filters</a></li>
-              <li><a href="#tab-columns">Columns</a></li>
-            </ul>
-            <div id="tab-search">
-              <table id="tab-search-table" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td>
-                    <form id="search_form">
-                      <div class="infoBlockTitleText">Search:</div>
-                      <input id="search_input" name="searchBox" type="text" class="searchInput" maxlength="128"
-                        title="Searches on the hex ID, callsign, registration, and type.">
-                      <button class="formButton" type="submit">Search</button>
-                      <button class="formButton" type="button" id="search_clear_button">Clear Search</button>
-                    </form>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <form id="jump_form">
-                      <div class="infoBlockTitleText">Jump to Airport or Latitude, Longitude:</div>
-                      <input id="jump_input" name="jumpBox" type="text" class="searchInput" maxlength="128"
-                        title="Search by airport code like KATL, ZBAA, or LAX">
-                      <button class="formButton" type="submit">Jump</button>
-                      <button class="formButton" type="button" id="jump_clear_button">Clear</button>
-                    </form>
-                  </td>
-                </tr>
-              </table>
-              <div class="warning" id="search_warning" style="display:none">
-              </div>
-            </div>
-            <div id="tab-filters">
-              <table cellpadding="0" cellspacing="0" id="filterTable">
-                <tbody>
+            <div id="tabs" style="min-height: 10px; overflow: auto">
+              <ul>
+                <li><a href="#tab-search">Search</a></li>
+                <li><a href="#tab-filters">Filters</a></li>
+                <li><a href="#tab-columns">Columns</a></li>
+              </ul>
+              <!--
+              <div id="tab-search">
+                <table id="tab-search-table" cellpadding="0" cellspacing="0">
                   <tr>
                     <td>
-                      <form id="altitude_filter_form">
-                        <div class="infoBlockTitleText">Filter by altitude:</div>
-                        <input id="altitude_filter_min" name="minAltitude" type="text" class="altitudeFilterInput"
-                          maxlength="6">
-                        <label for="altitude_filter_min" class="altitudeUnit"></label>
-                        <span> to </span>
-                        <input id="altitude_filter_max" name="maxAltitude" type="text" class="altitudeFilterInput"
-                          maxlength="6">
-                        <label for="altitude_filter_max" class="altitudeUnit"></label>
-                        <button class="formButton" type="submit">Filter</button>
-                        <button class="formButton" id="altitude_filter_reset_button">Reset</button>
+                      <form id="search_form">
+                        <div class="infoBlockTitleText">Search:</div>
+                        <input id="search_input" name="searchBox" type="text" class="searchInput" maxlength="128" title="Searches on the hex ID, callsign, registration, and type.">
+                        <button class="formButton" type="submit">Search</button>
+                        <button class="formButton" type="button" id="search_clear_button">Clear Search</button>
                       </form>
                     </td>
                   </tr>
-                </tbody>
-              </table>
-              <table style="width: 100%" cellpadding="0" cellspacing="0" id="filterTable2">
-                <tbody>
+                  <tr>
+                    <td>
+                      <form id="jump_form">
+                        <div class="infoBlockTitleText">Jump to Airport or Latitude, Longitude:</div>
+                        <input id="jump_input" name="jumpBox" type="text" class="searchInput" maxlength="128" title="Search by airport code like KATL, ZBAA, or LAX">
+                        <button class="formButton" type="submit">Jump</button>
+                        <button class="formButton" type="button" id="jump_clear_button">Clear</button>
+                      </form>
+                    </td>
+                  </tr>
+                </table>
+                <div class="warning" id="search_warning" style="display:none">
+                </div>
+              </div>
+              -->
+              <div id="tab-filters">
+                <table cellpadding="0" cellspacing="0" id="filterTable">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <form id="altitude_filter_form">
+                          <div class="infoBlockTitleText">Filter by altitude:</div>
+                          <input id="altitude_filter_min" name="minAltitude" type="text" class="altitudeFilterInput" maxlength="6">
+                          <label for="altitude_filter_min" class="altitudeUnit"></label>
+                          <span> to </span>
+                          <input id="altitude_filter_max" name="maxAltitude" type="text" class="altitudeFilterInput" maxlength="6">
+                          <label for="altitude_filter_max" class="altitudeUnit"></label>
+                          <button class="formButton" type="submit">Filter</button>
+                          <button class="formButton" id="altitude_filter_reset_button">Reset</button>
+                        </form>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table style="width: 100%" cellpadding="0" cellspacing="0" id="filterTable2">
+                  <tbody>
 
                   <tr>
                     <td>

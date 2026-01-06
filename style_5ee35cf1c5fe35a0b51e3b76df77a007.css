@@ -53,17 +53,17 @@ html, body {
 /* Reloj UTC */
 #utc_clock {
     color: white;
-    font-size: 14px;
+    font-size: calc(14px * var(--SCALE));
     font-weight: bold;
 }
 #utc_clock span {
-    font-size: 10px;
+    font-size: calc(10px * var(--SCALE));
     color: #aaa;
     margin-left: 2px;
 }
 
 /* Cápsula del buscador */
-#search_form_navbar{
+#search_form{
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.95);
