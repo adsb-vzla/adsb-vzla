@@ -2794,13 +2794,12 @@ function ol_map_init() {
                     coords: plane.position,
                     altitude: plane.altitude
                 });
-                console.log(`Avión seleccionado para distancia: ${planeHex}, Coords: ${plane.position}, Altitud: ${plane.altitude}`);
                 if (selectedPlanesForDistance.length === 2) {
                     // Calcular distancia y dibujar línea
                     updateDistanceLine();
-                    // Iniciar actualización cada 5 segundos
+                    // Iniciar actualización cada 1 segundo
                     if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
-                    distanceUpdateInterval = setInterval(updateDistanceLine, 5000);
+                    distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
                 }
             }
         } else if (planeHex && (!distanceBetweenPlanesMode || selectedPlanesForDistance.length < 2)) {
@@ -3188,12 +3187,14 @@ function initMap() {
                 toggleFollow(false);
                 break;
             case "ArrowRight":
-            case "d":
                 oldCenter = OLMap.getView().getCenter();
                 extent = OLMap.getView().calculateExtent(OLMap.getSize());
                 newCenter = [(oldCenter[0] + extent[2]) / 2, oldCenter[1]];
                 OLMap.getView().setCenter(newCenter);
                 toggleFollow(false);
+                break;
+            case "d":
+                toggleDistance();
                 break;
             // misc
             case "b":
@@ -5085,6 +5086,44 @@ function togglePersistence() {
     console.log('noVanish = ' + noVanish);
 
     refreshFilter();
+}
+
+function toggleDistance(){
+    distanceBetweenPlanesMode = !distanceBetweenPlanesMode;
+    if (distanceBetweenPlanesMode) {
+        console.log("Modo DistanceBetweenPlanes activado. Haz clic en dos aviones para calcular la distancia.");
+        selectedPlanesForDistance = [];
+        // Limpiar línea y overlay anteriores (aunque no debería haber, por si acaso)
+        if (distanceLineFeature) {
+            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
+            distanceLineFeature = null;
+        }
+        if (distanceOverlay) {
+            OLMap.removeOverlay(distanceOverlay);
+            distanceOverlay = null;
+        }
+        if (distanceUpdateInterval) {
+            clearInterval(distanceUpdateInterval);
+            distanceUpdateInterval = null;
+        }
+    } else {
+        console.log("Modo DistanceBetweenPlanes desactivado.");
+        selectedPlanesForDistance = [];
+        // Limpiar línea y overlay
+        if (distanceLineFeature) {
+            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
+            distanceLineFeature = null;
+        }
+        if (distanceOverlay) {
+            OLMap.removeOverlay(distanceOverlay);
+            distanceOverlay = null;
+        }
+        if (distanceUpdateInterval) {
+            clearInterval(distanceUpdateInterval);
+            distanceUpdateInterval = null;
+        }
+    }
+    buttonActive('#D', distanceBetweenPlanesMode);
 }
 
 function dim(evt) {
@@ -9423,6 +9462,7 @@ function DistanceBetweenPlanes(){
             distanceUpdateInterval = null;
         }
     }
+    buttonActive('#D', distanceBetweenPlanesMode);
 }
 
 
