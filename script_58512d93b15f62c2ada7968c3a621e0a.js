@@ -4970,6 +4970,42 @@ function togglePersistence() {
     refreshFilter();
 }
 
+function toggleDistance(){
+    distanceBetweenPlanesMode = !distanceBetweenPlanesMode;
+    if (distanceBetweenPlanesMode) {
+        selectedPlanesForDistance = [];
+        // Limpiar línea y overlay anteriores (aunque no debería haber, por si acaso)
+        if (distanceLineFeature) {
+            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
+            distanceLineFeature = null;
+        }
+        if (distanceOverlay) {
+            OLMap.removeOverlay(distanceOverlay);
+            distanceOverlay = null;
+        }
+        if (distanceUpdateInterval) {
+            clearInterval(distanceUpdateInterval);
+            distanceUpdateInterval = null;
+        }
+    } else {
+        selectedPlanesForDistance = [];
+        // Limpiar línea y overlay
+        if (distanceLineFeature) {
+            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
+            distanceLineFeature = null;
+        }
+        if (distanceOverlay) {
+            OLMap.removeOverlay(distanceOverlay);
+            distanceOverlay = null;
+        }
+        if (distanceUpdateInterval) {
+            clearInterval(distanceUpdateInterval);
+            distanceUpdateInterval = null;
+        }
+    }
+    buttonActive('#D', distanceBetweenPlanesMode);
+}
+
 function dim(evt) {
     try {
         let currentDimPercentage = mapDimPercentage * layerDimFactor;
