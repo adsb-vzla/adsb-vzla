@@ -416,6 +416,87 @@ function updateDistanceToGroundOverlay() {
     distanceGroundOverlay.setPosition(midProj);
 }
 
+// Overlay de guía para usar el modo distancia suelo‑avión
+let distanceGuideOverlay = null;
+
+// Función para mostrar el texto guía del modo distancia suelo‑avión
+function showDistanceGuide(text) {
+    // Asegurarse de que el mapa OpenLayers esté inicializado
+    if (!OLMap) return;
+
+    // Crear el overlay si no existe
+    if (!distanceGuideOverlay) {
+        const el = document.createElement('div');
+        el.style.background = 'rgba(255,255,255,0.9)';
+        el.style.border = '1px solid #000';
+        el.style.padding = '6px 8px';
+        el.style.fontSize = '12px';
+        el.style.color = '#000';
+        el.style.pointerEvents = 'none';
+        el.style.borderRadius = '4px';
+        el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+        distanceGuideOverlay = new ol.Overlay({
+            element: el,
+            positioning: 'top-center',
+            offset: [0, 25],
+            stopEvent: false
+        });
+        OLMap.addOverlay(distanceGuideOverlay);
+    }
+
+    // Actualizar el texto del overlay
+    distanceGuideOverlay.getElement().innerHTML = text;
+
+    // Función interna para colocar el overlay en la posición adecuada
+    const place = (reason = '') => {
+        // Obtener el tamaño actual del mapa
+        const s = OLMap.getSize();
+        // Si el tamaño es inválido o demasiado pequeño, reintentar en postrender y forzar un render
+        if (!s || s[0] < 10 || s[1] < 10) {
+            OLMap.once('postrender', () => place('postrender-retry'));
+            try { OLMap.updateSize(); OLMap.render(); } catch (e) { }
+            return;
+        }
+        // Calcular un punto de pantalla: centro horizontal y 30px desde el borde superior
+        const px = [Math.round(s[0] / 2), 30];
+        // Convertir el punto de pantalla a coordenadas del mapa
+        const coord = OLMap.getCoordinateFromPixel(px);
+        // Si no se obtienen coordenadas, reintentar en el siguiente frame
+        if (!coord) {
+            requestAnimationFrame(() => place('raf-retry'));
+            return;
+        }
+        // Colocar el overlay en las coordenadas calculadas
+        distanceGuideOverlay.setPosition(coord);
+    };
+
+    // Volver a tomar el tamaño del mapa para decidir la primera colocación
+    const size = OLMap.getSize();
+
+    // Si el tamaño es inválido o demasiado pequeño, esperar al postrender inicial
+    if (!size || size[0] < 10 || size[1] < 10) {
+        OLMap.once('postrender', () => place('postrender-initial'));
+        // Empujar un render para que ocurra el postrender
+        try { OLMap.updateSize(); OLMap.render(); } catch (e) { }
+        // Fallback rápido por si el postrender tarda
+        setTimeout(() => place('timeout-fallback'), 50);
+    } else {
+        place('direct');
+    }
+}
+
+// Función para ocultar la guía del modo distancia suelo‑avión
+function hideDistanceGuide() {
+    // Si no existe el overlay o el mapa no está inicializado, salir
+    if (!distanceGuideOverlay || !OLMap) return;
+    // Desanclar el overlay del mapa estableciendo su posición como indefinida, lo que lo oculta visualmente.
+    distanceGuideOverlay.setPosition(undefined);
+    // Eliminar el overlay del conjunto de overlays del mapa
+    OLMap.removeOverlay(distanceGuideOverlay);
+    // Liberar la referencia en JS para permitir la recolección de basura y evitar reutilizaciones accidentales
+    distanceGuideOverlay = null;
+}
+
 // Función para activar/desactivar el modo de distancia suelo-avión
 function DistanceToGround() {
 
@@ -436,11 +517,10 @@ function DistanceToGround() {
             // Si la capa del punto A ya existe, asignarle esta fuente
             if (groundPointLayer) groundPointLayer.setSource(groundPointSource);
         }
-        // Si la capa del punto A existe, ejecutar el código en los corchetes
-        if (groundPointLayer) {
-            // Si la capa existe y no está añadida al mapa, añadirla
-            if (OLMap && !groundPointLayer.getMap()) OLMap.addLayer(groundPointLayer);
-            // Asegurar que la capa esté visible
+        // Si la capa del punto A existe, asegurarse de que está en el mapa y visible
+        if (groundPointLayer && OLMap) {
+            const exists = OLMap.getLayers().getArray().includes(groundPointLayer);
+            if (!exists) OLMap.addLayer(groundPointLayer);
             groundPointLayer.setVisible(true);
         }
         // Si aún no existe la fuente de la línea suelo‑avión, crearla
@@ -450,13 +530,10 @@ function DistanceToGround() {
             // Si la capa de la línea ya existe, asignarle esta fuente
             if (groundToPlaneLineLayer) groundToPlaneLineLayer.setSource(groundToPlaneLineSource);
         }
-        // Si la capa de la línea existe, ejecutar el código en los corchetes
-        if (groundToPlaneLineLayer) {
-            // Si la capa existe y no está añadida al mapa, añadirla
-            if (OLMap) {
+        // Si la capa de la línea existe, asegurarse de que está en el mapa y visible
+        if (groundToPlaneLineLayer && OLMap) {
             const exists = OLMap.getLayers().getArray().includes(groundToPlaneLineLayer);
             if (!exists) OLMap.addLayer(groundToPlaneLineLayer);
-        }
             groundToPlaneLineLayer.setVisible(true);
         }
 
@@ -475,8 +552,14 @@ function DistanceToGround() {
             distanceGroundUpdateInterval = null;
         }
 
+        // Mostrar guía paso 1
+        showDistanceGuide('Haga clic en el mapa para marcar el Punto A.');
+
+        // Forzar un render para asegurar el postrender y el posicionamiento del tooltip
+        try { OLMap && (OLMap.updateSize(), OLMap.render()); } catch (e) { }
+
         // Marcar el botón como activado
-        buttonActive('#G', true);
+        buttonActive('#T', true);
     } else {
 
         // Al desactivar, limpiar selección y punto A
@@ -508,11 +591,6 @@ function DistanceToGround() {
             groundToPlaneLineLayer.setVisible(false);
         }
 
-        // Limpiar capa si está en el mapa
-        // if (groundToPlaneLineLayer && groundToPlaneLineLayer.getMap()) {
-        //     OLMap.removeLayer(groundToPlaneLineLayer);
-        // }
-
         // Resetear feature de la línea
         groundToPlaneLineFeature = null;
 
@@ -522,8 +600,11 @@ function DistanceToGround() {
             distanceGroundUpdateInterval = null;
         }
 
+        // Ocultar guía
+        hideDistanceGuide();
+
         // Marcar el botón como inactivo
-        buttonActive('#G', false);
+        buttonActive('#T', false);
     }
 }
 
@@ -3071,15 +3152,31 @@ function ol_map_init() {
                     selectedPlaneForGround = plane;
                     // Calcular y mostrar la distancia en línea y overlay
                     updateDistanceToGroundOverlay();
+
+                    // Ocultar guía
+                    hideDistanceGuide();
+
                     // Si no se ha actualizado la distancia en intervalo, iniciarlo
                     if (!distanceGroundUpdateInterval) {
                         // Refrescar la medición cada segundo mientras cambian posiciones
                         distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
                     }
+                } else {
+                    // Si posición del avión: recordar paso 2
+                    showDistanceGuide('Haga clic sobre un avión con posición válida para marcar el Punto B.');
                 }
             } else if (!planeHex) {
                 const lonlat = ol.proj.toLonLat(evtCoords);
                 setGroundPoint(lonlat);
+
+                // Mostrar guía paso 2
+                showDistanceGuide('Ahora haga clic sobre un avión para marcar el Punto B.');
+            } else if (planeHex && !groundPointCoord) {
+                // Si se intentó seleccionar avión sin haber marcado el suelo
+                showDistanceGuide('Primero marque el Punto A haciendo clic en el mapa.');
+            } else if (planeHex && !groundPointCoord) {
+                // Si se intentó seleccionar avión sin haber marcado el suelo
+                showDistanceGuide('Primero marque el Punto A haciendo clic en el mapa.');
             }
             evt.stopPropagation();
             return;
@@ -5419,7 +5516,7 @@ function togglePersistence() {
     refreshFilter();
 }
 
-function toggleDistance(){
+function toggleDistance() {
     distanceBetweenPlanesMode = !distanceBetweenPlanesMode;
     if (distanceBetweenPlanesMode) {
         console.log("Modo DistanceBetweenPlanes activado. Haz clic en dos aviones para calcular la distancia.");
