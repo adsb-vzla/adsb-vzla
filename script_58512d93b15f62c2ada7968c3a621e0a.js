@@ -417,84 +417,42 @@ function updateDistanceToGroundOverlay() {
 }
 
 // Overlay de guía para usar el modo distancia suelo‑avión
-let distanceGuideOverlay = null;
+let distanceGuideEl = null;
 
 // Función para mostrar el texto guía del modo distancia suelo‑avión
 function showDistanceGuide(text) {
-    // Asegurarse de que el mapa OpenLayers esté inicializado
-    if (!OLMap) return;
-
+    // Seleccionar el contenedor donde se insertará la guía: el mapa si existe, o el body como respaldo.
+    const host = document.getElementById('map_container') || document.body;
     // Crear el overlay si no existe
-    if (!distanceGuideOverlay) {
-        const el = document.createElement('div');
-        el.style.background = 'rgba(255,255,255,0.9)';
-        el.style.border = '1px solid #000';
-        el.style.padding = '6px 8px';
-        el.style.fontSize = '12px';
-        el.style.color = '#000';
-        el.style.pointerEvents = 'none';
-        el.style.borderRadius = '4px';
-        el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-        distanceGuideOverlay = new ol.Overlay({
-            element: el,
-            positioning: 'top-center',
-            offset: [0, 25],
-            stopEvent: false
+    if (!distanceGuideEl) {
+        distanceGuideEl = document.createElement('div');
+        // Aplicar estilos al elemento creado
+        Object.assign(distanceGuideEl.style, {
+            position: 'absolute',
+            top: '50px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(255,255,255,0.9)',
+            border: '1px solid #000',
+            padding: '6px 8px',
+            fontSize: '12px',
+            color: '#000',
+            pointerEvents: 'none',
+            borderRadius: '4px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            zIndex: '10000',
+            display: 'none',
         });
-        OLMap.addOverlay(distanceGuideOverlay);
+        // Insertar elemento guía en el contenedor elegido.
+        host.appendChild(distanceGuideEl);
     }
-
-    // Actualizar el texto del overlay
-    distanceGuideOverlay.getElement().innerHTML = text;
-
-    // Función interna para colocar el overlay en la posición adecuada
-    const place = (reason = '') => {
-        // Obtener el tamaño actual del mapa
-        const s = OLMap.getSize();
-        // Si el tamaño es inválido o demasiado pequeño, reintentar en postrender y forzar un render
-        if (!s || s[0] < 10 || s[1] < 10) {
-            OLMap.once('postrender', () => place('postrender-retry'));
-            try { OLMap.updateSize(); OLMap.render(); } catch (e) { }
-            return;
-        }
-        // Calcular un punto de pantalla: centro horizontal y 30px desde el borde superior
-        const px = [Math.round(s[0] / 2), 30];
-        // Convertir el punto de pantalla a coordenadas del mapa
-        const coord = OLMap.getCoordinateFromPixel(px);
-        // Si no se obtienen coordenadas, reintentar en el siguiente frame
-        if (!coord) {
-            requestAnimationFrame(() => place('raf-retry'));
-            return;
-        }
-        // Colocar el overlay en las coordenadas calculadas
-        distanceGuideOverlay.setPosition(coord);
-    };
-
-    // Volver a tomar el tamaño del mapa para decidir la primera colocación
-    const size = OLMap.getSize();
-
-    // Si el tamaño es inválido o demasiado pequeño, esperar al postrender inicial
-    if (!size || size[0] < 10 || size[1] < 10) {
-        OLMap.once('postrender', () => place('postrender-initial'));
-        // Empujar un render para que ocurra el postrender
-        try { OLMap.updateSize(); OLMap.render(); } catch (e) { }
-        // Fallback rápido por si el postrender tarda
-        setTimeout(() => place('timeout-fallback'), 50);
-    } else {
-        place('direct');
-    }
+    distanceGuideEl.innerHTML = text;
+    distanceGuideEl.style.display = 'block';
 }
 
 // Función para ocultar la guía del modo distancia suelo‑avión
 function hideDistanceGuide() {
-    // Si no existe el overlay o el mapa no está inicializado, salir
-    if (!distanceGuideOverlay || !OLMap) return;
-    // Desanclar el overlay del mapa estableciendo su posición como indefinida, lo que lo oculta visualmente.
-    distanceGuideOverlay.setPosition(undefined);
-    // Eliminar el overlay del conjunto de overlays del mapa
-    OLMap.removeOverlay(distanceGuideOverlay);
-    // Liberar la referencia en JS para permitir la recolección de basura y evitar reutilizaciones accidentales
-    distanceGuideOverlay = null;
+    if (distanceGuideEl) distanceGuideEl.style.display = 'none';
 }
 
 // Función para activar/desactivar el modo de distancia suelo-avión
@@ -559,7 +517,7 @@ function DistanceToGround() {
         try { OLMap && (OLMap.updateSize(), OLMap.render()); } catch (e) { }
 
         // Marcar el botón como activado
-        buttonActive('#T', true);
+        buttonActive('#TA', true);
     } else {
 
         // Al desactivar, limpiar selección y punto A
@@ -604,7 +562,7 @@ function DistanceToGround() {
         hideDistanceGuide();
 
         // Marcar el botón como inactivo
-        buttonActive('#T', false);
+        buttonActive('#TA', false);
     }
 }
 
