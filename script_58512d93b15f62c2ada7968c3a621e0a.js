@@ -74,6 +74,26 @@ let groundToPlaneLineLayer = null;
 let groundToPlaneLineSource = null;
 // Feature actual de la línea A‑B renderizada
 let groundToPlaneLineFeature = null;
+// Modo de medición por defecto
+let distanceToGroundModeType = '1A1B';
+// Arreglo para almacenar los hex/aviones seleccionados como punto B
+let planesForGround = [];
+// Arreglo para almacenar los puntos A marcados en el suelo
+let groundPoints = [];
+// Mapa que asocia cada avión con su feature de línea A‑B en modos multi‑B
+const groundPlaneFeaturesByHex = new Map();
+// Mapa que asocia cada avión con su overlay de distancia en modos multi‑B
+const groundPlaneOverlaysByHex = new Map();
+// Mapa genérico de features de líneas A‑B
+const groundPlaneFeatures = new Map();
+// Mapa genérico de overlays de distancia para cada par A‑B
+const groundPlaneOverlays = new Map();
+// Lista de pares A‑B acumulados en el modo nA_nB
+let taPairs = [];
+// Guardar temporalmente el avión seleccionado a la espera de que se marque un punto A (modo nA_nB)
+let taPendingPlaneHex = null;
+// Guardar temporalmente el punto A marcado a la espera de que se seleccione un avión (modo nA_nB)
+let taPendingGround = null;
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -313,107 +333,244 @@ function setGroundPoint(lonlat) {
 
 }
 
-// Actualizar el Overlay que muestra la distancia
-function updateDistanceToGroundOverlay() {
-    // Si falta el avión o el punto A, no hay nada que mostrar
-    if (!selectedPlaneForGround || !groundPointCoord) return;
-    // Obtener el objeto de avión más reciente (de la lista global o del seleccionado)
-    const plane = g.planes[selectedPlaneForGround.icao] || selectedPlaneForGround;
-    // Si no hay posición, no se puede calcular distancia
-    if (!plane || !plane.position) return;
+// Modos de distancia tierra-aeronave
+const TA_MODES = ['1A1B', '1A_nB', 'nA_1B', 'nA_nB'];
+// Límite de cuántas aeronaves se pueden seleccionar en el modo 1A_nB
+const TA_MAX_1A_nB = 3;
+// Límite de cuantos puntos en tierra se pueden marcar en el modo nA_1B
+const TA_MAX_nA_1B = 3;
+// Límite de cuantos pares A-B se pueden acumular en el modo nA_nB
+const TA_MAX_nA_nB = 3;
 
-    // Altitud en pies: usar geométrica si existe, si no, usar barométrica
-    let altBaro = plane.altitude;
-    if (altBaro === "ground") altBaro = 0;
-    altBaro = adjust_baro_alt(altBaro);
-    let altGeom = adjust_geom_alt(plane.alt_geom, plane.position);
-    if (altGeom === "ground") altGeom = 0;
+// Paso 1 de los tooltips según el modo
+function taStep1Message() {
+    switch (distanceToGroundModeType) {
+        case '1A1B':
+            return 'Haga clic en el mapa para marcar el punto A.';
+        case '1A_nB':
+            return 'Haga clic en el mapa para marcar un único punto A.';
+        case 'nA_1B':
+            return 'Haga clic en el mapa para marcar varios puntos A.';
+        case 'nA_nB':
+            return 'Haga clic en el mapa para marcar el punto A.';
+        default:
+            return 'Haga clic en el mapa para marcar el Punto A.';
+    }
+}
 
-    // Almacenar la altitud vertical
-    const verticalFt = (altGeom != null) ? altGeom : altBaro;
-    if (verticalFt == null) return;
+// Paso 2 de los tooltips según el modo
+function taStep2Message() {
+    switch (distanceToGroundModeType) {
+        case '1A1B':
+            return 'Haga clic sobre un avión para marcar el Punto B.';
+        case '1A_nB':
+            return 'Haga clic sobre uno o más aviones para marcar varios puntos B.';
+        case 'nA_1B':
+            return 'Haga clic sobre un avión para marcar un único punto B.';
+        case 'nA_nB':
+            return 'Haga clic sobre un avión para marcar el Punto B.';
+        default:
+            return 'Haga clic sobre un avión para marcar el Punto B.';
+    }
+}
 
-    // Calcular la distancia horizontal
-    const gp = groundPointCoord;
-    const pp = plane.position;
-    const horizNm = haversineDistance(gp[1], gp[0], pp[1], pp[0]);
-    const horizM = horizNm * 1852;
+// Limpiar puntos, líneas y overlays en el modo tierra-aeronave
+function clearTAGroundDrawings(opts = {}) {
+    
+    // Intentar limpiar la fuente vectorial del punto A si existe
+    try { groundPointSource && groundPointSource.clear(); } catch (_) {}
+    // Ocultar la capa del punto A en el mapa si está creada
+    if (groundPointLayer) groundPointLayer.setVisible(false);
 
-    // Calcular “slant range” combinando horizontal y vertical
-    const vertNm = Math.abs(verticalFt) / 6076.12;
-    const slantNm = Math.sqrt(horizNm * horizNm + vertNm * vertNm);
-    const slantM = slantNm * 1852;
+    // Intentar vaciar la fuente de líneas A‑B
+    try { groundToPlaneLineSource && groundToPlaneLineSource.clear(); } catch (_) {}
+    // Ocultar la capa que dibuja la línea entre A y B
+    if (groundToPlaneLineLayer) groundToPlaneLineLayer.setVisible(false);
+    // Resetear la referencia a la feature de la línea actual
+    groundToPlaneLineFeature = null;
 
-    // Formatear los textos de distancia y altitud según sus unidades
-    // const verticalText = format_altitude_long(verticalFt, 0, DisplayUnits);
-    // const horizText = format_distance_long(horizM, DisplayUnits);
-    const slantText = format_distance_long(slantM, DisplayUnits).replace(/nmi?/i, 'NM');
-
-    // Proyectar coordenadas a la proyección del mapa
-    const projPlane = ol.proj.fromLonLat(pp);
-    const projGround = ol.proj.fromLonLat(gp);
-
-    // Crear la capa y la fuente de la línea si aún no existen
-    if (!groundToPlaneLineLayer || !groundToPlaneLineSource) {
-        groundToPlaneLineSource = new ol.source.Vector();
-        groundToPlaneLineLayer = new ol.layer.Vector({
-            name: 'groundToPlane',
-            type: 'overlay',
-            title: 'Línea Punto A - Punto B',
-            source: groundToPlaneLineSource,
-            zIndex: 260,
-            style: new ol.style.Style({
-                stroke: new ol.style.Stroke({ color: 'red', width: 2 })
-            })
-        });
-        layers.push(groundToPlaneLineLayer);
-        if (OLMap) OLMap.addLayer(groundToPlaneLineLayer);
+    // Si hay overlays por par A‑B genéricos, eliminarlos y limpiar el mapa
+    if (groundPlaneOverlays && groundPlaneOverlays.size) {
+        groundPlaneOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) {} });
+        groundPlaneOverlays.clear();
+    }
+    // Si existen overlays por avión (mapa por hex), retirarlos del mapa y vaciar la colección
+    if (typeof groundPlaneOverlaysByHex !== 'undefined' && groundPlaneOverlaysByHex.size) {
+        groundPlaneOverlaysByHex.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) {} });
+        groundPlaneOverlaysByHex.clear();
     }
 
-    // Asegurar que la línea sea visible cuando se actualiza
+    // Eliminar el overlay único de distancia suelo‑avión si existe
+    if (distanceGroundOverlay) {
+        try { distanceGroundOverlay.setPosition(undefined); } catch (_) {}
+        try { OLMap && OLMap.removeOverlay(distanceGroundOverlay); } catch (_) {}
+        distanceGroundOverlay = null;
+    }
+
+    // Limpiar el mapa genérico de features de líneas A‑B si existe
+    groundPlaneFeatures && groundPlaneFeatures.clear();
+    if (typeof groundPlaneFeaturesByHex !== 'undefined') {
+        groundPlaneFeaturesByHex.clear();
+    }
+
+    // Resetear variables según opción
+    if (opts.reset !== false) {
+        selectedPlaneForGround = null;
+        groundPointCoord = null;
+        groundPoints = [];
+        planesForGround = [];
+        taPairs = [];
+        taPendingPlaneHex = null;
+        taPendingGround = null;
+    }
+
+    // Detener refresco de distancia si está activo
+    if (distanceGroundUpdateInterval) {
+        clearInterval(distanceGroundUpdateInterval);
+        distanceGroundUpdateInterval = null;
+    }
+}
+
+// Ciclar cada modo según click en el botón
+function onTACycleClick() {
+    if (!distanceToGroundMode) {
+        distanceToGroundModeType = TA_MODES[0];
+        DistanceToGround();
+        return;
+    }
+
+    const idx = TA_MODES.indexOf(distanceToGroundModeType);
+    if (idx >= 0 && idx < TA_MODES.length - 1) {
+        distanceToGroundModeType = TA_MODES[idx + 1];
+
+        // Limpiar puntos, líneas y overlays al cambiar modo
+        clearTAGroundDrawings();
+
+        showDistanceGuide(taStep1Message());
+        updateDistanceToGroundOverlay();
+    } else {
+
+        DistanceToGround();
+    }
+}
+
+
+// Función para actualizar la medición de distancia suelo‑avión
+function updateDistanceToGroundOverlay() {
+    // Arreglo para almacenar los pares
+    const pairs = [];
+
+    // Modo 1 punto tierra 1 avión: un único par
+    if (distanceToGroundModeType === '1A1B') {
+        if (groundPoints.length === 1 && planesForGround.length === 1) {
+            pairs.push({ key: '0|' + planesForGround[0], gp: groundPoints[0], hex: planesForGround[0] });
+        }
+    
+    // Modo 1 punto tierra n aviones: varios pares con el mismo punto A
+    } else if (distanceToGroundModeType === '1A_nB') {
+        if (groundPoints.length === 1 && planesForGround.length) {
+            for (const hex of planesForGround) {
+                pairs.push({ key: '0|' + hex, gp: groundPoints[0], hex });
+            }
+        }
+
+    // Modo n puntos tierra 1 avión: varios pares con el mismo avión B
+    } else if (distanceToGroundModeType === 'nA_1B') {
+        if (planesForGround.length === 1 && groundPoints.length) {
+            const hex = planesForGround[0];
+            for (let gi = 0; gi < groundPoints.length; gi++) {
+                pairs.push({ key: gi + '|' + hex, gp: groundPoints[gi], hex });
+            }
+        }
+    
+    // Modo n puntos tierra n aviones: todos los pares acumulados
+    } else if (distanceToGroundModeType === 'nA_nB') {
+        
+        for (const p of taPairs) {
+            pairs.push({ key: p.key, gp: p.gp, hex: p.hex });
+        }
+    }
+
+    if (!pairs.length) return;
+
     if (groundToPlaneLineLayer) groundToPlaneLineLayer.setVisible(true);
 
-    // Dibujar o actualizar la línea entre los puntos A y B
-    const lineCoords = [projGround, projPlane];
-    if (!groundToPlaneLineFeature) {
-        groundToPlaneLineFeature = new ol.Feature(new ol.geom.LineString(lineCoords));
-        groundToPlaneLineSource.addFeature(groundToPlaneLineFeature);
-    } else {
-        groundToPlaneLineFeature.getGeometry().setCoordinates(lineCoords);
+    const active = new Set();
+
+    for (const { key, gp, hex } of pairs) {
+        const plane = g.planes[hex];
+        if (!plane || !plane.position || !gp) continue;
+
+        // Normalizar altitudes: baro y geom, con fallback
+        let altBaro = plane.altitude;
+        if (altBaro === "ground") altBaro = 0;
+        altBaro = adjust_baro_alt(altBaro);
+        let altGeom = adjust_geom_alt(plane.alt_geom, plane.position);
+        if (altGeom === "ground") altGeom = 0;
+        const verticalFt = (altGeom != null) ? altGeom : altBaro;
+        if (verticalFt == null) continue;
+
+        // Distancia horizontal (NM) y combinación con vertical para slant range
+        const pp = plane.position;
+        const horizNm = haversineDistance(gp[1], gp[0], pp[1], pp[0]);
+        const horizM = horizNm * 1852;
+        const vertNm = Math.abs(verticalFt) / 6076.12;
+        const slantNm = Math.sqrt(horizNm * horizNm + vertNm * vertNm);
+        const slantM = slantNm * 1852;
+        const slantText = format_distance_long(slantM, DisplayUnits).replace(/nmi?/i, 'NM');
+
+        // Proyecciones en el mapa y punto medio para el overlay
+        const projPlane = ol.proj.fromLonLat(pp);
+        const projGround = ol.proj.fromLonLat(gp);
+        const midProj = [(projGround[0] + projPlane[0]) / 2, (projGround[1] + projPlane[1]) / 2];
+
+        active.add(key);
+
+        // Crear o actualizar la línea A‑B para este par
+        let feat = groundPlaneFeatures.get(key);
+        if (!feat) {
+            feat = new ol.Feature(new ol.geom.LineString([projGround, projPlane]));
+            groundToPlaneLineSource && groundToPlaneLineSource.addFeature(feat);
+            groundPlaneFeatures.set(key, feat);
+        } else {
+            feat.getGeometry().setCoordinates([projGround, projPlane]);
+        }
+        
+        // Crear o actualizar el overlay de distancia para este par
+        let ov = groundPlaneOverlays.get(key);
+        if (!ov) {
+            const el = document.createElement('div');
+            el.style.background = 'rgba(255,255,255,0.85)';
+            el.style.border = '1px solid #000';
+            el.style.padding = '6px';
+            el.style.fontSize = '12px';
+            el.style.color = '#000';
+            el.style.pointerEvents = 'none';
+            ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+            OLMap && OLMap.addOverlay(ov);
+            groundPlaneOverlays.set(key, ov);
+        }
+        ov.getElement().innerHTML = `Distancia: ${slantText}`;
+        ov.setPosition(midProj);
     }
 
-    // Calcular el punto medio de la línea para posicionar el overlay
-    const midProj = [
-        (projGround[0] + projPlane[0]) / 2,
-        (projGround[1] + projPlane[1]) / 2
-    ];
-
-    // Crear el overlay si no existe y agregarlo al mapa
-    if (!distanceGroundOverlay) {
-        const el = document.createElement('div');
-        el.style.background = 'rgba(255,255,255,0.85)';
-        el.style.border = '1px solid #000';
-        el.style.padding = '6px';
-        el.style.fontSize = '12px';
-        el.style.color = '#000';
-        el.style.pointerEvents = 'none';
-        distanceGroundOverlay = new ol.Overlay({
-            element: el,
-            positioning: 'bottom-center',
-            offset: [0, -10]
-        });
-        OLMap.addOverlay(distanceGroundOverlay);
+    // Limpiar líneas que ya no están activas
+    for (const [k, feat] of groundPlaneFeatures) {
+        if (!active.has(k)) {
+            groundToPlaneLineSource && groundToPlaneLineSource.removeFeature(feat);
+            groundPlaneFeatures.delete(k);
+        }
+    }
+    // Limpiar overlays que ya no están activos
+    for (const [k, ov] of groundPlaneOverlays) {
+        if (!active.has(k)) {
+            OLMap && OLMap.removeOverlay(ov);
+            groundPlaneOverlays.delete(k);
+        }
     }
 
-    // Mostrar información de distancias en el overlay
-    distanceGroundOverlay.getElement().innerHTML =
-        // `Punto A: ${gp[1].toFixed(5)}, ${gp[0].toFixed(5)}<br>` +
-        // `Horizontal: ${horizText}<br>` +
-        // `Vertical: ${verticalText}<br>` +
-        `Distancia: ${slantText}`;
+    return;
 
-    // Colocar overlay en el medio de la línea
-    distanceGroundOverlay.setPosition(midProj);
 }
 
 // Overlay de guía para usar el modo distancia suelo‑avión
@@ -455,113 +612,42 @@ function hideDistanceGuide() {
     if (distanceGuideEl) distanceGuideEl.style.display = 'none';
 }
 
-// Función para activar/desactivar el modo de distancia suelo-avión
+// Función para activar/desactivar el modo distancia suelo‑avión
 function DistanceToGround() {
-
     // Alternar el modo de medición suelo‑avión
     distanceToGroundMode = !distanceToGroundMode;
 
-    // Si el modo está activo, ejecutar lo que está dentro de los corchetes
     if (distanceToGroundMode) {
+        // Limpieza y reset al activar
+        clearTAGroundDrawings();
 
-        // Reiniciar selección y punto A al activar
-        selectedPlaneForGround = null;
-        groundPointCoord = null;
-
-        // Si aún no existe la fuente para el punto A, crearla
-        if (!groundPointSource) {
-            // Fuente vectorial que guarde el punto A en el mapa
-            groundPointSource = new ol.source.Vector();
-            // Si la capa del punto A ya existe, asignarle esta fuente
-            if (groundPointLayer) groundPointLayer.setSource(groundPointSource);
-        }
-        // Si la capa del punto A existe, asegurarse de que está en el mapa y visible
-        if (groundPointLayer && OLMap) {
-            const exists = OLMap.getLayers().getArray().includes(groundPointLayer);
-            if (!exists) OLMap.addLayer(groundPointLayer);
-            groundPointLayer.setVisible(true);
-        }
-        // Si aún no existe la fuente de la línea suelo‑avión, crearla
-        if (!groundToPlaneLineSource) {
-            // Fuente vectorial que contenga la línea A‑B
-            groundToPlaneLineSource = new ol.source.Vector();
-            // Si la capa de la línea ya existe, asignarle esta fuente
-            if (groundToPlaneLineLayer) groundToPlaneLineLayer.setSource(groundToPlaneLineSource);
-        }
-        // Si la capa de la línea existe, asegurarse de que está en el mapa y visible
-        if (groundToPlaneLineLayer && OLMap) {
-            const exists = OLMap.getLayers().getArray().includes(groundToPlaneLineLayer);
-            if (!exists) OLMap.addLayer(groundToPlaneLineLayer);
-            groundToPlaneLineLayer.setVisible(true);
+        // Asegurar fuente y capa de puntos A
+        if (!groundPointSource) groundPointSource = new ol.source.Vector();
+        if (groundPointLayer) {
+            groundPointLayer.setSource(groundPointSource);
+            if (OLMap && !OLMap.getLayers().getArray().includes(groundPointLayer)) {
+                OLMap.addLayer(groundPointLayer);
+            }
+            groundPointLayer.setVisible(true); // ← asegurar visibilidad
         }
 
-        // Si hay un punto dibujado, limpiarlo
-        if (groundPointSource) groundPointSource.clear();
-
-        // Quitar el overlay de distancia si existía
-        if (distanceGroundOverlay) {
-            OLMap.removeOverlay(distanceGroundOverlay);
-            distanceGroundOverlay = null;
+        // Asegurar fuente de línea
+        if (!groundToPlaneLineSource) groundToPlaneLineSource = new ol.source.Vector();
+        if (groundToPlaneLineLayer) {
+            groundToPlaneLineLayer.setSource(groundToPlaneLineSource);
         }
 
-        // Detener el refresco periódico si estaba activo
-        if (distanceGroundUpdateInterval) {
-            clearInterval(distanceGroundUpdateInterval);
-            distanceGroundUpdateInterval = null;
-        }
+        // Mostrar guía paso 1 según modo actual
+        showDistanceGuide(taStep1Message());
 
-        // Mostrar guía paso 1
-        showDistanceGuide('Haga clic en el mapa para marcar el Punto A.');
-
-        // Forzar un render para asegurar el postrender y el posicionamiento del tooltip
-        try { OLMap && (OLMap.updateSize(), OLMap.render()); } catch (e) { }
-
-        // Marcar el botón como activado
+        // Intervalo de refresco
+        distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
+        
         buttonActive('#TA', true);
     } else {
-
-        // Al desactivar, limpiar selección y punto A
-        selectedPlaneForGround = null;
-        groundPointCoord = null;
-
-        // Si hay un punto dibujado, limpiarlo
-        if (groundPointSource) groundPointSource.clear();
-
-        // Quitar capa del punto A si está en el mapa
-        if (groundPointLayer) {
-            groundPointLayer.setVisible(false);
-        }
-
-        // Eliminar overlay de distancia
-        if (distanceGroundOverlay) {
-            distanceGroundOverlay.setPosition(undefined);
-            OLMap && OLMap.removeOverlay(distanceGroundOverlay);
-            distanceGroundOverlay = null;
-        }
-
-        // Limpiar línea A‑B si está en el mapa
-        if (groundToPlaneLineSource) {
-            groundToPlaneLineSource.clear();
-        }
-
-        // Limpiar capa si está en el mapa
-        if (groundToPlaneLineLayer) {
-            groundToPlaneLineLayer.setVisible(false);
-        }
-
-        // Resetear feature de la línea
-        groundToPlaneLineFeature = null;
-
-        // Detener el refresco periódico si estaba activo
-        if (distanceGroundUpdateInterval) {
-            clearInterval(distanceGroundUpdateInterval);
-            distanceGroundUpdateInterval = null;
-        }
-
-        // Ocultar guía
+        // Apagar y limpiar todo
+        clearTAGroundDrawings();
         hideDistanceGuide();
-
-        // Marcar el botón como inactivo
         buttonActive('#TA', false);
     }
 }
@@ -3098,44 +3184,138 @@ function ol_map_init() {
             gotoTime(trailTS);
         }
 
-        // Si está activo el modo suelo-avión, ejecutar lo que está dentro de los corchetes
         if (distanceToGroundMode) {
-            // Manejar el clic para medir distancia
-            if (planeHex && groundPointCoord) {
-                // Si hay un avión bajo el cursor y ya existe el punto A, usar ese avión como punto B
-                const plane = g.planes[planeHex];
-                // Si hay un avión y el avión tiene posición ejecutar lo que está dentro de los corchetes
-                if (plane && plane.position) {
-                    // Guardar el avión seleccionado para la medición
-                    selectedPlaneForGround = plane;
-                    // Calcular y mostrar la distancia en línea y overlay
-                    updateDistanceToGroundOverlay();
 
-                    // Ocultar guía
-                    hideDistanceGuide();
+            // Coordenadas del clic en el mapa
+            const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
+        
+            // Si se hace click sobre un avión
+            if (planeHex) {
+                // Modo nA_nB
+                if (distanceToGroundModeType === 'nA_nB') {
+                    // Máximo de pares para este modo
+                    if (taPairs.length >= TA_MAX_nA_nB) {
+                        showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares`);
+                        evt.stopPropagation();
+                        return;
+                    }
+                    // Si ya hay punto A pendiente, se guarda el par
+                    if (taPendingGround) {
+                        const lonlat = taPendingGround;
+                        taPendingGround = null;
+                        const key = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}|${planeHex}`;
+                        taPairs.push({ hex: planeHex, gp: lonlat, key });
+        
+                        if (groundPointLayer) groundPointLayer.setVisible(true);
+                        groundPointSource && groundPointSource.addFeature(
+                            new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                        );
+        
+                        showDistanceGuide(taStep2Message());
+                    } else {
+                        // Guardar avión a la espera de marcar punto A
+                        taPendingPlaneHex = planeHex;
+                        showDistanceGuide(taStep2Message());
+                    }
+                // Modo 1A_nB
+                } else if (distanceToGroundModeType === '1A_nB') {
+                    // Evitar duplicados y respetar máximo de puntos tierra para este modo
+                    if (planesForGround.includes(planeHex)) {
+                        showDistanceGuide(taStep2Message());
+                    } else if (planesForGround.length >= TA_MAX_1A_nB) {
+                        showDistanceGuide(`Máximo ${TA_MAX_1A_nB} puntos B`);
+                    } else {
+                        planesForGround.push(planeHex);
+                        showDistanceGuide(taStep2Message());
+                    }
+                // Modo nA_1B
+                } else if (distanceToGroundModeType === 'nA_1B') {
+                    // Sólo un avión seleccionado
+                    planesForGround = [planeHex];
+                    showDistanceGuide(taStep2Message());
+                } else {
+                    // Modo 1A1B
+                    const p = g.planes[planeHex];
+                    if (p && p.position) {
+                        planesForGround = [planeHex];
+                        selectedPlaneForGround = p;
+                        hideDistanceGuide();
+                    } else {
+                        showDistanceGuide('Seleccione un avión con posición válida.');
+                    }
+                }
+            // Si se hace clic sobre el mapa
+            } else {
 
-                    // Si no se ha actualizado la distancia en intervalo, iniciarlo
-                    if (!distanceGroundUpdateInterval) {
-                        // Refrescar la medición cada segundo mientras cambian posiciones
-                        distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
+                const lonlat = ol.proj.toLonLat(evtCoords);
+                // Modo nA_nB
+                if (distanceToGroundModeType === 'nA_nB') {
+                    if (taPendingPlaneHex) {
+                        // Respetar el máximo de pares definidos
+                        if (taPairs.length >= TA_MAX_nA_nB) {
+                            showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares`);
+                            evt.stopPropagation();
+                            return;
+                        }
+
+                        const hex = taPendingPlaneHex;
+                        taPendingPlaneHex = null;
+                        const key = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}|${hex}`;
+                        taPairs.push({ hex, gp: lonlat, key });
+        
+
+                        if (groundPointLayer) groundPointLayer.setVisible(true);
+                        groundPointSource && groundPointSource.addFeature(
+                            new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                        );
+        
+                        showDistanceGuide(taStep2Message());
+                    } else {
+                        if (taPairs.length >= TA_MAX_nA_nB) {
+                            showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares`);
+                            evt.stopPropagation();
+                            return;
+                        }
+
+                        taPendingGround = lonlat;
+                        if (groundPointLayer) groundPointLayer.setVisible(true);
+                        groundPointSource && groundPointSource.addFeature(
+                            new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                        );
+                        showDistanceGuide(taStep2Message());
+                    }
+                // Modo nA_1B
+                } else if (distanceToGroundModeType === 'nA_1B') {
+                    // Sólo el máximo de puntos en tierra permitidos
+                    if (groundPoints.length >= TA_MAX_nA_1B) {
+                        showDistanceGuide(`Máximo ${TA_MAX_nA_1B} puntos A`);
+                    } else {
+                        if (groundPointLayer) groundPointLayer.setVisible(true);
+                        groundPoints.push(lonlat);
+                        groundPointSource && groundPointSource.addFeature(
+                            new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                        );
+                        showDistanceGuide(taStep2Message());
                     }
                 } else {
-                    // Si posición del avión: recordar paso 2
-                    showDistanceGuide('Haga clic sobre un avión con posición válida para marcar el Punto B.');
+                    groundPoints = [lonlat];
+                    groundPointCoord = lonlat;
+                    if (groundPointLayer) groundPointLayer.setVisible(true);
+                    if (groundPointSource) {
+                        groundPointSource.clear();
+                        groundPointSource.addFeature(
+                            new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                        );
+                    }
+                    showDistanceGuide(taStep2Message());
                 }
-            } else if (!planeHex) {
-                const lonlat = ol.proj.toLonLat(evtCoords);
-                setGroundPoint(lonlat);
-
-                // Mostrar guía paso 2
-                showDistanceGuide('Ahora haga clic sobre un avión para marcar el Punto B.');
-            } else if (planeHex && !groundPointCoord) {
-                // Si se intentó seleccionar avión sin haber marcado el suelo
-                showDistanceGuide('Primero marque el Punto A haciendo clic en el mapa.');
-            } else if (planeHex && !groundPointCoord) {
-                // Si se intentó seleccionar avión sin haber marcado el suelo
-                showDistanceGuide('Primero marque el Punto A haciendo clic en el mapa.');
             }
+
+            updateDistanceToGroundOverlay();
+            if (!distanceGroundUpdateInterval) {
+                distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
+            }
+        
             evt.stopPropagation();
             return;
         }
@@ -5748,18 +5928,18 @@ function onJump(e) {
     if (coords) {
         console.log("jumping to: " + coords[0] + " " + coords[1]);
         OLMap.getView().setCenter(ol.proj.fromLonLat([coords[1], coords[0]]));
-
+ 
         if (g.zoomLvl >= 7) {
             fetchData({ force: true });
         }
-
+ 
         refreshFilter();
         hideSearchWarning();
     } else {
         showSearchWarning('Failed to find airport ' + airport);
     }
 }
-
+ 
 function onSearch(e) {
     e.preventDefault();
     const searchTerm = jQuery("#search_input").val().trim();
@@ -7130,7 +7310,7 @@ function updateAddressBar() {
         updateAddressBarTimeout = setTimeout(updateAddressBar, 205);
         return;
     }
-
+ 
     lastAddressBarUpdate = time;
     */
 
