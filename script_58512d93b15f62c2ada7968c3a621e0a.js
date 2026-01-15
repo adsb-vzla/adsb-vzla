@@ -8929,30 +8929,40 @@ function showReplayBar() {
 
         jQuery("#replayDatepicker").datepicker(datepickerOptions);
 
+        // --- SLIDER DE HORAS ---
         jQuery('#hourSelect').slider({
-            step: 1,
-            min: 0,
-            max: 23,
+            step: 1, min: 0, max: 23,
             slide: function (event, ui) {
                 replay.hours = ui.value;
+                updateSliderTip(ui.handle, ui.value, " hrs"); 
                 replayOnSliderMove();
             },
-            change: function () {
+            change: function (event, ui) {
+                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, " hrs");
                 replayJump();
             }
         });
+            
+        // Inyección de etiquetas
+        setupSliderDecorations('#hourSelect', '00h', '23h');
+
+        // --- SLIDER DE MINUTOS ---
         jQuery('#minuteSelect').slider({
-            step: 1,
-            min: 0,
-            max: 59,
+            step: 1, min: 0, max: 59,
             slide: function (event, ui) {
                 replay.minutes = ui.value;
+                updateSliderTip(ui.handle, ui.value, " mins"); 
                 replayOnSliderMove();
             },
-            change: function () {
+            change: function (event, ui) { 
+                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, " mins");
                 replayJump();
             }
         });
+
+        // Inyección de etiquetas
+        setupSliderDecorations('#minuteSelect', '00m', '59m');
+
         const slideBase = 3.0;
         jQuery('#replaySpeedSelect').slider({
             value: Math.pow(replay.speed, 1 / slideBase),
@@ -8972,6 +8982,22 @@ function showReplayBar() {
         jQuery("#selected_showTrace_hide").hide();
     }
 };
+
+// Actualiza el texto de la etiqueta del slider
+function updateSliderTip(handle, value, suffix) {
+    const formatted = value.toString().padStart(2, '0') + suffix;
+    jQuery(handle).find('.slider-tip').text(formatted);
+}
+
+// Configura las decoraciones (etiquetas) del slider
+function setupSliderDecorations(selector, minTxt, maxTxt) {
+    const el = jQuery(selector);
+    const handle = el.find('.ui-slider-handle');
+    if (handle.find('.slider-tip').length === 0) {
+        handle.append('<span class="slider-tip">00</span>');
+    }
+    
+}
 
 function timeoutFetch() {
     console.log("timeoutFetch " + localTime(new Date()));

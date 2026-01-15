@@ -1059,6 +1059,30 @@ table.infoSectionTable tr td {
     background-color: rgb(0, 115, 222);
 }
 
+/* Ajuste del botón azul (Handle) */
+#hourSelect .ui-slider-handle,
+#minuteSelect .ui-slider-handle {
+    width: 3.5em !important; /* Aumentamos el ancho */
+    height: 1.6em !important;
+    top: -0.4em !important; /* Centramos verticalmente respecto a la barra */
+    margin-left: -1.75em !important; /* Mitad del ancho para que el centro coincida con el valor */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #007bff !important; /* Tu azul */
+    border-radius: 4px;
+    cursor: grab;
+}
+
+/* Ajuste del texto */
+.slider-tip {
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+    pointer-events: none; /* Para que no interfiera con el click del slider */
+    white-space: nowrap;
+}
+
 
 input{
   color:var(--TXTCOLOR1);
