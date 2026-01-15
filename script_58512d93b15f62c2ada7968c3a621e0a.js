@@ -115,6 +115,7 @@ let jumpTo = null;
 let noMLAT = false;
 let noVanish = false;
 let filterTracks = false; // altitude filter: don't filter planes but rather their tracks by altitude
+let planesMissingSince = null; 
 let refreshId = 0;
 let lastFetch = 0;
 let actualOutline = {};
@@ -250,7 +251,21 @@ function updateDistanceLine() {
     // Obtener posiciones actuales
     let plane1 = g.planes[p1.hex];
     let plane2 = g.planes[p2.hex];
-    if (!plane1 || !plane2 || !plane1.position || !plane2.position) return;
+    if (!plane1 || !plane2 || !plane1.position || !plane2.position) {
+        if (!planesMissingSince) {
+            // inicia cronometro
+            planesMissingSince = Date.now();
+        }
+        let secondsMissing = (Date.now() - planesMissingSince) / 1000;
+
+        if (secondsMissing >= 10) {
+            resetDistanceCalculation();
+            planesMissingSince = null;
+        }
+        return;
+    }
+
+    planesMissingSince = null;
 
     let coords1 = plane1.position;
     let coords2 = plane2.position;
@@ -3321,7 +3336,13 @@ function ol_map_init() {
         }
 
         //console.log(`planeHex: ${planeHex} trailHex: ${trailHex}`);
-        if (distanceBetweenPlanesMode && planeHex && selectedPlanesForDistance.length < 2) {
+        if (distanceBetweenPlanesMode && planeHex) {
+            
+            // NUEVO: Si ya tenemos 2 aviones, el tercer clic debe limpiar todo antes de empezar
+            if (selectedPlanesForDistance.length >= 2) {
+                resetDistanceCalculation(); // Usamos la función de limpieza que definimos antes
+            }
+
             let plane = g.planes[planeHex];
             if (plane && plane.position && plane.altitude !== null) {
                 selectedPlanesForDistance.push({
@@ -3329,17 +3350,19 @@ function ol_map_init() {
                     coords: plane.position,
                     altitude: plane.altitude
                 });
+
                 if (selectedPlanesForDistance.length === 2) {
-                    // Calcular distancia y dibujar línea
                     updateDistanceLine();
-                    // Iniciar actualización cada 1 segundo
                     if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
                     distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
                 }
             }
-        } else if (planeHex && (!distanceBetweenPlanesMode || selectedPlanesForDistance.length < 2)) {
+        } 
+        // 2. Comportamiento normal de selección de avión (solo si no estamos en modo distancia o no hay selección completa)
+        else if (planeHex) {
             selectPlaneByHex(planeHex, { noDeselect: dblclick, follow: dblclick });
-        } else if (trailHex && (!distanceBetweenPlanesMode || selectedPlanesForDistance.length < 2)) {
+        } 
+        else if (trailHex) {
             selectPlaneByHex(trailHex, { noDeselect: true });
         }
 
@@ -5657,7 +5680,6 @@ function togglePersistence() {
 function toggleDistance() {
     distanceBetweenPlanesMode = !distanceBetweenPlanesMode;
     if (distanceBetweenPlanesMode) {
-        console.log("Modo DistanceBetweenPlanes activado. Haz clic en dos aviones para calcular la distancia.");
         selectedPlanesForDistance = [];
         // Limpiar línea y overlay anteriores (aunque no debería haber, por si acaso)
         if (distanceLineFeature) {
@@ -5673,7 +5695,7 @@ function toggleDistance() {
             distanceUpdateInterval = null;
         }
     } else {
-        console.log("Modo DistanceBetweenPlanes desactivado.");
+        
         selectedPlanesForDistance = [];
         // Limpiar línea y overlay
         if (distanceLineFeature) {
@@ -10019,41 +10041,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function DistanceBetweenPlanes() {
-    distanceBetweenPlanesMode = !distanceBetweenPlanesMode;
-    if (distanceBetweenPlanesMode) {
-        console.log("Modo DistanceBetweenPlanes activado. Haz clic en dos aviones para calcular la distancia.");
-        selectedPlanesForDistance = [];
-        // Limpiar línea y overlay anteriores
-        if (distanceLineFeature) {
-            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
-            distanceLineFeature = null;
-        }
-        if (distanceOverlay) {
-            OLMap.removeOverlay(distanceOverlay);
-            distanceOverlay = null;
-        }
-        if (distanceUpdateInterval) {
-            clearInterval(distanceUpdateInterval);
-            distanceUpdateInterval = null;
-        }
-    } else {
-        console.log("Modo DistanceBetweenPlanes desactivado.");
-        selectedPlanesForDistance = [];
-        // Limpiar línea y overlay
-        if (distanceLineFeature) {
-            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
-            distanceLineFeature = null;
-        }
-        if (distanceOverlay) {
-            OLMap.removeOverlay(distanceOverlay);
-            distanceOverlay = null;
-        }
-        if (distanceUpdateInterval) {
-            clearInterval(distanceUpdateInterval);
-            distanceUpdateInterval = null;
-        }
+function resetDistanceCalculation() {
+    selectedPlanesForDistance = [];
+    planesMissingSince = null;
+    
+    // Quitar la línea del mapa
+    if (distanceLineFeature) {
+        distanceLineLayer.getSource().removeFeature(distanceLineFeature);
+        distanceLineFeature = null;
     }
+    
+    // Quitar el texto (overlay) del mapa
+    if (distanceOverlay) {
+        OLMap.removeOverlay(distanceOverlay);
+        distanceOverlay = null;
+    }
+    
+    // Detener el reloj de actualización
+    if (distanceUpdateInterval) {
+        clearInterval(distanceUpdateInterval);
+        distanceUpdateInterval = null;
+    }
+}
+
+function DistanceBetweenPlanes() {
+    // Cambiamos el estado (On/Off)
+    distanceBetweenPlanesMode = !distanceBetweenPlanesMode;
+    
+    // Limpiamos todo lo anterior (líneas, overlays, intervalos y el array)
+    resetDistanceCalculation();
+    
+    // Cambiamos el color del botón en la UI
     buttonActive('#D', distanceBetweenPlanesMode);
 }
 
