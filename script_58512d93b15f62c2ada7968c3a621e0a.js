@@ -512,7 +512,7 @@ function updateDistanceToGroundOverlay() {
             pairs.push({ key: '0|' + planesForGround[0], gp: groundPoints[0], hex: planesForGround[0] });
         }
 
-    // Modo 1 punto tierra n aviones: varios pares con el mismo punto A
+        // Modo 1 punto tierra n aviones: varios pares con el mismo punto A
     } else if (distanceToGroundModeType === '1A_nB') {
         if (groundPoints.length === 1 && planesForGround.length) {
             for (const hex of planesForGround) {
@@ -520,7 +520,7 @@ function updateDistanceToGroundOverlay() {
             }
         }
 
-    // Modo n puntos tierra 1 avión: varios pares con el mismo avión B
+        // Modo n puntos tierra 1 avión: varios pares con el mismo avión B
     } else if (distanceToGroundModeType === 'nA_1B') {
         if (planesForGround.length === 1 && groundPoints.length) {
             const hex = planesForGround[0];
@@ -529,7 +529,7 @@ function updateDistanceToGroundOverlay() {
             }
         }
 
-    // Modo n puntos tierra n aviones: todos los pares acumulados
+        // Modo n puntos tierra n aviones: todos los pares acumulados
     } else if (distanceToGroundModeType === 'nA_nB') {
 
         for (const p of taPairs) {
@@ -604,9 +604,19 @@ function updateDistanceToGroundOverlay() {
                 }
                 OLMap && ov && OLMap.removeOverlay(ov);
                 groundPlaneOverlays.delete(key);
+
+                if (distanceToGroundModeType === '1A_nB') {
+                    planesForGround = planesForGround.filter(h => h !== hex);
+                } else if (distanceToGroundModeType === 'nA_1B') {
+                    planesForGround = [];
+                    selectedPlaneForGround = null;
+                } else if (distanceToGroundModeType === 'nA_nB') {
+                    taPairs = taPairs.filter(p => p.key !== key);
+                }
             }
 
             continue;
+            
         }
 
         groundPlaneMissingSince.delete(key);
