@@ -3365,9 +3365,8 @@ function ol_map_init() {
         //console.log(`planeHex: ${planeHex} trailHex: ${trailHex}`);
         if (distanceBetweenPlanesMode && planeHex) {
             
-            // NUEVO: Si ya tenemos 2 aviones, el tercer clic debe limpiar todo antes de empezar
             if (selectedPlanesForDistance.length >= 2) {
-                resetDistanceCalculation(); // Usamos la función de limpieza que definimos antes
+                resetDistanceCalculation(); 
             }
 
             let plane = g.planes[planeHex];
@@ -3381,12 +3380,11 @@ function ol_map_init() {
             if (selectedPlanesForDistance.length === 2) {
                 updateDistanceLine();
                 if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
-                // IMPORTANTE: Esto mantiene la función corriendo cada segundo
                 distanceUpdateInterval = setInterval(updateDistanceLine, 1000); 
             }
             }
         } 
-        // 2. Comportamiento normal de selección de avión (solo si no estamos en modo distancia o no hay selección completa)
+        // 2. Comportamiento normal de selección de avión 
         else if (planeHex) {
             selectPlaneByHex(planeHex, { noDeselect: dblclick, follow: dblclick });
         } 
