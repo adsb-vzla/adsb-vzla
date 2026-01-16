@@ -248,33 +248,38 @@ function updateDistanceLine() {
     let p1 = selectedPlanesForDistance[0];
     let p2 = selectedPlanesForDistance[1];
 
-    // Obtener posiciones actuales
     let plane1 = g.planes[p1.hex];
     let plane2 = g.planes[p2.hex];
-    if (!plane1 || !plane2 || !plane1.position || !plane2.position) {
-        if (!planesMissingSince) {
-            // inicia cronometro
-            planesMissingSince = Date.now();
-        }
-        let secondsMissing = (Date.now() - planesMissingSince) / 1000;
 
-        if (secondsMissing >= 10) {
-            resetDistanceCalculation();
-            planesMissingSince = null;
+    // --- 1. VERIFICACIÓN DE SEGURIDAD (ANTÍDOTO PARA EL NaN) ---
+    // Si falta alguno de los aviones o sus datos básicos, activamos cronómetro y SALIMOS
+    if (!plane1 || !plane2 || typeof plane1.altitude === 'undefined' || typeof plane2.altitude === 'undefined' || !plane1.position || !plane2.position) {
+        
+        if (!planesMissingSince) {
+            planesMissingSince = Date.now();
+            console.log("Señal perdida. Iniciando espera de 10s...");
         }
-        return;
+
+        let secondsMissing = (Date.now() - planesMissingSince) / 1000;
+        
+        if (secondsMissing >= 10) {
+            console.log("Tiempo agotado. Borrando cartel.");
+            resetDistanceCalculation();
+        }
+        return; // Detiene la ejecución aquí para que no de error abajo
     }
 
-    planesMissingSince = null;
+    // --- 2. SI LLEGAMOS AQUÍ, LOS AVIONES EXISTEN ---
+    planesMissingSince = null; // Resetear cronómetro porque hay señal
 
     let coords1 = plane1.position;
     let coords2 = plane2.position;
 
-    // Calcular distancia
+    // Calcular distancia y diferencia de altitud con seguridad
     let distance = haversineDistance(coords1[1], coords1[0], coords2[1], coords2[0]);
     let altDiff = Math.abs(plane1.altitude - plane2.altitude);
 
-    // Crear o actualizar línea
+    // Actualizar o crear la línea
     let lineCoords = [ol.proj.fromLonLat(coords1), ol.proj.fromLonLat(coords2)];
     if (!distanceLineFeature) {
         distanceLineFeature = new ol.Feature({
@@ -285,18 +290,20 @@ function updateDistanceLine() {
         distanceLineFeature.getGeometry().setCoordinates(lineCoords);
     }
 
-    // Crear o actualizar overlay con texto
+    // Actualizar o crear el Cartel (Overlay)
     let midPoint = [(coords1[0] + coords2[0]) / 2, (coords1[1] + coords2[1]) / 2];
     let midPointProj = ol.proj.fromLonLat(midPoint);
 
     if (!distanceOverlay) {
         let element = document.createElement('div');
+        element.id = 'distance-label-tag'; // ID para limpieza forzada
         element.style.background = 'rgba(255, 255, 255, 0.8)';
         element.style.border = '1px solid black';
         element.style.padding = '5px';
         element.style.fontSize = '12px';
         element.style.color = 'black';
         element.style.pointerEvents = 'none';
+        
         distanceOverlay = new ol.Overlay({
             element: element,
             positioning: 'bottom-center',
@@ -305,6 +312,7 @@ function updateDistanceLine() {
         OLMap.addOverlay(distanceOverlay);
     }
 
+    // Actualizamos el texto solo si tenemos números válidos
     distanceOverlay.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
     distanceOverlay.setPosition(midPointProj);
 }
@@ -3351,11 +3359,12 @@ function ol_map_init() {
                     altitude: plane.altitude
                 });
 
-                if (selectedPlanesForDistance.length === 2) {
-                    updateDistanceLine();
-                    if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
-                    distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
-                }
+            if (selectedPlanesForDistance.length === 2) {
+                updateDistanceLine();
+                if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
+                // IMPORTANTE: Esto mantiene la función corriendo cada segundo
+                distanceUpdateInterval = setInterval(updateDistanceLine, 1000); 
+            }
             }
         } 
         // 2. Comportamiento normal de selección de avión (solo si no estamos en modo distancia o no hay selección completa)
@@ -10044,24 +10053,25 @@ document.addEventListener('DOMContentLoaded', () => {
 function resetDistanceCalculation() {
     selectedPlanesForDistance = [];
     planesMissingSince = null;
-    
-    // Quitar la línea del mapa
+
+    if (distanceUpdateInterval) {
+        clearInterval(distanceUpdateInterval);
+        distanceUpdateInterval = null;
+    }
+
     if (distanceLineFeature) {
         distanceLineLayer.getSource().removeFeature(distanceLineFeature);
         distanceLineFeature = null;
     }
-    
-    // Quitar el texto (overlay) del mapa
+
     if (distanceOverlay) {
         OLMap.removeOverlay(distanceOverlay);
         distanceOverlay = null;
     }
     
-    // Detener el reloj de actualización
-    if (distanceUpdateInterval) {
-        clearInterval(distanceUpdateInterval);
-        distanceUpdateInterval = null;
-    }
+    // Limpieza manual por ID por si OpenLayers falló
+    let extraDiv = document.getElementById('distance-label-tag');
+    if (extraDiv) extraDiv.remove();
 }
 
 function DistanceBetweenPlanes() {
