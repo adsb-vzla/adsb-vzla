@@ -397,6 +397,17 @@ function taStep2Message() {
     }
 }
 
+// Mensaje según el modo
+function taPreMessage() {
+    switch (distanceToGroundModeType) {
+        case '1A1B':  return 'Modo 1 Punto - 1 Avión';
+        case '1A_nB': return 'Modo 1 Punto - Varios Aviones';
+        case 'nA_1B': return 'Modo Varios Puntos - 1 Avión';
+        case 'nA_nB': return 'Modo Varios Puntos - Varios Aviones';
+        default:      return '';
+    }
+}
+
 // Limpiar puntos, líneas y overlays en el modo tierra-aeronave
 function clearTAGroundDrawings(opts = {}) {
     
@@ -469,7 +480,7 @@ function onTACycleClick() {
         // Limpiar puntos, líneas y overlays al cambiar modo
         clearTAGroundDrawings();
 
-        showDistanceGuide(taStep1Message());
+        showDistanceGuide(`<center>${taPreMessage()}</center><br>${taStep1Message()}`);
         updateDistanceToGroundOverlay();
     } else {
 
@@ -661,7 +672,7 @@ function DistanceToGround() {
         }
 
         // Mostrar guía paso 1 según modo actual
-        showDistanceGuide(taStep1Message());
+        showDistanceGuide(`<center>${taPreMessage()}</center><br>${taStep1Message()}`);
 
         // Intervalo de refresco
         distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
