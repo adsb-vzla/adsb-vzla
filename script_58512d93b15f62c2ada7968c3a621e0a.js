@@ -94,6 +94,9 @@ let taPairs = [];
 let taPendingPlaneHex = null;
 // Guardar temporalmente el punto A marcado a la espera de que se seleccione un avión (modo nA_nB)
 let taPendingGround = null;
+// Mapa de tiempos de pérdida por par
+const groundPlaneMissingSince = new Map();
+const groundPlaneRemoved = new Set();
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -115,7 +118,7 @@ let jumpTo = null;
 let noMLAT = false;
 let noVanish = false;
 let filterTracks = false; // altitude filter: don't filter planes but rather their tracks by altitude
-let planesMissingSince = null; 
+let planesMissingSince = null;
 let refreshId = 0;
 let lastFetch = 0;
 let actualOutline = {};
@@ -264,7 +267,7 @@ function updateDistanceLine() {
         }
 
         let secondsMissing = (Date.now() - planesMissingSince) / 1000;
-        
+
         // Durante la espera, podemos avisar en el cartel
         if (distanceOverlay) {
             distanceOverlay.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${Math.ceil(15 - secondsMissing)}s`;
@@ -273,7 +276,7 @@ function updateDistanceLine() {
         if (secondsMissing >= 15) {
             resetDistanceCalculation();
         }
-        return; 
+        return;
     }
     // ----------------------------------------------
 
@@ -310,7 +313,7 @@ function updateDistanceLine() {
         element.style.fontSize = '12px';
         element.style.color = 'black';
         element.style.pointerEvents = 'none';
-        
+
         distanceOverlay = new ol.Overlay({
             element: element,
             positioning: 'bottom-center',
@@ -407,24 +410,24 @@ function taStep2Message() {
 // Mensaje según el modo
 function taPreMessage() {
     switch (distanceToGroundModeType) {
-        case '1A1B':  return 'Modo 1 Punto - 1 Avión';
+        case '1A1B': return 'Modo 1 Punto - 1 Avión';
         case '1A_nB': return 'Modo 1 Punto - Varios Aviones';
         case 'nA_1B': return 'Modo Varios Puntos - 1 Avión';
         case 'nA_nB': return 'Modo Varios Puntos - Varios Aviones';
-        default:      return '';
+        default: return '';
     }
 }
 
 // Limpiar puntos, líneas y overlays en el modo tierra-aeronave
 function clearTAGroundDrawings(opts = {}) {
-    
+
     // Intentar limpiar la fuente vectorial del punto A si existe
-    try { groundPointSource && groundPointSource.clear(); } catch (_) {}
+    try { groundPointSource && groundPointSource.clear(); } catch (_) { }
     // Ocultar la capa del punto A en el mapa si está creada
     if (groundPointLayer) groundPointLayer.setVisible(false);
 
     // Intentar vaciar la fuente de líneas A‑B
-    try { groundToPlaneLineSource && groundToPlaneLineSource.clear(); } catch (_) {}
+    try { groundToPlaneLineSource && groundToPlaneLineSource.clear(); } catch (_) { }
     // Ocultar la capa que dibuja la línea entre A y B
     if (groundToPlaneLineLayer) groundToPlaneLineLayer.setVisible(false);
     // Resetear la referencia a la feature de la línea actual
@@ -432,19 +435,19 @@ function clearTAGroundDrawings(opts = {}) {
 
     // Si hay overlays por par A‑B genéricos, eliminarlos y limpiar el mapa
     if (groundPlaneOverlays && groundPlaneOverlays.size) {
-        groundPlaneOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) {} });
+        groundPlaneOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
         groundPlaneOverlays.clear();
     }
     // Si existen overlays por avión (mapa por hex), retirarlos del mapa y vaciar la colección
     if (typeof groundPlaneOverlaysByHex !== 'undefined' && groundPlaneOverlaysByHex.size) {
-        groundPlaneOverlaysByHex.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) {} });
+        groundPlaneOverlaysByHex.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
         groundPlaneOverlaysByHex.clear();
     }
 
     // Eliminar el overlay único de distancia suelo‑avión si existe
     if (distanceGroundOverlay) {
-        try { distanceGroundOverlay.setPosition(undefined); } catch (_) {}
-        try { OLMap && OLMap.removeOverlay(distanceGroundOverlay); } catch (_) {}
+        try { distanceGroundOverlay.setPosition(undefined); } catch (_) { }
+        try { OLMap && OLMap.removeOverlay(distanceGroundOverlay); } catch (_) { }
         distanceGroundOverlay = null;
     }
 
@@ -463,6 +466,8 @@ function clearTAGroundDrawings(opts = {}) {
         taPairs = [];
         taPendingPlaneHex = null;
         taPendingGround = null;
+        groundPlaneMissingSince.clear();
+        groundPlaneRemoved.clear();
     }
 
     // Detener refresco de distancia si está activo
@@ -506,7 +511,7 @@ function updateDistanceToGroundOverlay() {
         if (groundPoints.length === 1 && planesForGround.length === 1) {
             pairs.push({ key: '0|' + planesForGround[0], gp: groundPoints[0], hex: planesForGround[0] });
         }
-    
+
     // Modo 1 punto tierra n aviones: varios pares con el mismo punto A
     } else if (distanceToGroundModeType === '1A_nB') {
         if (groundPoints.length === 1 && planesForGround.length) {
@@ -523,10 +528,10 @@ function updateDistanceToGroundOverlay() {
                 pairs.push({ key: gi + '|' + hex, gp: groundPoints[gi], hex });
             }
         }
-    
+
     // Modo n puntos tierra n aviones: todos los pares acumulados
     } else if (distanceToGroundModeType === 'nA_nB') {
-        
+
         for (const p of taPairs) {
             pairs.push({ key: p.key, gp: p.gp, hex: p.hex });
         }
@@ -539,8 +544,74 @@ function updateDistanceToGroundOverlay() {
     const active = new Set();
 
     for (const { key, gp, hex } of pairs) {
-        const plane = g.planes[hex];
-        if (!plane || !plane.position || !gp) continue;
+        let plane = g.planes[hex];
+        const missingPlane = !plane || !plane.position;
+        const isStale = missingPlane || plane.seen > 10;
+
+        // sin punto, no hay nada que mostrar
+        if (!gp) continue;
+
+        // Si este par ya fue limpiado y sigue stale, no volver a contar ni recrear overlay
+        if (groundPlaneRemoved.has(key)) {
+            if (!isStale) {
+                // si la señal volvió, permitir recrear en este ciclo
+                groundPlaneRemoved.delete(key);
+                groundPlaneMissingSince.delete(key);
+            } else {
+                // señal aún perdida: saltar por completo
+                continue;
+            }
+        }
+
+        if (isStale) {
+            // mantenerlo "activo" para que no lo borre el recolector hasta que se cumplan los 10s
+            active.add(key);
+
+            const started = groundPlaneMissingSince.get(key) || Date.now();
+            groundPlaneMissingSince.set(key, started);
+            const secondsMissing = (Date.now() - started) / 1000;
+            const remaining = Math.max(0, Math.ceil(15 - secondsMissing));
+
+            // overlay de “sin señal”
+            let ov = groundPlaneOverlays.get(key);
+            if (!ov) {
+                const el = document.createElement('div');
+                Object.assign(el.style, {
+                    background: 'rgba(255,255,255,0.85)',
+                    border: '1px solid #000',
+                    padding: '6px',
+                    fontSize: '12px',
+                    color: '#000',
+                    pointerEvents: 'none',
+                });
+                ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+                OLMap && OLMap.addOverlay(ov);
+                groundPlaneOverlays.set(key, ov);
+            }
+
+            ov.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${remaining}s`;
+            ov.setPosition(ol.proj.fromLonLat(gp));
+
+            // al cumplir 15s: limpiar y marcar “removed” para no seguir contando
+            if (secondsMissing >= 15) {
+                groundPlaneMissingSince.delete(key);
+                groundPlaneRemoved.add(key);
+
+                const feat = groundPlaneFeatures.get(key);
+                if (feat) {
+                    groundToPlaneLineSource && groundToPlaneLineSource.removeFeature(feat);
+                    groundPlaneFeatures.delete(key);
+                }
+                OLMap && ov && OLMap.removeOverlay(ov);
+                groundPlaneOverlays.delete(key);
+            }
+
+            continue;
+        }
+
+        groundPlaneMissingSince.delete(key);
+        groundPlaneRemoved.delete(key);
+        active.add(key);
 
         // Normalizar altitudes: baro y geom, con fallback
         let altBaro = plane.altitude;
@@ -576,7 +647,7 @@ function updateDistanceToGroundOverlay() {
         } else {
             feat.getGeometry().setCoordinates([projGround, projPlane]);
         }
-        
+
         // Crear o actualizar el overlay de distancia para este par
         let ov = groundPlaneOverlays.get(key);
         if (!ov) {
@@ -683,7 +754,7 @@ function DistanceToGround() {
 
         // Intervalo de refresco
         distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
-        
+
         buttonActive('#TA', true);
     } else {
         // Apagar y limpiar todo
@@ -3229,7 +3300,7 @@ function ol_map_init() {
 
             // Coordenadas del clic en el mapa
             const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
-        
+
             // Si se hace click sobre un avión
             if (planeHex) {
                 // Modo nA_nB
@@ -3246,19 +3317,19 @@ function ol_map_init() {
                         taPendingGround = null;
                         const key = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}|${planeHex}`;
                         taPairs.push({ hex: planeHex, gp: lonlat, key });
-        
+
                         if (groundPointLayer) groundPointLayer.setVisible(true);
                         groundPointSource && groundPointSource.addFeature(
                             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                         );
-        
+
                         showDistanceGuide(taStep2Message());
                     } else {
                         // Guardar avión a la espera de marcar punto A
                         taPendingPlaneHex = planeHex;
                         showDistanceGuide(taStep2Message());
                     }
-                // Modo 1A_nB
+                    // Modo 1A_nB
                 } else if (distanceToGroundModeType === '1A_nB') {
                     // Evitar duplicados y respetar máximo de puntos tierra para este modo
                     if (planesForGround.includes(planeHex)) {
@@ -3269,7 +3340,7 @@ function ol_map_init() {
                         planesForGround.push(planeHex);
                         showDistanceGuide(taStep2Message());
                     }
-                // Modo nA_1B
+                    // Modo nA_1B
                 } else if (distanceToGroundModeType === 'nA_1B') {
                     // Sólo un avión seleccionado
                     planesForGround = [planeHex];
@@ -3285,7 +3356,7 @@ function ol_map_init() {
                         showDistanceGuide('Seleccione un avión con posición válida.');
                     }
                 }
-            // Si se hace clic sobre el mapa
+                // Si se hace clic sobre el mapa
             } else {
 
                 const lonlat = ol.proj.toLonLat(evtCoords);
@@ -3303,13 +3374,13 @@ function ol_map_init() {
                         taPendingPlaneHex = null;
                         const key = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}|${hex}`;
                         taPairs.push({ hex, gp: lonlat, key });
-        
+
 
                         if (groundPointLayer) groundPointLayer.setVisible(true);
                         groundPointSource && groundPointSource.addFeature(
                             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                         );
-        
+
                         showDistanceGuide(taStep2Message());
                     } else {
                         if (taPairs.length >= TA_MAX_nA_nB) {
@@ -3325,7 +3396,7 @@ function ol_map_init() {
                         );
                         showDistanceGuide(taStep2Message());
                     }
-                // Modo nA_1B
+                    // Modo nA_1B
                 } else if (distanceToGroundModeType === 'nA_1B') {
                     // Sólo el máximo de puntos en tierra permitidos
                     if (groundPoints.length >= TA_MAX_nA_1B) {
@@ -3356,16 +3427,16 @@ function ol_map_init() {
             if (!distanceGroundUpdateInterval) {
                 distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
             }
-        
+
             evt.stopPropagation();
             return;
         }
 
         //console.log(`planeHex: ${planeHex} trailHex: ${trailHex}`);
         if (distanceBetweenPlanesMode && planeHex) {
-            
+
             if (selectedPlanesForDistance.length >= 2) {
-                resetDistanceCalculation(); 
+                resetDistanceCalculation();
             }
 
             let plane = g.planes[planeHex];
@@ -3376,17 +3447,17 @@ function ol_map_init() {
                     altitude: plane.altitude
                 });
 
-            if (selectedPlanesForDistance.length === 2) {
-                updateDistanceLine();
-                if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
-                distanceUpdateInterval = setInterval(updateDistanceLine, 1000); 
+                if (selectedPlanesForDistance.length === 2) {
+                    updateDistanceLine();
+                    if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
+                    distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
+                }
             }
-            }
-        } 
+        }
         // 2. Comportamiento normal de selección de avión 
         else if (planeHex) {
             selectPlaneByHex(planeHex, { noDeselect: dblclick, follow: dblclick });
-        } 
+        }
         else if (trailHex) {
             selectPlaneByHex(trailHex, { noDeselect: true });
         }
@@ -5720,7 +5791,7 @@ function toggleDistance() {
             distanceUpdateInterval = null;
         }
     } else {
-        
+
         selectedPlanesForDistance = [];
         // Limpiar línea y overlay
         if (distanceLineFeature) {
@@ -9161,7 +9232,7 @@ function showReplayBar() {
             step: 1, min: 0, max: 23,
             slide: function (event, ui) {
                 replay.hours = ui.value;
-                updateSliderTip(ui.handle, ui.value, " hrs"); 
+                updateSliderTip(ui.handle, ui.value, " hrs");
                 replayOnSliderMove();
             },
             change: function (event, ui) {
@@ -9169,7 +9240,7 @@ function showReplayBar() {
                 replayJump();
             }
         });
-            
+
         // Inyección de etiquetas
         setupSliderDecorations('#hourSelect', '00h', '23h');
 
@@ -9178,10 +9249,10 @@ function showReplayBar() {
             step: 1, min: 0, max: 59,
             slide: function (event, ui) {
                 replay.minutes = ui.value;
-                updateSliderTip(ui.handle, ui.value, " mins"); 
+                updateSliderTip(ui.handle, ui.value, " mins");
                 replayOnSliderMove();
             },
-            change: function (event, ui) { 
+            change: function (event, ui) {
                 updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, " mins");
                 replayJump();
             }
@@ -9223,7 +9294,7 @@ function setupSliderDecorations(selector, minTxt, maxTxt) {
     if (handle.find('.slider-tip').length === 0) {
         handle.append('<span class="slider-tip">00</span>');
     }
-    
+
 }
 
 function timeoutFetch() {
@@ -10084,7 +10155,7 @@ function resetDistanceCalculation() {
         OLMap.removeOverlay(distanceOverlay);
         distanceOverlay = null;
     }
-    
+
     // Limpieza manual por ID por si OpenLayers falló
     let extraDiv = document.getElementById('distance-label-tag');
     if (extraDiv) extraDiv.remove();
@@ -10093,10 +10164,10 @@ function resetDistanceCalculation() {
 function DistanceBetweenPlanes() {
     // Cambiamos el estado (On/Off)
     distanceBetweenPlanesMode = !distanceBetweenPlanesMode;
-    
+
     // Limpiamos todo lo anterior (líneas, overlays, intervalos y el array)
     resetDistanceCalculation();
-    
+
     // Cambiamos el color del botón en la UI
     buttonActive('#D', distanceBetweenPlanesMode);
 }
