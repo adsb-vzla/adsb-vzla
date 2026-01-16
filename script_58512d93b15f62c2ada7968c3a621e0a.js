@@ -254,8 +254,8 @@ function updateDistanceLine() {
     // 1. El avión no existe en g.planes
     // 2. El avión no tiene posición o altitud
     // 3. El avión no ha reportado nada en los últimos 10 segundos (plane.seen > 10)
-    let isPlane1Lost = !plane1 || !plane1.position || plane1.seen > 10;
-    let isPlane2Lost = !plane2 || !plane2.position || plane2.seen > 10;
+    let isPlane1Lost = !plane1 || !plane1.position || plane1.seen > 15;
+    let isPlane2Lost = !plane2 || !plane2.position || plane2.seen > 15;
 
     if (isPlane1Lost || isPlane2Lost) {
         if (!planesMissingSince) {
@@ -267,10 +267,10 @@ function updateDistanceLine() {
         
         // Durante la espera, podemos avisar en el cartel
         if (distanceOverlay) {
-            distanceOverlay.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${Math.ceil(10 - secondsMissing)}s`;
+            distanceOverlay.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${Math.ceil(15 - secondsMissing)}s`;
         }
 
-        if (secondsMissing >= 10) {
+        if (secondsMissing >= 15) {
             resetDistanceCalculation();
         }
         return; 
@@ -278,7 +278,6 @@ function updateDistanceLine() {
     // ----------------------------------------------
 
     planesMissingSince = null;
-    planesMissingSince = null; // Resetear cronómetro porque hay señal
 
     let coords1 = plane1.position;
     let coords2 = plane2.position;
