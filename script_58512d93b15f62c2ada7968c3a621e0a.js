@@ -500,6 +500,16 @@ function onTACycleClick() {
     }
 }
 
+function stableOverlayOffset(key) {
+    // Deterministic, small scatter around the anchor to avoid overlap
+    let h = 0;
+    for (let i = 0; i < key.length; i++) {
+        h = (h * 31 + key.charCodeAt(i)) >>> 0;
+    }
+    const dx = (h % 7 - 3) * 12;                // -36 .. +36 px
+    const dy = -10 - (Math.floor(h / 7) % 3) * 14; // -10, -24, -38 px
+    return [dx, dy];
+}
 
 // Función para actualizar la medición de distancia suelo‑avión
 function updateDistanceToGroundOverlay() {
@@ -590,7 +600,18 @@ function updateDistanceToGroundOverlay() {
             }
 
             ov.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${remaining}s`;
-            ov.setPosition(ol.proj.fromLonLat(gp));
+            ov.setOffset(stableOverlayOffset(key));
+            // ov.setPosition(ol.proj.fromLonLat(gp));
+            // Colocar el overlay en el punto medio de la última línea conocida (si existe posición del avión)
+            if (!missingPlane && plane.position) {
+                const mid = [
+                    (gp[0] + plane.position[0]) / 2,
+                    (gp[1] + plane.position[1]) / 2
+                ];
+                ov.setPosition(ol.proj.fromLonLat(mid));
+            } else {
+                ov.setPosition(ol.proj.fromLonLat(gp));
+            }
 
             // al cumplir 15s: limpiar y marcar “removed” para no seguir contando
             if (secondsMissing >= 15) {
