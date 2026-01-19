@@ -637,7 +637,7 @@ function updateDistanceToGroundOverlay() {
             }
 
             continue;
-            
+
         }
 
         groundPlaneMissingSince.delete(key);
@@ -3393,6 +3393,12 @@ function ol_map_init() {
                 const lonlat = ol.proj.toLonLat(evtCoords);
                 // Modo nA_nB
                 if (distanceToGroundModeType === 'nA_nB') {
+                    // No permitir iniciar un nuevo punto si hay uno pendiente sin avión
+                    if (taPendingGround && !taPendingPlaneHex) {
+                        showDistanceGuide('Seleccione un avión para completar el par.');
+                        evt.stopPropagation();
+                        return;
+                    }
                     if (taPendingPlaneHex) {
                         // Respetar el máximo de pares definidos
                         if (taPairs.length >= TA_MAX_nA_nB) {
