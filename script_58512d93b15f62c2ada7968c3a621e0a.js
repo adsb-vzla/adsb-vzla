@@ -94,9 +94,34 @@ let taPairs = [];
 let taPendingPlaneHex = null;
 // Guardar temporalmente el punto A marcado a la espera de que se seleccione un avión (modo nA_nB)
 let taPendingGround = null;
-// Mapa de tiempos de pérdida por par
+// Modos de distancia tierra-aeronave
+const TA_MODES = ['1A1B', '1A_nB', 'nA_1B', 'nA_nB'];
+// Límite de cuántas aeronaves se pueden seleccionar en el modo 1A_nB
+const TA_MAX_1A_nB = 3;
+// Límite de cuantos puntos en tierra se pueden marcar en el modo nA_1B
+const TA_MAX_nA_1B = 3;
+// Límite de cuantos pares A-B se pueden acumular en el modo nA_nB
+const TA_MAX_nA_nB = 3;
+
 const groundPlaneMissingSince = new Map();
 const groundPlaneRemoved = new Set();
+
+
+let groundToGroundMode = false;
+let groundToGroundModeType = '1A1B';
+const GG_MODES = ['1A1B', '1A_nB'];            // '1A1B' | '1A_nB'
+const GG_MAX_1A_nB = 3;
+let ggPointA = null;                            // [lon,lat]
+let ggPointsB = [];                             // array de [lon,lat]
+let ggLineSource = null;
+let ggLineLayer = null;
+let ggPointSource = null;
+let ggPointLayer = null;
+const ggLineFeatures = new Map();               // key -> Feature
+const ggOverlays = new Map();                   // key -> Overlay
+let ggUpdateInterval = null;
+
+
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -366,15 +391,6 @@ function setGroundPoint(lonlat) {
 
 }
 
-// Modos de distancia tierra-aeronave
-const TA_MODES = ['1A1B', '1A_nB', 'nA_1B', 'nA_nB'];
-// Límite de cuántas aeronaves se pueden seleccionar en el modo 1A_nB
-const TA_MAX_1A_nB = 3;
-// Límite de cuantos puntos en tierra se pueden marcar en el modo nA_1B
-const TA_MAX_nA_1B = 3;
-// Límite de cuantos pares A-B se pueden acumular en el modo nA_nB
-const TA_MAX_nA_nB = 3;
-
 // Paso 1 de los tooltips según el modo
 function taStep1Message() {
     switch (distanceToGroundModeType) {
@@ -407,7 +423,7 @@ function taStep2Message() {
     }
 }
 
-// Mensaje según el modo
+// Mensaje según el modo (tierra-aeronave)
 function taPreMessage() {
     switch (distanceToGroundModeType) {
         case '1A1B': return 'Modo 1 Punto - 1 Avión';
@@ -416,6 +432,27 @@ function taPreMessage() {
         case 'nA_nB': return 'Modo Varios Puntos - Varios Aviones';
         default: return '';
     }
+}
+
+// Mensaje segun el modo (tierra-tierra)
+function ggPreMessage() {
+    return groundToGroundModeType === '1A_nB'
+        ? 'Modo 1 Punto - Varios Puntos'
+        : 'Modo 1 Punto - 1 Punto';
+}
+
+// Paso 1 guía (tierra-tierra)
+function ggStep1Message() {
+    return groundToGroundModeType === '1A_nB'
+        ? 'Marca un único Punto A en tierra.'
+        : 'Marca el Punto A en tierra.';
+}
+
+// Paso 2 guía (tierra-tierra)
+function ggStep2Message() {
+    return groundToGroundModeType === '1A_nB'
+        ? 'Marca hasta 3 puntos B en tierra.'
+        : 'Marca el Punto B en tierra.';
 }
 
 // Limpiar puntos, líneas y overlays en el modo tierra-aeronave
@@ -477,11 +514,32 @@ function clearTAGroundDrawings(opts = {}) {
     }
 }
 
+// Limpiar puntos, líneas y overlays en el modo tierra-tierra
+function clearGroundToGround(opts = {}) {
+    try { ggLineSource && ggLineSource.clear(); } catch (_) { }
+    if (ggLineLayer) ggLineLayer.setVisible(false);
+    try { ggPointSource && ggPointSource.clear(); } catch (_) { }
+    if (ggPointLayer) ggPointLayer.setVisible(false);
+    ggLineFeatures.clear();
+    ggOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
+    ggOverlays.clear();
+    if (opts.reset !== false) {
+        ggPointA = null;
+        ggPointsB = [];
+    }
+    if (ggUpdateInterval) {
+        clearInterval(ggUpdateInterval);
+        ggUpdateInterval = null;
+    }
+}
+
 // Ciclar cada modo según click en el botón
 function onTACycleClick() {
     if (!distanceToGroundMode) {
         distanceToGroundModeType = TA_MODES[0];
         DistanceToGround();
+        // si se estaba en modo tierra-tierra, apagarlo
+        if (groundToGroundMode) DistanceGroundToGround();
         return;
     }
 
@@ -497,6 +555,31 @@ function onTACycleClick() {
     } else {
 
         DistanceToGround();
+    }
+}
+
+function onTTCycleClick() {
+    if (!groundToGroundMode) {
+        // 1er clic: activar en 1A1B
+        groundToGroundModeType = GG_MODES[0];
+        DistanceGroundToGround();
+        return;
+    }
+
+    const idx = GG_MODES.indexOf(groundToGroundModeType);
+    if (idx >= 0 && idx < GG_MODES.length - 1) {
+        // 2º clic: cambiar a 1A_nB (sin desactivar)
+        groundToGroundModeType = GG_MODES[idx + 1];
+        clearGroundToGround(); // limpiar puntos/overlays del modo anterior
+        
+        // Re‑activar visibilidad para dibujar nuevos puntos
+        if (ggPointLayer) ggPointLayer.setVisible(true);
+
+        showDistanceGuide(`<center>${ggPreMessage()}</center><br>${ggStep1Message()}`);
+        updateGroundToGroundOverlay();
+    } else {
+        // 3er clic: desactivar
+        DistanceGroundToGround();
     }
 }
 
@@ -716,6 +799,76 @@ function updateDistanceToGroundOverlay() {
 
 }
 
+// Función para actualizar la medición tierra-tierra
+function updateGroundToGroundOverlay() {
+    const pairs = [];
+    if (groundToGroundModeType === '1A1B') {
+        if (ggPointA && ggPointsB.length === 1) {
+            pairs.push({ key: '0', a: ggPointA, b: ggPointsB[0] });
+        }
+    } else if (groundToGroundModeType === '1A_nB') {
+        if (ggPointA && ggPointsB.length) {
+            ggPointsB.forEach((pt, idx) => pairs.push({ key: `${idx}`, a: ggPointA, b: pt }));
+        }
+    }
+    if (!pairs.length) return;
+    if (ggLineLayer) ggLineLayer.setVisible(true);
+    const active = new Set();
+
+    for (const { key, a, b } of pairs) {
+        const distNm = haversineDistance(a[1], a[0], b[1], b[0]);
+        const distM = distNm * 1852;
+        const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
+
+        const projA = ol.proj.fromLonLat(a);
+        const projB = ol.proj.fromLonLat(b);
+        const mid = [(projA[0] + projB[0]) / 2, (projA[1] + projB[1]) / 2];
+
+        active.add(key);
+
+        let feat = ggLineFeatures.get(key);
+        if (!feat) {
+            feat = new ol.Feature(new ol.geom.LineString([projA, projB]));
+            ggLineSource && ggLineSource.addFeature(feat);
+            ggLineFeatures.set(key, feat);
+        } else {
+            feat.getGeometry().setCoordinates([projA, projB]);
+        }
+
+        let ov = ggOverlays.get(key);
+        if (!ov) {
+            const el = document.createElement('div');
+            Object.assign(el.style, {
+                background: 'rgba(255,255,255,0.85)',
+                border: '1px solid #000',
+                padding: '6px',
+                fontSize: '12px',
+                color: '#000',
+                pointerEvents: 'none',
+            });
+            ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+            OLMap && OLMap.addOverlay(ov);
+            ggOverlays.set(key, ov);
+        }
+        ov.getElement().innerHTML = `Distancia: ${distText}`;
+        ov.setPosition(mid);
+    }
+
+    // limpieza
+    for (const [k, feat] of ggLineFeatures) {
+        if (!active.has(k)) {
+            ggLineSource && ggLineSource.removeFeature(feat);
+            ggLineFeatures.delete(k);
+        }
+    }
+    for (const [k, ov] of ggOverlays) {
+        if (!active.has(k)) {
+            OLMap && OLMap.removeOverlay(ov);
+            ggOverlays.delete(k);
+        }
+    }
+}
+
 // Overlay de guía para usar el modo distancia suelo‑avión
 let distanceGuideEl = null;
 
@@ -792,6 +945,64 @@ function DistanceToGround() {
         clearTAGroundDrawings();
         hideDistanceGuide();
         buttonActive('#TA', false);
+    }
+}
+
+// Función para activar/desactivar el modo distancia tierra-tierra
+function DistanceGroundToGround() {
+    groundToGroundMode = !groundToGroundMode;
+    if (groundToGroundMode) {
+        clearGroundToGround();
+        // Punto A/B (tierra-tierra)
+        if (!ggPointSource) ggPointSource = new ol.source.Vector();
+        if (!ggPointLayer) {
+            ggPointLayer = new ol.layer.Vector({
+                name: 'ggPoints',
+                type: 'overlay',
+                title: 'Puntos tierra-tierra',
+                source: ggPointSource,
+                zIndex: 245,
+                style: new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 6,
+                        fill: new ol.style.Fill({ color: '#222' }),
+                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+                    })
+                })
+            });
+            layers.push(ggPointLayer);
+        } else {
+            ggPointLayer.setSource(ggPointSource);
+        }
+        if (OLMap && !OLMap.getLayers().getArray().includes(ggPointLayer)) {
+            OLMap.addLayer(ggPointLayer);
+        }
+        ggPointLayer.setVisible(true);
+        if (!ggLineSource) ggLineSource = new ol.source.Vector();
+        if (!ggLineLayer) {
+            ggLineLayer = new ol.layer.Vector({
+                name: 'groundToGround',
+                type: 'overlay',
+                title: 'Línea tierra - tierra',
+                source: ggLineSource,
+                zIndex: 255,
+                style: new ol.style.Style({
+                    stroke: new ol.style.Stroke({ color: 'blue', width: 2 })
+                })
+            });
+            layers.push(ggLineLayer);
+            OLMap && OLMap.addLayer(ggLineLayer);
+        } else {
+            ggLineLayer.setSource(ggLineSource);
+            ggLineLayer.setVisible(true);
+        }
+        showDistanceGuide(`<center>${ggPreMessage()}</center><br>${ggStep1Message()}`);
+        ggUpdateInterval = setInterval(updateGroundToGroundOverlay, 1000);
+        buttonActive('#TT', true);
+    } else {
+        clearGroundToGround();
+        hideDistanceGuide();
+        buttonActive('#TT', false);
     }
 }
 
@@ -3465,6 +3676,50 @@ function ol_map_init() {
                 distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
             }
 
+            evt.stopPropagation();
+            return;
+        }
+
+        if (groundToGroundMode) {
+            const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
+            const lonlat = ol.proj.toLonLat(evtCoords);
+
+            // Asegurar que la capa de puntos esté visible
+            if (ggPointLayer) ggPointLayer.setVisible(true);
+
+            // Bloquear iniciar nuevo punto B si falta completar par (1A_nB solo necesita A fija)
+            if (!ggPointA) {
+                ggPointA = lonlat;
+
+                // Limpiar puntos anteriores (A y Bs) y dibujar A
+                if (ggPointSource) ggPointSource.clear();
+                ggPointSource && ggPointSource.addFeature(
+                    new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                );
+
+                showDistanceGuide(ggStep2Message());
+            } else if (groundToGroundModeType === '1A1B') {
+                // Paso 2: fijar B único y dibujarlo
+                ggPointsB = [lonlat];
+                ggPointSource && ggPointSource.addFeature(
+                    new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                );
+            } else { // 1A_nB
+                if (ggPointsB.length >= GG_MAX_1A_nB) {
+                    showDistanceGuide(`Máximo ${GG_MAX_1A_nB} puntos B.`);
+                } else {
+                    ggPointsB.push(lonlat);
+                    ggPointSource && ggPointSource.addFeature(
+                        new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                    );
+                    showDistanceGuide(ggStep2Message());
+                }
+            }
+
+            updateGroundToGroundOverlay();
+            if (!ggUpdateInterval) {
+                ggUpdateInterval = setInterval(updateGroundToGroundOverlay, 1000);
+            }
             evt.stopPropagation();
             return;
         }
