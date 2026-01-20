@@ -54,6 +54,19 @@ let distanceLineLayer = null;
 let distanceLineFeature = null;
 let distanceOverlay = null;
 let distanceUpdateInterval = null;
+// Plane-plane distance modes and storage for multiple pairs
+let planeDistanceModeType = '1A1B';
+const PP_MODES = ['1A1B', 'pairs'];
+const PP_MAX_PAIRS = 3; // límite total de pares
+let distanceLineFeaturesMap = new Map(); // key -> ol.Feature
+let distanceOverlaysMap = new Map(); // key -> ol.Overlay
+let selectedPlaneA = null; // anchor A when in anchor mode
+let pairMap = new Map(); // key -> {a, b}
+let pairOrder = []; // keep insertion order of keys
+let pairBuffer = []; // temporary buffer for click pairing
+// Per-pair missing signal tracking for plane-plane mode
+let ppMissingSince = new Map();
+let ppRemoved = new Set();
 // Activa o desactiva el modo de medir distancia suelo‑avión
 let distanceToGroundMode = false;
 // Overlay que muestra la distancia entre el punto A y el avión
@@ -285,85 +298,235 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
 }
 
 function updateDistanceLine() {
-    if (selectedPlanesForDistance.length !== 2) return;
+    if (!distanceBetweenPlanesMode) return;
 
-    let p1 = selectedPlanesForDistance[0];
-    let p2 = selectedPlanesForDistance[1];
+    // Modo 1A1B: comportamiento original (solo un par)
+    if (planeDistanceModeType === '1A1B') {
+        if (selectedPlanesForDistance.length !== 2) return;
 
-    let plane1 = g.planes[p1.hex];
-    let plane2 = g.planes[p2.hex];
-    // ----------------------------------------------
-    // 1. El avión no existe en g.planes
-    // 2. El avión no tiene posición o altitud
-    // 3. El avión no ha reportado nada en los últimos 15 segundos (plane.seen > 15)
-    let isPlane1Lost = !plane1 || !plane1.position || plane1.seen > 15;
-    let isPlane2Lost = !plane2 || !plane2.position || plane2.seen > 15;
+        let p1 = selectedPlanesForDistance[0];
+        let p2 = selectedPlanesForDistance[1];
 
-    if (isPlane1Lost || isPlane2Lost) {
-        if (!planesMissingSince) {
-            planesMissingSince = Date.now();
-            console.log("Señal inactiva o perdida detectada.");
-        }
+        let plane1 = g.planes[p1.hex];
+        let plane2 = g.planes[p2.hex];
+        // ----------------------------------------------
+        // 1. El avión no existe en g.planes
+        // 2. El avión no tiene posición o altitud
+        // 3. El avión no ha reportado nada en los últimos 15 segundos (plane.seen > 15)
+        let isPlane1Lost = !plane1 || !plane1.position || plane1.seen > 15;
+        let isPlane2Lost = !plane2 || !plane2.position || plane2.seen > 15;
 
-        let secondsMissing = (Date.now() - planesMissingSince) / 1000;
+        const key = `${p1.hex}|${p2.hex}`;
 
-        // Durante la espera, podemos avisar en el cartel
-        if (distanceOverlay) {
+        if (isPlane1Lost || isPlane2Lost) {
+            if (ppRemoved.has(key)) {
+                // If already removed, ignore until plane revives
+                return;
+            }
+
+            if (!ppMissingSince.has(key)) {
+                ppMissingSince.set(key, Date.now());
+                console.log("Señal inactiva o perdida detectada para par:", key);
+            }
+
+            let secondsMissing = (Date.now() - ppMissingSince.get(key)) / 1000;
+
+            // Durante la espera, podemos avisar en el cartel
+            if (!distanceOverlay) {
+                let element = document.createElement('div');
+                element.id = 'distance-label-tag';
+                element.style.background = 'rgba(255, 255, 255, 0.8)';
+                element.style.border = '1px solid black';
+                element.style.padding = '5px';
+                element.style.fontSize = '12px';
+                element.style.color = 'black';
+                element.style.pointerEvents = 'none';
+
+                distanceOverlay = new ol.Overlay({ element: element, positioning: 'bottom-center', offset: [0, -10] });
+                OLMap.addOverlay(distanceOverlay);
+            }
             distanceOverlay.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${Math.ceil(15 - secondsMissing)}s`;
+
+            if (secondsMissing >= 15) {
+                // For single-pair mode, reset everything; for multi, mark removed
+                if (planeDistanceModeType === '1A1B') {
+                    ppMissingSince.delete(key);
+                    resetDistanceCalculation();
+                } else {
+                    ppMissingSince.delete(key);
+                    ppRemoved.add(key);
+                    // remove any existing feature/overlay for this key
+                    const feat = distanceLineFeaturesMap.get(key);
+                    if (feat) {
+                        distanceLineLayer.getSource().removeFeature(feat);
+                        distanceLineFeaturesMap.delete(key);
+                    }
+                    const ov = distanceOverlaysMap.get(key);
+                    if (ov) {
+                        OLMap && OLMap.removeOverlay(ov);
+                        distanceOverlaysMap.delete(key);
+                    }
+                    // remove from selectedPlanesForDistance list any matching hex
+                    selectedPlanesForDistance = selectedPlanesForDistance.filter(p => `${selectedPlaneA}|${p.hex}` !== key && `${p.hex}|${selectedPlaneA}` !== key);
+                }
+            }
+
+            return;
+        }
+        // ----------------------------------------------
+
+        planesMissingSince = null;
+
+        let coords1 = plane1.position;
+        let coords2 = plane2.position;
+
+        // Calcular distancia y diferencia de altitud con seguridad
+        let distance = haversineDistance(coords1[1], coords1[0], coords2[1], coords2[0]);
+        let altDiff = Math.abs(plane1.altitude - plane2.altitude);
+
+        // Actualizar o crear la línea
+        let lineCoords = [ol.proj.fromLonLat(coords1), ol.proj.fromLonLat(coords2)];
+        if (!distanceLineFeature) {
+            distanceLineFeature = new ol.Feature({
+                geometry: new ol.geom.LineString(lineCoords)
+            });
+            distanceLineLayer.getSource().addFeature(distanceLineFeature);
+        } else {
+            distanceLineFeature.getGeometry().setCoordinates(lineCoords);
         }
 
-        if (secondsMissing >= 15) {
-            resetDistanceCalculation();
+        // Actualizar o crear el Cartel (Overlay)
+        let midPoint = [(coords1[0] + coords2[0]) / 2, (coords1[1] + coords2[1]) / 2];
+        let midPointProj = ol.proj.fromLonLat(midPoint);
+
+        if (!distanceOverlay) {
+            let element = document.createElement('div');
+            element.id = 'distance-label-tag'; // ID para limpieza forzada
+            element.style.background = 'rgba(255, 255, 255, 0.8)';
+            element.style.border = '1px solid black';
+            element.style.padding = '5px';
+            element.style.fontSize = '12px';
+            element.style.color = 'black';
+            element.style.pointerEvents = 'none';
+
+            distanceOverlay = new ol.Overlay({
+                element: element,
+                positioning: 'bottom-center',
+                offset: [0, -10]
+            });
+            OLMap.addOverlay(distanceOverlay);
         }
+
+        // Actualizamos el texto solo si tenemos números válidos
+        distanceOverlay.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+        distanceOverlay.setPosition(midPointProj);
         return;
     }
-    // ----------------------------------------------
 
-    planesMissingSince = null;
+    // Modo 1A_nB: un avión A contra varios B (hasta PP_MAX_1A_nB)
+    if (planeDistanceModeType === 'pairs') {
+        // iterate over pairMap and draw/update each pair
+        if (!pairMap.size) return;
 
-    let coords1 = plane1.position;
-    let coords2 = plane2.position;
+        const activeKeys = new Set();
+        for (const key of pairOrder) {
+            if (!pairMap.has(key)) continue;
+            activeKeys.add(key);
+            const { a: hexA, b: hexB } = pairMap.get(key);
+            const planeA = g.planes[hexA];
+            const planeB = g.planes[hexB];
 
-    // Calcular distancia y diferencia de altitud con seguridad
-    let distance = haversineDistance(coords1[1], coords1[0], coords2[1], coords2[0]);
-    let altDiff = Math.abs(plane1.altitude - plane2.altitude);
+            const missingA = !planeA || !planeA.position;
+            const missingB = !planeB || !planeB.position;
+            const isStale = missingA || missingB || (planeA && planeA.seen > 15) || (planeB && planeB.seen > 15);
 
-    // Actualizar o crear la línea
-    let lineCoords = [ol.proj.fromLonLat(coords1), ol.proj.fromLonLat(coords2)];
-    if (!distanceLineFeature) {
-        distanceLineFeature = new ol.Feature({
-            geometry: new ol.geom.LineString(lineCoords)
-        });
-        distanceLineLayer.getSource().addFeature(distanceLineFeature);
-    } else {
-        distanceLineFeature.getGeometry().setCoordinates(lineCoords);
+            if (ppRemoved.has(key)) {
+                // skip until revived
+                if (!isStale) ppRemoved.delete(key);
+                else continue;
+            }
+
+            if (isStale) {
+                if (!ppMissingSince.has(key)) ppMissingSince.set(key, Date.now());
+                const started = ppMissingSince.get(key);
+                const secondsMissing = (Date.now() - started) / 1000;
+                const remaining = Math.max(0, Math.ceil(15 - secondsMissing));
+
+                let ov = distanceOverlaysMap.get(key);
+                if (!ov) {
+                    const el = document.createElement('div');
+                    Object.assign(el.style, { background: 'rgba(255,255,255,0.85)', border: '1px solid #000', padding: '6px', fontSize: '12px', color: '#000', pointerEvents: 'none' });
+                    ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+                    OLMap && OLMap.addOverlay(ov);
+                    distanceOverlaysMap.set(key, ov);
+                }
+                ov.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${remaining}s`;
+                ov.setOffset(stableOverlayOffset(key));
+                // position overlay at available point if any, else skip
+                if (planeA && planeA.position) ov.setPosition(ol.proj.fromLonLat(planeA.position));
+
+                if (secondsMissing >= 15) {
+                    ppMissingSince.delete(key);
+                    ppRemoved.add(key);
+                    const feat = distanceLineFeaturesMap.get(key);
+                    if (feat) {
+                        distanceLineLayer.getSource().removeFeature(feat);
+                        distanceLineFeaturesMap.delete(key);
+                    }
+                    OLMap && ov && OLMap.removeOverlay(ov);
+                    distanceOverlaysMap.delete(key);
+                    // remove pair
+                    pairMap.delete(key);
+                    pairOrder = pairOrder.filter(k => k !== key);
+                }
+                continue;
+            }
+
+            ppMissingSince.delete(key);
+
+            // both available: draw
+            const coordsA = planeA.position;
+            const coordsB = planeB.position;
+            const distance = haversineDistance(coordsA[1], coordsA[0], coordsB[1], coordsB[0]);
+            const altDiff = Math.abs((planeA.altitude || 0) - (planeB.altitude || 0));
+
+            const lineCoords = [ol.proj.fromLonLat(coordsA), ol.proj.fromLonLat(coordsB)];
+            let feat = distanceLineFeaturesMap.get(key);
+            if (!feat) {
+                feat = new ol.Feature({ geometry: new ol.geom.LineString(lineCoords) });
+                distanceLineLayer.getSource().addFeature(feat);
+                distanceLineFeaturesMap.set(key, feat);
+            } else {
+                feat.getGeometry().setCoordinates(lineCoords);
+            }
+
+            let ov = distanceOverlaysMap.get(key);
+            if (!ov) {
+                const el = document.createElement('div');
+                Object.assign(el.style, { background: 'rgba(255,255,255,0.85)', border: '1px solid #000', padding: '6px', fontSize: '12px', color: '#000', pointerEvents: 'none' });
+                ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+                OLMap && OLMap.addOverlay(ov);
+                distanceOverlaysMap.set(key, ov);
+            }
+            const midPoint = [(coordsA[0] + coordsB[0]) / 2, (coordsA[1] + coordsB[1]) / 2];
+            ov.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+            ov.setPosition(ol.proj.fromLonLat(midPoint));
+        }
+
+        // cleanup features/overlays for keys not active
+        for (const [k, feat] of distanceLineFeaturesMap) {
+            if (!pairMap.has(k)) {
+                try { distanceLineLayer.getSource().removeFeature(feat); } catch (_) { }
+                distanceLineFeaturesMap.delete(k);
+            }
+        }
+        for (const [k, ov] of distanceOverlaysMap) {
+            if (!pairMap.has(k)) {
+                OLMap && OLMap.removeOverlay(ov);
+                distanceOverlaysMap.delete(k);
+            }
+        }
     }
-
-    // Actualizar o crear el Cartel (Overlay)
-    let midPoint = [(coords1[0] + coords2[0]) / 2, (coords1[1] + coords2[1]) / 2];
-    let midPointProj = ol.proj.fromLonLat(midPoint);
-
-    if (!distanceOverlay) {
-        let element = document.createElement('div');
-        element.id = 'distance-label-tag'; // ID para limpieza forzada
-        element.style.background = 'rgba(255, 255, 255, 0.8)';
-        element.style.border = '1px solid black';
-        element.style.padding = '5px';
-        element.style.fontSize = '12px';
-        element.style.color = 'black';
-        element.style.pointerEvents = 'none';
-
-        distanceOverlay = new ol.Overlay({
-            element: element,
-            positioning: 'bottom-center',
-            offset: [0, -10]
-        });
-        OLMap.addOverlay(distanceOverlay);
-    }
-
-    // Actualizamos el texto solo si tenemos números válidos
-    distanceOverlay.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
-    distanceOverlay.setPosition(midPointProj);
 }
 
 // Crear o actualizar el punto A en el mapa
@@ -4030,22 +4193,87 @@ function ol_map_init() {
         //console.log(`planeHex: ${planeHex} trailHex: ${trailHex}`);
         if (distanceBetweenPlanesMode && planeHex) {
 
-            if (selectedPlanesForDistance.length >= 2) {
-                resetDistanceCalculation();
-            }
+            // Modo 1A1B: seleccionar dos aviones
+            if (planeDistanceModeType === '1A1B') {
+                if (selectedPlanesForDistance.length >= 2) {
+                    resetDistanceCalculation();
+                }
 
-            let plane = g.planes[planeHex];
-            if (plane && plane.position && plane.altitude !== null) {
-                selectedPlanesForDistance.push({
-                    hex: planeHex,
-                    coords: plane.position,
-                    altitude: plane.altitude
-                });
+                let plane = g.planes[planeHex];
+                if (plane && plane.position && plane.altitude !== null) {
+                    selectedPlanesForDistance.push({ hex: planeHex, coords: plane.position, altitude: plane.altitude });
 
-                if (selectedPlanesForDistance.length === 2) {
+                    if (selectedPlanesForDistance.length === 2) {
+                        updateDistanceLine();
+                        if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
+                        distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
+                    }
+                }
+
+            // Modo 'pairs': permite pares independientes (A-B, C-D) y anchor A->B,C...
+            } else if (planeDistanceModeType === 'pairs') {
+                // If an anchor A is set, clicking adds pair A|planeHex (unless same or duplicate)
+                if (selectedPlaneA) {
+                    if (planeHex === selectedPlaneA) {
+                        // clicking anchor again clears it
+                        selectedPlaneA = null;
+                        showDistanceGuide('Anchor desactivado.');
+                        return;
+                    }
+
+                    if (pairMap.size >= PP_MAX_PAIRS) {
+                        showDistanceGuide(`Máximo ${PP_MAX_PAIRS} pares alcanzado.`);
+                        return;
+                    }
+                    const key = `${selectedPlaneA}|${planeHex}`;
+                    if (pairMap.has(key)) {
+                        showDistanceGuide('Par ya existente.');
+                        return;
+                    }
+                    pairMap.set(key, { a: selectedPlaneA, b: planeHex });
+                    pairOrder.push(key);
+                    showDistanceGuide('Par añadido.');
                     updateDistanceLine();
                     if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
                     distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
+                    return;
+                }
+
+                // No anchor active: use pairBuffer to form independent pairs or set anchor by clicking same aircraft twice
+                if (pairBuffer.length === 0) {
+                    pairBuffer.push(planeHex);
+                    showDistanceGuide('Primero seleccionado. Haga clic en otro avión para formar par, o haga clic de nuevo en este avión para anclarlo.');
+                    return;
+                } else {
+                    const first = pairBuffer[0];
+                    // Same clicked twice -> set anchor
+                    if (first === planeHex) {
+                        selectedPlaneA = planeHex;
+                        pairBuffer = [];
+                        showDistanceGuide('Avión anclado. Ahora haga clic en aviones B para crear pares con A. Clic en A otra vez para desanclar.');
+                        return;
+                    }
+
+                    // Create independent pair first|planeHex
+                    if (pairMap.size >= PP_MAX_PAIRS) {
+                        showDistanceGuide(`Máximo ${PP_MAX_PAIRS} pares alcanzado.`);
+                        pairBuffer = [];
+                        return;
+                    }
+                    const newKey = `${first}|${planeHex}`;
+                    if (pairMap.has(newKey)) {
+                        showDistanceGuide('Par ya existente.');
+                        pairBuffer = [];
+                        return;
+                    }
+                    pairMap.set(newKey, { a: first, b: planeHex });
+                    pairOrder.push(newKey);
+                    pairBuffer = [];
+                    showDistanceGuide('Par independiente añadido.');
+                    updateDistanceLine();
+                    if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
+                    distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
+                    return;
                 }
             }
         }
@@ -6369,40 +6597,39 @@ function togglePersistence() {
 }
 
 function toggleDistance() {
-    distanceBetweenPlanesMode = !distanceBetweenPlanesMode;
-    if (distanceBetweenPlanesMode) {
+    // Si está apagado, activarlo en el primer modo
+    if (!distanceBetweenPlanesMode) {
+        distanceBetweenPlanesMode = true;
+        planeDistanceModeType = PP_MODES[0];
         selectedPlanesForDistance = [];
-        // Limpiar línea y overlay anteriores (aunque no debería haber, por si acaso)
-        if (distanceLineFeature) {
-            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
-            distanceLineFeature = null;
-        }
-        if (distanceOverlay) {
-            OLMap.removeOverlay(distanceOverlay);
-            distanceOverlay = null;
-        }
-        if (distanceUpdateInterval) {
-            clearInterval(distanceUpdateInterval);
-            distanceUpdateInterval = null;
-        }
-    } else {
-
-        selectedPlanesForDistance = [];
-        // Limpiar línea y overlay
-        if (distanceLineFeature) {
-            distanceLineLayer.getSource().removeFeature(distanceLineFeature);
-            distanceLineFeature = null;
-        }
-        if (distanceOverlay) {
-            OLMap.removeOverlay(distanceOverlay);
-            distanceOverlay = null;
-        }
-        if (distanceUpdateInterval) {
-            clearInterval(distanceUpdateInterval);
-            distanceUpdateInterval = null;
-        }
+        selectedPlaneA = null;
+        // Asegurar limpieza de restos
+        resetDistanceCalculation();
+        showDistanceGuide(`<center>Modo ${planeDistanceModeType}</center><br>Haga clic en dos aviones para medir la distancia.`);
+        buttonActive('#D', true);
+        return;
     }
-    buttonActive('#D', distanceBetweenPlanesMode);
+
+    // Si está activo, ciclar al siguiente modo disponible
+    const idx = PP_MODES.indexOf(planeDistanceModeType);
+    if (idx >= 0 && idx < PP_MODES.length - 1) {
+        planeDistanceModeType = PP_MODES[idx + 1];
+        // Limpiar selecciones previas
+        resetDistanceCalculation();
+        selectedPlaneA = null;
+        selectedPlanesForDistance = [];
+        // Mostrar guía según modo
+        if (planeDistanceModeType === 'pairs') {
+            showDistanceGuide('<center>Modo Pares</center><br>Haga clic en dos aviones consecutivos para crear pares independientes (A-B, C-D), o haga clic dos veces en un avión para anclarlo y luego seleccione varios Bs.');
+        } else {
+            showDistanceGuide(`<center>Modo ${planeDistanceModeType}</center>`);
+        }
+        buttonActive('#D', true);
+    } else {
+        // Si es el último modo, apagar la herramienta
+        DistanceBetweenPlanes();
+        hideDistanceGuide();
+    }
 }
 
 function dim(evt) {
@@ -10754,6 +10981,30 @@ function resetDistanceCalculation() {
     // Limpieza manual por ID por si OpenLayers falló
     let extraDiv = document.getElementById('distance-label-tag');
     if (extraDiv) extraDiv.remove();
+
+    // Limpiar múltiples líneas y overlays si existen (modo 1A_nB)
+    if (distanceLineFeaturesMap && distanceLineFeaturesMap.size) {
+        for (const f of distanceLineFeaturesMap.values()) {
+            try { distanceLineLayer.getSource().removeFeature(f); } catch (_) { }
+        }
+        distanceLineFeaturesMap.clear();
+    }
+    if (distanceOverlaysMap && distanceOverlaysMap.size) {
+        for (const ov of distanceOverlaysMap.values()) {
+            try { OLMap && OLMap.removeOverlay(ov); } catch (_) { }
+        }
+        distanceOverlaysMap.clear();
+    }
+
+    // Reset de selección A en modos multi
+    selectedPlaneA = null;
+    // Limpiar mapas de señal perdida
+    ppMissingSince && ppMissingSince.clear();
+    ppRemoved && ppRemoved.clear();
+    // Limpiar pares y buffer
+    pairMap && pairMap.clear();
+    pairOrder = [];
+    pairBuffer = [];
 }
 
 function DistanceBetweenPlanes() {
