@@ -90,6 +90,10 @@ const groundPlaneFeatures = new Map();
 const groundPlaneOverlays = new Map();
 // Lista de pares A‑B acumulados en el modo nA_nB
 let taPairs = [];
+
+// NUEVO: mapa de Features por coordenada de punto A (lon,lat con 6 decimales)
+const groundPointFeaturesByCoord = new Map();
+
 // Guardar temporalmente el avión seleccionado a la espera de que se marque un punto A (modo nA_nB)
 let taPendingPlaneHex = null;
 // Guardar temporalmente el punto A marcado a la espera de que se seleccione un avión (modo nA_nB)
@@ -473,6 +477,9 @@ function clearTAGroundDrawings(opts = {}) {
     // Ocultar la capa del punto A en el mapa si está creada
     if (groundPointLayer) groundPointLayer.setVisible(false);
 
+    // NUEVO: limpiar referencias a Features de puntos A
+    groundPointFeaturesByCoord.clear();
+
     // Intentar vaciar la fuente de líneas A‑B
     try { groundToPlaneLineSource && groundToPlaneLineSource.clear(); } catch (_) { }
     // Ocultar la capa que dibuja la línea entre A y B
@@ -604,7 +611,7 @@ function onTTCycleClick() {
         groundToGroundModeType = GG_MODES[idx + 1];
         // Limpiar puntos, líneas y overlays previos
         clearGroundToGround();
-        
+
         // Asegurar que la capa de puntos esté visible
         if (ggPointLayer) ggPointLayer.setVisible(true);
 
@@ -642,7 +649,7 @@ function updateDistanceToGroundOverlay() {
             pairs.push({ key: '0|' + planesForGround[0], gp: groundPoints[0], hex: planesForGround[0] });
         }
 
-    // Modo 1 punto tierra n aviones: varios pares con el mismo punto A
+        // Modo 1 punto tierra n aviones: varios pares con el mismo punto A
     } else if (distanceToGroundModeType === '1A_nB') {
         // Solo si ya hay un punto A y al menos un avión marcado
         if (groundPoints.length === 1 && planesForGround.length) {
@@ -652,7 +659,7 @@ function updateDistanceToGroundOverlay() {
             }
         }
 
-    // Modo n puntos tierra 1 avión: varios pares con el mismo avión B
+        // Modo n puntos tierra 1 avión: varios pares con el mismo avión B
     } else if (distanceToGroundModeType === 'nA_1B') {
         // Solo si hay un avión seleccionado y al menos un punto en tierra
         if (planesForGround.length === 1 && groundPoints.length) {
@@ -663,7 +670,7 @@ function updateDistanceToGroundOverlay() {
             }
         }
 
-    // Modo n puntos tierra n aviones: todos los pares acumulados
+        // Modo n puntos tierra n aviones: todos los pares acumulados
     } else if (distanceToGroundModeType === 'nA_nB') {
 
         // Añadir cada par guardado previamente a la lista de pares activos
@@ -787,6 +794,56 @@ function updateDistanceToGroundOverlay() {
                 } else if (distanceToGroundModeType === 'nA_nB') {
                     // Quitar el par A‑B almacenado
                     taPairs = taPairs.filter(p => p.key !== key);
+
+                    // Extraer la clave de la coordenada del punto A
+                    const groundKey = key.split('|')[0];
+
+                    // Recuperar la feature del punto A si estaba indexada
+                    const featA = groundPointFeaturesByCoord.get(groundKey);
+                    // Si existe la feature y la fuente de puntos está disponible
+                    if (featA && groundPointSource) {
+                        // Intentar quitar el punto A del mapa
+                        try { groundPointSource.removeFeature(featA); } catch (_) {}
+                        // Eliminar la entrada del índice para ese punto A    
+                        groundPointFeaturesByCoord.delete(groundKey);
+                    }
+                    // Borrar la clave aunque no hubiera feature
+                    groundPointFeaturesByCoord.delete(groundKey);
+
+                    // Si hay fuente de puntos A activa
+                    if (groundPointSource) {
+                        // Limpiar todos los puntos A del mapa
+                        groundPointSource.clear();
+                        // Vaciar el índice de puntos A por coordenada
+                        groundPointFeaturesByCoord.clear();
+                        // Recorrer cada par tierra‑avión almacenado
+                        for (const { gp } of taPairs) {
+                            // Clave de la coord con 6 decimales
+                            const gpKey = `${gp[0].toFixed(6)},${gp[1].toFixed(6)}`;
+                            // Si ya existe ese punto, saltarlo
+                            if (groundPointFeaturesByCoord.has(gpKey)) continue;
+                            // Crear la feature del punto A
+                            const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(gp)));
+                            // Registrar la feature en el índice por coord
+                            groundPointFeaturesByCoord.set(gpKey, f);
+                            // Añadir el punto A a la fuente para dibujarlo
+                            groundPointSource.addFeature(f);
+                        }
+                        // Contar cuántos puntos A hay
+                        const count = groundPointSource.getFeatures().length;
+                        // Mostrar u ocultar la capa según haya puntos
+                        if (groundPointLayer) groundPointLayer.setVisible(count > 0);
+                        // Forzar a la fuente a notificar cambios
+                        groundPointSource.changed();
+                        // Forzar a la capa a redibujarse
+                        groundPointLayer && groundPointLayer.changed();
+                        // Redibujar el mapa inmediatamente
+                        OLMap && OLMap.renderSync();
+                    }
+                    // Si no quedan puntos A, ocultar la capa
+                    if (groundPointLayer && groundPointSource && groundPointSource.getFeatures().length === 0) {
+                        groundPointLayer.setVisible(false);
+                    }
                 }
             }
 
@@ -913,7 +970,7 @@ function updateGroundToGroundOverlay() {
             // Guardar el par A‑B con clave fija
             pairs.push({ key: '0', a: ggPointA, b: ggPointsB[0] });
         }
-    // Modo 1AnB: un punto en tierra a otros puntos en tierra
+        // Modo 1AnB: un punto en tierra a otros puntos en tierra
     } else if (groundToGroundModeType === '1A_nB') {
         // Solo si existe el punto A y al menos un punto B
         if (ggPointA && ggPointsB.length) {
@@ -1154,7 +1211,7 @@ function DistanceGroundToGround() {
         ggUpdateInterval = setInterval(updateGroundToGroundOverlay, 1000);
         // Marcar el botón como activo
         buttonActive('#TT', true);
-    // Si se apaga el modo:
+        // Si se apaga el modo:
     } else {
         // Limpiar puntos, líneas y overlays
         clearGroundToGround();
@@ -3728,12 +3785,19 @@ function ol_map_init() {
                         // Asegurar visibilidad de la capa de puntos A
                         if (groundPointLayer) groundPointLayer.setVisible(true);
                         // Añadir el punto A al mapa
-                        groundPointSource && groundPointSource.addFeature(
-                            new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
-                        );
+                        // groundPointSource && groundPointSource.addFeature(
+                        //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                        // );
+                        // Añadir el punto A al mapa y guardar referencia
+                        if (groundPointSource) {
+                            const featA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)));
+                            groundPointSource.addFeature(featA);
+                            const gpKey = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}`;
+                            groundPointFeaturesByCoord.set(gpKey, featA);
+                        }
                         // Mostrar guía paso 2
                         showDistanceGuide(taStep2Message());
-                    // Si no había punto A pendiente
+                        // Si no había punto A pendiente
                     } else {
                         // Guardar avión a la espera de marcar punto A
                         taPendingPlaneHex = planeHex;
@@ -3746,11 +3810,11 @@ function ol_map_init() {
                     if (planesForGround.includes(planeHex)) {
                         // Refrescar guía
                         showDistanceGuide(taStep2Message());
-                    // Si supera el máximo de B
+                        // Si supera el máximo de B
                     } else if (planesForGround.length >= TA_MAX_1A_nB) {
                         // Avisar el límite
                         showDistanceGuide(`Máximo ${TA_MAX_1A_nB} puntos B`);
-                    // Si aún se puede agregar este avión B
+                        // Si aún se puede agregar este avión B
                     } else {
                         // Añadir el avión B
                         planesForGround.push(planeHex);
@@ -3763,7 +3827,7 @@ function ol_map_init() {
                     planesForGround = [planeHex];
                     // Mostrar guía paso 2
                     showDistanceGuide(taStep2Message());
-                // Modo 1A1B
+                    // Modo 1A1B
                 } else {
                     // Buscar el avión en memoria
                     const p = g.planes[planeHex];
@@ -3775,7 +3839,7 @@ function ol_map_init() {
                         selectedPlaneForGround = p;
                         // Ocultar guía
                         hideDistanceGuide();
-                    // Si no tiene posición válida
+                        // Si no tiene posición válida
                     } else {
                         // Aviso de error
                         showDistanceGuide('Seleccione un avión con posición válida.');
@@ -3822,7 +3886,7 @@ function ol_map_init() {
                         );
                         // Actualizar guía al siguiente paso
                         showDistanceGuide(taStep2Message());
-                    // Si no hay avión pendiente
+                        // Si no hay avión pendiente
                     } else {
                         // Verificar límite de pares
                         if (taPairs.length >= TA_MAX_nA_nB) {
@@ -3835,10 +3899,17 @@ function ol_map_init() {
                         taPendingGround = lonlat;
                         // Asegurar visibilidad
                         if (groundPointLayer) groundPointLayer.setVisible(true);
-                        // Dibujar punto A
-                        groundPointSource && groundPointSource.addFeature(
-                            new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
-                        );
+                        // // Dibujar punto A
+                        // groundPointSource && groundPointSource.addFeature(
+                        //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                        // );
+                        // Dibujar punto A y guardar referencia
+                        if (groundPointSource) {
+                            const featA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)));
+                            groundPointSource.addFeature(featA);
+                            const gpKey = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}`;
+                            groundPointFeaturesByCoord.set(gpKey, featA);
+                        }
                         // Mostrar guía paso 2
                         showDistanceGuide(taStep2Message());
                     }
@@ -3848,7 +3919,7 @@ function ol_map_init() {
                     if (groundPoints.length >= TA_MAX_nA_1B) {
                         // Aviso de límite
                         showDistanceGuide(`Máximo ${TA_MAX_nA_1B} puntos A`);
-                    // Si aún puede agregar punto A
+                        // Si aún puede agregar punto A
                     } else {
                         // Mostrar capa de puntos
                         if (groundPointLayer) groundPointLayer.setVisible(true);
@@ -3861,7 +3932,7 @@ function ol_map_init() {
                         // Actualizar guía
                         showDistanceGuide(taStep2Message());
                     }
-                // Modo 1A1B o 1A_nB
+                    // Modo 1A1B o 1A_nB
                 } else {
                     // Reemplazar el punto A único
                     groundPoints = [lonlat];
@@ -3917,7 +3988,7 @@ function ol_map_init() {
 
                 // Mostrar guía paso 2
                 showDistanceGuide(ggStep2Message());
-            // Si el modo es 1A1B
+                // Si el modo es 1A1B
             } else if (groundToGroundModeType === '1A1B') {
                 // Guardar clic como único punto B
                 ggPointsB = [lonlat];
@@ -3925,13 +3996,13 @@ function ol_map_init() {
                 ggPointSource && ggPointSource.addFeature(
                     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                 );
-            // 1A_nB
+                // 1A_nB
             } else {
                 // Si ya alcanzó el máximo de puntos B
                 if (ggPointsB.length >= GG_MAX_1A_nB) {
                     // Avisar el límite
                     showDistanceGuide(`Máximo ${GG_MAX_1A_nB} puntos B.`);
-                // Si aún se pueden agregar más puntos B
+                    // Si aún se pueden agregar más puntos B
                 } else {
                     // Añadir este clic a la lista de B
                     ggPointsB.push(lonlat);
