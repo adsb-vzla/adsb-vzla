@@ -291,7 +291,7 @@ function updateDistanceLine() {
     // ----------------------------------------------
     // 1. El avión no existe en g.planes
     // 2. El avión no tiene posición o altitud
-    // 3. El avión no ha reportado nada en los últimos 10 segundos (plane.seen > 10)
+    // 3. El avión no ha reportado nada en los últimos 15 segundos (plane.seen > 15)
     let isPlane1Lost = !plane1 || !plane1.position || plane1.seen > 15;
     let isPlane2Lost = !plane2 || !plane2.position || plane2.seen > 15;
 
