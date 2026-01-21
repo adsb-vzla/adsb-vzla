@@ -3953,7 +3953,7 @@ function ol_map_init() {
                     // Si ya se alcanzó el máximo de pares
                     if (taPairs.length >= TA_MAX_nA_nB) {
                         // Avisar límite alcanzado
-                        showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares`);
+                        showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares.`);
                         // Detener propagación del evento
                         evt.stopPropagation();
                         return;
@@ -3970,10 +3970,6 @@ function ol_map_init() {
                         taPairs.push({ hex: planeHex, gp: lonlat, key });
                         // Asegurar visibilidad de la capa de puntos A
                         if (groundPointLayer) groundPointLayer.setVisible(true);
-                        // Añadir el punto A al mapa
-                        // groundPointSource && groundPointSource.addFeature(
-                        //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
-                        // );
                         // Añadir el punto A al mapa y guardar referencia
                         if (groundPointSource) {
                             const featA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)));
@@ -3999,7 +3995,7 @@ function ol_map_init() {
                         // Si supera el máximo de B
                     } else if (planesForGround.length >= TA_MAX_1A_nB) {
                         // Avisar el límite
-                        showDistanceGuide(`Máximo ${TA_MAX_1A_nB} puntos B`);
+                        showDistanceGuide(`Máximo ${TA_MAX_1A_nB} puntos B.`);
                         // Si aún se puede agregar este avión B
                     } else {
                         // Añadir el avión B
@@ -4050,7 +4046,7 @@ function ol_map_init() {
                         // Revisar límite de pares
                         if (taPairs.length >= TA_MAX_nA_nB) {
                             // Aviso de límite
-                            showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares`);
+                            showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares.`);
                             // Detener propagación
                             evt.stopPropagation();
                             return;
@@ -4076,7 +4072,7 @@ function ol_map_init() {
                     } else {
                         // Verificar límite de pares
                         if (taPairs.length >= TA_MAX_nA_nB) {
-                            showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares`);
+                            showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares.`);
                             // Detener propagación
                             evt.stopPropagation();
                             return;
@@ -4085,10 +4081,6 @@ function ol_map_init() {
                         taPendingGround = lonlat;
                         // Asegurar visibilidad
                         if (groundPointLayer) groundPointLayer.setVisible(true);
-                        // // Dibujar punto A
-                        // groundPointSource && groundPointSource.addFeature(
-                        //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
-                        // );
                         // Dibujar punto A y guardar referencia
                         if (groundPointSource) {
                             const featA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)));
@@ -4104,7 +4096,7 @@ function ol_map_init() {
                     // Si alcanza el máximo de puntos A
                     if (groundPoints.length >= TA_MAX_nA_1B) {
                         // Aviso de límite
-                        showDistanceGuide(`Máximo ${TA_MAX_nA_1B} puntos A`);
+                        showDistanceGuide(`Máximo ${TA_MAX_nA_1B} puntos A.`);
                         // Si aún puede agregar punto A
                     } else {
                         // Mostrar capa de puntos
