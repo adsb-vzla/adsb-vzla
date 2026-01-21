@@ -3925,6 +3925,29 @@ function ol_map_init() {
 
             // Si se hace click sobre un avión
             if (planeHex) {
+
+                // Siempre marcar punto A antes que avión/es
+                if (distanceToGroundModeType === '1A1B' && groundPoints.length === 0) {
+                    showDistanceGuide('Primero marque el punto A.');
+                    evt.stopPropagation();
+                    return;
+                }
+                if (distanceToGroundModeType === '1A_nB' && groundPoints.length === 0) {
+                    showDistanceGuide('Primero marque el punto A.');
+                    evt.stopPropagation();
+                    return;
+                }
+                if (distanceToGroundModeType === 'nA_1B' && groundPoints.length === 0) {
+                    showDistanceGuide('Primero marque al menos un punto A.');
+                    evt.stopPropagation();
+                    return;
+                }
+                if (distanceToGroundModeType === 'nA_nB' && !taPendingGround) {
+                    showDistanceGuide('Primero marque el punto A.');
+                    evt.stopPropagation();
+                    return;
+                }
+
                 // Modo nA_nB
                 if (distanceToGroundModeType === 'nA_nB') {
                     // Si ya se alcanzó el máximo de pares
