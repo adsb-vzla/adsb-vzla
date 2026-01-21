@@ -4155,6 +4155,20 @@ function ol_map_init() {
             } else if (groundToGroundModeType === '1A1B') {
                 // Guardar clic como único punto B
                 ggPointsB = [lonlat];
+
+                // Si existe la fuente de puntos tierra‑tierra                
+                if (ggPointSource) {
+                    // Vaciar todas las features actuales
+                    ggPointSource.clear();
+                    // Si hay un punto A registrado
+                    if (ggPointA) {
+                        // Añadir la feature del punto A a la fuente y crear el punto en la proyección del mapa
+                        ggPointSource.addFeature(
+                            new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(ggPointA)))
+                        );
+                    }
+                }
+
                 // Dibujar punto B
                 ggPointSource && ggPointSource.addFeature(
                     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
