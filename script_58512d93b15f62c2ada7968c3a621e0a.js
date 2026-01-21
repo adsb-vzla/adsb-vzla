@@ -3977,8 +3977,9 @@ function ol_map_init() {
                             const gpKey = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}`;
                             groundPointFeaturesByCoord.set(gpKey, featA);
                         }
-                        // Mostrar guía paso 2
-                        showDistanceGuide(taStep2Message());
+                        // Ocultar guía
+                        hideDistanceGuide();
+
                         // Si no había punto A pendiente
                     } else {
                         // Guardar avión a la espera de marcar punto A
@@ -4000,15 +4001,15 @@ function ol_map_init() {
                     } else {
                         // Añadir el avión B
                         planesForGround.push(planeHex);
-                        // Actualizar la guía
-                        showDistanceGuide(taStep2Message());
+                        // Ocultar guía
+                        hideDistanceGuide();
                     }
                     // Modo nA_1B
                 } else if (distanceToGroundModeType === 'nA_1B') {
                     // Fijar el avión como único B
                     planesForGround = [planeHex];
-                    // Mostrar guía paso 2
-                    showDistanceGuide(taStep2Message());
+                    // Ocultar guía
+                    hideDistanceGuide();
                     // Modo 1A1B
                 } else {
                     // Buscar el avión en memoria
@@ -4066,8 +4067,8 @@ function ol_map_init() {
                         groundPointSource && groundPointSource.addFeature(
                             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                         );
-                        // Actualizar guía al siguiente paso
-                        showDistanceGuide(taStep2Message());
+                        // Ocultar guía
+                        hideDistanceGuide();
                         // Si no hay avión pendiente
                     } else {
                         // Verificar límite de pares
@@ -4188,6 +4189,8 @@ function ol_map_init() {
                 ggPointSource && ggPointSource.addFeature(
                     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                 );
+                // Ocultar guía
+                hideDistanceGuide();
                 // 1A_nB
             } else {
                 // Si ya alcanzó el máximo de puntos B
@@ -4202,8 +4205,8 @@ function ol_map_init() {
                     ggPointSource && ggPointSource.addFeature(
                         new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                     );
-                    // Repetir paso 2
-                    showDistanceGuide(ggStep2Message());
+                    // Ocultar guía
+                    hideDistanceGuide();
                 }
             }
 
