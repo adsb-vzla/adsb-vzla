@@ -909,21 +909,32 @@ function updateDistanceToGroundOverlay() {
 
             // Mensaje de señal perdida
             ov.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${remaining}s`;
-            // Desplazar ligeramente para evitar solapes
-            ov.setOffset(stableOverlayOffset(key));
 
-            // Si hay posición, centrar el overlay en el punto medio A‑B
-            if (!missingPlane && plane.position) {
-                const mid = [
-                    (gp[0] + plane.position[0]) / 2,
-                    (gp[1] + plane.position[1]) / 2
-                ];
-                // Colocar el overlay en el punto medio proyectado
-                ov.setPosition(ol.proj.fromLonLat(mid));
+            // Coordenada donde se mostrará el cartel
+            let overlayPos;
+            // Si ya hay una línea A‑B dibujada para este par
+            if (groundPlaneFeatures.has(key)) {
+                // Usar el punto medio de esa línea
+                overlayPos = groundPlaneFeatures.get(key).getGeometry().getCoordinateAt(0.5);
+            // Si el avión tiene posición válida pero no hay línea
+            } else if (!missingPlane && plane.position) {
+                // Proyectar la posición del avión
+                const projPlane = ol.proj.fromLonLat(plane.position);
+                // Proyectar el punto A en tierra
+                const projGround = ol.proj.fromLonLat(gp);
+                // Calcular el punto medio entre A y el avión
+                overlayPos = [(projGround[0] + projPlane[0]) / 2, (projGround[1] + projPlane[1]) / 2];
+            // Si no hay posición del avión
             } else {
-                // Si no hay posición, mostrar sobre el punto A
-                ov.setPosition(ol.proj.fromLonLat(gp));
+                // Colocar el cartel sobre el punto A
+                overlayPos = ol.proj.fromLonLat(gp);
             }
+            // Anclar el overlay en su centro
+            ov.setPositioning('center-center');
+            // Sin desplazamiento adicional
+            ov.setOffset([0, 0]);
+            // Posiciona el overlay en la coordenada calculada
+            ov.setPosition(overlayPos);
 
             // Si lleva 15s sin señal, se descarta el par
             if (secondsMissing >= 15) {
@@ -1055,8 +1066,6 @@ function updateDistanceToGroundOverlay() {
         const projPlane = ol.proj.fromLonLat(pp);
         // Proyectar el punto A al mapa
         const projGround = ol.proj.fromLonLat(gp);
-        // Punto medio A‑B
-        const midProj = [(projGround[0] + projPlane[0]) / 2, (projGround[1] + projPlane[1]) / 2];
 
         // Volver a marcar el par como activo
         active.add(key);
@@ -1076,6 +1085,9 @@ function updateDistanceToGroundOverlay() {
             feat.getGeometry().setCoordinates([projGround, projPlane]);
         }
 
+        // Punto medio A‑B
+        const midProj = feat.getGeometry().getCoordinateAt(0.5);
+
         // Buscar el overlay de texto para el par
         let ov = groundPlaneOverlays.get(key);
         // Si no existe, crear uno nuevo
@@ -1087,7 +1099,7 @@ function updateDistanceToGroundOverlay() {
             el.style.fontSize = '12px';
             el.style.color = '#000';
             el.style.pointerEvents = 'none';
-            ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+            ov = new ol.Overlay({ element: el, positioning: 'center-center', offset: [0, -10] });
             OLMap && OLMap.addOverlay(ov);
             groundPlaneOverlays.set(key, ov);
         }
@@ -1162,7 +1174,7 @@ function updateGroundToGroundOverlay() {
         // Proyectar el punto B al mapa
         const projB = ol.proj.fromLonLat(b);
         // Calcular el punto medio A‑B
-        const mid = [(projA[0] + projB[0]) / 2, (projA[1] + projB[1]) / 2];
+        const mid = feat.getGeometry().getCoordinateAt(0.5);
 
         // Marcar el par como activo en el ciclo
         active.add(key);
@@ -1195,7 +1207,7 @@ function updateGroundToGroundOverlay() {
                 color: '#000',
                 pointerEvents: 'none',
             });
-            ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+            ov = new ol.Overlay({ element: el, positioning: 'center-center', offset: [0, -10] });
             OLMap && OLMap.addOverlay(ov);
             ggOverlays.set(key, ov);
         }
