@@ -1173,8 +1173,6 @@ function updateGroundToGroundOverlay() {
         const projA = ol.proj.fromLonLat(a);
         // Proyectar el punto B al mapa
         const projB = ol.proj.fromLonLat(b);
-        // Calcular el punto medio A‑B
-        const mid = feat.getGeometry().getCoordinateAt(0.5);
 
         // Marcar el par como activo en el ciclo
         active.add(key);
@@ -1193,6 +1191,9 @@ function updateGroundToGroundOverlay() {
             // Actualizar coordenadas de la línea existente
             feat.getGeometry().setCoordinates([projA, projB]);
         }
+
+        // Calcular el punto medio A‑B
+        const mid = feat.getGeometry().getCoordinateAt(0.5);
 
         // Buscar overlay de distancia para el par
         let ov = ggOverlays.get(key);
