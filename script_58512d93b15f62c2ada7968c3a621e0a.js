@@ -6665,7 +6665,7 @@ function toggleDistance() {
         selectedPlanesForDistance = [];
         // Mostrar guía según modo
         if (planeDistanceModeType === 'pairs') {
-            showDistanceGuide('<center>Modo Pares</center><br>Haga clic en dos aviones consecutivos para crear pares independientes (A-B, C-D), o haga clic dos veces en un avión para anclarlo y luego seleccione varios Bs.');
+            showDistanceGuide('<center>Modo Pares</center><br>Haga clic en dos aviones consecutivos para crear pares independientes (A-B, C-D), o haga clic dos veces en un avión para anclarlo y luego seleccione varios puntos B.');
         } else {
             showDistanceGuide(`<center>Modo ${planeDistanceModeType}</center>`);
         }
