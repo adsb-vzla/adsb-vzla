@@ -72,21 +72,6 @@ function createBaseLayers() {
         type: 'base',
     }));
 
-    let basemap_id = "rastertiles/voyager";
-    world.push(new ol.layer.Tile({
-        source: new ol.source.OSM({
-            "url" : "https://{a-d}.basemaps.cartocdn.com/"+ basemap_id + "/{z}/{x}/{y}.png",
-            "attributions" : 'Powered by <a href="https://carto.com">CARTO.com</a>'
-            + ' using data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.',
-            attributionsCollapsible: false,
-            maxZoom: 15,
-            transition: tileTransition,
-        }),
-        name: "carto_" + basemap_id,
-        title: 'CARTO.com English',
-        type: 'base',
-    }));
-
     world.push(new ol.layer.Tile({
         source: new ol.source.OSM({
             "url" : "https://{a-d}.tile.openstreetmap.de/{z}/{x}/{y}.png",
@@ -247,7 +232,9 @@ function createBaseLayers() {
             title: 'ESRI.com Sat.',
             type: 'base',
         }));
-        world.push(new ol.layer.Tile({
+
+        
+        /* world.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 url: "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
                 attributions: 'Powered by <a href="https://www.esri.com">Esri.com</a>' +
@@ -272,7 +259,7 @@ function createBaseLayers() {
             name: 'esri_streets',
             title: 'ESRI.com Streets',
             type: 'base',
-        }));
+        }));*/
     }
 
     // testing ...
@@ -327,7 +314,7 @@ function createBaseLayers() {
         title: 'GIBS Relief',
         type: 'base',
     }));
-    */
+    
 
     const date = new Date(Date.now() - 86400 * 1000);
     const yesterday = date.getUTCFullYear() + '-' + (date.getUTCMonth() + 1).toString().padStart(2, '0') + '-' + date.getUTCDate().toString().padStart(2, '0');
@@ -346,11 +333,12 @@ function createBaseLayers() {
         title: 'GIBS Clouds ' + yesterday,
         type: 'base',
     }));
+    */
     // carto.com basemaps, see the following URLs for details on them:
     // http://basemaps.cartocdn.com
     // https://github.com/CartoDB/cartodb/wiki/BaseMaps-available
 
-    let basemaps = [ "dark_all", "dark_nolabels",
+    /* let basemaps = [ "dark_all", "dark_nolabels",
         "light_all", "light_nolabels"
     ]
 
@@ -372,7 +360,7 @@ function createBaseLayers() {
                 type: 'base',
             }));
         }
-    }
+    } */
 
     if (loStore['bingKey'] != undefined)
         BingMapsAPIKey = loStore['bingKey'];
@@ -442,7 +430,7 @@ function createBaseLayers() {
         }));
     }
 
-    if (1) {
+    /* if (1) {
         us.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 url: "https://tiles.arcgis.com/tiles/ssFJjBXIUyZDrSYZ/arcgis/rest/services/VFR_Sectional/MapServer/tile/{z}/{y}/{x}",
@@ -500,7 +488,7 @@ function createBaseLayers() {
         }));
     }
 
-/*     if (ChartBundleLayers) {
+    if (ChartBundleLayers) {
 
         let chartbundleTypesDirect = {
             sec: "Sectional Charts",
@@ -548,7 +536,7 @@ function createBaseLayers() {
         maxZoom: 13,
     }));
 
-    if (true) {
+    /*if (true) {
         let tfrLayer = new ol.layer.Vector({
             style: {
                 'stroke-width': 2,
@@ -809,7 +797,7 @@ function createBaseLayers() {
         });
 
         world.push(rainviewerRadar);
-    }
+    }*/
 
     let createGeoJsonLayer = function (title, name, url, fill, stroke, showLabel = true) {
         return new ol.layer.Vector({
@@ -853,22 +841,22 @@ function createBaseLayers() {
     };
 
     // Taken from https://www.ais.pansa.pl/mil/pliki/EP_ENR_2_4_en.pdf
-    europe.push(createGeoJsonLayer('PL AWACS Orbits', 'plawacsorbits', 'geojson/PL_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
+    //europe.push(createGeoJsonLayer('PL AWACS Orbits', 'plawacsorbits', 'geojson/PL_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
 
     // Taken from https://english.defensie.nl/binaries/defence/documenten/publications/2022/12/14/milaip-01-23-part-1-gen-part-2-enr/MILAIP_01_2023split_GEN_ENR.pdf
-    europe.push(createGeoJsonLayer('NL AWACS Orbits', 'nlawacsorbits', 'geojson/NL_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
+    //europe.push(createGeoJsonLayer('NL AWACS Orbits', 'nlawacsorbits', 'geojson/NL_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
 
     // Taken from https://github.com/olithissen/AwacsOrbitsDE
-    europe.push(createGeoJsonLayer('DE AWACS Orbits', 'deawacsorbits', 'geojson/DE_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
+    //europe.push(createGeoJsonLayer('DE AWACS Orbits', 'deawacsorbits', 'geojson/DE_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
 
     // Taken from https://github.com/alkissack/Dump1090-OpenLayers3-html
-    europe.push(createGeoJsonLayer('UK Radar Corridors', 'ukradarcorridors', 'geojson/UK_Mil_RC.geojson', 'rgba(22, 171, 22, 0.3)', 'rgba(22, 171, 22, 1)'));
-    europe.push(createGeoJsonLayer('UK A2A Refueling', 'uka2arefueling', 'geojson/UK_Mil_AAR_Zones.geojson', 'rgba(52, 50, 168, 0.3)', 'rgba(52, 50, 168, 1)'));
-    europe.push(createGeoJsonLayer('UK AWACS Orbits', 'ukawacsorbits', 'geojson/UK_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
+    //europe.push(createGeoJsonLayer('UK Radar Corridors', 'ukradarcorridors', 'geojson/UK_Mil_RC.geojson', 'rgba(22, 171, 22, 0.3)', 'rgba(22, 171, 22, 1)'));
+    //europe.push(createGeoJsonLayer('UK A2A Refueling', 'uka2arefueling', 'geojson/UK_Mil_AAR_Zones.geojson', 'rgba(52, 50, 168, 0.3)', 'rgba(52, 50, 168, 1)'));
+    //europe.push(createGeoJsonLayer('UK AWACS Orbits', 'ukawacsorbits', 'geojson/UK_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
 
-    us.push(createGeoJsonLayer('US A2A Refueling', 'usa2arefueling', 'geojson/US_A2A_refueling.geojson', 'rgba(52, 50, 168, 0.3)', 'rgba(52, 50, 168, 1)'));
+    //us.push(createGeoJsonLayer('US A2A Refueling', 'usa2arefueling', 'geojson/US_A2A_refueling.geojson', 'rgba(52, 50, 168, 0.3)', 'rgba(52, 50, 168, 1)'));
 
-    us.push(createGeoJsonLayer('US ARTCC Boundaries', 'usartccboundaries', 'geojson/US_ARTCC_boundaries.geojson', 'rgba(255, 0, 255, 0.3)', 'rgba(255, 0, 255, 1)', false));
+    //us.push(createGeoJsonLayer('US ARTCC Boundaries', 'usartccboundaries', 'geojson/US_ARTCC_boundaries.geojson', 'rgba(255, 0, 255, 0.3)', 'rgba(255, 0, 255, 1)', false));
 
     if (uk_advisory) {
         europe.push(createGeoJsonLayer('uka_airports', 'uka_airports', 'geojson/uk_advisory/airports.geojson', 'rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 1)'));
