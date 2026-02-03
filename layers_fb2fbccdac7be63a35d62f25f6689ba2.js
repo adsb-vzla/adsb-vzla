@@ -153,21 +153,7 @@ function createBaseLayers() {
             type: 'base',
         }));
 
-    world.push(new ol.layer.Tile({
-        source: new ol.source.XYZ({
-            // La ruta DEBE incluir el estilo 'bright' y la extensión '.png'
-            // El servidor de wiedehopf convierte el vector a png sobre la marcha
-            "url" : "/tar1090/openfreemap_offline/bright/{z}/{x}/{y}.png",
-            attributionsCollapsible: false,
-            minZoom: 9,
-            maxZoom: 15,
-            transition: tileTransition,
-        }),
-        name: 'openfreemap_offline',
-        title: 'Map_Offline',
-        type: 'base',
-        visible: true
-    }));
+
 
     world.push(new ol.layer.Tile({
         source: new ol.source.OSM({
@@ -243,77 +229,6 @@ function createBaseLayers() {
             },
         }));
     }
-    if (1) {
-        world.push(new ol.layer.VectorTile({
-            type: 'base',
-            name: 'OpenFreeMapBright',
-            title: 'OpenFreeMap Bright',
-            onVisible: (layer) => {
-                if (!layer.get('styleApplied')) {
-                    ol.mapboxStyle.applyStyle(layer, "https://tiles.openfreemap.org/styles/bright");
-                    ol.mapboxStyle.applyBackground(layer, "https://tiles.openfreemap.org/styles/bright");
-                    layer.set('styleApplied', true);
-                }
-            },
-        }));
-    }
-    if (1) {
-        world.push(new ol.layer.VectorTile({
-            type: 'base',
-            name: 'OpenFreeMapLiberty',
-            title: 'OpenFreeMap Liberty',
-            onVisible: (layer) => {
-                if (!layer.get('styleApplied')) {
-                    ol.mapboxStyle.applyStyle(layer, "https://tiles.openfreemap.org/styles/liberty");
-                    ol.mapboxStyle.applyBackground(layer, "https://tiles.openfreemap.org/styles/liberty");
-                    layer.set('styleApplied', true);
-                }
-            },
-        }));
-    }
-    if (1) {
-        world.push(new ol.layer.VectorTile({
-            type: 'base',
-            name: 'OpenFreeMapPositron',
-            title: 'OpenFreeMap Positron',
-            onVisible: (layer) => {
-                if (!layer.get('styleApplied')) {
-                    ol.mapboxStyle.applyStyle(layer, "https://tiles.openfreemap.org/styles/positron");
-                    ol.mapboxStyle.applyBackground(layer, "https://tiles.openfreemap.org/styles/positron");
-                    layer.set('styleApplied', true);
-                }
-            },
-        }));
-    }
-    if (1) {
-        world.push(new ol.layer.VectorTile({
-            type: 'base',
-            name: 'OpenFreeMapDark',
-            title: 'OpenFreeMap Dark',
-            onVisible: (layer) => {
-                if (!layer.get('styleApplied')) {
-                    ol.mapboxStyle.applyStyle(layer, "https://tiles.openfreemap.org/styles/dark");
-                    ol.mapboxStyle.applyBackground(layer, "https://tiles.openfreemap.org/styles/dark");
-                    layer.set('styleApplied', true);
-                }
-            },
-        }));
-    }
-    if (1) {
-        world.push(new ol.layer.VectorTile({
-            type: 'base',
-            name: 'OpenFreeMapFiord',
-            title: 'OpenFreeMap Fiord',
-            onVisible: (layer) => {
-                if (!layer.get('styleApplied')) {
-                    ol.mapboxStyle.applyStyle(layer, "https://tiles.openfreemap.org/styles/fiord");
-                    ol.mapboxStyle.applyBackground(layer, "https://tiles.openfreemap.org/styles/fiord");
-                    layer.set('styleApplied', true);
-                }
-            },
-        }));
-    }
-
 
     if (1) {
         world.push(new ol.layer.Tile({
@@ -857,7 +772,7 @@ function createBaseLayers() {
 
         europe.push(dwd);
     }
-
+*/
     if (true) {
         g.getRainviewerLayers = async function(key) {
             const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", {credentials: "omit",});
@@ -894,7 +809,7 @@ function createBaseLayers() {
         });
 
         world.push(rainviewerRadar);
-    }*/
+    }
 
     let createGeoJsonLayer = function (title, name, url, fill, stroke, showLabel = true) {
         return new ol.layer.Vector({
