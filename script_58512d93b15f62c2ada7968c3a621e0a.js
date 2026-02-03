@@ -3827,7 +3827,7 @@ function ol_map_init() {
     OLMap.addControl(new ol.control.LayerSwitcher({
         groupSelectStyle: 'none',
         activationMode: 'click', // click sucks in the current implementation
-        target: 'sidebar_container',
+        target: 'map_canvas',
     }));
 
     OLMap.on('movestart', function (event) {

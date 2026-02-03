@@ -588,8 +588,8 @@ select.error, textarea.error, input.error {
 }
 
 .layer-switcher {
-    top: calc( 3px * var(--SCALE)) !important;
-    right: calc( 44px * var(--SCALE)) !important;
+    top: calc( 60px * var(--SCALE)) !important;
+    right: calc( 35px * var(--SCALE)) !important;
     z-index: 999;
 }
 .layer-switcher button {
@@ -600,8 +600,19 @@ select.error, textarea.error, input.error {
     height: calc( 30px * var(--SCALE));
     background-color: rgb(199, 96, 0) !important;
     position: absolute;
-    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48IS0tIUZvbnQgQXdlc29tZSBGcmVlIHY3LjEuMCBieSBAZm9udGF3ZXNvbWUgLSBodHRwczovL2ZvbnRhd2Vzb21lLmNvbSBMaWNlbnNlIC0gaHR0cHM6Ly9mb250YXdlc29tZS5jb20vbGljZW5zZS9mcmVlIENvcHlyaWdodCAyMDI2IEZvbnRpY29ucywgSW5jLi0tPjxwYXRoIGZpbGw9IiNmZmZmZmYiIGQ9Ik0yMzIuNSA1LjJjMTQuOS02LjkgMzIuMS02LjkgNDcgMGwyMTguNiAxMDFjOC41IDMuOSAxMy45IDEyLjQgMTMuOSAyMS44cy01LjQgMTcuOS0xMy45IDIxLjhsLTIxOC42IDEwMWMtMTQuOSA2LjktMzIuMSA2LjktNDcgMEwxMy45IDE0OS44QzUuNCAxNDUuOCAwIDEzNy4zIDAgMTI4czUuNC0xNy45IDEzLjktMjEuOEwyMzIuNSA1LjJ6TTQ4LjEgMjE4LjRsMTY0LjMgNzUuOWMyNy43IDEyLjggNTkuNiAxMi44IDg3LjMgMGwxNjQuMy03NS45IDM0LjEgMTUuOGM4LjUgMy45IDEzLjkgMTIuNCAxMy45IDIxLjhzLTUuNCAxNy45LTEzLjkgMjEuOGwtMjE4LjYgMTAxYy0xNC45IDYuOS0zMi4xIDYuOS00NyAwTDEzLjkgMjc3LjhDNS40IDI3My44IDAgMjY1LjMgMCAyNTZzNS40LTE3LjkgMTMuOS0yMS44bDM0LjEtMTUuOHpNMTMuOSAzNjIuMmwzNC4xLTE1LjggMTY0LjMgNzUuOWMyNy43IDEyLjggNTkuNiAxMi44IDg3LjMgMGwxNjQuMy03NS45IDM0LjEgMTUuOGM4LjUgMy45IDEzLjkgMTIuNCAxMy45IDIxLjhzLTUuNCAxNy45LTEzLjkgMjEuOGwtMjE4LjYgMTAxYy0xNC45IDYuOS0zMi4xIDYuOS00NyAwTDEzLjkgNDA1LjhDNS40IDQwMS44IDAgMzkzLjMgMCAzODRzNS40LTE3LjkgMTMuOS0yMS44eiIvPjwvc3ZnPg==");
+    background-image: none !important;
+    
     }
+.layer-switcher button::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("images/venezuela.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: invert(100%); /* Solo se invierte la imagen del pseudo-elemento */
+}
 
 .layer-switcher !.shown {
     top: calc( 3px * var(--SCALE)) !important;
