@@ -47,20 +47,6 @@ function createBaseLayers() {
     }));
     */
 
-    if (offlineMapDetail > 0) {
-        world.push(new ol.layer.Tile({
-            source: new ol.source.OSM({
-                "url" : "osm_tiles_offline/{z}/{x}/{y}.png",
-                attributionsCollapsible: false,
-                maxZoom: offlineMapDetail,
-                transition: tileTransition,
-            }),
-            name: 'osm_tiles_offline',
-            title: 'OpenStreetMap offline',
-            type: 'base',
-        }));
-    }
-
     world.push(new ol.layer.Tile({
         source: new ol.source.OSM({
             maxZoom: 17,
@@ -70,6 +56,117 @@ function createBaseLayers() {
         name: 'osm',
         title: 'OpenStreetMap',
         type: 'base',
+    }));
+
+           //if (offlineMapDetail > 0) {
+            world.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "mapdata/VFR/{z}/{x}/{y}.png",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 8,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'VFR',
+            title: 'VFR',
+            type: 'base',
+        }));
+    //}
+    
+    //if (offlineMapDetail > 0) {
+        world.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "mapdata/IFR_Low/{z}/{x}/{y}.png",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 1,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'IFR_Low',
+            title: 'IFR Low',
+            type: 'base',
+        }));
+    //}
+    
+    //if (offlineMapDetail > 0) {
+        world.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "mapdata/IFR_Hight/{z}/{x}/{y}.png",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 1,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'IFR_High',
+            title: 'IFR High',
+            type: 'base',
+        }));
+    //}
+
+    //if (offlineMapDetail > 0) {
+        world.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "mapdata/TMA_MIQ/{z}/{x}/{y}.png",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 1,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'TMA_MIQ',
+            title: 'TMA Maiquetía',
+            type: 'base',
+        }));
+    //}
+    
+
+    //if (offlineMapDetail > 0) {
+        world.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "mapdata/TMA_BNA/{z}/{x}/{y}.png",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 1,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'TMA_BNA',
+            title: 'TMA Barcelona',
+            type: 'base',
+        }));
+    //}
+    //if (offlineMapDetail > 0) {
+        world.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "mapdata/TMA_GNA/{z}/{x}/{y}.png",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 1,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'TMA_GNA',
+            title: 'TMA Guayana',
+            type: 'base',
+        }));
+
+    world.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            // La ruta DEBE incluir el estilo 'bright' y la extensión '.png'
+            // El servidor de wiedehopf convierte el vector a png sobre la marcha
+            "url" : "/tar1090/openfreemap_offline/bright/{z}/{x}/{y}.png",
+            attributionsCollapsible: false,
+            minZoom: 9,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'openfreemap_offline',
+        title: 'Map_Offline',
+        type: 'base',
+        visible: true
     }));
 
     world.push(new ol.layer.Tile({
