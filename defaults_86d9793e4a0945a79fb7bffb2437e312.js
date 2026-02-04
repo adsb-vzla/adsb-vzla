@@ -211,7 +211,7 @@ let SiteCirclesColors = ['#000000', '#000000', '#000000'];
 let SiteCirclesLineDash = null; // null - solid line, [5, 5] - dashed line with 5 pixel lines and spaces in between
 
 // Controls page title, righthand pane when nothing is selected
-let PageName = "tar1090";
+let PageName = "ADSB-VZLA";
 
 // Show country flags by ICAO addresses?
 let ShowFlags = true;
@@ -313,7 +313,7 @@ let squareMania = false;
 
 // Columns that have a // in front of them are shown.
 let HideCols = [
-	"#icao",
+//	"#icao",
 //	"#country",
 //	"#flight",
 //	"#route",

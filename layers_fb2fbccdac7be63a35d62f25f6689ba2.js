@@ -155,7 +155,7 @@ function createBaseLayers() {
 
 
 
-    world.push(new ol.layer.Tile({
+    /*world.push(new ol.layer.Tile({
         source: new ol.source.OSM({
             "url" : "https://{a-d}.tile.openstreetmap.de/{z}/{x}/{y}.png",
             attributionsCollapsible: false,
@@ -165,7 +165,7 @@ function createBaseLayers() {
         name: 'osm_de',
         title: 'OpenStreetMap DE',
         type: 'base',
-    }));
+    }));*/
 
     if (offlineMapDetailOFM > 0) {
         world.push(new ol.layer.VectorTile({
@@ -953,11 +953,7 @@ function createBaseLayers() {
         world.push(g.aiscatcherLayer);
     }
 
-    layers.push(new ol.layer.Group({
-        name: 'custom',
-        title: 'Custom',
-        layers: custom_layers,
-    }));
+
 
     if (europe.getLength() > 0) {
         layers.push(new ol.layer.Group({

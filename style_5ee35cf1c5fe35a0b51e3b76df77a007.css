@@ -598,21 +598,12 @@ select.error, textarea.error, input.error {
     background-position: center;
     width: calc( 30px * var(--SCALE));
     height: calc( 30px * var(--SCALE));
-    background-color: rgb(199, 96, 0) !important;
+    background-color: rgb(0, 122, 232) !important;
     position: absolute;
-    background-image: none !important;
-    
-    }
-.layer-switcher button::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
     background-image: url("images/venezuela.png");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    filter: invert(100%); /* Solo se invierte la imagen del pseudo-elemento */
-}
+    filter: invert(100%);
+    }
+
 
 .layer-switcher !.shown {
     top: calc( 3px * var(--SCALE)) !important;
@@ -639,6 +630,7 @@ select.error, textarea.error, input.error {
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: calc( 16px * var(--SCALE));
+    filter: invert(100%);
 }
 
 /* new css */
