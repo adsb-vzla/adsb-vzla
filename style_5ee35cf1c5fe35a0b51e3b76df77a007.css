@@ -947,21 +947,26 @@ table.infoSectionTable tr td {
 }
 
 #altitude_chart {
-    float: right;
-    width: calc(100% - calc( 5px * var(--SCALE)));
-    max-width:  calc(800px * var(--SCALE));
-    right: calc( 85px * var(--SCALE));
-    bottom: calc( 35px * var(--SCALE));
-    background-color: transparent !important;
+  width: calc(900px * var(--SCALE)); 
+  max-width: 150vh; 
+  transform: rotate(-90deg);
+  transform-origin: bottom left; 
+  position: absolute;
+  bottom: calc(-40px * var(--SCALE)); 
+  left: calc(65px * var(--SCALE)); 
+  
+  background-color: transparent !important;
+  float: none;
+  z-index: 9; 
 }
-
 #altitude_chart_button {
-    background-size: cover;
-    background-color: transparent;
-    width: 100%;
-    height: 0;
-    padding: 0;
-    padding-bottom: calc(100% * 56 / 1815);
+  background-size: cover;
+  background-color: transparent;
+  width: 100%;
+  height: 65px;
+  padding: 0;
+  padding-bottom: calc(100% * 56 / 1815);
+  transform: scale(0.8);
 }
 
 

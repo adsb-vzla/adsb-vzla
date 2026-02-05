@@ -2403,11 +2403,12 @@ function earlyInitPage() {
     }
 
     jQuery('#tabs').tabs({
-        active: loStore['active_tab'],
-        activate: function (event, ui) {
-            loStore['active_tab'] = jQuery("#tabs").tabs("option", "active");
-        },
-        collapsible: true
+    active: (loStore['active_tab'] !== undefined) ? loStore['active_tab'] : false,
+    
+    activate: function (event, ui) {
+        loStore['active_tab'] = jQuery("#tabs").tabs("option", "active");
+    },
+    collapsible: true
     });
 
     // Set page basics
@@ -3827,7 +3828,7 @@ function ol_map_init() {
     OLMap.addControl(new ol.control.LayerSwitcher({
         groupSelectStyle: 'none',
         activationMode: 'click', // click sucks in the current implementation
-        target: 'map_canvas',
+        target: 'layer-select',
     }));
 
     OLMap.on('movestart', function (event) {
