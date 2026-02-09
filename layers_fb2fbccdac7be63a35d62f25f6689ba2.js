@@ -228,6 +228,19 @@ function createBaseLayers() {
         title: 'OpenStreetMap',
         type: 'base',
     }));
+    if (offlineMapDetail > 0) {
+        world.push(new ol.layer.Tile({
+            source: new ol.source.OSM({
+                "url" : "osm_tiles_offline/{z}/{x}/{y}.png",
+                attributionsCollapsible: false,
+                maxZoom: offlineMapDetail,
+                transition: tileTransition,
+            }),
+            name: 'osm_tiles_offline',
+            title: 'Map_Offline',
+            type: 'base',
+        }));
+    }
 
     if (1) {
         world.push(new ol.layer.Tile({

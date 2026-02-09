@@ -78,7 +78,7 @@ let noaaRadarOpacity = 0.35;
 let openAIPOpacity = 0.70;
 let tfrOpacity = 0.70;
 
-let offlineMapDetail = -1;
+let offlineMapDetail = 11;
 let offlineMapDetailOFM = 9;
 
 // -- Marker settings -------------------------------------
