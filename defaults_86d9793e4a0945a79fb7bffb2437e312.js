@@ -36,7 +36,7 @@ let autoselectCoords = null;
 let showGrid = false;
 
 
-let SiteShow    = true;           // true to show a center marker
+let SiteShow    = false;           // true to show a center marker
 let SiteName    = "My Radar Site"; // tooltip of the marker
 
 // Update GPS location (keep map centered on GPS location)
@@ -56,7 +56,7 @@ let actual_range_outline_width = 1.7;
 // NOTE: dashed lines cause slowdown when zooming in, not recommended
 let actual_range_outline_dash = null; // null - solid line, [5, 5] - dashed line with 5 pixel lines and spaces in between
 //
-let actual_range_show = true;
+let actual_range_show = false;
 
 // which map is displayed to new visitors
 let MapType_tar1090 = "IFR_High";
@@ -202,7 +202,7 @@ let ColorByAlt = {
 // };
 
 // Also called range rings :)
-let SiteCircles = true; // true to show circles (only shown if the center marker is shown)
+let SiteCircles = false; // true to show circles (only shown if the center marker is shown)
 // In miles, nautical miles, or km (depending settings value 'DisplayUnits')
 let SiteCirclesDistances = new Array(100, 150, 200);
 // When more circles defined than cirle colors last color will be used or black by default
