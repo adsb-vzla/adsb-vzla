@@ -47,17 +47,6 @@ function createBaseLayers() {
     }));
     */
 
-    world.push(new ol.layer.Tile({
-        source: new ol.source.OSM({
-            maxZoom: 17,
-            attributionsCollapsible: false,
-            transition: tileTransition,
-        }),
-        name: 'osm',
-        title: 'OpenStreetMap',
-        type: 'base',
-    }));
-
            //if (offlineMapDetail > 0) {
             world.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -167,7 +156,7 @@ function createBaseLayers() {
         type: 'base',
     }));*/
 
-    if (offlineMapDetailOFM > 0) {
+    /*if (offlineMapDetailOFM > 0) {
         world.push(new ol.layer.VectorTile({
             type: 'base',
             name: 'OpenFreeMapOfflineBright',
@@ -228,7 +217,17 @@ function createBaseLayers() {
                 }
             },
         }));
-    }
+    }*/
+        world.push(new ol.layer.Tile({
+        source: new ol.source.OSM({
+            maxZoom: 17,
+            attributionsCollapsible: false,
+            transition: tileTransition,
+        }),
+        name: 'osm',
+        title: 'OpenStreetMap',
+        type: 'base',
+    }));
 
     if (1) {
         world.push(new ol.layer.Tile({
