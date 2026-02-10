@@ -80,7 +80,7 @@ function createBaseLayers() {
     //}
     
     //if (offlineMapDetail > 0) {
-        world.push(new ol.layer.Tile({
+        let IFR_High = new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/IFR_Hight/{z}/{x}/{y}.png",
                 attributionsCollapsible: false,
@@ -92,7 +92,7 @@ function createBaseLayers() {
             name: 'IFR_High',
             title: 'IFR High',
             type: 'base',
-        }));
+        });
     //}
 
     //if (offlineMapDetail > 0) {
@@ -816,6 +816,26 @@ function createBaseLayers() {
 
         rainviewerRadar.on('change:visible', function(evt) {
             if (evt.target.getVisible()) {
+                try {
+                    // Select IFR_High as the active base using the same mechanism as the rest of the app.
+                    if (typeof MapType_tar1090 !== 'undefined') {
+                        MapType_tar1090 = loStore['MapType_tar1090'] = 'IFR_High';
+                    }
+                    // Ensure only the IFR_High base is visible among base layers
+                    if (typeof ol !== 'undefined' && typeof ol.control !== 'undefined' && typeof layers_group !== 'undefined') {
+                        ol.control.LayerSwitcher.forEachRecursive(layers_group, function(lyr) {
+                            if (lyr.get && lyr.get('type') === 'base') {
+                                lyr.setVisible(lyr.get('name') === 'IFR_High');
+                            }
+                        });
+                    }
+                    // Also make sure the IFR High group is visible in the layer tree
+                    if (typeof ifrHighGroup !== 'undefined' && ifrHighGroup) {
+                        ifrHighGroup.setVisible(true);
+                    }
+                } catch (e) {
+                    // ignore
+                }
                 g.refreshRainviewerRadar();
                 g.refreshRainviewerRadarInterval = window.setInterval(g.refreshRainviewerRadar, 2 * 60 * 1000);
             } else {
@@ -823,7 +843,27 @@ function createBaseLayers() {
             }
         });
 
-        world.push(rainviewerRadar);
+        // Group IFR High chart tiles together with RainViewer radar under one group
+        let ifrHighGroup = new ol.layer.Group({
+            name: 'IFR_High_group',
+            title: 'IFR High',
+            layers: new ol.Collection([rainviewerRadar, IFR_High]),
+        });
+        // Insert group so it appears between VFR and IFR Low in the layer list
+        (function() {
+            const vfrLayer = world.getArray().find(l => l && l.get && l.get('name') === 'VFR');
+            const ifrLowLayer = world.getArray().find(l => l && l.get && l.get('name') === 'IFR_Low');
+            if (vfrLayer && ifrLowLayer) {
+                world.remove(vfrLayer);
+                world.remove(ifrLowLayer);
+                // ensure the three layers are the first ones in desired order
+                world.insertAt(0, vfrLayer);
+                world.insertAt(1, ifrHighGroup);
+                world.insertAt(2, ifrLowLayer);
+            } else {
+                world.push(ifrHighGroup);
+            }
+        })();
     }
 
     let createGeoJsonLayer = function (title, name, url, fill, stroke, showLabel = true) {
