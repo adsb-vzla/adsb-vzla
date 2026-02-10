@@ -218,17 +218,8 @@ function createBaseLayers() {
             },
         }));
     }*/
-        world.push(new ol.layer.Tile({
-        source: new ol.source.OSM({
-            maxZoom: 17,
-            attributionsCollapsible: false,
-            transition: tileTransition,
-        }),
-        name: 'osm',
-        title: 'OpenStreetMap',
-        type: 'base',
-    }));
-    if (offlineMapDetail > 0) {
+
+        if (offlineMapDetail > 0) {
         world.push(new ol.layer.Tile({
             source: new ol.source.OSM({
                 "url" : "osm_tiles_offline/{z}/{x}/{y}.png",
@@ -241,6 +232,18 @@ function createBaseLayers() {
             type: 'base',
         }));
     }
+    
+        world.push(new ol.layer.Tile({
+        source: new ol.source.OSM({
+            maxZoom: 17,
+            attributionsCollapsible: false,
+            transition: tileTransition,
+        }),
+        name: 'osm',
+        title: 'OpenStreetMap',
+        type: 'base',
+    }));
+
 
     if (1) {
         world.push(new ol.layer.Tile({
@@ -799,6 +802,7 @@ function createBaseLayers() {
             opacity: rainViewerRadarOpacity,
             visible: false,
             zIndex: 99,
+            parent: 'IFR_High',
         });
         g.refreshRainviewerRadar = async function() {
             const latestLayer = await g.getRainviewerLayers('radar');

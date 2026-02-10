@@ -4451,7 +4451,7 @@ function initMap() {
                 lineDash: actual_range_outline_dash,
             }),
         });
-        actualOutline.layer = new ol.layer.Vector({
+        /*actualOutline.layer = new ol.layer.Vector({
             name: 'actualRangeOutline',
             type: 'overlay',
             title: 'actual range outline',
@@ -4461,7 +4461,7 @@ function initMap() {
             style: actualOutline.style,
             visible: actual_range_show,
         });
-        layers.push(actualOutline.layer);
+        layers.push(actualOutline.layer);*/
     }
     if (calcOutlineData) {
         calcOutlineLayer = new ol.layer.Vector({
