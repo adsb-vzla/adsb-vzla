@@ -490,12 +490,12 @@ select {
 
 .spinner-plane {
     position: absolute;
-    top: -75px;
+    top: -100px;
     left: 50%;
     width: 60px;
     height: 150px;
     transform: translateX(-50%);
-    top: calc(50% - 75px - 90px);
+    top: calc(50% - 100px - 90px);
     object-fit: contain;
     z-index: 3;
 }
