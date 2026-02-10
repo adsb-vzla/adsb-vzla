@@ -635,27 +635,23 @@ function ggStep2Message() {
 // Limpiar puntos, líneas y overlays en el modo tierra-aeronave
 function clearTAGroundDrawings(opts = {}) {
 
-    // Intentar limpiar la fuente vectorial del punto A si existe
-    try { groundPointSource && groundPointSource.clear(); } catch (_) { }
-    // Ocultar la capa del punto A en el mapa si está creada
-    if (groundPointLayer) groundPointLayer.setVisible(false);
+    // Limpiar la fuente vectorial del punto A si existe
+    try { groundPointSource && groundPointSource.clear() } catch (_) {}
 
-    // NUEVO: limpiar referencias a Features de puntos A
-    groundPointFeaturesByCoord.clear();
+    // Limpiar referencias indexadas a Features de puntos A
+    try { groundPointFeaturesByCoord && groundPointFeaturesByCoord.clear() } catch (_) {}
 
-    // Intentar vaciar la fuente de líneas A‑B
-    try { groundToPlaneLineSource && groundToPlaneLineSource.clear(); } catch (_) { }
-    // Ocultar la capa que dibuja la línea entre A y B
-    if (groundToPlaneLineLayer) groundToPlaneLineLayer.setVisible(false);
-    // Resetear la referencia a la feature de la línea actual
+    // Vaciar la fuente de líneas A‑B 
+    try { groundToPlaneLineSource && groundToPlaneLineSource.clear() } catch (_) {}
+
+    // Resetear referencia a la feature de la línea actual
     groundToPlaneLineFeature = null;
 
-    // Si hay overlays por par A‑B genéricos, eliminarlos y limpiar el mapa
+    // Eliminar y limpiar todos los overlays A‑B
     if (groundPlaneOverlays && groundPlaneOverlays.size) {
         groundPlaneOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
         groundPlaneOverlays.clear();
     }
-    // Si existen overlays por avión (mapa por hex), retirarlos del mapa y vaciar la colección
     if (typeof groundPlaneOverlaysByHex !== 'undefined' && groundPlaneOverlaysByHex.size) {
         groundPlaneOverlaysByHex.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
         groundPlaneOverlaysByHex.clear();
@@ -669,10 +665,8 @@ function clearTAGroundDrawings(opts = {}) {
     }
 
     // Limpiar el mapa genérico de features de líneas A‑B si existe
-    groundPlaneFeatures && groundPlaneFeatures.clear();
-    if (typeof groundPlaneFeaturesByHex !== 'undefined') {
-        groundPlaneFeaturesByHex.clear();
-    }
+    try { groundPlaneFeatures && groundPlaneFeatures.clear(); } catch (_) {}
+    try { typeof groundPlaneFeaturesByHex !== 'undefined' && groundPlaneFeaturesByHex.clear(); } catch (_) {}
 
     // Resetear variables según opción
     if (opts.reset !== false) {
@@ -683,8 +677,8 @@ function clearTAGroundDrawings(opts = {}) {
         taPairs = [];
         taPendingPlaneHex = null;
         taPendingGround = null;
-        groundPlaneMissingSince.clear();
-        groundPlaneRemoved.clear();
+        try { groundPlaneMissingSince && groundPlaneMissingSince.clear(); } catch (_) {}
+        try { groundPlaneRemoved && groundPlaneRemoved.clear(); } catch (_) {}
     }
 
     // Detener refresco de distancia si está activo
@@ -801,6 +795,10 @@ function stableOverlayOffset(key) {
 
 // Función para actualizar la medición de distancia suelo‑avión
 function updateDistanceToGroundOverlay() {
+
+    // Si la capa de líneas está creada pero el usuario la ocultó, no crear ni volver a añadir overlays.
+    if (groundToPlaneLineLayer && !groundToPlaneLineLayer.getVisible()) return;
+    
     // Arreglo para almacenar los pares
     const pairs = [];
 
@@ -846,7 +844,7 @@ function updateDistanceToGroundOverlay() {
     if (!pairs.length) return;
 
     // Mostrar la capa de líneas si existe
-    if (groundToPlaneLineLayer) groundToPlaneLineLayer.setVisible(true);
+    // if (groundToPlaneLineLayer) groundToPlaneLineLayer.setVisible(true);
 
     // IDs de pares que siguen activos
     const active = new Set();
@@ -1295,13 +1293,19 @@ function DistanceToGround() {
             if (OLMap && !OLMap.getLayers().getArray().includes(groundPointLayer)) {
                 OLMap.addLayer(groundPointLayer);
             }
-            groundPointLayer.setVisible(true); // ← asegurar visibilidad
+            groundPointLayer.setVisible(true);
         }
 
         // Asegurar fuente de línea
         if (!groundToPlaneLineSource) groundToPlaneLineSource = new ol.source.Vector();
         if (groundToPlaneLineLayer) {
             groundToPlaneLineLayer.setSource(groundToPlaneLineSource);
+            // Mostrar la capa de líneas al activar el modo
+            groundToPlaneLineLayer.setVisible(true);
+            // Si por cualquier motivo la capa no está añadida al mapa, añadirla
+            if(OLMap && !OLMap.getLayers().getArray().includes(groundToPlaneLineLayer)) {
+                OLMap.addLayer(groundToPlaneLineLayer);
+            }
         }
 
         // Mostrar guía paso 1 según modo actual
@@ -4524,7 +4528,7 @@ function initMap() {
     groundPointLayer = new ol.layer.Vector({
         name: 'groundPoint',
         type: 'overlay',
-        title: 'Punto A (suelo)',
+        title: 'Punto A (tierra)',
         source: groundPointSource,
         zIndex: 250,
         style: new ol.style.Style({
@@ -4537,11 +4541,12 @@ function initMap() {
     });
     layers.push(groundPointLayer);
 
+    // Capa para la línea entre unto y aeronave
     groundToPlaneLineSource = new ol.source.Vector();
     groundToPlaneLineLayer = new ol.layer.Vector({
         name: 'groundToPlane',
         type: 'overlay',
-        title: 'Línea punto A - avión',
+        title: 'Línea A - B (tierra-aeronave)',
         source: groundToPlaneLineSource,
         zIndex: 260,
         style: new ol.style.Style({
@@ -4550,6 +4555,62 @@ function initMap() {
     });
     layers.push(groundToPlaneLineLayer);
 
+    // Listener para reaccionar cuando cambia la visibilidad de la capa de líneas tierra-aeronave.
+    groundToPlaneLineLayer.on('change:visible', function (evt) {
+        // Obtener el estado visible de la capa y normalizar a booleano.
+        const vis = !!evt.target.getVisible();
+        // Si la capa fue ocultada, entrar en la rutina de limpieza.
+        if (!vis) {
+            try {
+                // Quitar y limpiar overlays de pares A‑B
+                groundPlaneOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
+                groundPlaneOverlays.clear();
+            } catch (_) { }
+            try {
+                // Quitar y limpiar overlays indexados por hex (modo multi)
+                groundPlaneOverlaysByHex.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
+                groundPlaneOverlaysByHex.clear();
+            } catch (_) { }
+            // Quitar y limpiar overlay único de distancia suelo‑avión
+            if (distanceGroundOverlay) {
+                try { distanceGroundOverlay.setPosition(undefined); } catch (_) { }
+                try { OLMap && OLMap.removeOverlay(distanceGroundOverlay); } catch (_) { }
+                distanceGroundOverlay = null;
+            }
+        } else {
+            try {
+                // Forzar una actualización inmediata para recrear overlays y líneas según el modo activo
+                updateDistanceToGroundOverlay();
+
+                // Si no hay intervalo activo y el modo está encendido, crearlo.
+                if (!distanceGroundUpdateInterval && distanceToGroundMode) {
+                    distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
+                }
+            } catch (e) {}
+        }
+    });
+
+
+    // Si existe la capa de puntos en el mapa
+    if (groundPointLayer) {
+        // Registrar manejador para cuando cambie la visibilidad de la capa
+        groundPointLayer.on('change:visible', function (evt) {
+            // Convertir el valor de visibilidad a booleano (true = visible)
+            const vis = !!evt.target.getVisible();
+            try {
+                if (!vis) {
+                    return;
+                }
+                // Forzar una actualización inmediata de las líneas/overlays A‑B
+                updateDistanceToGroundOverlay();
+                // Si no hay intervalo activo y el modo está encendido
+                if (!distanceGroundUpdateInterval && distanceToGroundMode) {
+                    // Crear intervalo que actualice cada segundo
+                    distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
+                }
+            } catch (e) {}
+        });
+    }
 
     ol_map_init();
 
