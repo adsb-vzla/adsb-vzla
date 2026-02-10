@@ -690,20 +690,19 @@ function clearTAGroundDrawings(opts = {}) {
 
 // Limpiar puntos, líneas y overlays en el modo tierra-tierra
 function clearGroundToGround(opts = {}) {
+
     // Borrar las líneas A‑B
     try { ggLineSource && ggLineSource.clear(); } catch (_) { }
-    // Ocultar la capa de líneas
-    if (ggLineLayer) ggLineLayer.setVisible(false);
     // Borrar los puntos A y B
     try { ggPointSource && ggPointSource.clear(); } catch (_) { }
-    // Ocultar la capa de puntos
-    if (ggPointLayer) ggPointLayer.setVisible(false);
-    // Limpiar el mapa de features de línea
-    ggLineFeatures.clear();
-    // Quitar overlays del mapa
-    ggOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
-    // Vaciar la colección de overlays
-    ggOverlays.clear();
+    
+    // Limpiar overlays y colección de features
+    try { ggLineFeatures && ggLineFeatures.clear(); } catch (_) { }
+    if (ggOverlays && ggOverlays.size) {
+        ggOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
+        try { ggOverlays.clear(); } catch (_) { }
+    }
+
     // Si se pide reset completo:
     if (opts.reset !== false) {
         // Olvidar el punto A
@@ -1134,6 +1133,9 @@ function updateDistanceToGroundOverlay() {
 
 // Función para actualizar la medición tierra-tierra
 function updateGroundToGroundOverlay() {
+    // Si la capa de líneas existe pero el usuario la ocultó, respetar su elección y no volver a crear/añadir nada.
+    if (ggLineLayer && !ggLineLayer.getVisible()) return;
+
     // Lista de pares A‑B que se van a mostrar
     const pairs = [];
     // Modo 1A1B: un punto en tierra a otro punto en tierra
@@ -1154,7 +1156,7 @@ function updateGroundToGroundOverlay() {
     // Si no hay pares, no se dibuja nada
     if (!pairs.length) return;
     // Asegurar que la capa de líneas esté visible
-    if (ggLineLayer) ggLineLayer.setVisible(true);
+    // if (ggLineLayer) ggLineLayer.setVisible(true);
     // Conjunto de pares que siguen activos
     const active = new Set();
 
@@ -1331,60 +1333,31 @@ function DistanceGroundToGround() {
     if (groundToGroundMode) {
         // Limpiar puntos, líneas y overlays previos
         clearGroundToGround();
-        // Crear la fuente de puntos si no existe
+
+        // Crear la fuente vectorial para los puntos (A/B) si no existe.
         if (!ggPointSource) ggPointSource = new ol.source.Vector();
-        // Si no hay capa de puntos, crearla
-        if (!ggPointLayer) {
-            ggPointLayer = new ol.layer.Vector({
-                name: 'ggPoints',
-                type: 'overlay',
-                title: 'Puntos tierra-tierra',
-                source: ggPointSource,
-                zIndex: 245,
-                style: new ol.style.Style({
-                    image: new ol.style.Circle({
-                        radius: 6,
-                        fill: new ol.style.Fill({ color: '#222' }),
-                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
-                    })
-                })
-            });
-            // Añadir la capa al grupo de capas
-            layers.push(ggPointLayer);
-        } else {
-            // Reasignar la fuente si la capa ya existía
+        // Si la capa de puntos está definida, configurar su fuente y visibilidad.
+        if (ggPointLayer) {
+            // Asignar la fuente recién creada a la capa de puntos.
             ggPointLayer.setSource(ggPointSource);
+            // Añadir la capa al mapa si aún no está presente.
+            if (OLMap && !OLMap.getLayers().getArray().includes(ggPointLayer)) OLMap.addLayer(ggPointLayer);
+            // Asegurar que la capa de puntos sea visible.
+            ggPointLayer.setVisible(true);
         }
-        // Insertar la capa de puntos en el mapa si falta
-        if (OLMap && !OLMap.getLayers().getArray().includes(ggPointLayer)) {
-            OLMap.addLayer(ggPointLayer);
-        }
-        // Asegurar que la capa de puntos esté visible
-        ggPointLayer.setVisible(true);
-        // Crear la fuente de líneas si no existe
+
+        // Crear la fuente vectorial para las líneas A‑B si no existe.
         if (!ggLineSource) ggLineSource = new ol.source.Vector();
-        // Si no hay capa de líneas, crearla
-        if (!ggLineLayer) {
-            ggLineLayer = new ol.layer.Vector({
-                name: 'groundToGround',
-                type: 'overlay',
-                title: 'Línea tierra - tierra',
-                source: ggLineSource,
-                zIndex: 255,
-                style: new ol.style.Style({
-                    stroke: new ol.style.Stroke({ color: 'blue', width: 2 })
-                })
-            });
-            // Añadir la capa al grupo
-            layers.push(ggLineLayer);
-            // Insertar la capa de líneas en el mapa
-            OLMap && OLMap.addLayer(ggLineLayer);
-        } else {
-            // Reasignar la fuente existente
+        // Si la capa de líneas está definida, configurar su fuente y visibilidad.
+        if (ggLineLayer) {
+            // Asignar la fuente de líneas a la capa correspondiente.
             ggLineLayer.setSource(ggLineSource);
-            // Asegurar que la capa de líneas esté visible
+            // Añadir la capa de líneas al mapa si falta.
+            if (OLMap && !OLMap.getLayers().getArray().includes(ggLineLayer)) OLMap.addLayer(ggLineLayer);
+            // Asegurar que la capa de líneas sea visible.
             ggLineLayer.setVisible(true);
         }
+
         // Mostrar guía con el modo y paso 1
         showDistanceGuide(`<center>${ggPreMessage()}</center><br>${ggStep1Message()}`);
         // Refrescar medición cada segundo
@@ -4557,12 +4530,12 @@ function initMap() {
     });
     layers.push(groundPointLayer);
 
-    // Capa para la línea entre unto y aeronave
+    // Capa para la línea entre punto y aeronave
     groundToPlaneLineSource = new ol.source.Vector();
     groundToPlaneLineLayer = new ol.layer.Vector({
         name: 'groundToPlane',
         type: 'overlay',
-        title: 'Línea A - B (tierra-aeronave)',
+        title: 'Línea A-B (tierra-aeronave)',
         source: groundToPlaneLineSource,
         zIndex: 260,
         style: new ol.style.Style({
@@ -4605,6 +4578,68 @@ function initMap() {
             } catch (e) {}
         }
     });
+
+    try {
+        if (!ggPointSource) ggPointSource = new ol.source.Vector();
+        if (!ggPointLayer) {
+            ggPointLayer = new ol.layer.Vector({
+                name: 'ggPoints',
+                type: 'overlay',
+                title: 'Puntos A-B (tierra-tierra)',
+                source: ggPointSource,
+                zIndex: 245,
+                visible: false,
+                style: new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 6,
+                        fill: new ol.style.Fill({ color: '#222' }),
+                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+                    })
+                })
+            });
+        } else {
+            ggPointLayer.setSource(ggPointSource);
+            ggPointLayer.setVisible(false);
+        }
+        layers.push(ggPointLayer);
+
+        if (!ggLineSource) ggLineSource = new ol.source.Vector();
+        if (!ggLineLayer) {
+            ggLineLayer = new ol.layer.Vector({
+                name: 'groundToGround',
+                type: 'overlay',
+                title: 'Línea A-B (tierra-tierra)',
+                source: ggLineSource,
+                zIndex: 255,
+                visible: false,
+                style: new ol.style.Style({
+                    stroke: new ol.style.Stroke({ color: 'blue', width: 2 })
+                })
+            });
+        } else {
+            ggLineLayer.setSource(ggLineSource);
+            ggLineLayer.setVisible(false);
+        }
+        layers.push(ggLineLayer);
+
+        // Manejar visibilidad de la capa de líneas TT: limpiar overlays al ocultar; regenerar al mostrar.
+        ggLineLayer.on('change:visible', function (evt) {
+            const vis = !!evt.target.getVisible();
+            if (!vis) {
+                try { ggOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } }); } catch (_) { }
+                try { ggOverlays.clear(); } catch (_) { }
+            } else {
+                try {
+                    updateGroundToGroundOverlay();
+                    if (!ggUpdateInterval && groundToGroundMode) {
+                        ggUpdateInterval = setInterval(updateGroundToGroundOverlay, 1000);
+                    }
+                } catch (e) { console.error(e); }
+            }
+        });
+    } catch (e) {
+        console.error('init TT layers', e);
+    }
 
 
     // Si existe la capa de puntos en el mapa
