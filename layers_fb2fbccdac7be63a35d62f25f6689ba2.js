@@ -802,7 +802,6 @@ function createBaseLayers() {
             opacity: rainViewerRadarOpacity,
             visible: false,
             zIndex: 99,
-            parent: 'IFR_High',
         });
         g.refreshRainviewerRadar = async function() {
             const latestLayer = await g.getRainviewerLayers('radar');
