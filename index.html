@@ -951,13 +951,13 @@
               </button>
             </form>
           </div>
-          <div id="button_container toggle_sidebar_control">
-            <button id="toggle_sidebar_button" class="show_sidebar sidebar_button">
-              <svg id="hamburger-menu" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="50" height="50"
-                viewBox="0 0 50 50">
-                <path
-                  d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z">
-                </path>
+          <!-- hamburger/close button moved into the sidebar container so it appears inside the sidebar corner -->
+          <!-- visible when sidebar is closed: triggers the existing toggle handler by proxy -->
+          <div id="button_container_closed" style="display: block; position: relative;">
+            <button id="toggle_sidebar_button_closed" class="show_sidebar sidebar_button" title="Open Sidebar"
+              style="background: none; border: none; padding: 6px; cursor: pointer;">
+              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="34" height="34" viewBox="0 0 50 50">
+                <path d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z"></path>
               </svg>
             </button>
           </div>
@@ -1060,7 +1060,18 @@
 
     </div> <!-- map_container-->
 
-    <div id="sidebar_container" style="display: none; height: 100%;">
+    <div id="sidebar_container" style="display: none; height: 100%; position: relative;">
+      <div id="sidebar_close_button_container" style="position: absolute; top: 8px; right: 8px; z-index: 1200;">
+        <button id="toggle_sidebar_button" class="show_sidebar sidebar_button" title="Toggle Sidebar"
+          style="background: none; border: none; padding: 6px; cursor: pointer;">
+          <svg id="hamburger-menu" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="34" height="34"
+            viewBox="0 0 50 50">
+            <path
+              d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z">
+            </path>
+          </svg>
+        </button>
+      </div>
       <div id="splitter" class="ui-resizable-handle ui-resizable-w" style="display: none;"></div>
       <div id="sidebar_canvas">
 
@@ -1322,6 +1333,37 @@
   <!-- JS_ANCHOR3 -->
   <script src="planeObject_40f13c77d2cbc3688d222c0622565c69.js"></script>
   <script src="script_58512d93b15f62c2ada7968c3a621e0a.js"></script>
+
+  <script>
+    (function(){
+      function updateToggleButtons(){
+        var sidebar = document.getElementById('sidebar_container');
+        var closedBtn = document.getElementById('toggle_sidebar_button_closed');
+        var sidebarBtnContainer = document.getElementById('sidebar_close_button_container');
+        if(!sidebar || !closedBtn || !sidebarBtnContainer) return;
+        var isHidden = (window.getComputedStyle(sidebar).display === 'none');
+        closedBtn.style.display = isHidden ? 'block' : 'none';
+        sidebarBtnContainer.style.display = isHidden ? 'none' : 'block';
+      }
+
+      function proxyClick(e){
+        var target = document.getElementById('toggle_sidebar_button');
+        if(target) target.click();
+      }
+
+      document.addEventListener('DOMContentLoaded', function(){
+        updateToggleButtons();
+        var closed = document.getElementById('toggle_sidebar_button_closed');
+        if(closed) closed.addEventListener('click', proxyClick);
+
+        var sidebar = document.getElementById('sidebar_container');
+        if(sidebar && window.MutationObserver){
+          var mo = new MutationObserver(function(){ updateToggleButtons(); });
+          mo.observe(sidebar, { attributes: true, attributeFilter: ['style'] });
+        }
+      });
+    })();
+  </script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">
 

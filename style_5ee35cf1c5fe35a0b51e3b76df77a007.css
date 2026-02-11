@@ -62,6 +62,13 @@ html, body {
     margin-left: 2px;
 }
 
+/* boton del sidebar */
+
+#button_container_closed{
+    width: calc( 40px * var(--SCALE));
+    padding-bottom: calc( 5px * var(--SCALE));
+}
+
 /* Checkbox del menu de capas*/
 
 input[type="checkbox"],input[type="radio"] {
