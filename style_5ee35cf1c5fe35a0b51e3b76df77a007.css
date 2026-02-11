@@ -6,7 +6,7 @@
     --FS1: calc( 10px * var(--SCALE));
     --FS2: calc( 13px * var(--SCALE));
     --FS3: calc( 17px * var(--SCALE));
-    --TXTCOLOR1: #003f4b;
+    --TXTCOLOR1: rgb(252, 84, 4);
     --TXTCOLOR2: rgb(5, 5, 5);
     --TXTCOLOR3: #101010;
 }
@@ -612,10 +612,11 @@ select.error, textarea.error, input.error {
     height: calc( 32px * var(--SCALE));
     z-index: 999;
 }
+
 .layer-switcher.shown .panel {
     overflow-y: auto;
     height: 95vh;
-    border: #003f4b solid calc( 5px * var(--SCALE)) !important;
+    border: #fd854e solid calc( 2px * var(--SCALE)) !important;
     position: relative;
 }
 .layer-switcher.shown button {
