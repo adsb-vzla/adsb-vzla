@@ -557,20 +557,7 @@ select.error, textarea.error, input.error {
     height: 95vh;
     border: #003f4b solid calc( 5px * var(--SCALE)) !important;
 }
-.layer-switcher.shown button {
-    background-image: none !important;
-    font-size: 0;
-    position: relative;
-}
-.layer-switcher.shown > button::before {
-    content: "x";
-    color: rgb(255, 255, 255);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: calc( 16px * var(--SCALE));
-}
+
 
 /* new css */
 .dateTime
