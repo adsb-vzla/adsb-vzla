@@ -605,6 +605,7 @@ select.error, textarea.error, input.error {
     right: calc( 35px * var(--SCALE)) !important;
     z-index: 999;
 }
+
 .layer-switcher button {
     background-size: calc( 26px * var(--SCALE)) calc( 26px * var(--SCALE));
     background-repeat: no-repeat;
@@ -626,26 +627,14 @@ select.error, textarea.error, input.error {
     z-index: 999;
 }
 
+
 .layer-switcher.shown .panel {
     overflow-y: auto;
     height: 95vh;
     border: #fd854e solid calc( 2px * var(--SCALE)) !important;
     position: relative;
 }
-.layer-switcher.shown button {
-    background-image: none !important;
-    font-size: 0;
-    position: relative;
-}
-.layer-switcher.shown > button::before {
-    content: "x";
-    color: rgb(255, 255, 255);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: calc( 16px * var(--SCALE));
-    filter: invert(100%);
-}
+
 
 /* new css */
 .dateTime

@@ -21,6 +21,12 @@ function createBaseLayers() {
     let world = new ol.Collection();
     let us = new ol.Collection();
     let europe = new ol.Collection();
+    let ifrhigh = new ol.Collection();
+    let ifrlow = new ol.Collection();
+    let vfr = new ol.Collection();
+    let TMA_MIQ = new ol.Collection();
+    let TMA_BNA = new ol.Collection();
+    let TMA_GNA = new ol.Collection();
 
     const tileTransition = onMobile ? 0 : 0;
 
@@ -48,7 +54,7 @@ function createBaseLayers() {
     */
 
            //if (offlineMapDetail > 0) {
-            world.push(new ol.layer.Tile({
+            vfr.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/VFR/{z}/{x}/{y}.png",
                 attributionsCollapsible: false,
@@ -64,7 +70,7 @@ function createBaseLayers() {
     //}
     
     //if (offlineMapDetail > 0) {
-        world.push(new ol.layer.Tile({
+        ifrlow.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/IFR_Low/{z}/{x}/{y}.png",
                 attributionsCollapsible: false,
@@ -81,21 +87,7 @@ function createBaseLayers() {
     
     //if (offlineMapDetail > 0) {
 
-        let blank_map = new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'blank_map',
-            title: 'IFR Blank',
-            type: 'base',
-        });
-
-        let IFR_High = new ol.layer.Tile({
+        ifrhigh.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/IFR_Hight/{z}/{x}/{y}.png",
                 attributionsCollapsible: false,
@@ -105,13 +97,13 @@ function createBaseLayers() {
                 transition: tileTransition,
             }),
             name: 'IFR_High',
-            title: 'IFR Aire',
-            type: 'overlay',
-        });
+            title: 'IFR High',
+            type: 'base',
+        }));
     //}
 
     //if (offlineMapDetail > 0) {
-        world.push(new ol.layer.Tile({
+        TMA_MIQ.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/TMA_MIQ/{z}/{x}/{y}.png",
                 attributionsCollapsible: false,
@@ -128,7 +120,7 @@ function createBaseLayers() {
     
 
     //if (offlineMapDetail > 0) {
-        world.push(new ol.layer.Tile({
+        TMA_BNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/TMA_BNA/{z}/{x}/{y}.png",
                 attributionsCollapsible: false,
@@ -143,7 +135,7 @@ function createBaseLayers() {
         }));
     //}
     //if (offlineMapDetail > 0) {
-        world.push(new ol.layer.Tile({
+        TMA_GNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/TMA_GNA/{z}/{x}/{y}.png",
                 attributionsCollapsible: false,
@@ -803,115 +795,43 @@ function createBaseLayers() {
         europe.push(dwd);
     }
 */
-
-let ifrHighGroup = null;
-// 2. Función auxiliar para manejar el cambio de estado de la UI
-const syncIFRUI = () => {
-    try {
-        if (typeof MapType_tar1090 !== 'undefined') {
-            MapType_tar1090 = loStore['MapType_tar1090'] = 'blank_map';
-        }
-        
-        if (typeof layers_group !== 'undefined' && ol.control.LayerSwitcher) {
-            ol.control.LayerSwitcher.forEachRecursive(layers_group, (lyr) => {
-                if (lyr.get('type') === 'base') {
-                    lyr.setVisible(lyr.get('name') === 'blank_map');
-                }
-            });
-        }
-        
-        if (ifrHighGroup) ifrHighGroup.setVisible(true);
-    } catch (e) { console.error("Error syncing UI:", e); }
-};
-
-if (true) {
-    // 3. Centralizar API Rainviewer
-    g.getRainviewerLayers = async function(key) {
-        try {
-            const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", { credentials: "omit" });
+    if (true) {
+        g.getRainviewerLayers = async function(key) {
+            const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", {credentials: "omit",});
             const jsonData = await response.json();
             return jsonData[key];
-        } catch (err) { return null; }
-    }
+        }
 
-    const rainviewerRadar = new ol.layer.Tile({
-        name: 'rainviewer_radar',
-        title: 'RainViewer Radar',
-        type: 'overlay',
-        opacity: rainViewerRadarOpacity,
-        visible: false,
-        zIndex: 99,
-    });
-
-    g.refreshRainviewerRadar = async function() {
-        const radarData = await g.getRainviewerLayers('radar');
-        if (!radarData) return;
-
-        const timestamp = radarData.past[radarData.past.length - 1].time;
-        const newSource = new ol.source.XYZ({
-            url: `https://tilecache.rainviewer.com/v2/radar/${timestamp}/512/{z}/{x}/{y}/6/1_1.png`,
-            attributions: '<a href="https://www.rainviewer.com/api.html" target="_blank">RainViewer.com</a>',
-            attributionsCollapsible: false,
-            maxZoom: 7,
+        const rainviewerRadar = new ol.layer.Tile({
+            name: 'rainviewer_radar',
+            title: 'RainViewer Radar',
+            type: 'overlay',
+            opacity: rainViewerRadarOpacity,
+            visible: false,
+            zIndex: 99,
         });
-        rainviewerRadar.setSource(newSource);
-    };
-
-    // 4. Eventos simplificados
-    rainviewerRadar.on('change:visible', (evt) => {
-        if (evt.target.getVisible()) {
-            syncIFRUI();
-            g.refreshRainviewerRadar();
-            // Evitar duplicar intervalos
-            clearInterval(g.refreshRainviewerRadarInterval);
-            g.refreshRainviewerRadarInterval = setInterval(g.refreshRainviewerRadar, 120000);
-        } else {
-            clearInterval(g.refreshRainviewerRadarInterval);
-        }
-    });
-
-    IFR_High.on('change:visible', (evt) => {
-        if (evt.target.getVisible()) syncIFRUI();
-    });
-
-    let ifrHighGroup = new ol.layer.Group({
-        name: 'IFR_High_group',
-        title: 'IFR High',
-        fold: 'open',
-        layers: [rainviewerRadar, IFR_High, blank_map],
-    });
-
-    // 5. Gestión de capas en el mapa (World)
-    const setupWorldLayers = () => {
-        const layers = world.getArray();
-        const vfr = layers.find(l => l?.get('name') === 'VFR');
-        const ifrLow = layers.find(l => l?.get('name') === 'IFR_Low');
-
-        if (vfr && ifrLow) {
-            world.remove(vfr);
-            world.remove(ifrLow);
-            world.insertAt(0, vfr);
-            world.insertAt(1, ifrHighGroup);
-            world.insertAt(2, ifrLow);
-        } else {
-            world.push(ifrHighGroup);
-        }
-    };
-    setupWorldLayers();
-
-    // 6. Listener único para base layers usando delegación o iteración limpia
-    world.getArray().forEach(lyr => {
-        if (lyr?.get('type') === 'base') {
-            lyr.on('change:visible', (e) => {
-                if (e.target.getVisible() && e.target.get('name') !== 'blank_map') {
-                    ifrHighGroup.setVisible(false);
-                    IFR_High.setVisible(false);
-                    rainviewerRadar.setVisible(false);
-                }
+        g.refreshRainviewerRadar = async function() {
+            const latestLayer = await g.getRainviewerLayers('radar');
+            const rainviewerRadarSource = new ol.source.XYZ({
+                url: 'https://tilecache.rainviewer.com/v2/radar/' + latestLayer.past[latestLayer.past.length - 1].time + '/512/{z}/{x}/{y}/6/1_1.png',
+                attributions: '<a href="https://www.rainviewer.com/api.html" target="_blank">RainViewer.com</a>',
+                attributionsCollapsible: false,
+                maxZoom: 7,
             });
-        }
-    });
-}
+            rainviewerRadar.setSource(rainviewerRadarSource);
+        };
+
+        rainviewerRadar.on('change:visible', function(evt) {
+            if (evt.target.getVisible()) {
+                g.refreshRainviewerRadar();
+                g.refreshRainviewerRadarInterval = window.setInterval(g.refreshRainviewerRadar, 2 * 60 * 1000);
+            } else {
+                clearInterval(g.refreshRainviewerRadarInterval);
+            }
+        });
+
+        world.push(rainviewerRadar);
+    }
 
     let createGeoJsonLayer = function (title, name, url, fill, stroke, showLabel = true) {
         return new ol.layer.Vector({
@@ -1057,35 +977,62 @@ if (true) {
 
 
 
-    if (europe.getLength() > 0) {
-        layers.push(new ol.layer.Group({
-            name: 'europe',
-            title: 'Europe',
-            layers: new ol.Collection(europe.getArray().reverse()),
-            fold: 'open',
-        }));
-    }
-
-    if (us.getLength() > 0) {
-        layers.push(new ol.layer.Group({
-            name: 'us',
-            title: 'US',
-            layers: new ol.Collection(us.getArray().reverse()),
-            fold: 'open',
-        }));
-    }
-
     if (world.getLength() > 0) {
         layers.push(new ol.layer.Group({
             name: 'world',
             title: 'Worldwide',
             layers: new ol.Collection(world.getArray().reverse()),
-            //fold: 'open',
+            fold: 'open',
         }));
     }
-
-
-
+    if (TMA_GNA.getLength() > 0) {  
+        layers.push(new ol.layer.Group({
+            name: 'tma_gna',
+            title: 'TMA/GNA',
+            layers: new ol.Collection(TMA_GNA.getArray().reverse()),
+            fold: 'open',
+        }));
+    }
+    if (TMA_BNA.getLength() > 0) {  
+        layers.push(new ol.layer.Group({
+            name: 'tma_bna',
+            title: 'TMA/BNA',
+            layers: new ol.Collection(TMA_BNA.getArray().reverse()),
+            fold: 'open',
+        }));
+    }
+    if (TMA_MIQ.getLength() > 0) {
+        layers.push(new ol.layer.Group({
+            name: 'tma_miq',
+            title: 'TMA/MIQ',
+            layers: new ol.Collection(TMA_MIQ.getArray().reverse()),
+            fold: 'open',
+        }));
+    }
+    if (ifrlow.getLength() > 0) {
+        layers.push(new ol.layer.Group({
+            name: 'ifrlow',
+            title: 'IFR Low',
+            layers: new ol.Collection(ifrlow.getArray().reverse()),
+            fold: 'open',
+        }));
+    }
+    if (ifrhigh.getLength() > 0) {
+        layers.push(new ol.layer.Group({
+            name: 'ifrhigh',
+            title: 'IFR High',
+            layers: new ol.Collection(ifrhigh.getArray().reverse()),
+            fold: 'open',
+        }));
+    }
+    if (vfr.getLength() > 0) {
+        layers.push(new ol.layer.Group({
+            name: 'vfr',
+            title: 'VFR',
+            layers: new ol.Collection(vfr.getArray().reverse()),
+            fold: 'open',
+        }));
+    }
 
     return layers_group;
 }
