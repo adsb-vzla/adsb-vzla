@@ -4517,7 +4517,7 @@ function initMap() {
     groundPointLayer = new ol.layer.Vector({
         name: 'groundPoint',
         type: 'overlay',
-        title: 'Punto A (tierra)',
+        title: 'Punto A (tierra-aire)',
         source: groundPointSource,
         zIndex: 250,
         style: new ol.style.Style({
@@ -4535,7 +4535,7 @@ function initMap() {
     groundToPlaneLineLayer = new ol.layer.Vector({
         name: 'groundToPlane',
         type: 'overlay',
-        title: 'Línea A-B (tierra-aeronave)',
+        title: 'Línea A-B (tierra-aire)',
         source: groundToPlaneLineSource,
         zIndex: 260,
         style: new ol.style.Style({
@@ -4588,7 +4588,7 @@ function initMap() {
                 title: 'Puntos A-B (tierra-tierra)',
                 source: ggPointSource,
                 zIndex: 245,
-                visible: false,
+                visible: true,
                 style: new ol.style.Style({
                     image: new ol.style.Circle({
                         radius: 6,
@@ -4611,7 +4611,7 @@ function initMap() {
                 title: 'Línea A-B (tierra-tierra)',
                 source: ggLineSource,
                 zIndex: 255,
-                visible: false,
+                visible: true,
                 style: new ol.style.Style({
                     stroke: new ol.style.Stroke({ color: 'blue', width: 2 })
                 })
@@ -4662,6 +4662,59 @@ function initMap() {
             } catch (e) {}
         });
     }
+
+    // Crear una capa vectorial para las líneas entre aviones
+    distanceLineLayer = new ol.layer.Vector({
+        name: 'distanceLines',
+        type: 'overlay',
+        title: 'Línea A-B (aire-aire)',
+        source: new ol.source.Vector(),
+        style: new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: 'red',
+                width: 2
+            })
+        }),
+        zIndex: 300,
+        renderBuffer: renderBuffer,
+    });
+    layers.push(distanceLineLayer);
+
+    distanceLineLayer.on('change:visible', function (evt) {
+        const vis = !!evt.target.getVisible();
+        if (!vis) {
+            try {
+                if (distanceLineFeature) {
+                    try { distanceLineLayer.getSource().removeFeature(distanceLineFeature); } catch (_) { }
+                    distanceLineFeature = null;
+                }
+                if (distanceLineFeaturesMap && distanceLineFeaturesMap.size) {
+                    distanceLineFeaturesMap.forEach(f => { try { distanceLineLayer.getSource().removeFeature(f); } catch (_) { } });
+                    distanceLineFeaturesMap.clear();
+                }
+                if (distanceOverlay) {
+                    try { distanceOverlay.setPosition(undefined); } catch (_) { }
+                    try { OLMap && OLMap.removeOverlay(distanceOverlay); } catch (_) { }
+                    distanceOverlay = null;
+                }
+                if (distanceOverlaysMap && distanceOverlaysMap.size) {
+                    distanceOverlaysMap.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
+                    distanceOverlaysMap.clear();
+                }
+                if (distanceUpdateInterval) {
+                    clearInterval(distanceUpdateInterval);
+                    distanceUpdateInterval = null;
+                }
+            } catch (e) { console.error(e); }
+        } else {
+            try {
+                updateDistanceLine();
+                if (!distanceUpdateInterval && distanceBetweenPlanesMode) {
+                    distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
+                }
+            } catch (e) { console.error(e); }
+        }
+    });
 
     ol_map_init();
 
