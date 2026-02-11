@@ -966,12 +966,12 @@ table.infoSectionTable tr td {
   transform: rotate(-90deg);
   transform-origin: bottom left; 
   position: absolute;
-  bottom: calc(-40px * var(--SCALE)); 
+  bottom: calc(0px * var(--SCALE)); 
   left: calc(65px * var(--SCALE)); 
   
   background-color: transparent !important;
   float: none;
-  z-index: 9; 
+  z-index: 5; 
 }
 #altitude_chart_button {
   background-size: cover;
@@ -1180,6 +1180,7 @@ input{
   grid-template-rows: 20px 40px 20px 20px;
   justify-items: center;
   align-items: center;
+  z-index: 9;
   grid-template-areas:
     "timezone dateHint timeHint speedHint"
     "play datepicker hours speedSelect"

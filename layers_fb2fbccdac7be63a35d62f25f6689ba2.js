@@ -877,6 +877,7 @@ if (true) {
     let ifrHighGroup = new ol.layer.Group({
         name: 'IFR_High_group',
         title: 'IFR High',
+        fold: 'open',
         layers: [rainviewerRadar, IFR_High, blank_map],
     });
 
