@@ -80,6 +80,21 @@ function createBaseLayers() {
     //}
     
     //if (offlineMapDetail > 0) {
+
+        let blank_map = new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 1,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'blank_map',
+            title: 'IFR Blank',
+            type: 'base',
+        });
+
         let IFR_High = new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/IFR_Hight/{z}/{x}/{y}.png",
@@ -90,8 +105,8 @@ function createBaseLayers() {
                 transition: tileTransition,
             }),
             name: 'IFR_High',
-            title: 'IFR High',
-            type: 'base',
+            title: 'IFR Aire',
+            type: 'overlay',
         });
     //}
 
@@ -788,83 +803,114 @@ function createBaseLayers() {
         europe.push(dwd);
     }
 */
-    if (true) {
-        g.getRainviewerLayers = async function(key) {
-            const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", {credentials: "omit",});
+
+let ifrHighGroup = null;
+// 2. Función auxiliar para manejar el cambio de estado de la UI
+const syncIFRUI = () => {
+    try {
+        if (typeof MapType_tar1090 !== 'undefined') {
+            MapType_tar1090 = loStore['MapType_tar1090'] = 'blank_map';
+        }
+        
+        if (typeof layers_group !== 'undefined' && ol.control.LayerSwitcher) {
+            ol.control.LayerSwitcher.forEachRecursive(layers_group, (lyr) => {
+                if (lyr.get('type') === 'base') {
+                    lyr.setVisible(lyr.get('name') === 'blank_map');
+                }
+            });
+        }
+        
+        if (ifrHighGroup) ifrHighGroup.setVisible(true);
+    } catch (e) { console.error("Error syncing UI:", e); }
+};
+
+if (true) {
+    // 3. Centralizar API Rainviewer
+    g.getRainviewerLayers = async function(key) {
+        try {
+            const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", { credentials: "omit" });
             const jsonData = await response.json();
             return jsonData[key];
-        }
-
-        const rainviewerRadar = new ol.layer.Tile({
-            name: 'rainviewer_radar',
-            title: 'RainViewer Radar',
-            type: 'overlay',
-            opacity: rainViewerRadarOpacity,
-            visible: false,
-            zIndex: 99,
-        });
-        g.refreshRainviewerRadar = async function() {
-            const latestLayer = await g.getRainviewerLayers('radar');
-            const rainviewerRadarSource = new ol.source.XYZ({
-                url: 'https://tilecache.rainviewer.com/v2/radar/' + latestLayer.past[latestLayer.past.length - 1].time + '/512/{z}/{x}/{y}/6/1_1.png',
-                attributions: '<a href="https://www.rainviewer.com/api.html" target="_blank">RainViewer.com</a>',
-                attributionsCollapsible: false,
-                maxZoom: 7,
-            });
-            rainviewerRadar.setSource(rainviewerRadarSource);
-        };
-
-        rainviewerRadar.on('change:visible', function(evt) {
-            if (evt.target.getVisible()) {
-                try {
-                    // Select IFR_High as the active base using the same mechanism as the rest of the app.
-                    if (typeof MapType_tar1090 !== 'undefined') {
-                        MapType_tar1090 = loStore['MapType_tar1090'] = 'IFR_High';
-                    }
-                    // Ensure only the IFR_High base is visible among base layers
-                    if (typeof ol !== 'undefined' && typeof ol.control !== 'undefined' && typeof layers_group !== 'undefined') {
-                        ol.control.LayerSwitcher.forEachRecursive(layers_group, function(lyr) {
-                            if (lyr.get && lyr.get('type') === 'base') {
-                                lyr.setVisible(lyr.get('name') === 'IFR_High');
-                            }
-                        });
-                    }
-                    // Also make sure the IFR High group is visible in the layer tree
-                    if (typeof ifrHighGroup !== 'undefined' && ifrHighGroup) {
-                        ifrHighGroup.setVisible(true);
-                    }
-                } catch (e) {
-                    // ignore
-                }
-                g.refreshRainviewerRadar();
-                g.refreshRainviewerRadarInterval = window.setInterval(g.refreshRainviewerRadar, 2 * 60 * 1000);
-            } else {
-                clearInterval(g.refreshRainviewerRadarInterval);
-            }
-        });
-
-        // Group IFR High chart tiles together with RainViewer radar under one group
-        let ifrHighGroup = new ol.layer.Group({
-            name: 'IFR_High_group',
-            title: 'IFR High',
-            layers: new ol.Collection([rainviewerRadar, IFR_High]),
-        });
-        // Insert group so it appears between VFR and IFR Low in the layer list
-        (function() {
-            const vfrLayer = world.getArray().find(l => l && l.get && l.get('name') === 'VFR');
-            const ifrLowLayer = world.getArray().find(l => l && l.get && l.get('name') === 'IFR_Low');
-            if (vfrLayer && ifrLowLayer) {
-                world.remove(vfrLayer);
-                world.remove(ifrLowLayer);
-                // ensure the three layers are the first ones in desired order
-                world.insertAt(0, vfrLayer);
-                world.insertAt(1, ifrHighGroup);
-                world.insertAt(2, ifrLowLayer);
-            } else {
-                world.push(ifrHighGroup);
-            }
-        })();
+        } catch (err) { return null; }
     }
+
+    const rainviewerRadar = new ol.layer.Tile({
+        name: 'rainviewer_radar',
+        title: 'RainViewer Radar',
+        type: 'overlay',
+        opacity: rainViewerRadarOpacity,
+        visible: false,
+        zIndex: 99,
+    });
+
+    g.refreshRainviewerRadar = async function() {
+        const radarData = await g.getRainviewerLayers('radar');
+        if (!radarData) return;
+
+        const timestamp = radarData.past[radarData.past.length - 1].time;
+        const newSource = new ol.source.XYZ({
+            url: `https://tilecache.rainviewer.com/v2/radar/${timestamp}/512/{z}/{x}/{y}/6/1_1.png`,
+            attributions: '<a href="https://www.rainviewer.com/api.html" target="_blank">RainViewer.com</a>',
+            attributionsCollapsible: false,
+            maxZoom: 7,
+        });
+        rainviewerRadar.setSource(newSource);
+    };
+
+    // 4. Eventos simplificados
+    rainviewerRadar.on('change:visible', (evt) => {
+        if (evt.target.getVisible()) {
+            syncIFRUI();
+            g.refreshRainviewerRadar();
+            // Evitar duplicar intervalos
+            clearInterval(g.refreshRainviewerRadarInterval);
+            g.refreshRainviewerRadarInterval = setInterval(g.refreshRainviewerRadar, 120000);
+        } else {
+            clearInterval(g.refreshRainviewerRadarInterval);
+        }
+    });
+
+    IFR_High.on('change:visible', (evt) => {
+        if (evt.target.getVisible()) syncIFRUI();
+    });
+
+    let ifrHighGroup = new ol.layer.Group({
+        name: 'IFR_High_group',
+        title: 'IFR High',
+        layers: [rainviewerRadar, IFR_High, blank_map],
+    });
+
+    // 5. Gestión de capas en el mapa (World)
+    const setupWorldLayers = () => {
+        const layers = world.getArray();
+        const vfr = layers.find(l => l?.get('name') === 'VFR');
+        const ifrLow = layers.find(l => l?.get('name') === 'IFR_Low');
+
+        if (vfr && ifrLow) {
+            world.remove(vfr);
+            world.remove(ifrLow);
+            world.insertAt(0, vfr);
+            world.insertAt(1, ifrHighGroup);
+            world.insertAt(2, ifrLow);
+        } else {
+            world.push(ifrHighGroup);
+        }
+    };
+    setupWorldLayers();
+
+    // 6. Listener único para base layers usando delegación o iteración limpia
+    world.getArray().forEach(lyr => {
+        if (lyr?.get('type') === 'base') {
+            lyr.on('change:visible', (e) => {
+                if (e.target.getVisible() && e.target.get('name') !== 'blank_map') {
+                    ifrHighGroup.setVisible(false);
+                    IFR_High.setVisible(false);
+                    rainviewerRadar.setVisible(false);
+                }
+            });
+        }
+    });
+}
 
     let createGeoJsonLayer = function (title, name, url, fill, stroke, showLabel = true) {
         return new ol.layer.Vector({

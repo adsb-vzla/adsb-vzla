@@ -3766,9 +3766,9 @@ function ol_map_init() {
                     mapTypeSettings();
                     const onVisible = lyr.get('onVisible');
                     onVisible && onVisible(lyr);
-                    // If user switched to a base layer other than IFR_High, ensure RainViewer is turned off
+                    // If user switched to a base layer other than IFR_High or IFR Blank, ensure RainViewer is turned off
                     try {
-                        if (evt.target.get('name') !== 'IFR_High') {
+                        if (evt.target.get('name') !== 'IFR_High' && evt.target.get('name') !== 'blank_map') {
                             ol.control.LayerSwitcher.forEachRecursive(layers_group, function(l) {
                                 if (l.get && l.get('name') === 'rainviewer_radar') {
                                     l.setVisible(false);
