@@ -713,6 +713,12 @@ select.error, textarea.error, input.error {
     z-index: 9;
 }
 
+#RP img{
+    width: calc(25px * var(--SCALE)); 
+    filter: invert(100); 
+    
+}
+
 .svgButton {
     background-color: rgb(252, 84, 4);
     width: calc( 27px * var(--SCALE));
