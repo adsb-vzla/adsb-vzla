@@ -628,6 +628,22 @@ select.error, textarea.error, input.error {
     background-color:#9d9d9d !important;
 }
 
+.layer-switcher.shown.layer-switcher-activation-mode-click {
+    padding-left: calc(30px * var(--SCALE));
+}
+
+.button-layer{
+    background-color: unset;
+    width: calc(27px * var(--SCALE));
+    height: calc(27px * var(--SCALE));
+    border-radius: calc(5px * var(--SCALE));
+    margin: calc(2px * var(--SCALE));
+    display: inline-block;
+    cursor: pointer;
+    text-align: center;
+    background-clip: padding-box;
+}
+
 .layer-switcher !.shown {
     top: calc( 3px * var(--SCALE)) !important;
     right: calc( 44px * var(--SCALE)) !important;
