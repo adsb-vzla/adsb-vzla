@@ -601,9 +601,9 @@ select.error, textarea.error, input.error {
 }
 
 .layer-switcher {
-    top: calc( 60px * var(--SCALE)) !important;
-    right: calc( 35px * var(--SCALE)) !important;
-    z-index: 999;
+    top: calc( -2px * var(--SCALE)) !important;
+    right: calc( 2px * var(--SCALE)) !important;
+    position: relative !important;
 }
 
 .layer-switcher button {
@@ -616,6 +616,7 @@ select.error, textarea.error, input.error {
     position: absolute;
     background-image: url("images/venezuela.png");
     filter: invert(100%);
+    
     }
 .layer-switcher .group button{
     background-color:#9d9d9d !important;
