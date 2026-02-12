@@ -600,23 +600,29 @@ select.error, textarea.error, input.error {
     color: #FF0000;
 }
 
-.layer-switcher {
+.layer-select {
     top: calc( -2px * var(--SCALE)) !important;
     right: calc( 2px * var(--SCALE)) !important;
     position: relative !important;
+}
+
+.layer-switcher {
+
+    top: unset !important;
+    right: unset !important;
 }
 
 .layer-switcher button {
     background-size: calc( 26px * var(--SCALE)) calc( 26px * var(--SCALE));
     background-repeat: no-repeat;
     background-position: center;
-    width: calc( 30px * var(--SCALE));
-    height: calc( 30px * var(--SCALE));
+    width: calc( 27px * var(--SCALE));
+    height: calc( 28px * var(--SCALE));
     background-color: rgb(3, 171, 251) !important;
     position: absolute;
     background-image: url("images/venezuela.png");
     filter: invert(100%);
-    
+    top: -2px;
     }
 .layer-switcher .group button{
     background-color:#9d9d9d !important;
@@ -630,12 +636,18 @@ select.error, textarea.error, input.error {
     z-index: 999;
 }
 
+.layer-switcher.shown{
+    top: 3.5em !important; 
+    right: 0.5em !important; 
+    margin-right: calc(30px * var(--SCALE)) !important;
+}
 
 .layer-switcher.shown .panel {
     overflow-y: auto;
     height: 95vh;
     border: #fd854e solid calc( 2px * var(--SCALE)) !important;
     position: relative;
+
 }
 
 

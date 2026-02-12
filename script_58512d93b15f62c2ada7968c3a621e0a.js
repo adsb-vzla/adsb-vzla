@@ -10265,11 +10265,11 @@ function showReplayBar() {
             step: 1, min: 0, max: 23,
             slide: function (event, ui) {
                 replay.hours = ui.value;
-                updateSliderTip(ui.handle, ui.value, " hrs");
+                updateSliderTip(ui.handle, ui.value, "h");
                 replayOnSliderMove();
             },
             change: function (event, ui) {
-                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, " hrs");
+                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "h");
                 replayJump();
             }
         });
@@ -10282,11 +10282,11 @@ function showReplayBar() {
             step: 1, min: 0, max: 59,
             slide: function (event, ui) {
                 replay.minutes = ui.value;
-                updateSliderTip(ui.handle, ui.value, " mins");
+                updateSliderTip(ui.handle, ui.value, "m");
                 replayOnSliderMove();
             },
             change: function (event, ui) {
-                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, " mins");
+                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "m");
                 replayJump();
             }
         });
