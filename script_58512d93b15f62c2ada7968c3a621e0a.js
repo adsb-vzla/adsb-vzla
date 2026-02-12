@@ -4512,73 +4512,6 @@ function initMap() {
     });
     layers.push(distanceLineLayer);
 
-    // Capa para el punto A (suelo)
-    groundPointSource = new ol.source.Vector();
-    groundPointLayer = new ol.layer.Vector({
-        name: 'groundPoint',
-        type: 'overlay',
-        title: 'Punto A (tierra-aire)',
-        source: groundPointSource,
-        zIndex: 250,
-        style: new ol.style.Style({
-            image: new ol.style.Circle({
-                radius: 6,
-                fill: new ol.style.Fill({ color: '#222' }),
-                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
-            })
-        })
-    });
-    layers.push(groundPointLayer);
-
-    // Capa para la línea entre punto y aeronave
-    groundToPlaneLineSource = new ol.source.Vector();
-    groundToPlaneLineLayer = new ol.layer.Vector({
-        name: 'groundToPlane',
-        type: 'overlay',
-        title: 'Línea A-B (tierra-aire)',
-        source: groundToPlaneLineSource,
-        zIndex: 260,
-        style: new ol.style.Style({
-            stroke: new ol.style.Stroke({ color: 'red', width: 2 })
-        })
-    });
-    layers.push(groundToPlaneLineLayer);
-
-    // Listener para reaccionar cuando cambia la visibilidad de la capa de líneas tierra-aeronave.
-    groundToPlaneLineLayer.on('change:visible', function (evt) {
-        // Obtener el estado visible de la capa y normalizar a booleano.
-        const vis = !!evt.target.getVisible();
-        // Si la capa fue ocultada, entrar en la rutina de limpieza.
-        if (!vis) {
-            try {
-                // Quitar y limpiar overlays de pares A‑B
-                groundPlaneOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
-                groundPlaneOverlays.clear();
-            } catch (_) { }
-            try {
-                // Quitar y limpiar overlays indexados por hex (modo multi)
-                groundPlaneOverlaysByHex.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
-                groundPlaneOverlaysByHex.clear();
-            } catch (_) { }
-            // Quitar y limpiar overlay único de distancia suelo‑avión
-            if (distanceGroundOverlay) {
-                try { distanceGroundOverlay.setPosition(undefined); } catch (_) { }
-                try { OLMap && OLMap.removeOverlay(distanceGroundOverlay); } catch (_) { }
-                distanceGroundOverlay = null;
-            }
-        } else {
-            try {
-                // Forzar una actualización inmediata para recrear overlays y líneas según el modo activo
-                updateDistanceToGroundOverlay();
-
-                // Si no hay intervalo activo y el modo está encendido, crearlo.
-                if (!distanceGroundUpdateInterval && distanceToGroundMode) {
-                    distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
-                }
-            } catch (e) {}
-        }
-    });
-
     try {
         if (!ggPointSource) ggPointSource = new ol.source.Vector();
         if (!ggPointLayer) {
@@ -4662,6 +4595,73 @@ function initMap() {
             } catch (e) {}
         });
     }
+
+    // Capa para el punto A (suelo)
+    groundPointSource = new ol.source.Vector();
+    groundPointLayer = new ol.layer.Vector({
+        name: 'groundPoint',
+        type: 'overlay',
+        title: 'Punto A (tierra-aire)',
+        source: groundPointSource,
+        zIndex: 250,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({ color: '#222' }),
+                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+            })
+        })
+    });
+    layers.push(groundPointLayer);
+
+    // Capa para la línea entre punto y aeronave
+    groundToPlaneLineSource = new ol.source.Vector();
+    groundToPlaneLineLayer = new ol.layer.Vector({
+        name: 'groundToPlane',
+        type: 'overlay',
+        title: 'Línea A-B (tierra-aire)',
+        source: groundToPlaneLineSource,
+        zIndex: 260,
+        style: new ol.style.Style({
+            stroke: new ol.style.Stroke({ color: 'red', width: 2 })
+        })
+    });
+    layers.push(groundToPlaneLineLayer);
+
+    // Listener para reaccionar cuando cambia la visibilidad de la capa de líneas tierra-aeronave.
+    groundToPlaneLineLayer.on('change:visible', function (evt) {
+        // Obtener el estado visible de la capa y normalizar a booleano.
+        const vis = !!evt.target.getVisible();
+        // Si la capa fue ocultada, entrar en la rutina de limpieza.
+        if (!vis) {
+            try {
+                // Quitar y limpiar overlays de pares A‑B
+                groundPlaneOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
+                groundPlaneOverlays.clear();
+            } catch (_) { }
+            try {
+                // Quitar y limpiar overlays indexados por hex (modo multi)
+                groundPlaneOverlaysByHex.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
+                groundPlaneOverlaysByHex.clear();
+            } catch (_) { }
+            // Quitar y limpiar overlay único de distancia suelo‑avión
+            if (distanceGroundOverlay) {
+                try { distanceGroundOverlay.setPosition(undefined); } catch (_) { }
+                try { OLMap && OLMap.removeOverlay(distanceGroundOverlay); } catch (_) { }
+                distanceGroundOverlay = null;
+            }
+        } else {
+            try {
+                // Forzar una actualización inmediata para recrear overlays y líneas según el modo activo
+                updateDistanceToGroundOverlay();
+
+                // Si no hay intervalo activo y el modo está encendido, crearlo.
+                if (!distanceGroundUpdateInterval && distanceToGroundMode) {
+                    distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
+                }
+            } catch (e) {}
+        }
+    });
 
     // Crear una capa vectorial para las líneas entre aviones
     distanceLineLayer = new ol.layer.Vector({
