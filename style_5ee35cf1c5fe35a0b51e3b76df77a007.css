@@ -617,7 +617,9 @@ select.error, textarea.error, input.error {
     background-image: url("images/venezuela.png");
     filter: invert(100%);
     }
-
+.layer-switcher .group button{
+    background-color:#9d9d9d !important;
+}
 
 .layer-switcher !.shown {
     top: calc( 3px * var(--SCALE)) !important;

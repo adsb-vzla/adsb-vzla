@@ -2764,7 +2764,7 @@ function earlyInitPage() {
         container: null,
         checkbox: null,
         button: '#toggle_sidebar_button',
-        init: (onMobile ? false : true),
+        init: false, //Esto determina si abre la sidebar por defecto la primera vez. Funcion ternaria para movil: init: (onMobile ? false : true),
         setState: function (state) {
             if (state) {
                 jQuery("#sidebar_container").show();
