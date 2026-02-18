@@ -54,7 +54,20 @@ function createBaseLayers() {
     */
 
            //if (offlineMapDetail > 0) {
-            vfr.push(new ol.layer.Tile({
+           vfr.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 8,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'VFR_Blank',
+            title: 'VFR Blank',
+            type: 'base',
+        }));
+        vfr.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/VFR/{z}/{x}/{y}.png",
                 attributionsCollapsible: false,
@@ -65,7 +78,50 @@ function createBaseLayers() {
             }),
             name: 'VFR',
             title: 'VFR',
-            type: 'base',
+            type: 'overlay',
+            visible: false,
+        }));
+                vfr.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 8,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'VFR2',
+            title: 'VFR2',
+            type: 'overlay',
+            visible: false,
+        }));
+                vfr.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 8,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'VFR3',
+            title: 'VFR3',
+            type: 'overlay',
+            visible: false,
+        }));
+                vfr.push(new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                "url" : "",
+                attributionsCollapsible: false,
+                //maxZoom: offlineMapDetail,
+                minZoom: 8,
+                maxZoom: 15,
+                transition: tileTransition,
+            }),
+            name: 'VFR4',
+            title: 'VFR4',
+            type: 'overlay',
+            visible: false,
         }));
     //}
     
@@ -982,7 +1038,7 @@ function createBaseLayers() {
             name: 'world',
             title: 'Worldwide',
             layers: new ol.Collection(world.getArray().reverse()),
-            fold: 'open',
+            fold: 'close',
         }));
     }
     if (TMA_GNA.getLength() > 0) {  
@@ -990,7 +1046,7 @@ function createBaseLayers() {
             name: 'tma_gna',
             title: 'TMA/GNA',
             layers: new ol.Collection(TMA_GNA.getArray().reverse()),
-            fold: 'open',
+            fold: 'close',
         }));
     }
     if (TMA_BNA.getLength() > 0) {  
@@ -998,7 +1054,7 @@ function createBaseLayers() {
             name: 'tma_bna',
             title: 'TMA/BNA',
             layers: new ol.Collection(TMA_BNA.getArray().reverse()),
-            fold: 'open',
+            fold: 'close',
         }));
     }
     if (TMA_MIQ.getLength() > 0) {
@@ -1006,7 +1062,7 @@ function createBaseLayers() {
             name: 'tma_miq',
             title: 'TMA/MIQ',
             layers: new ol.Collection(TMA_MIQ.getArray().reverse()),
-            fold: 'open',
+            fold: 'close',
         }));
     }
     if (ifrlow.getLength() > 0) {
@@ -1014,7 +1070,7 @@ function createBaseLayers() {
             name: 'ifrlow',
             title: 'IFR Low',
             layers: new ol.Collection(ifrlow.getArray().reverse()),
-            fold: 'open',
+            fold: 'close',
         }));
     }
     if (ifrhigh.getLength() > 0) {
@@ -1022,7 +1078,7 @@ function createBaseLayers() {
             name: 'ifrhigh',
             title: 'IFR High',
             layers: new ol.Collection(ifrhigh.getArray().reverse()),
-            fold: 'open',
+            fold: 'close',
         }));
     }
     if (vfr.getLength() > 0) {
@@ -1030,7 +1086,8 @@ function createBaseLayers() {
             name: 'vfr',
             title: 'VFR',
             layers: new ol.Collection(vfr.getArray().reverse()),
-            fold: 'open',
+            fold: 'close',
+            visible: true,
         }));
     }
 
