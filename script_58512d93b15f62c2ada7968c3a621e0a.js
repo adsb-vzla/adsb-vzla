@@ -3766,22 +3766,38 @@ function ol_map_init() {
                     mapTypeSettings();
                     const onVisible = lyr.get('onVisible');
                     onVisible && onVisible(lyr);
-                    // If user switched to a base layer other than IFR_High or IFR Blank, ensure RainViewer is turned off
+
+                    // --- LÓGICA DE EXCLUSIVIDAD POR GRUPOS ---
                     try {
-                        if (evt.target.get('name') !== 'IFR_High' && evt.target.get('name') !== 'blank_map') {
-                            ol.control.LayerSwitcher.forEachRecursive(layers_group, function(l) {
-                                if (l.get && l.get('name') === 'rainviewer_radar') {
-                                    l.setVisible(false);
+                        // 1. Buscamos cuál es el grupo que contiene la capa base que se acaba de activar
+                        let currentParentGroup = null;
+                        layers_group.getLayers().forEach(group => {
+                            if (group instanceof ol.layer.Group) {
+                                const subLayers = group.getLayers().getArray();
+                                if (subLayers.includes(evt.target)) {
+                                    currentParentGroup = group;
+                                }
+                            }
+                        });
+
+                        // 2. Si la capa base pertenece a un grupo, desactivamos los overlays de los otros grupos
+                        if (currentParentGroup) {
+                            layers_group.getLayers().forEach(otherGroup => {
+                                // Si es un grupo diferente al actual
+                                if (otherGroup instanceof ol.layer.Group && otherGroup !== currentParentGroup) {
+                                    otherGroup.getLayers().forEach(layer => {
+                                        // Apagar solo si es tipo overlay
+                                        if (layer.get('type') === 'overlay') {
+                                            layer.setVisible(false);
+                                        }
+                                    });
                                 }
                             });
-                            if (g.refreshRainviewerRadarInterval) {
-                                clearInterval(g.refreshRainviewerRadarInterval);
-                                g.refreshRainviewerRadarInterval = undefined;
-                            }
                         }
                     } catch (e) {
-                        // ignore
+                        // Error silencioso para no interrumpir el mapa
                     }
+                    // --- FIN LÓGICA EXCLUSIVIDAD ---
                 }
             });
         } else if (lyr.get('type') === 'overlay') {
