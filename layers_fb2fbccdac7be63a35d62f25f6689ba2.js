@@ -283,7 +283,7 @@ function createBaseLayers() {
                 transition: tileTransition,
             }),
             name: 'TMA_MIQ_Blank',
-            title: 'TMA Maiquetía_Blank',
+            title: 'TMA Maiquetía Blank',
             type: 'base',
         }));
         TMA_MIQ.push(new ol.layer.Tile({

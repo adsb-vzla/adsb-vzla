@@ -3760,44 +3760,54 @@ function ol_map_init() {
                 lyr.setVisible(false);
             }
 
-            lyr.on('change:visible', function (evt) {
+lyr.on('change:visible', function (evt) {
                 if (evt.target.getVisible()) {
                     MapType_tar1090 = loStore['MapType_tar1090'] = evt.target.get('name');
                     mapTypeSettings();
                     const onVisible = lyr.get('onVisible');
                     onVisible && onVisible(lyr);
 
-                    // --- LÓGICA DE EXCLUSIVIDAD POR GRUPOS ---
+                    // --- LÓGICA DE EXCLUSIVIDAD Y AUTO-ACTIVACIÓN ---
                     try {
-                        // 1. Buscamos cuál es el grupo que contiene la capa base que se acaba de activar
                         let currentParentGroup = null;
+                        
+                        // 1. Identificar el grupo de la capa base activada
                         layers_group.getLayers().forEach(group => {
                             if (group instanceof ol.layer.Group) {
-                                const subLayers = group.getLayers().getArray();
-                                if (subLayers.includes(evt.target)) {
+                                if (group.getLayers().getArray().includes(evt.target)) {
                                     currentParentGroup = group;
                                 }
                             }
                         });
 
-                        // 2. Si la capa base pertenece a un grupo, desactivamos los overlays de los otros grupos
                         if (currentParentGroup) {
-                            layers_group.getLayers().forEach(otherGroup => {
-                                // Si es un grupo diferente al actual
-                                if (otherGroup instanceof ol.layer.Group && otherGroup !== currentParentGroup) {
-                                    otherGroup.getLayers().forEach(layer => {
-                                        // Apagar solo si es tipo overlay
-                                        if (layer.get('type') === 'overlay') {
-                                            layer.setVisible(false);
-                                        }
-                                    });
+                            // 2. Procesar todos los grupos del mapa
+                            layers_group.getLayers().forEach(group => {
+                                if (group instanceof ol.layer.Group) {
+                                    
+                                    if (group === currentParentGroup) {
+                                        // SI ES EL GRUPO ACTUAL: Activamos todos sus overlays
+                                        group.getLayers().forEach(l => {
+                                            if (l.get('type') === 'overlay') {
+                                                l.setVisible(true);
+                                            }
+                                        });
+                                    } else {
+                                        // SI ES OTRO GRUPO: Desactivamos todos sus overlays
+                                        group.getLayers().forEach(l => {
+                                            if (l.get('type') === 'overlay') {
+                                                l.setVisible(false);
+                                            }
+                                        });
+                                    }
+                                    
                                 }
                             });
                         }
                     } catch (e) {
-                        // Error silencioso para no interrumpir el mapa
+                        console.error("Error en gestión de capas:", e);
                     }
-                    // --- FIN LÓGICA EXCLUSIVIDAD ---
+                    // --- FIN LÓGICA ---
                 }
             });
         } else if (lyr.get('type') === 'overlay') {
