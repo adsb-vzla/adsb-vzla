@@ -1325,31 +1325,15 @@ input{
   }
 }
 
-.panel::-webkit-scrollbar-thumb,
-#sidebar_canvas::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
     background: rgb(252, 84, 4) !important;
 }
-.panel::-webkit-scrollbar-thumb:hover,
-#sidebar_canvas::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover {
     background: rgb(255, 101, 30) !important;
 }
-.panel::-webkit-scrollbar-thumb:active,
-#sidebar_canvas::-webkit-scrollbar-thumb:active {
+*::-webkit-scrollbar-thumb:active {
     background: rgb(255, 101, 30) !important;
 }
-
-.panel,
-#sidebar_canvas,
-#settings_infoblock {
-    scrollbar-color: rgb(252, 84, 4) #131313 !important;
-}
-.panel:hover,
-#sidebar_canvas:hover,
-#settings_infoblock:hover {
-    scrollbar-color: rgb(255, 101, 30) #131313 !important;
-}
-.panel:active,
-#sidebar_canvas:active,
-#settings_infoblock:active {
-    scrollbar-color: rgb(255, 101, 30) #131313 !important;
+:root {
+    scrollbar-color: rgb(252, 84, 4) transparent !important;
 }
