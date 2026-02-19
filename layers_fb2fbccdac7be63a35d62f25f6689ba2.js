@@ -79,7 +79,7 @@ function createBaseLayers() {
             name: 'VFR',
             title: 'VFR',
             type: 'overlay',
-            visible: false,
+            
         }));
                 vfr.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -153,6 +153,7 @@ function createBaseLayers() {
             name: 'IFR_Low1',
             title: 'IFR Low 1',
             type: 'overlay',
+            visible: false,
         }));
         ifrlow.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -166,6 +167,7 @@ function createBaseLayers() {
             name: 'IFR_Low2',
             title: 'IFR Low 2',
             type: 'overlay',
+            visible: false,
         }));
         ifrlow.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -179,6 +181,7 @@ function createBaseLayers() {
             name: 'IFR_Low3',
             title: 'IFR Low 3',
             type: 'overlay',
+            visible: false,
         }));
         ifrlow.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -192,6 +195,7 @@ function createBaseLayers() {
             name: 'IFR_Low4',
             title: 'IFR Low 4',
             type: 'overlay',
+            visible: false,
         }));
     //}
     
@@ -222,6 +226,7 @@ function createBaseLayers() {
             name: 'IFR_High1',
             title: 'IFR High 1',
             type: 'overlay',
+            visible: false,
         }));
         ifrhigh.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -235,6 +240,7 @@ function createBaseLayers() {
             name: 'IFR_High2',
             title: 'IFR High 2',
             type: 'overlay',
+            visible: false,
         }));
         ifrhigh.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -248,6 +254,7 @@ function createBaseLayers() {
             name: 'IFR_High3',
             title: 'IFR High 3',
             type: 'overlay',
+            visible: false,
         }));
         ifrhigh.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -261,6 +268,7 @@ function createBaseLayers() {
             name: 'IFR_High4',
             title: 'IFR High 4',
             type: 'overlay',
+            visible: false,
         }));
     //}
 
@@ -290,6 +298,7 @@ function createBaseLayers() {
             name: 'TMA_MIQ1',
             title: 'TMA Maiquetía 1',
             type: 'overlay',
+            visible: false,
         }));
         TMA_MIQ.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -303,6 +312,7 @@ function createBaseLayers() {
             name: 'TMA_MIQ2',
             title: 'TMA Maiquetía 2',
             type: 'overlay',
+            visible: false,
         }));
         TMA_MIQ.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -316,6 +326,7 @@ function createBaseLayers() {
             name: 'TMA_MIQ3',
             title: 'TMA Maiquetía 3',
             type: 'overlay',
+            visible: false,
         }));
         TMA_MIQ.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -329,6 +340,7 @@ function createBaseLayers() {
             name: 'TMA_MIQ4',
             title: 'TMA Maiquetía 4',
             type: 'overlay',
+            visible: false,
         }));
     //}
     
@@ -346,6 +358,7 @@ function createBaseLayers() {
             name: 'TMA_BNA_Blank',
             title: 'TMA Barcelona Blank',
             type: 'base',
+            visible: false,
         }));
         TMA_BNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -359,6 +372,7 @@ function createBaseLayers() {
             name: 'TMA_BNA1',
             title: 'TMA Barcelona 1',
             type: 'overlay',
+            visible: false,
         }));
         TMA_BNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -372,6 +386,7 @@ function createBaseLayers() {
             name: 'TMA_BNA2',
             title: 'TMA Barcelona 2',
             type: 'overlay',
+            visible: false,
         }));
         TMA_BNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -385,6 +400,7 @@ function createBaseLayers() {
             name: 'TMA_BNA3',
             title: 'TMA Barcelona 3',
             type: 'overlay',
+            visible: false,
         }));
         TMA_BNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -398,6 +414,7 @@ function createBaseLayers() {
             name: 'TMA_BNA4',
             title: 'TMA Barcelona 4',
             type: 'overlay',
+            visible: false,
         }));
     //}
     //if (offlineMapDetail > 0) {
@@ -413,6 +430,7 @@ function createBaseLayers() {
             name: 'TMA_GNA_Blank',
             title: 'TMA Guayana Blank',
             type: 'base',
+            
         }));
         TMA_GNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -426,6 +444,7 @@ function createBaseLayers() {
             name: 'TMA_GNA1',
             title: 'TMA Guayana 1',
             type: 'overlay',
+            visible: false,
         }));
         TMA_GNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -439,6 +458,7 @@ function createBaseLayers() {
             name: 'TMA_GNA2',
             title: 'TMA Guayana 2',
             type: 'overlay',
+            visible: false,
         }));
         TMA_GNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -452,6 +472,7 @@ function createBaseLayers() {
             name: 'TMA_GNA3',
             title: 'TMA Guayana 3',
             type: 'overlay',
+            visible: false,
         }));
         TMA_GNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -465,6 +486,7 @@ function createBaseLayers() {
             name: 'TMA_GNA4',
             title: 'TMA Guayana4',
             type: 'overlay',
+            visible: false,
         }));
 
 
