@@ -25,6 +25,7 @@
 </head>
 
 <body>
+
   <!-- BODY_ANCHOR -->
   <div id="layout_container">
     <!-- Card con info del avion (se muestra al hacer hover sobre uno) -->
@@ -1036,6 +1037,9 @@
             onclick="onTTCycleClick();">
             <span class="buttonText">TT</span>
           </div>
+          <div id="E" title="Elevación" class="button inActiveButton" onclick="toggleElevationMode();">
+            <span class="buttonText">E</span>
+          </div>
         </div>
 
       </div>
@@ -1056,6 +1060,11 @@
         <p id="replayLoading"></p>
         <p></p>
       </div> <!-- replayBar -->
+
+      <div id="panorama-overlay" class="panorama-overlay hidden">
+        <button id="panorama-close" class="panorama-close" type="button" title="Ocultar">×</button>
+        <div id="panorama-container"></div>
+      </div>
 
     </div> <!-- map_container-->
 
@@ -1332,6 +1341,9 @@
   <!-- JS_ANCHOR3 -->
   <script src="planeObject_40f13c77d2cbc3688d222c0622565c69.js"></script>
   <script src="script_58512d93b15f62c2ada7968c3a621e0a.js"></script>
+
+  <!-- Librería para graficar elevación -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
 
   <script>
     (function(){

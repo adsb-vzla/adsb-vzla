@@ -103,10 +103,8 @@ const groundPlaneFeatures = new Map();
 const groundPlaneOverlays = new Map();
 // Lista de pares A‑B acumulados en el modo nA_nB
 let taPairs = [];
-
-// NUEVO: mapa de Features por coordenada de punto A (lon,lat con 6 decimales)
+// Papa de Features por coordenada de punto A (lon,lat con 6 decimales)
 const groundPointFeaturesByCoord = new Map();
-
 // Guardar temporalmente el avión seleccionado a la espera de que se marque un punto A (modo nA_nB)
 let taPendingPlaneHex = null;
 // Guardar temporalmente el punto A marcado a la espera de que se seleccione un avión (modo nA_nB)
@@ -149,6 +147,24 @@ const ggLineFeatures = new Map();
 const ggOverlays = new Map();
 // Intervalo de refresco del modo tierra‑tierra
 let ggUpdateInterval = null;
+// Indicar si está activo el modo de elevación (panorama) en el mapa.
+let elevationMode = false;
+// Fuente vectorial para los puntos del modo elevación (A y B).
+let elevationPointSource = null;
+// Capa que renderiza los puntos del modo elevación en el mapa.
+let elevationPointLayer = null;
+// Fuente vectorial para la línea A‑B del modo elevación.
+let elevationLineSource = null;
+// Capa que renderiza la línea A‑B del modo elevación en el mapa.
+let elevationLineLayer = null;
+// Últimos datos del perfil de elevación, usados para redibujar al cambiar tamaño.
+let lastPanoramaData = null;
+// Distancia total del perfil en millas náuticas.
+let lastPanoramaTotalNm = null;
+// Observer para redimensionar el panorama cuando cambia el contenedor.
+let panoramaResizeObs = null;
+// Indicar si hay una consulta de panorama en curso
+let elevationBusy = false;
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -295,6 +311,293 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
+}
+
+// Configuración del perfil de elevación
+const ELEV_CONFIG = {
+    // Número de muestras
+    samples: 20,
+    // Endpoint CGI a consultar
+    cgiUrl: `${window.location.origin}/cgi-bin/get_elevation.sh`
+};
+
+// Mostrar overlay con el panorama generado
+function showPanoramaOverlay() {
+    const el = document.getElementById('panorama-overlay');
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.classList.remove('minimized');
+
+    const btn = document.getElementById('panorama-close');
+    if (btn) btn.textContent = '×';
+
+    updatePanoramaOverlayBounds();
+}
+
+// Actualizar el tamaño del overlay del panorama según los menús abiertos
+function updatePanoramaOverlayBounds() {
+    const overlay = document.getElementById('panorama-overlay');
+    const map = document.getElementById('map_container');
+    if (!overlay || !map) return;
+
+    // Si el mapa está oculto, ocultar overlay
+    if (map.style.display === 'none') {
+        overlay.classList.add('hidden');
+        return;
+    }
+
+    const mapRect = map.getBoundingClientRect();
+    let left = 10;
+    let right = 10;
+    let bottom = 10;
+
+    // Evitar tapar el infoblock (izquierda)
+    const info = document.getElementById('selected_infoblock');
+    if (info && info.offsetParent !== null) {
+        const r = info.getBoundingClientRect();
+        if (r.right > mapRect.left && r.left < mapRect.right) {
+            left = Math.max(left, (r.right - mapRect.left) + 10);
+        }
+    }
+
+    // Evitar tapar replayBar (abajo)
+    const replay = document.getElementById('replayBar');
+    if (replay && replay.offsetParent !== null && getComputedStyle(replay).display !== 'none') {
+        const r = replay.getBoundingClientRect();
+        if (r.top < mapRect.bottom && r.bottom > mapRect.top) {
+            bottom = Math.max(bottom, (mapRect.bottom - r.top) + 10);
+        }
+    }
+
+    overlay.style.left = left + 'px';
+    overlay.style.right = right + 'px';
+    overlay.style.bottom = bottom + 'px';
+}
+
+window.addEventListener('resize', updatePanoramaOverlayBounds);
+
+// Minimizar overlay del panorama
+function togglePanoramaMinimize() {
+    const el = document.getElementById('panorama-overlay');
+    if (!el) return;
+    el.classList.toggle('minimized');
+    const btn = document.getElementById('panorama-close');
+    if (btn) btn.textContent = el.classList.contains('minimized') ? '+' : '×';
+}
+
+// Ocultar overlay del panorama
+function hidePanoramaOverlay() {
+    const el = document.getElementById('panorama-overlay');
+    if (el) el.classList.add('hidden');
+    const c = document.getElementById('panorama-container');
+    if (c) c.innerHTML = '';
+}
+
+// Minimizar panorama al hacer click en el botón con clase "panorama-close"
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('panorama-close');
+    if (btn) btn.addEventListener('click', togglePanoramaMinimize);
+});
+
+// Realizar un fetch con timeout usando AbortController para cancelar si se excede el tiempo.
+function elevFetchWithTimeout(url, ms = 8000) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(t));
+}
+
+// Limitar la cantidad de promesas en ejecución simultánea usando una cola.
+function elevPLimit(concurrency) {
+    let active = 0;
+    const queue = [];
+    const next = () => {
+        if (active >= concurrency || queue.length === 0) return;
+        active++;
+        const { fn, resolve, reject } = queue.shift();
+        fn().then(resolve, reject).finally(() => {
+            active--;
+            next();
+        });
+    };
+    return (fn) => new Promise((resolve, reject) => {
+        queue.push({ fn, resolve, reject });
+        next();
+    });
+}
+
+// Distancia en millas naúticas (eje X)
+function distanceNm(lat1, lon1, lat2, lon2) {
+    const R = 6371 / 1.852;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+// Distancia en pies (eje Y)
+function mToFt(m) {
+    return m * 3.28084;
+}
+
+// Interpolar linealmente entre dos puntos (lat/lon) según el factor t (0..1).
+function interpolateLine(lat1, lon1, lat2, lon2, t) {
+    return {
+        lat: lat1 + (lat2 - lat1) * t,
+        lon: lon1 + (lon2 - lon1) * t
+    };
+}
+
+// Caché de elevaciones para evitar consultas repetidas.
+const elevCache = new Map();
+
+// Generar una clave estable a partir de lat/lon con 5 decimales.
+function elevKey(lat, lon) {
+    return `${lat.toFixed(5)},${lon.toFixed(5)}`;
+}
+
+// Obtener el perfil de elevación entre dos puntos y dibujar el panorama
+async function getElevationProfileLine(lat1, lon1, lat2, lon2) {
+    if (elevationBusy) {
+        showDistanceGuide('Espere a que termine el panorama anterior...');
+        return;
+    }
+    elevationBusy = true;
+    showDistanceGuide('Generando panorama...');
+
+    const urlBase = `${ELEV_CONFIG.cgiUrl}?lat1=${lat1}&lon1=${lon1}&lat2=${lat2}&lon2=${lon2}&samples=${ELEV_CONFIG.samples}`;
+
+    try {
+        const cacheKey = `${lat1.toFixed(5)},${lon1.toFixed(5)}|${lat2.toFixed(5)},${lon2.toFixed(5)}|${ELEV_CONFIG.samples}`;
+        const cached = elevCache.get(cacheKey);
+        if (cached) {
+            draw3DPanorama(cached.points, cached.totalNm);
+            return;
+        }
+
+        const res = await fetch(urlBase);
+        const data = await res.json();
+
+        if (!data.points || !data.points.length) {
+            console.warn('Sin datos de relieve para dibujar.');
+            return;
+        }
+
+        for (const p of data.points) {
+            if (p.distNm == null && p.distKm != null) {
+                p.distNm = p.distKm / 1.852;
+            }
+        }
+
+        const totalNm = data.points[data.points.length - 1].distNm || distanceNm(lat1, lon1, lat2, lon2) / 1.852;
+        elevCache.set(cacheKey, { points: data.points, totalNm });
+
+        showPanoramaOverlay();
+        draw3DPanorama(data.points, totalNm);
+    } catch (e) {
+        console.error('Error en batch elevation:', e);
+    } finally {
+        elevationBusy = false;
+        hideDistanceGuide();
+    }
+}
+
+// Dibujar el panorama en SVG usando D3.
+function draw3DPanorama(data, totalNm) {
+    lastPanoramaData = data;
+    lastPanoramaTotalNm = totalNm;
+    const container = document.getElementById('panorama-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Dimensiones del gráfico y márgenes.
+    const width = container.offsetWidth || 800;
+    const height = 220;
+    const margin = { top: 20, right: 20, bottom: 30, left: 50 };
+
+    // Crear el SVG donde se renderiza el perfil.
+    const svg = d3.select("#panorama-container")
+        .append("svg")
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "none")
+        .style("width", "100%")
+        .style("height", "100%");
+
+    // Eje X: distancia total en millas náuticas.
+    const x = d3.scaleLinear()
+        .domain([0, totalNm])
+        .range([margin.left, width - margin.right]);
+
+    // Eje Y: altitud máxima con margen extra.
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d => mToFt(d.alt)) * 1.1])
+        .range([height - margin.bottom, margin.top]);
+
+    // Área del panorama (distancia vs altitud).
+    const area = d3.area()
+        .x(d => x(d.distNm))
+        .y0(y(0))
+        .y1(d => y(mToFt(d.alt)))
+        // .curve(d3.curveBasis);
+        .curve(d3.curveLinear);
+
+    // Dibujar el área del relieve.
+    svg.append("path")
+        .datum(data)
+        .attr("fill", "rgba(100, 100, 100, 0.7)")
+        .attr("stroke", "#333")
+        .attr("stroke-width", 1)
+        .attr("d", area);
+
+    // Eje X con etiqueta de distancia.
+    svg.append("g")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x).ticks(6).tickFormat(d => `${d.toFixed(0)} NM`));
+
+    // Eje Y con etiqueta de altitud.
+    svg.append("g")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y).ticks(5).tickFormat(d => `${d.toFixed(0)} ft`));
+
+    // Redibujar cuando cambie el tamaño del contenedor
+    if (!panoramaResizeObs && window.ResizeObserver) {
+        panoramaResizeObs = new ResizeObserver(() => {
+            if (lastPanoramaData && lastPanoramaTotalNm != null) {
+                draw3DPanorama(lastPanoramaData, lastPanoramaTotalNm);
+            }
+        });
+        panoramaResizeObs.observe(container);
+    }
+}
+
+// Activar/desactivar modo Elevación (panorama)
+function toggleElevationMode() {
+    elevationMode = !elevationMode;
+    buttonActive('#ELEV', elevationMode);
+
+    if (elevationMode) {
+        showDistanceGuide('Haga clic en el mapa para elegir un punto.');
+
+        if (SiteLat != null && SiteLon != null && elevationPointSource) {
+            elevationPointSource.clear();
+            elevationPointSource.addFeature(
+                new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([SiteLon, SiteLat])))
+            );
+            elevationPointLayer && elevationPointLayer.setVisible(true);
+        }
+        elevationLineSource && elevationLineSource.clear();
+        elevationLineLayer && elevationLineLayer.setVisible(false);
+    } else {
+        hideDistanceGuide();
+        hidePanoramaOverlay();
+        elevationPointSource && elevationPointSource.clear();
+        elevationLineSource && elevationLineSource.clear();
+        elevationPointLayer && elevationPointLayer.setVisible(false);
+        elevationLineLayer && elevationLineLayer.setVisible(false);
+
+    }
 }
 
 function updateDistanceLine() {
@@ -3940,6 +4243,52 @@ function ol_map_init() {
             gotoTime(trailTS);
         }
 
+        // Si el modo de elevación está activo, usar el clic para calcular el perfil.
+        if (elevationMode) {
+            if (elevationBusy) {
+                showDistanceGuide('Generando panorama, espere…');
+                evt.stopPropagation();
+                return;
+            }
+            // Obtener la coordenada del clic en el mapa y convertir a lon/lat.
+            const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
+            const lonlat = ol.proj.toLonLat(evtCoords);
+        
+            // Verificar que exista la posición del receptor.
+            if (SiteLat == null || SiteLon == null) {
+                showDistanceGuide('No hay posición del receptor disponible.');
+                evt.stopPropagation();
+                return;
+            }
+
+            // Actualizar el punto B en el mapa (manteniendo el punto A).
+            if (elevationPointSource) {
+                const feats = elevationPointSource.getFeatures().filter(f => f.get('role') !== 'B');
+                elevationPointSource.clear();
+                feats.forEach(f => elevationPointSource.addFeature(f));
+
+                const fB = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([lonlat[0], lonlat[1]])));
+                fB.set('role', 'B');
+                elevationPointSource.addFeature(fB);
+                elevationPointLayer && elevationPointLayer.setVisible(true);
+            }
+
+            // Dibujar línea A-B
+            if (elevationLineSource) {
+                elevationLineSource.clear();
+                const a = ol.proj.fromLonLat([SiteLon, SiteLat]);
+                const b = ol.proj.fromLonLat([lonlat[0], lonlat[1]]);
+                elevationLineSource.addFeature(new ol.Feature(new ol.geom.LineString([a, b])));
+                elevationLineLayer && elevationLineLayer.setVisible(true);
+            }
+        
+            // Lanzar la consulta del perfil de elevación y evitar propagación del clic.
+            hideDistanceGuide();
+            getElevationProfileLine(SiteLat, SiteLon, lonlat[1], lonlat[0]);
+            evt.stopPropagation();
+            return;
+        }
+
         // Si está activo el modo tierra‑aeronave
         if (distanceToGroundMode) {
 
@@ -4528,6 +4877,38 @@ function initMap() {
     });
     layers.push(distanceLineLayer);
 
+    if (!elevationPointSource) elevationPointSource = new ol.source.Vector();
+        elevationPointLayer = new ol.layer.Vector({
+        name: 'elevPoints',
+        type: 'overlay',
+        title: 'Puntos A-B (elevación)',
+        source: elevationPointSource,
+        zIndex: 262,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({ color: '#222' }),
+                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+            })
+        }),
+        visible: true
+    });
+    layers.push(elevationPointLayer);
+    
+    if (!elevationLineSource) elevationLineSource = new ol.source.Vector();
+    elevationLineLayer = new ol.layer.Vector({
+        name: 'elevLine',
+        type: 'overlay',
+        title: 'Línea A-B (elevación)',
+        source: elevationLineSource,
+        zIndex: 265,
+        style: new ol.style.Style({
+            stroke: new ol.style.Stroke({ color: '#00aaff', width: 2 })
+        }),
+        visible: true
+    });
+    layers.push(elevationLineLayer);
+
     try {
         if (!ggPointSource) ggPointSource = new ol.source.Vector();
         if (!ggPointLayer) {
@@ -4589,7 +4970,6 @@ function initMap() {
     } catch (e) {
         console.error('init TT layers', e);
     }
-
 
     // Si existe la capa de puntos en el mapa
     if (groundPointLayer) {
@@ -6583,6 +6963,8 @@ function resetMap() {
 function updateMapSize() {
     if (OLMap)
         OLMap.updateSize();
+
+    updatePanoramaOverlayBounds();
 }
 
 function expandSidebar(e) {
@@ -6677,6 +7059,8 @@ function adjustInfoBlock() {
             jQuery('#photo_container').css('height', '40px');
         }
     }
+
+    updatePanoramaOverlayBounds();
 }
 
 function initializeUnitsSelector() {
@@ -10328,6 +10712,8 @@ function showReplayBar() {
 
         jQuery("#selected_showTrace_hide").hide();
     }
+
+    updatePanoramaOverlayBounds();
 };
 
 // Actualiza el texto de la etiqueta del slider
