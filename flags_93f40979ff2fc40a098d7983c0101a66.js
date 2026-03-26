@@ -3,6 +3,7 @@
 // Declare ICAO registration address ranges and country
 // install the flag images in flags-tiny subdirectory. 
 
+// Lista de rangos ICAO; cada línea indica qué país corresponde a un rango de direcciones
 let ICAO_Ranges = [
 	// Mostly generated from the assignment table in the appendix to Chapter 9 of
 	// Annex 10 Vol III, Second Edition, July 2007 (with amendments through 88-A, 14/11/2013)
@@ -216,12 +217,15 @@ let ICAO_Ranges = [
 	{ start: 0xE8C000, end: 0xE8CFFF, country: "Peru", country_code: "pe" },
 	{ start: 0xE90000, end: 0xE90FFF, country: "Uruguay", country_code: "uy" },
 	{ start: 0xE94000, end: 0xE94FFF, country: "Bolivia", country_code: "bo" },
+	// Rango temporal reservado por ICAO (sin código de país)
 	{ start: 0xF00000, end: 0xF07FFF, country: "ICAO (temporary)", country_code: null },
+	// Rango especial por ICAO (sin código de país)
 	{ start: 0xF09000, end: 0xF097FF, country: "ICAO (special use)", country_code: null },
 
     // block assignments if nothing else above applies are no longer a thing
 ];
 
+// Objeto que indica dirección no asignada (si no coincide con ningún rango)
 let unassigned_range = {
 	country: "Unassigned",
 	country_code: null
@@ -231,14 +235,16 @@ let unassigned_range = {
 // return an object describing that ICAO range.
 // Always returns a non-null object.
 //   (todo: binary search)
+// Busca el rango ICAO correspondiente a una dirección en formato hexadecimal. Devuelve siempre un objeto (o el "no asignado" si no lo encuentra)
 function findICAORange(icao) {
+	// Convierte la cadena hex a número
 	let hexa = +("0x" + icao);
-
+	// Recorre la lista y devuelve el primer rango que incluya ese número
 	for (let i = 0; i < ICAO_Ranges.length; ++i) {
 		if (hexa >= ICAO_Ranges[i].start && hexa <= ICAO_Ranges[i].end) {
 			return ICAO_Ranges[i];
 		}
 	}
-
+	// Si no encontró nada, devuelve el objeto que indica "no asignado"
 	return unassigned_range;
 }

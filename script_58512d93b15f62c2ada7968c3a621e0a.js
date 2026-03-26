@@ -4,55 +4,99 @@
 
 
 "use strict";
-
+// Guarda los objetos de cada avión indexados por su identificador hex
 g.planes = {};
+// Lista ordenada de aviones (usar para iteraciones en orden)
 g.planesOrdered = [];
+// Caché de rutas consultadas
 g.route_cache = [];
+// Tareas pendientes para comprobar rutas
 g.route_check_todo = {};
+// Indicador de si ya hay una comprobación de ruta en curso
 g.route_check_in_flight = false;
+// Tiempo próximo permitido para una consulta de rutas
 g.route_next_lookup = 0;
+// Marca del último lookup de rutas
 g.route_last_lookup = 0;
-
+// Guarda la orientación del mapa (valor inicial proviene de otra parte)
 g.mapOrientation = mapOrientation;
 
 // Define our global variables
+// Indica si la pestaña del navegador está oculta
 let tabHidden = false;
+// Activa el uso de WebGL para dibujar iconos
 let webgl = false;
+// Fuente de datos para features cuando se usa WebGL
 let webglFeatures = new ol.source.Vector();
+// Referencia a la capa WebGL (si se crea)
 let webglLayer;
+// Referencia al mapa OpenLayers
 let OLMap = null;
+// Proyección actual usada por OpenLayers
 let OLProj = null;
+// Extensión de la proyección (área visible máxima)
 let OLProjExtent = null;
+// Fuente para los iconos de avión cuando no se usa WebGL
 let PlaneIconFeatures = new ol.source.Vector();
+// Grupo que mantiene las capas de traza (pistas de vuelo)
 let trailGroup = new ol.Collection();
+// Capa para dibujar círculos alrededor del sitio (distancias)
 let siteCircleLayer;
+// Fuente para las features de los círculos del sitio
 let siteCircleFeatures = new ol.source.Vector();
+// Capa para el punto de ubicación del receptor / usuario
 let locationDotLayer;
+// Fuente para el punto de ubicación
 let locationDotFeatures = new ol.source.Vector();
+// Capa que contiene los iconos de las aeronaves
 let iconLayer;
+// Contenedor para las capas que dibujan trazas
 let trailLayers;
+// Arreglo con features para el mapa de calor
 let heatFeatures = [];
+// Cuántos sub‑grupos usar para distribuir el mapa de calor
 let heatFeaturesSpread = 1024;
+// Capas que renderizan el mapa de calor por segmentos
 let heatLayers = [];
+// Fuente con puntos "reales" para el heatmap (si se usa)
 let realHeatFeatures = new ol.source.Vector();
+// Capa heatmap real
 let realHeat;
+// Caché de imágenes/iconos ya creados
 let iconCache = {};
+// Cola temporal de iconos a cargar
 let addToIconCache = [];
+// Caché de estilos de línea por clave (ej: por altitud)
 let lineStyleCache = {};
+// Guarda aviones cargados desde un replay temporalmente
 let replayPlanes = {};
+// Objeto que contiene filtros aplicados a aeronaves (altitud, fuentes, etc.)
 let PlaneFilter = {};
+// Avión actualmente seleccionado (objeto)
 let SelectedPlane = null;
+// Alias/backup del avión seleccionado
 let sp = null;
+// Lista de aviones seleccionados
 let SelPlanes = [];
+// Indica si se han seleccionado todos los aviones
 let SelectedAllPlanes = false;
+// Avión actualmente resaltado por el cursor
 let HighlightedPlane = null;
+// Indica si la vista sigue al avión seleccionado
 let FollowSelected = false;
+// Posición de seguimiento (array [lon,lat]) usada al seguir
 let followPos = [];
+// Modo para medir distancia entre aviones activado
 let distanceBetweenPlanesMode = false;
+// Lista de aviones seleccionados para medir distancia
 let selectedPlanesForDistance = [];
+// Capa que dibuja la(s) línea(s) de distancia entre aviones
 let distanceLineLayer = null;
+// Feature única para la línea de distancia en modo simple
 let distanceLineFeature = null;
+// Overlay que muestra texto con la distancia
 let distanceOverlay = null;
+// Intervalo que actualiza la medición de distancia periódicamente
 let distanceUpdateInterval = null;
 // Plane-plane distance modes and storage for multiple pairs
 let planeDistanceModeType = '1A1B';
@@ -165,143 +209,226 @@ let lastPanoramaTotalNm = null;
 let panoramaResizeObs = null;
 // Indicar si hay una consulta de panorama en curso
 let elevationBusy = false;
+// Tiempo (ms) en que empezó la carga de la página
 let loadStart = new Date().getTime();
+// Temporizador para redimensionar el mapa (se usa para agrupar eventos)
 let mapResizeTimeout;
+// Temporizador para movimiento del puntero (debounce)
 let pointerMoveTimeout;
+// Tamaño actual de los iconos
 let iconSize = 1;
+// Mostrar información extra para depurar trazas
 let debugTracks = false;
+// Más detalles en la depuración de actualización de trazas
 let verboseUpdateTrack = false;
+// Activar toda la depuración
 let debugAll = false;
+// Mostrar etiquetas en las trazas
 let trackLabels = false;
+// Permitir selección múltiple de aviones
 let multiSelect = false;
+// Datos recibidos desde la fuente UAT (978 MHz)
 let uat_data = null;
+// Si se muestran etiquetas en el mapa
 g.enableLabels = false;
+// Nivel de detalle extendido de etiquetas
 g.extendedLabels = 0;
+// Indica si el mapa está visible en la UI
 let mapIsVisible = true;
+// Filtrar solo aviones militares
 let onlyMilitary = false;
+// Mostrar sólo aviones seleccionados
 let onlySelected = false;
+// Flag de depuración genérica
 let debug = false;
+// Depuración para saltos a aviones
 let debugJump = false;
+// Hex para saltar a un avión (si se solicita)
 let jumpTo = null;
+// Ignorar MLAT si es verdadero
 let noMLAT = false;
+// Evitar que aviones "desaparezcan" por inactividad
 let noVanish = false;
+// Filtrar trazas por altitud en vez de aviones enteros
 let filterTracks = false; // altitude filter: don't filter planes but rather their tracks by altitude
+// Timestamp de cuándo se detectó que un par de aviones perdió señal
 let planesMissingSince = null;
+// ID del refresco actual
 let refreshId = 0;
+// Última vez que se pidió datos
 let lastFetch = 0;
+// Objeto para datos del contorno real (si se usa)
 let actualOutline = {};
+// Índice de tiempo por tile del globo (ahora)
 let globeIndexNow = {};
+// Distancia calculada por tile para ordenamiento
 let globeIndexDist = {};
+// Lookup de tiles especiales del globo
 let globeIndexSpecialLookup = {};
+// Cuántas tiles del globo se están viendo
 let globeTilesViewCount = 0;
+// Límite base de filas en la tabla del globo
 let globeTableLimitBase = 80;
+// Límite actual de filas en la tabla del globo
 let globeTableLimit = 80;
+// Contador de peticiones realizadas
 let fetchCounter = 0;
+// Última extensión de globo calculada
 let lastGlobeExtent;
+// Última extensión renderizada
 let lastRenderExtent;
+// Cuántas peticiones pendientes hay
 let pendingFetches = 0;
+// Marca si fue la primera petición hecha
 let firstFetch = true;
+// Contador de depuración genérico
 let debugCounter = 0;
+// Ruta de la página (limpia de barras extra)
 let pathName = window.location.pathname.replace(/\/+/, '/') || "/";
+// Filtro de fuentes activo
 let sourcesFilter = null;
+// Lista de fuentes de datos disponibles (orden interno)
 let sources = ['adsb', ['uat', 'adsr'], 'mlat', 'tisb', 'modeS', 'other', 'adsc', 'ais'];
+// Filtro por banderas (por ejemplo: military)
 let flagFilter = null;
+// Valores posibles para flagFilter
 let flagFilterValues = ['military', 'pia', 'ladd'];
+// Estado del modo "mostrar trazas"
 let showTrace = false;
+// Indicador para salir del modo traza
 let showTraceExit = false;
+// Indica si antes de entra en modo traza había aislamiento activo
 let showTraceWasIsolation = false;
+// Timestamp concreto a mostrar en modo traza
 let showTraceTimestamp = null;
+// Fecha seleccionada para trazas
 let traceDate = null;
+// Overlay de guía para usar el modo distancia suelo‑avión
+let distanceGuideEl = null;
+// Fecha en string para la URL / UI
 let traceDateString = null;
+// Opciones y parámetros del modo traza
 let traceOpts = {};
+// Parámetro ICAO pasado por URL
 let icaoParam = null;
+// Nuevo ancho para dibujar líneas (se calcula después)
 let newWidth = lineWidth;
+// Indica si la posición del sitio fue forzada por parámetros (override)
 let SiteOverride = (SiteLat != null && SiteLon != null);
+// Valor temporal cuando se solicita un "jump" desde la UI
 let onJumpInput = null;
+// Variables de estilos para textos y etiquetas (llenadas más adelante)
 let labelFill = null;
 let blackFill = null;
 let labelStroke = null;
 let labelStrokeNarrow = null;
 let bgFill = null;
+// Selección de leg para trazas históricas (-1 = todos)
 let legSel = -1;
+// Función para declinar la declinación magnética (rellenada luego)
 let geoMag = null;
+// Modo especial que evita filtros en trazas
 let solidT = false;
+// Última interacción del usuario (ms)
 let lastActive = new Date().getTime();
+// Capas activas (overlays) que se deben mostrar por defecto
 let enableOverlays = [];
 let halloween = false;
+// Mostrar sólo aviones con matrícula
 let noRegOnly = false;
+// Fuerza una actualización inmediata
 let triggerRefresh = 0;
+// Indica si ya se dibujó por primera vez
 let firstDraw = true;
+// Colores más oscuros para el tema
 let darkerColors = false;
+// Auto selección activa
 let autoselect = false;
+// Mostrar solo aviones sin GPS
 let nogpsOnly = false;
+// URL de sprites generada en tiempo de ejecución
 let spritesDataURL = null;
+// Solo traza histórica (sin posiciones actuales)
 let trace_hist_only = false;
+// Forzar trazas de alta resolución
 let traces_high_res = false;
+// Mostrar ID del receptor en la UI
 let show_rId = true;
+// Etiquetas arriba en la lista
 let labels_top = false;
+// Forzar que el punto del receptor quede centrado
 let lockDotCentered = false;
+// Forzar tipo de mapa desde parámetros
 let overrideMapType = null;
+// Ajustes de contraste y atenuado por mapa
 let layerMoreContrast = false;
 let layerDimFactor = 0;
 let layerExtraContrast = 0;
+// Incluir filtros en la URL compartida
 let shareFiltersParam = false;
+// Tamaño de la última petición recibida (bytes)
 let lastRequestSize = 0;
+// Caja de petición anterior (string)
 let lastRequestBox = '';
+// Próximo índice de consulta para selección
 let nextQuerySelected = 0;
+// Activar cache-busting dinámico
 let enableDynamicCachebusting = false;
+// Intervalo de refresco almacenado globalmente
 g.lastRefreshInt = 1000;
+// Tiempo (s) hasta "reap" por defecto (dependiendo de globeIndex)
 let reapTimeout = globeIndex ? 240 : 480;
-
-
+// Valor de referencia de presión atmosférica para correcciones barométricas
 let baroCorrectQNH = 1013.25;
-
+// Límite de actualizaciones (si se quiere forzar)
 let limitUpdates = -1;
-
+// Ancho base del bloque de información lateral
 let infoBlockWidth = baseInfoBlockWidth;
-
+// Buffer adicional para renderizar fuera de pantalla
 const renderBuffer = 60;
-
+// Enlace para compartir el estado actual
 let shareLink = '';
-
+// Centro del mapa por defecto (lat/lon)
 let CenterLat = 0;
 let CenterLon = 0;
+// Nivel de zoom actual
 g.zoomLvl = 5;
 g.zoomLvlCache;
-
+// Contadores de aviones y posiciones
 let TrackedAircraft = 0;
 let globeTrackedAircraft = 0;
 let TrackedAircraftPositions = 0;
 let TrackedHistorySize = 0;
 let aircraftShown = 0;
-
+// Posición del sitio (lon,lat) si está conocida
 let SitePosition = null;
-
 // timestamps
+// timestamps para datos en vivo y UAT
 let now = 0;
 let last = 0;
 let uat_now = 0;
 let uat_last = 0;
+// Colas de peticiones pendientes
 let FetchPending = [];
 let FetchPendingUAT = null;
-
+// Historial de conteo de mensajes para calcular tasa
 let MessageCountHistory = [];
 let MessageRate = 0;
-
+// Contenedores de capas del mapa
 let layers;
 let layers_group;
-
+// Estilo nulo para reutilizar
 const nullStyle = new ol.style.Style({});
-
+// Estilos que se definirán más adelante para trazas y fallos
 let estimateStyle;
 let estimateStyleSlim;
 let badLine;
 let badLineMlat;
 let badDot;
 let badDotMlat;
-
+// Indica si la barra de replay se está mostrando
 let showingReplayBar = false;
-
+// Calcula la distancia "haversine" entre dos puntos y la devuelve en NM
 function haversineDistance(lat1, lon1, lat2, lon2) {
     const R = 6371 / 1.852; // Radio de la Tierra en millas náuticas
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -599,7 +726,7 @@ function toggleElevationMode() {
 
     }
 }
-
+// Actualizar línea de distancia en modo aeronave-aeronave
 function updateDistanceLine() {
     if (!distanceBetweenPlanesMode) return;
 
@@ -1083,7 +1210,7 @@ function onTTCycleClick() {
         DistanceGroundToGround();
     }
 }
-
+// Devuelve un pequeño desplazamiento reproducible para un identificador, para que carteles cercanos no se solapen
 function stableOverlayOffset(key) {
     // Deterministic, small scatter around the anchor to avoid overlap
     let h = 0;
@@ -1543,9 +1670,6 @@ function updateGroundToGroundOverlay() {
     }
 }
 
-// Overlay de guía para usar el modo distancia suelo‑avión
-let distanceGuideEl = null;
-
 // Función para mostrar el texto guía del modo distancia suelo‑avión
 function showDistanceGuide(text) {
     // Seleccionar el contenedor donde se insertará la guía: el mapa si existe, o el body como respaldo.
@@ -1677,26 +1801,29 @@ function DistanceGroundToGround() {
         buttonActive('#TT', false);
     }
 }
-
+// Procesa la información de un avión individual recibida del servidor
 function processAircraft(ac, init, uat) {
+    // Indica si la entrada es un arreglo compacto (versión binaria) o un objeto
     const isArray = Array.isArray(ac);
+    // Identificador hexadecimal del avión
     let hex = isArray ? ac[0] : ac.hex;
-
+    // Si hay un filtro por ICAO y este hex no está en la lista, ignorarlo
     if (icaoFilter && !icaoFilter.includes(hex))
         return;
-
+    // Si hay una lista negra de ICAOs y este hex está dentro, descartarlo
     if (icaoBlacklist && icaoBlacklist.includes(hex))
         return;
-
+    // Fusionar identificadores no-ICAO que empiezan con '~' si está habilitado
     if (MergeNonIcao && hex.startsWith('~')) {
         hex = hex.slice(1);
     }
-
+    // Tipo de mensaje (por ejemplo 'adsb', 'tisb', etc.)
     const type = isArray ? ac[7] : ac.type;
+    // Si hay una lista para mantener historial y este avión no está en ella, ignorarlo salvo excepciones
     if (g.historyKeep && !g.historyKeep[hex] && type != 'adsc') {
         return;
     }
-
+    // Si la fuente es UAT y hay opción de ignorar TIS-B desde UAT, descartarlo
     if (uat && uatNoTISB && ac.type && ac.type.substring(0, 4) == "tisb") {
         // drop non ADS-B planes from UAT (TIS-B)
         return;
@@ -1704,34 +1831,40 @@ function processAircraft(ac, init, uat) {
 
     // Do we already have this plane object in g.planes?
     // If not make it.
+    // Buscar si ya tenemos un objeto Plane para este hex
     let plane = g.planes[hex]
-
+    // Si no existe, crear un nuevo objeto que represente el avión
     if (!plane) {
         plane = new PlaneObject(hex);
         if (uat)
             plane.uat = true;
     }
 
-
+    // Si estamos mostrando trazas históricas, no procesar posiciones en vivo aquí
     if (showTrace)
         return;
 
+    // Actualiza los datos del avión según el modo (globo/replay o normal)
     // Call the function update
     if (globeIndex || replay) {
+        // Si no filtramos por militares o el avión es militar o marcado en la base de datos, aceptarlo
         if (!onlyMilitary || plane.military || (ac.dbFlags && ac.dbFlags & 1)) {
             plane.updateData(now, last, ac, init);
         } else {
+            // Si no, actualizar sólo el tiempo de último mensaje
             plane.last_message_time = now - ac.seen;
         }
         return;
     }
+    // Si no hay datos UAT activos, aceptar la actualización inmediatamente
     if (uat_now == 0) {
         plane.updateData(now, last, ac, init);
         return;
     }
 
     // UAT dual source stuff below
-
+    // Lógica para decidir qué fuente (UAT 978 vs ADS-B 1090) usar cuando hay ambas
+    // Tiempo desde que el mensaje incluye posición (prioridad relativa)
     let newPos = ac.seen_pos;
     if (newPos === undefined || isNaN(newPos)) {
         newPos = 1000;
@@ -1748,37 +1881,43 @@ function processAircraft(ac, init, uat) {
     if (oldSeen === undefined || isNaN(oldSeen)) {
         oldSeen = 1000;
     }
-
+    // Si la nueva información NO viene de UAT, aplicar reglas para aceptar o rechazar
     if (!uat) {
         if (!plane.uat // plane isn't uat, new data isn't uat, accept immediately
             || (prefer978 < 0 && newPos < -prefer978)
             || (newPos < 2 && oldPos > 4 + prefer978)
             || (oldPos > 60 && newSeen < 2 && oldSeen > 4 + prefer978)
             || init) {
+            // Marcar como no-UAT y actualizar datos
             plane.uat = false;
             plane.updateData(now, last, ac, init);
         }
     } else {
+        // Si la nueva información viene de UAT, aplicar otras reglas de preferencia
         if (plane.uat // plane is uat, new data is uat, accept immediately
             || (prefer978 > 0 && newPos < prefer978)
             || (newPos < 2 && (oldPos > 4 - prefer978 || plane.dataSource == "mlat"))
             || (oldPos > 60 && newSeen < 2 && oldSeen > 4 - prefer978)
             || init) {
+            // Detectar si es TIS-B y si debemos ignorarlo para un avión que ya viene por ADS-B
             let tisb = Array.isArray(ac) ? (ac[7] == "tisb") : (ac.tisb != null && ac.tisb.indexOf("lat") >= 0);
             if (tisb && plane.dataSource == "adsb") {
                 // ignore TIS-B data for current ADS-B 1090 planes
             } else {
+                // Aceptar datos UAT y actualizar con tiempos UAT
                 plane.uat = true;
                 plane.updateData(uat_now, uat_last, ac, init);
             }
         }
     }
 }
-
+// Contador auxiliar para errores de tiempo que no avanzan
 let notNewCounter = 0;
 let backwardsCounter = 0;
+// Procesa un paquete de actualización del receptor (varios aviones)
 function processReceiverUpdate(data, init) {
     // update now and last
+    // Actualiza marcas de tiempo "now" y "last" según si el paquete es UAT o no
     let uat = data.uat_978;
     if (uat) {
         if (data.now <= uat_now)
@@ -1786,14 +1925,17 @@ function processReceiverUpdate(data, init) {
         uat_last = uat_now;
         uat_now = data.now;
     } else {
+        // Si ha pasado demasiado desde el último UAT, sincronizar tempos
         if (uat_now && now - uat_now > 15) {
             uat_now = now;
         }
+        // Si el paquete viene con tiempo igual o anterior al actual y no estamos en modo globo, puede ser cache viejo
         if (data.now <= now && !globeIndex) {
             if (data.now < now) {
                 backwardsCounter++;
                 console.log('timestep backwards or the same, ignoring data: ' + now + ' -> ' + data.now);
                 if (backwardsCounter >= 5) {
+                    // Si esto ocurre muchas veces, resetear el reloj interno y forzar limpieza
                     backwardsCounter = 0;
                     console.log('resetting all data now:' + now + ' -> ' + data.now);
                     now = data.now;
@@ -1804,10 +1946,12 @@ function processReceiverUpdate(data, init) {
             }
             if (++notNewCounter > 2) {
                 // data.now is too old, possibly a caching issues
+                // datos demasiado antiguos, posible problema de cache
                 enableDynamicCachebusting = true;
             }
             return;
         }
+        // Si el paquete avanza en el tiempo, actualizar marcas last/now
         if (data.now > now) {
             if (0 && now && data.now - now > 10) {
                 console.log('now jumped: ' + localTime(new Date(now * 1000)) + ' -> ' + localTime(new Date(data.now * 1000)));
@@ -1818,8 +1962,9 @@ function processReceiverUpdate(data, init) {
             now = data.now;
         }
     }
+    // Guardar now en el objeto global g para acceso desde otras partes
     g.now = now;
-
+    // Si estamos en vista tipo globo, actualizar índices y contar aviones globales
     if (globeIndex) {
         if ((showGrid || loStore['globeGrid'] == 'true')
             && globeIndexNow[data.globeIndex] == null)
@@ -1827,18 +1972,21 @@ function processReceiverUpdate(data, init) {
         globeTrackedAircraft = data.global_ac_count_withpos;
         globeIndexNow[data.globeIndex] = data.now;
     }
-
+    // Actualizar tasa de mensajes si procede
     if (!(uat || init || (globeIndex && aggregator))) {
         updateMessageRate(data);
     }
 
     // Loop through all the planes in the data packet
+    // Recorre todas las aeronaves del paquete y procesa cada una
     for (let j = 0; j < data.aircraft.length; j++) {
         processAircraft(data.aircraft[j], init, uat);
     }
 }
+// Manejador de fallo de fetch: registra errores y muestra aviso en UI
 function fetchFail(jqxhr, status, error) {
     try {
+        // Reducir contador de peticiones pendientes
         pendingFetches--;
         if (pendingFetches <= 0 && !tabHidden) {
             triggerRefresh++;
@@ -1849,11 +1997,13 @@ function fetchFail(jqxhr, status, error) {
         let errText = status + (error ? (": " + error) : "");
         console.log(jqxhr);
         console.log(error);
+        // Si no es un rate-limit (429) mostrar detalle de error y aumentar contador de receptores desactualizados
         if (status != 429 && status != '429') {
             jQuery("#update_error_detail").text(errText);
             jQuery("#update_error").css('display', 'block');
             StaleReceiverCount++;
         } else {
+            // Si se reciben muchos 429, forzar actualización de tasas del globo
             if (C429++ > 16) {
                 globeRateUpdate();
                 C429 = 0;
@@ -1863,13 +2013,14 @@ function fetchFail(jqxhr, status, error) {
         console.error(e);
     }
 }
-
+// Manejador cuando un fetch termina correctamente: procesa datos binarios o JSON y actualiza estado
 function fetchDone(data) {
     try {
         pendingFetches--;
         if (data == null) {
             return;
         }
+        // Si los datos vienen comprimidos con zstd, descomprimir y pasar al decodificador interno
         if (zstd) {
             let arr = new Uint8Array(data);
             lastRequestSize = arr.byteLength;
@@ -1885,15 +2036,18 @@ function fetchDone(data) {
             }
             let arrayBuffer = res.buffer
             // return type is Uint8Array, wqi requires the ArrayBuffer
+            // wqi espera ArrayBuffer, así que lo empaquetamos
             data = { buffer: arrayBuffer, };
             wqi(data);
         } else if (binCraft) {
+            // Si es formato binCraft, preparar buffer y pasarlo al parser wqi
             lastRequestSize = data.byteLength / 2;
             data = { buffer: data, };
             wqi(data);
         }
+        // Guardar índice de URL para casos con múltiples segmentos
         data.urlIndex = this.urlIndex;
-
+        // Validar que el paquete tenga lista de aeronaves y timestamp
         if (!data.aircraft || !data.now) {
             let error = data.error;
             if (error) {
@@ -1903,22 +2057,23 @@ function fetchDone(data) {
             }
             return;
         }
-
+        // Si los timers están desactivados, no aplicar los datos
         if (!timersActive) {
             //console.log(localTime(new Date()) + " fetchDone: not applying data due to !timersActive");
             return;
         }
 
         //console.time("Process " + data.globeIndex);
+        // Procesar el paquete de datos del receptor
         processReceiverUpdate(data);
         //console.timeEnd("Process " + data.globeIndex);
         data = null;
-
+        // Si había datos UAT pendientes, procesarlos también
         if (uat_data) {
             processReceiverUpdate(uat_data);
             uat_data = null;
         }
-
+        // Si ya no hay peticiones pendientes, marcar para refrescar la UI
         if (pendingFetches <= 0 && !tabHidden) {
             triggerRefresh++;
             checkMovement();
@@ -1943,12 +2098,14 @@ function fetchDone(data) {
                 checkRefresh();
             }
         }
+        // Estadísticas de fetchs completados
         fetchDoneCount++;
         if (fetchDoneCount == 1) { console.timeEnd("first fetch()"); };
-
+        // Llamada posterior a la primera descarga completa
         if (!g.firstFetchDone) { afterFirstFetch(); };
 
         // Check for stale receiver data
+        // Comprobar si los datos del receptor se han quedado estancados
         if (last == now && !globeIndex) {
             StaleReceiverCount++;
             if (StaleReceiverCount > 5) {
@@ -1963,18 +2120,21 @@ function fetchDone(data) {
         console.error(e);
     }
 }
-
+// Carga en memoria la tabla de tipos de avión desde el directorio de la base de datos
 function db_load_type_cache() {
     return jQuery.getJSON(databaseFolder + "/icao_aircraft_types2.js").done(function (typeLookupData) {
+        // Guardar la tabla de búsqueda en la cache global
         g.type_cache = typeLookupData;
+        // Actualizar los aviones ya cargados para que apliquen los nuevos datos
         for (let i in g.planesOrdered) {
             g.planesOrdered[i].setTypeData();
         }
     });
 }
-
+// Bandera para ejecutar funciones después de la carga inicial
 g.afterLoadDone = false;
 g.afterLoad = [];
+// Añade una función para ejecutar después de la primera carga completa
 function runAfterLoad(func) {
     if (g.afterLoadDone) {
         func()
@@ -1982,7 +2142,7 @@ function runAfterLoad(func) {
         g.afterLoad.push(func);
     }
 }
-
+// Se ejecuta tras la primera descarga de datos completa; realiza tareas de inicialización finales
 function afterFirstFetch() {
     if (g.firstFetchDone) { return; }
 
@@ -1990,12 +2150,13 @@ function afterFirstFetch() {
 
     updateVisible();
     mapRefresh();
-
+    // Pequeño retraso para dejar estabilizar la UI y ejecutar tareas en segundo plano
     setTimeout(() => {
         console.time('afterFirstFetch()');
 
 
         let func;
+        // Ejecutar funciones encoladas antes de la carga
         while ((func = g.afterLoad.pop())) {
             func();
         }
@@ -2004,13 +2165,13 @@ function afterFirstFetch() {
             func();
         }
 
-
+        // Inicializar el calculador de declinación magnética
         geoMag = geoMagFactory(cof2Obj());
-
+        // Cargar cache de tipos y forzar un refresco
         db_load_type_cache().always(function () {
             refresh();
         });
-
+        // Si estamos en modo screenshot, parar temporizadores silenciosamente
         if (usp.has('screenshot')) {
             clearIntervalTimers('silent');
         }
@@ -2023,19 +2184,22 @@ let debugFetch = false;
 let C429 = 0;
 let fetchCalls = 0;
 let fetchDoneCount = 0;
+// Función que inicia las peticiones periódicas para traer datos de aeronaves
 function fetchData(options) {
     options = options || {};
+    // Si los timers están apagados, no iniciar fetch
     if (!timersActive) {
         //console.log(localTime(new Date()) + " fetchData inhibited by !timersActive");
         return;
     }
+    // No fetch en modos especiales como heatmap, replay, trace, etc.
     if (heatmap || replay || showTrace || pTracks || !loadFinished || inhibitFetch) {
         return;
     }
     let currentTime = new Date().getTime();
     const refreshMs = refreshInt()
     g.lastRefreshInt = refreshMs;
-
+    // Evitar hacer fetchs demasiado seguido, o si hay fetchs pendientes, o si el mapa se está moviendo
     if (!options.force) {
         if (
             currentTime - lastFetch <= refreshMs
@@ -2046,12 +2210,13 @@ function fetchData(options) {
             return;
         }
     }
+    // Programar la próxima ejecución recursiva
     setTimeout(fetchData, refreshMs);
     if (debugFetch) {
         console.log('Time since last fetch: ' + (currentTime - lastFetch) + ' ms');
     }
     lastFetch = currentTime;
-
+    // Reiniciar lista de fetch pendientes
     FetchPending = [];
     if (FetchPendingUAT != null) {
         // don't double up on fetches, let the last one resolve
@@ -2060,14 +2225,14 @@ function fetchData(options) {
 
     //console.timeEnd("Starting Fetch");
     //console.time("Starting Fetch");
-
+    // Si se ha limitado el número de actualizaciones, respetarlo
     if (limitUpdates != -1 && fetchCalls > limitUpdates) {
         return;
     }
     fetchCalls++;
 
     if (fetchCalls == 1) { console.time("first fetch()"); };
-
+    // Si UAT está habilitado, arrancar la petición específica para 978
     if (enable_uat) {
         FetchPendingUAT = jQuery.ajax({
             url: 'chunks/978.json',
@@ -2082,13 +2247,14 @@ function fetchData(options) {
             FetchPendingUAT = null;
         });
     }
-
+    // Determinar sufijo de archivos según compresión/formato
     let suffix = zstd ? '.binCraft.zst' : (binCraft ? '.binCraft' : '.json');
     if (enableDynamicCachebusting) {
         suffix += `?${currentTime}`;
     }
 
     let ac_url = [];
+    // Construir URLs a consultar según configuración (uuid, reApi, globeIndex, etc.)
     if (uuid != null) {
         for (let i in uuid) {
             ac_url.push('uuid/?feed=' + uuid[i]);
@@ -2132,6 +2298,7 @@ function fetchData(options) {
         //console.log(url);
 
     } else if (globeIndex) {
+        // Si estamos en modo globo, determinar índices de tiles a pedir
         let indexes = globeIndexes();
         const ancient = (currentTime - 2 * refreshMs / globeSimLoad * globeTilesViewCount) / 1000;
         for (let i in indexes) {
@@ -2163,9 +2330,10 @@ function fetchData(options) {
             }
         }
     } else {
+        // Petición por defecto del archivo de aeronaves
         ac_url.push('data/aircraft' + suffix);
     }
-
+    // Ajustar contadores y lanzar pedidos AJAX
     pendingFetches += ac_url.length;
     fetchCounter += ac_url.length;
 
@@ -2191,7 +2359,7 @@ function fetchData(options) {
             .fail(fetchFail);
     }
 
-
+    // Ejecutar reaper si hace tiempo desde el último
     if (now - lastReap > 60) {
         reaper();
     }
@@ -2199,7 +2367,9 @@ function fetchData(options) {
 
 // this function is called from index.html on body load
 // kicks off the whole rabbit hole
+// Inicia la aplicación cuando se carga el body (arranca toda la interfaz)
 function initialize() {
+    // Si la URL pide una prueba de iconos, muestra el canvas de prueba y sale
     if (usp.has('iconTest') || usp.has('iconTestLabels')) {
         jQuery('#iconTestCanvas').show();
         iconTest();
@@ -2207,11 +2377,12 @@ function initialize() {
     }
 
     // things that can run without receiver json being known
+    // Ejecuta pasos que no necesitan datos del receptor
     earlyInitPage();
     initMapEarly();
-
+    // Espera que la configuración del receptor y el heatmap estén listos antes de continuar
     jQuery.when(configureReceiver, heatmapDefer).done(function () {
-
+        // Si hay info del receptor, aplica ajustes iniciales (trazas, resolución, posición)
         if (receiverJson) {
             if (receiverJson.trace_hist_only)
                 trace_hist_only = true;
@@ -2219,57 +2390,63 @@ function initialize() {
                 traces_high_res = true;
             if (receiverJson.lat != null && !SiteOverride) {
                 //console.log("receiver.json lat: " + receiverJson.lat)
+                // Usa la lat/lon del receptor como posición del sitio si no hay override
                 SiteLat = receiverJson.lat;
                 SiteLon = receiverJson.lon;
             }
             if (receiverJson.jaeroTimeout) {
+                // Ajusta timeout para datos jaero si viene en segundos en el JSON
                 jaeroTimeout = receiverJson.jaeroTimeout * 60;
             }
 
 
             if (receiverJson.readsb) {
+                // Si el receptor usa readsb, desactiva ciertos filtros
                 positionFilter = false;
                 altitudeFilter = false;
             }
         }
-
+        // Si se conoce la posición del sitio, prepara los valores por defecto de centro del mapa
         if (SiteLat && SiteLon) {
             SitePosition = [SiteLon, SiteLat];
             DefaultCenterLat = SiteLat;
             DefaultCenterLon = SiteLon;
         }
-
+        // Liberar la promesa de configuración del receptor
         configureReceiver = null;
 
         // Initialize stuff
+        // Inicializar UI y mapa completos
         initPage();
         initMap();
-
+        // Procesar toggles pasados por la URL
         processQueryToggles();
-
+        // Cuando la cola de historial esté lista, empujarla
         jQuery.when(historyQueued).done(push_history);
-
+        // Resolver que el historial está cargado si no hay items
         if (!nHistoryItems) {
             historyLoaded.resolve();
         }
-
+        // Esperar a que todo (historial y zstd) esté listo y empezar la página
         jQuery.when(historyLoaded, zstdDefer).done(startPage);
     });
 }
 
-
+// Lee parámetros 'toggles' y aplica los cambios solicitados por URL
 function processQueryToggles() {
     if (!usp.has('toggles')) {
         return;
     }
     let todo;
     try {
+        // 'toggles' viene como "key1,value1,key2,value2,..."
         todo = usp.get('toggles').split(',');;
     } catch (e) {
         console.error(e);
         return;
     }
     while (todo.length >= 2) {
+        // Saca la pareja key/value y activa o desactiva el toggle
         let key = todo.shift();
         let value = todo.shift();
         let state = true;
@@ -2284,7 +2461,7 @@ function processQueryToggles() {
         }
     }
 }
-
+// Cambia la velocidad de reproducción de trazas y recalcula si no está animando
 function replaySpeedChange(arg) {
     traceOpts.replaySpeed = arg;
     console.log(arg);
@@ -2292,9 +2469,9 @@ function replaySpeedChange(arg) {
         return;
     legShift(0);
 };
-
+// Inicializa partes de la página que necesitan configuraciones previas
 function initPage() {
-
+    // Si estamos en modo "globo", añade toggles para controlar cuántas filas ver en la tabla
     if (globeIndex) {
         function setGlobeTableLimit() {
             let mult = 1 + 4 * toggles['moreTableLines1'].state + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
@@ -2327,12 +2504,13 @@ function initPage() {
         });
     }
 
-
+    // Oculta opciones de trazas si no hay historial
     if (!globeIndex && !haveTraces) {
         jQuery("#lastLeg_cb").parent().hide();
         jQuery('#show_trace').hide();
     }
     if (globeIndex) {
+        // Si es mapa global, mostrar tabla en vista
         toggleTableInView('enable');
         if (icaoFilter) {
             toggleTableInView('disable');
@@ -2340,7 +2518,7 @@ function initPage() {
     } else {
         jQuery('#V').show();
     }
-
+    // Si la URL fuerzas SiteLat/SiteLon, aplicarlo y guardar en almacenamiento local
     if (usp.has('SiteLat') && usp.has('SiteLon')) {
         let lat = parseFloat(usp.get('SiteLat'));
         let lon = parseFloat(usp.get('SiteLon'));
@@ -2358,14 +2536,16 @@ function initPage() {
             loStore.removeItem('SiteLon');
         }
     } else {
+        // Si no hay posición del sitio guardada, usa valores por defecto
         CenterLat = DefaultCenterLat;
         CenterLon = DefaultCenterLon;
     }
 
 }
-
+// Inicializaciones tempranas que no dependen del receptor
 function earlyInitPage() {
     // things that can run without receiver json being known
+    // Si se configuró una lista de URLs de audio, crear los reproductores
     if (audio_url) {
         if (!Array.isArray(audio_url)) {
             audio_url = [audio_url];
@@ -2379,6 +2559,7 @@ function earlyInitPage() {
                 title = entry[1];
             }
             if (url) {
+                // Inserta una fila con el reproductor de audio
                 html += `
                     <tr><td style="text-align: center">${title}</td></tr>
                     <tr><td style="text-align: center">
@@ -2394,7 +2575,7 @@ function earlyInitPage() {
     }
 
     let value;
-
+    // Ajustes regionales (UK) que habilitan capas y estilo ATC
     if (uk_advisory) {
         defaultOverlays.push('uka_airports');
         defaultOverlays.push('uka_airspaces');
@@ -2402,7 +2583,7 @@ function earlyInitPage() {
         defaultOverlays.push('uka_shoreham');
         atcStyle = true;
     }
-
+    // Si el estilo ATC está activo, aplicar varios cambios visuales y de comportamiento
     if (atcStyle) {
         labels_top = true;
         tempTrails = true;
@@ -2414,7 +2595,7 @@ function earlyInitPage() {
         lineWidth = 4;
         g.enableLabels = true;
     }
-
+    // Leer parámetros de URL y ajustar banderas/valores locales
     if (usp.has('debugFetch')) {
         debugFetch = true;
     }
@@ -2452,12 +2633,14 @@ function earlyInitPage() {
     }
 
     if (usp.has('kiosk')) {
+        // Modo kiosko: simplifica UI y aumenta escala
         tempTrails = true;
         hideButtons = true;
         userScale = 2;
     }
 
     if (pTracks) {
+        // Si estamos mostrando pistas persistentes, no dejar que los aviones desaparezcan
         noVanish = true;
         buttonActive('#P', noVanish);
         filterTracks = true;
@@ -2499,6 +2682,7 @@ function earlyInitPage() {
         if (!isNaN(dim))
             mapDimPercentage = dim;
     } else if (heatmap) {
+        // Si heatmap activo, atenuar mapa automáticamente
         mapDimPercentage = 0.6;
         MapDim = true;
     }
@@ -2535,7 +2719,7 @@ function earlyInitPage() {
     } else if (loStore['userScale'] != null) {
         userScale = loStore['userScale'];
     }
-
+    // Inicializa sliders para ajustar escala de iconos y UI
     const slideBase = 0.6;
     jQuery('#iconScaleSlider').slider({
         value: Math.pow(iconScale, 1 / slideBase),
@@ -2591,6 +2775,7 @@ function earlyInitPage() {
     if (value = usp.getFloat('filterMaxRange')) {
         filterMaxRange = value;
     }
+    // Convierte rango en millas náuticas a metros
     filterMaxRange *= 1852; // convert from nmi to meters
 
 
@@ -2598,7 +2783,7 @@ function earlyInitPage() {
         g.mapOrientation = value;
     }
     g.mapOrientation *= (Math.PI / 180); // adjust to radians
-
+    // Si la URL pide replay, preparar la hora solicitada
     if (usp.has('r') || usp.has('replay')) {
         let numbers = (usp.get('r') || usp.get('replay') || "").split(/(?:-|:)/);
         let ts = new Date();
@@ -2617,6 +2802,7 @@ function earlyInitPage() {
     }
 
     //Pulling filters from params
+    // Extrae filtros de altitud desde la URL y actívalos
     if (usp.has('filterAltMin')) {
         const minAlt = usp.getInt('filterAltMin');
         if (minAlt !== null) {
@@ -2647,13 +2833,14 @@ function earlyInitPage() {
 
 
     if (false && iOSVersion() <= 12 && !('PointerEvent' in window)) {
+        // Mensaje para navegadores antiguos (normalmente no se ejecuta)
         jQuery("#generic_error_detail").text("Enable Settings - Safari - Advanced - Experimental features - Pointer Events");
         jQuery("#generic_error").css('display', 'block');
         setTimeout(function () {
             jQuery("#generic_error").css('display', 'none');
         }, 30000);
     }
-
+    // Aplicar estado inicial de etiquetas desde almacenamiento local o URL
     if (loStore['enableLabels'] == 'true' || usp.has('enableLabels')) {
         toggleLabels();
     }
@@ -2681,7 +2868,7 @@ function earlyInitPage() {
         //loStore['noVanish'] = "false";
         buttonActive('#P', noVanish);
     }
-
+    // Inicializa las pestañas y recuerda la activa
     jQuery('#tabs').tabs({
     active: (loStore['active_tab'] !== undefined) ? loStore['active_tab'] : false,
     
@@ -2692,6 +2879,7 @@ function earlyInitPage() {
     });
 
     // Set page basics
+    // Títulos y módulos básicos de la página
     document.title = PageName;
 
     initializeUnitsSelector();
@@ -2712,6 +2900,7 @@ function earlyInitPage() {
     });
 
     // Set up event handlers for buttons
+    // Configura botones y formularios básicos (altímetro, filtros, búsqueda, trace, replay)
     jQuery("#expand_sidebar_button").click(expandSidebar);
     jQuery("#shrink_sidebar_button").click(showMap);
 
@@ -2742,7 +2931,7 @@ function earlyInitPage() {
     jQuery("#show_trace").click(toggleShowTrace);
     jQuery("#trace_back_1d").click(function () { shiftTrace(-1) });
     jQuery("#trace_jump_1d").click(function () { shiftTrace(1) });
-
+    // Selector de fecha para trazas históricas
     jQuery("#histDatePicker").datepicker({
         maxDate: '+1d',
         dateFormat: "yy-mm-dd",
@@ -2759,7 +2948,7 @@ function earlyInitPage() {
             jQuery("#histDatePicker").attr("disabled", true);
         },
     });
-
+    // Botón play/pause del replay
     jQuery("#replayPlay").click(function () {
 
         if (replay.playing) {
@@ -2780,6 +2969,7 @@ function earlyInitPage() {
     });
 
     if (onMobile) {
+        // Botón fullscreen para móviles
         jQuery('#fullscreenButton').on('click', function () {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
@@ -2804,7 +2994,7 @@ function earlyInitPage() {
         filterBlockedMLAT(true);
         refresh();
     });
-
+    // Toggle para mostrar solo último tramo (last leg)
     new Toggle({
         key: "lastLeg",
         display: "Last Leg only",
@@ -2819,6 +3009,7 @@ function earlyInitPage() {
             }
         }
     });
+    // Toggle para usar altitudes geométricas en etiquetas
     new Toggle({
         key: "labelsGeom",
         display: "Labels: geom. alt. (WGS84)",
@@ -2832,6 +3023,7 @@ function earlyInitPage() {
             }
         }
     });
+    // Toggle para conversión EGM (más lento)
     new Toggle({
         key: "geomUseEGM",
         display: "Geom. alt.: WGS84 -> EGM conversion (long load)",
@@ -2861,7 +3053,7 @@ function earlyInitPage() {
             }
         }
     });
-
+    // Usar corrección barométrica QNH para mostrar altitudes corregidas
     new Toggle({
         key: "baroUseQNH",
         display: "Baro. alt.: correct for QNH",
@@ -2884,15 +3076,15 @@ function earlyInitPage() {
             }
         }
     });
-
+    // Si la URL pide etiquetas geométricas, activar el toggle correspondiente al inicio
     if (usp.has('labelsGeom')) {
         toggles['labelsGeom'].toggle(true, 'init');
     }
-
+    // Si la URL pide conversión EGM, activar ese toggle al inicio
     if (usp.has('geomEGM')) {
         toggles['geomUseEGM'].toggle(true, 'init');
     }
-
+    // mostrar horas UTC en etiquetas en vivo
     new Toggle({
         key: "utcTimesLive",
         display: "Live track labels: UTC",
@@ -2904,7 +3096,7 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
-
+    // mostrar horas UTC en etiquetas en trazas históricas
     new Toggle({
         key: "utcTimesHistoric",
         display: "Historic track labels: UTC",
@@ -2917,6 +3109,7 @@ function earlyInitPage() {
         }
     });
 
+    // etiquetas de viento más pequeñas
     new Toggle({
         key: "windLabelsSlim",
         display: "Smaller wind labels",
@@ -2932,6 +3125,7 @@ function earlyInitPage() {
         }
     });
 
+    // mostrar/ocultar unidades en las etiquetas
     new Toggle({
         key: "showLabelUnits",
         display: "Label units",
@@ -2949,14 +3143,16 @@ function earlyInitPage() {
         }
     });
 
-
+    // Al hacer clic: pausar trazas y mostrar tiempo actual del replay
     jQuery('#tStop').on('click', function () { traceOpts.replaySpeed = 0; gotoTime(traceOpts.showTime); });
+    // botones para velocidad
     jQuery('#t1x').on('click', function () { replaySpeedChange(1); });
     jQuery('#t5x').on('click', function () { replaySpeedChange(5); });
     jQuery('#t10x').on('click', function () { replaySpeedChange(10); });
     jQuery('#t20x').on('click', function () { replaySpeedChange(20); });
     jQuery('#t40x').on('click', function () { replaySpeedChange(40); });
 
+    // incluir filtros en las URLs compartidas (para reconstruir estado)
     new Toggle({
         key: "shareFilters",
         display: "Include Filters In URLs",
@@ -2967,6 +3163,7 @@ function earlyInitPage() {
         }
     });
 
+    // modo depuración de trazas (muestra más detalles)
     new Toggle({
         key: "debugTracks",
         display: "Debug Tracks",
@@ -2978,6 +3175,7 @@ function earlyInitPage() {
         }
     });
 
+    // mostrar todo para depuración (activa flag global)
     new Toggle({
         key: "debugAll",
         display: "Debug show all",
@@ -3005,6 +3203,7 @@ function earlyInitPage() {
     });
     */
 
+    // permitir actualizar ubicación GPS del navegador
     new Toggle({
         key: "updateLocation",
         display: "Update GPS location",
@@ -3016,6 +3215,7 @@ function earlyInitPage() {
         }
     });
 
+    // auto-selección de avión más cercano
     new Toggle({
         key: "autoselect",
         display: "Auto-select plane",
@@ -3026,11 +3226,13 @@ function earlyInitPage() {
             setAutoselect();
         }
     });
+    // Si la URL solicita autoselect, activarlo ya
     if (usp.has('autoselect')) {
         autoselect = true;
         setAutoselect();
     }
 
+    // aviones coloreados o en escala de grises
     new Toggle({
         key: "ColoredPlanes",
         display: "Colored Planes",
@@ -3045,7 +3247,7 @@ function earlyInitPage() {
             refreshFeatures();
         }
     });
-
+    // trazas coloreadas o en negro
     new Toggle({
         key: "ColoredTrails",
         display: "Colored Trails",
@@ -3060,7 +3262,7 @@ function earlyInitPage() {
             remakeTrails();
         }
     });
-
+    // Toggle para mostrar/ocultar la barra lateral (sidebar)
     new Toggle({
         key: "sidebar_visible",
         display: "Sidebar visible",
@@ -3111,11 +3313,12 @@ function earlyInitPage() {
             }
         },
     });
-
+    // Si no mostramos fotos, desactivar APIs de fotos
     if (!showPictures) {
         planespottingAPI = false;
         planespottersAPI = false;
     }
+    // Toggle para activar fotos desde planespotting.be
     new Toggle({
         key: "planespottingAPI",
         display: "Pictures planespotting.be",
@@ -3130,6 +3333,7 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
+    // Toggle para activar fotos desde planespotters.net
     new Toggle({
         key: "planespottersAPI",
         display: "Pictures planespotters.net",
@@ -3144,12 +3348,13 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
-
+    // Si hay URL para API de rutas, configurar toggle y ajustes relacionados
     if (routeApiUrl) {
         if (location.protocol == 'http:' && routeApiUrl == "https://adsb.im/api/0/routeset") {
             // adsb.im API provider kindly asks that tar1090 uses http for the route API if possible
             routeApiUrl = "http://adsb.im/api/0/routeset";
         }
+        // Toggle para activar consulta de rutas (lookup)
         new Toggle({
             key: "useRouteAPI",
             display: "Lookup route",
@@ -3166,9 +3371,11 @@ function earlyInitPage() {
                 }
             }
         });
+        // manejar valor de compatibilidad con variable antigua
         if (useIataAirportCodes == false) {
             routeDisplay = 'icao'; // cope with deprecated useIata var
         }
+        // si la URL indica cómo mostrar rutas, usarlo
         if (usp.has('routeDisplay')) {
             routeDisplay = usp.get('routeDisplay');
         }
@@ -3177,7 +3384,7 @@ function earlyInitPage() {
         useRouteAPI = false;
     }
 
-
+    // Toggle: habilitar bloque de información lateral (infoblock)
     new Toggle({
         key: "enableInfoblock",
         display: "Enable Infoblock",
@@ -3187,7 +3394,7 @@ function earlyInitPage() {
             adjustInfoBlock();
         }
     });
-
+    // Toggle: infoblock ancho
     new Toggle({
         key: "wideInfoblock",
         display: "Wide Infoblock",
@@ -3198,12 +3405,12 @@ function earlyInitPage() {
             adjustInfoBlock();
         }
     });
-
+    // Si estamos en móvil, desactivar eventos por hover y ocultar contenedores innecesarios
     if (onMobile) {
         enableMouseover = false;
         (typeof hideById != 'undefined') && (hideById) && (hideById('tracking_leaderboard_container'));
     }
-
+    // Toggle: activar/desactivar caja informativa al pasar el ratón
     new Toggle({
         key: "enableMouseover",
         display: "Enable mouse-over block",
@@ -3218,7 +3425,7 @@ function earlyInitPage() {
     });
 
 
-
+    // Checkbox: seleccionar/deseleccionar todos los aviones
     jQuery('#selectall_checkbox').on('click', function () {
         if (jQuery('#selectall_checkbox').hasClass('settingsCheckboxChecked')) {
             deselectAllPlanes();
@@ -3228,16 +3435,17 @@ function earlyInitPage() {
     })
 
     // Force map to redraw if sidebar container is resized - use a timer to debounce
+    // Si la barra lateral cambia de tamaño, forzar redibujo del mapa (con debounce)
     jQuery("#sidebar_container").on("resize", function () {
         clearTimeout(mapResizeTimeout);
         mapResizeTimeout = setTimeout(updateMapSize, 20);
     });
-
+    // Aplicar filtros iniciales: vehículos en tierra y MLAT bloqueado
     filterGroundVehicles(false);
     filterBlockedMLAT(false);
-
+    // Inicializar el gráfico de altitud
     TAR.altitudeChart.init();
-
+    // Si agregador, mostrar cabeceras adicionales y proteger uso en iframe
     if (aggregator) {
         jQuery('#aggregator_header').show();
         jQuery('#credits').show();
@@ -3247,11 +3455,13 @@ function earlyInitPage() {
         jQuery('#selected_infoblock').addClass('aggregator-selected-bg');
 
         // activate to prevent iframe use
+        // evitar uso dentro de iframe si está prohibido
         if (inhibitIframe && window.self != window.top) {
             window.top.location.href = "https://www.aggregator.com/";
             return;
         }
     }
+    // Si hay enlace para configuración de imágenes, reemplazar HOSTNAME por el host actual y mostrar enlace
     if (imageConfigLink != "") {
         let host = window.location.hostname;
         let configLink = imageConfigLink.replace('HOSTNAME', host);
@@ -3259,39 +3469,49 @@ function earlyInitPage() {
         jQuery('#imageConfigLink').text(imageConfigText)
         jQuery('#imageConfigHeader').show();
     }
+    // Si existe servidor AIScatcher, sustituir HOSTNAME en su URL
     if (aiscatcher_server) {
         aiscatcher_server = aiscatcher_server.replace('HOSTNAME', window.location.hostname);
     }
-
+    // Si se pidió ocultar botones, aplicarlo ahora y también después de la carga
     if (hideButtons) {
         showHideButtons();
         runAfterLoad(showHideButtons);
     }
 }
-
+// Inicializa la leyenda de colores mostrando cada fuente de datos con su color
 function initLegend(colors) {
+    // Crea contenido HTML para la entrada ADS-B con su color
     let html = '';
+    // Añade entrada UAT/ADS-R
     html += '<div class="legendTitle" style="background-color:' + colors['adsb'] + ';">ADS-B</div>';
     html += '<div class="legendTitle" style="background-color:' + colors['uat'] + ';">UAT / ADS-R</div>';
+    // Añade entrada MLAT
     html += '<div class="legendTitle" style="background-color:' + colors['mlat'] + ';">MLAT</div>';
     html += '<br>';
+    // Añade entrada TIS-B
     html += '<div class="legendTitle" style="background-color:' + colors['tisb'] + ';">TIS-B</div>';
+    // Si no es vista global, mostrar Mode-S
     if (!globeIndex)
         html += '<div class="legendTitle" style="background-color:' + colors['modeS'] + ';">Mode-S</div>';
+    // Si es vista global, mostrar categoría "Other"
     if (globeIndex)
         html += '<div class="legendTitle" style="background-color:' + colors['other'] + ';">Other</div>';
+    // Si hay AIScatcher, mostrar AIS con su color
     if (aiscatcher_server)
         html += '<div class="legendTitle" style="background-color:' + colors['ais'] + ';">AIS</div>';
     html += '<div class="legendTitle" style="background-color:' + colors['adsc'] + `;">${jaeroLabel}</div>`;
-
+    // Inserta la leyenda completa en el DOM
     document.getElementById('legend').innerHTML = html;
 }
-
+// Inicializa el filtro por fuentes con elementos seleccionables
 function initSourceFilter(colors) {
+    // Creador rápido de una entrada de lista para el filtro
     const createFilter = function (color, text, key) {
         return '<li class="ui-widget-content" style="background-color:' + color + ';" id="source-filter-' + key + '">' + text + '</li>';
     };
 
+    // Construye el HTML de opciones de fuente
     let html = '';
     html += createFilter(colors['adsb'], 'ADS-B', sources[0]);
 
@@ -3301,13 +3521,13 @@ function initSourceFilter(colors) {
     html += createFilter(colors['modeS'], 'Mode-S', sources[4]);
     html += createFilter(colors['other'], 'Other', sources[5]);
     html += createFilter(colors['adsc'], jaeroLabel, sources[6]);
-
+    // Si hay AIS, añadir opción AIS
     if (aiscatcher_server) {
         html += createFilter(colors['ais'], 'AIS', sources[7]);
     }
-
+    // Pone el HTML en el contenedor del filtro
     document.getElementById('sourceFilter').innerHTML = html;
-
+    // Hace que la lista sea seleccionable y actualiza sourcesFilter al terminar
     jQuery("#sourceFilter").selectable({
         stop: function () {
             sourcesFilter = [];
@@ -3320,25 +3540,26 @@ function initSourceFilter(colors) {
             });
         }
     });
-
+    // Forzar que la selección actúe como si se pulsara Ctrl (selección múltiple)
     jQuery("#sourceFilter").on("selectablestart", function (event, ui) {
         event.originalEvent.ctrlKey = true;
     });
 }
-
+// Inicializa el filtro por banderas (military, PIA, LADD)
 function initFlagFilter(colors) {
+    // Creador de elementos para el filtro de banderas
     const createFilter = function (color, text, key) {
         return '<li class="ui-widget-content" style="background-color:' + color + ';" id="flag-filter-' + key + '">' + text + '</li>';
     };
-
+    // Construye HTML con opciones de flag
     let html = '';
     html += createFilter(colors['tisb'], 'Military', flagFilterValues[0]);
     //html += createFilter(colors['mlat'], 'Interesting');
     html += createFilter(colors['uat'], 'PIA', flagFilterValues[1]);
     html += createFilter(colors['adsb'], 'LADD', flagFilterValues[2]);
-
+    // Inserta en DOM
     document.getElementById('flagFilter').innerHTML = html;
-
+    // Hace la lista selectable y actualiza flagFilter cuando termina
     jQuery("#flagFilter").selectable({
         stop: function () {
             flagFilter = [];
@@ -3351,29 +3572,32 @@ function initFlagFilter(colors) {
             });
         }
     });
-
+    // Forzar comportamiento de selección múltiple
     jQuery("#flagFilter").on("selectablestart", function (event, ui) {
         event.originalEvent.ctrlKey = true;
     });
 }
-
+// Empuja en memoria la lista de archivos de historial para procesarlos después
 function push_history() {
+    // Contadores y buffer de posiciones inicializados
     HistoryItemsReturned = 0;
     PositionHistoryBuffer = [];
-
+    // Llama a push_history_item para cada ítem esperado
     for (let i = 0; i < nHistoryItems; i++) {
         push_history_item(i);
     }
 }
-
+// Lanza la promesa deferHistory[i] y procesa respuesta o fallo
 function push_history_item(i) {
     deferHistory[i]
         .done(function (json) {
+            // Contador de items recibidos
             HistoryItemsReturned++;
 
             if (HistoryChunks) {
                 if (json && json.files) {
                     //g.refreshHistory && console.log("itemsreturned chunk: " + HistoryItemsReturned + " chunklen: " + json.files.length);
+                    // Si viene como chunk, añadir cada archivo del chunk
                     for (let i in json.files) {
                         PositionHistoryBuffer.push(json.files[i]);
                         if (i == 0 || i == json.files.length - 1) {
@@ -3382,16 +3606,19 @@ function push_history_item(i) {
                     }
                 } else if (json && json.now) {
                     //g.refreshHistory && console.log("itemsreturned simple json: " + HistoryItemsReturned);
+                    // Si viene como un json simple, añadirlo
                     PositionHistoryBuffer.push(json);
                     //g.refreshHistory && console.log("history buffer push: " + localTime(new Date(json.now * 1000)));
                 }
             } else {
+                // Si no hay chunks, añadir directamente
                 PositionHistoryBuffer.push(json);
             }
-
+            // Si ya recibimos todos, parsear historial
             if (HistoryItemsReturned == nHistoryItems) {
                 parseHistory();
             }
+            // Comprobación de exceso (debug)
             if (HistoryItemsReturned > nHistoryItems) {
                 console.log(localTime(new Date()) + " WARNING: (HistoryItemsReturned > nHistoryItems)");
             }
@@ -3401,38 +3628,42 @@ function push_history_item(i) {
 
             //Doesn't matter if it failed, we'll just be missing a data point
             //console.log(error);
+            // Si falla, contar como recibido pero faltará ese punto
             HistoryItemsReturned++;
             if (HistoryItemsReturned == nHistoryItems) {
                 parseHistory();
             }
         });
 }
-
+// Parsea PositionHistoryBuffer y aplica las trazas históricas al estado actual
 function parseHistory() {
     console.timeEnd("Downloaded History");
     console.time("Loaded aircraft tracks from History");
-
+    // Liberar referencias a deferHistory
     for (let i in deferHistory)
         deferHistory[i] = null;
     deferHistory = null;
 
-
+    // Si hay datos en el buffer
     if (PositionHistoryBuffer.length > 0) {
 
         // Sort history by timestamp
+        // Ordenar por timestamp (más reciente primero)
         console.log(localTime(new Date()) + " Sorting history: " + PositionHistoryBuffer.length);
         PositionHistoryBuffer.sort(function (x, y) { return (y.now - x.now); });
-
+        // Tiempo actual en segundos
         let currentTime = new Date().getTime() / 1000;
-
+        // Si no estamos preservando tracks o evitando reap, construir lista de "keep" por reapTimeout
         if (!pTracks && !noVanish) {
             // get all planes within the reapTimeout
             g.historyKeep = {};
             for (let i = 0; i < PositionHistoryBuffer.length; i++) {
                 let data = PositionHistoryBuffer[i];
+                // Si el item es más antiguo que reapTimeout, dejamos de mirar
                 if (currentTime - data.now > reapTimeout) {
                     break;
                 }
+                // Revisa cada aeronave en ese paquete y marca las que han enviado dentro del timeout
                 for (let j = 0; j < data.aircraft.length; j++) {
                     const ac = data.aircraft[j];
                     const isArray = Array.isArray(ac);
@@ -3444,6 +3675,7 @@ function parseHistory() {
                 }
                 //console.log("hist: " + localTime(new Date(data.now * 1000)));
             }
+            // También mantener los aviones actualmente en memoria
             for (let i in g.planesOrdered) {
                 let hex = g.planesOrdered[i].icao;
                 g.historyKeep[hex] = 1;
@@ -3451,35 +3683,37 @@ function parseHistory() {
         }
 
         // Process history
+        // Variables para procesar el buffer
         let data;
         let h = 0;
         let pruneInt = 100;
         let lastTimestamp = 0;
         let counter = 0;
-
+        // Procesa cada paquete desde el más antiguo (pop)
         while (data = PositionHistoryBuffer.pop()) {
             counter++;
 
             if (data.now < lastTimestamp) {
                 console.log('parseHistory sorting issue');
             }
-
+            // Si hay huecos grandes entre timestamps, mostrar aviso
             if (lastTimestamp && data.now - lastTimestamp > 15) {
                 console.log("History " + String(counter).padStart(4) + " from: "
                     + localTime(new Date(data.now * 1000)) + " GAP: " + localTime(new Date(lastTimestamp * 1000)));
             }
 
             lastTimestamp = data.now;
-
+            // Si pTracks limita por horas, saltar paquetes antiguos
             if (pTracks && currentTime - data.now > pTracks * 3600) {
                 continue;
             }
-
+            // Si se pide refrescar historial y el paquete es anterior a now, saltarlo
             if (g.refreshHistory && now > data.now) {
                 continue;
             }
 
             // process new data
+            // Procesar los datos: si quedan pocos items en el buffer, marcar init=false para optimizaciones
             if (PositionHistoryBuffer.length < 10) {
                 processReceiverUpdate(data, false);
             } else {
@@ -3487,6 +3721,7 @@ function parseHistory() {
             }
 
             ++h;
+            // Log periódico durante el proceso
             if (h == 1 || h % pruneInt == 0 || PositionHistoryBuffer.length == 0) {
                 console.log("Apply History " + String(counter).padStart(4) + " from: "
                     + localTime(new Date(data.now * 1000)));
@@ -3494,12 +3729,14 @@ function parseHistory() {
         }
 
         // only restrict aircraft process to this list while parsing history
+        // Quitar restricción de procesado por historia
         g.historyKeep = null;
-
+        // Ejecutar limpieza de aviones inactivos
         reaper();
 
         // Final pass to update all planes to their latest state
         //console.log("Final history cleanup pass");
+        // Pasada final: actualizar distancias al sitio y ajustar tiempos TIS-B si aplica
         for (let i in g.planesOrdered) {
             let plane = g.planesOrdered[i];
 
@@ -3513,13 +3750,13 @@ function parseHistory() {
     }
 
     console.timeEnd("Loaded aircraft tracks from History");
-
+    // Si se pidió refrescar historial, terminar y restablecer UI
     if (g.refreshHistory) {
         g.refreshHistory = false;
         noLongerHidden();
         return;
     }
-
+    // Marcar que el historial fue cargado
     historyLoaded.resolve();
 }
 
@@ -3528,17 +3765,20 @@ let replay_was_active = false;
 
 let timers = {};
 let timersActive = false;
+// Detiene todos los temporizadores activos (timers)
 function clearIntervalTimers(arg) {
+    // Si ya están apagados, mostrar traza y salir
     if (!timersActive) {
         console.trace();
         return;
     }
-
+    // Si la carga terminó y no fue silencioso, mostrar aviso en UI
     if (loadFinished && arg != 'silent') {
         console.log(localTime(new Date()) + ' clear timers');
         jQuery("#timers_paused_detail").text('Timers paused (tab hidden).');
         jQuery("#timers_paused").css('display', 'block');
     }
+    // Limpiar cada intervalo registrado
     const entries = Object.entries(timers);
     for (let i in entries) {
         clearInterval(entries[i][1]);
@@ -3547,10 +3787,12 @@ function clearIntervalTimers(arg) {
     timersActive = false;
 
     // in case the visibility changed while this was running
+    // En caso de que la visibilidad cambie mientras limpiamos, manejarlo
     handleVisibilityChange();
 }
-
+// Inicia los temporizadores periódicos necesarios para la app
 function setIntervalTimers() {
+    // Si ya están activos, salir
     if (timersActive) {
         return;
     }
@@ -3559,31 +3801,35 @@ function setIntervalTimers() {
         jQuery("#timers_paused").css('display', 'none');
     }
     console.log(localTime(new Date()) + " set timers ");
+    // Si dinámica de tasa para globo está activada y no es un UUID, preparar timer
     if (dynGlobeRate && !uuid) {
         timers.globeRateUpdate = setInterval(globeRateUpdate, 180000);
     }
+    // Inicia polling de posición y autoselect
     pollPositionInterval();
     setAutoselect();
-
+    // Chequeo de movimiento frecuente y tick por segundo
     timers.checkMove = setInterval(checkMovement, 50);
     timers.everySecond = setInterval(everySecond, 850);
 
     //timers.reaper = setInterval(reaper, 40000);
-
+    // Reaper de trails si hay trails temporales activados
     if (tempTrails) {
         timers.trailReaper = window.setInterval(trailReaper, 10000);
         trailReaper(now);
     }
+    // Obtener datos para "pf" si habilitado
     if (enable_pf_data && !pTracks && !globeIndex) {
         jQuery('#pf_info_container').removeClass('hidden');
         timers.pf_data = window.setInterval(fetchPfData, RefreshInterval * 10.314);
         fetchPfData();
     }
+    // Si hay contorno real, acomodar su refresco
     if (actualOutline.enabled) {
         timers.drawOutline = window.setInterval(drawOutlineJson, actualOutline.refresh);
         setTimeout(drawOutlineJson, 50);
     }
-
+    // AIScatcher y drones
     if (aiscatcher_server) {
         timers.aiscatcher = setInterval(updateAIScatcher, aiscatcher_refresh * 1000);
         updateAIScatcher();
@@ -3594,13 +3840,14 @@ function setIntervalTimers() {
     }
 
     timersActive = true;
-
+    // Hacer la primera petición de datos
     fetchData();
 
     // in case the visibility changed while this was running
+    // Verificar visibilidad en caso de que haya cambiado
     handleVisibilityChange();
 }
-
+// Solicita actualizaciones de drones desde URLs configuradas
 function updateDrones() {
     let jsons = Array.isArray(droneJson) ? droneJson : [droneJson];
     for (let i in jsons) {
@@ -3614,8 +3861,9 @@ function updateDrones() {
         });
     }
 }
-
+// Maneja la respuesta de drones y manda cada uno a procesar
 function handleDrones(data) {
+    // Guarda timestamps de último/actual registro de drones
     g.droneLast = g.droneNow || 0;
     g.droneNow = new Date().getTime() / 1000;
 
@@ -3623,12 +3871,13 @@ function handleDrones(data) {
         processDrone(data[i], g.droneNow, g.droneLast);
     }
 }
-
+// Convierte un objeto "drone" externo a la estructura interna y actualiza el plane object
 function processDrone(drone, now, last) {
     const hex = drone.id;
 
     // Do we already have this plane object in g.planes?
     // If not make it.
+    // Si no existe el objeto del "avión", crearlo
     let plane = g.planes[hex]
 
     if (!plane) {
@@ -3636,26 +3885,26 @@ function processDrone(drone, now, last) {
     }
 
     let ac = drone;
-
+    // Mapear campos del feed de drones a los campos esperados por el sistema
     ac.type = 'other';
     ac.t = 'DRON';
     ac.gs = drone.speed / 1852 * 3600; // m/s to knots
     ac.flight = drone.description;
     ac.alt_baro = drone.alt * 3.28; // m to ft
     ac.baro_rate = drone.vspeed * 3.28 * 60; // m/s to fpm
-
+    // tiempo desde que fue observado
     ac.seen = now - new Date(drone.time).getTime() / 1000;
-
+    // si tiene posición, incluirla
     if (drone.lat && drone.lon) {
         ac.lat = drone.lat;
         ac.lon = drone.lon
         ac.seen_pos = ac.seen;
     }
     //console.log(ac);
-
+    // Actualiza datos del objeto plane
     plane.updateData(now, last, ac, false);
 }
-
+// Actualiza fuente AIScatcher y procesa su GeoJSON
 function updateAIScatcher() {
     let req = jQuery.ajax({
         url: aiscatcher_server + '/geojson',
@@ -3663,16 +3912,17 @@ function updateAIScatcher() {
     });
 
     req.done(function (data) {
+        // Pone la respuesta (texto) en la fuente y la refresca
         //console.log(data);
         g.aiscatcher_source.setUrl("data:text/plain;base64," + btoa(data));
         g.aiscatcher_source.refresh();
-
+        // Procesa el GeoJSON como AIS
         if (1 || aiscatcher_test) {
             processAIS(JSON.parse(data));
         }
     });
 }
-
+// Procesa la respuesta AIS -> manda cada feature a processBoat
 function processAIS(data) {
     g.ais_last = g.ais_now || 0;
     g.ais_now = new Date().getTime() / 1000;
@@ -3683,7 +3933,7 @@ function processAIS(data) {
         processBoat(features[i], g.ais_now, g.ais_last);
     }
 }
-
+// Mapea número de tipo de barco a etiqueta corta legible
 function shortShiptype(typeNumber) {
     if (typeNumber == 0) return "UNKN";
     if (typeNumber <= 19) return "RESE";
@@ -3714,13 +3964,16 @@ function shortShiptype(typeNumber) {
     if (typeNumber <= 99) return "OTHE";
     return "";
 }
-
+// Convierte una feature AIS a un objeto tipo "avión" y la actualiza
 function processBoat(feature, now, last) {
+    // Propiedades del feature
     const pr = feature.properties;
+    // Crea identificador a partir de MMSI
     const hex = 'MMSI' + pr.mmsi;
 
     // Do we already have this plane object in g.planes?
     // If not make it.
+    // Si no existe objeto plane, crearlo con escala menor
     let plane = g.planes[hex]
 
     if (!plane) {
@@ -3729,7 +3982,7 @@ function processBoat(feature, now, last) {
         plane.country_code = pr.country;
         plane.baseScale = 0.2;
     }
-
+    // Construir objeto ac con los campos esperados
     let ac = {};
 
     ac.type = 'ais';
@@ -3742,15 +3995,16 @@ function processBoat(feature, now, last) {
     ac.rssi = pr.level;
 
     ac.track = pr.cog;
-
+    // Si tiene destino, asignarlo como ruta
     if (pr.destination) { ac.route = pr.destination; }
     if (pr.shiptype !== undefined) { ac.t = shortShiptype(pr.shiptype); }
     // Identify Non-Ship Types
+    // Identifica tipos no-ship por mmsi_type
     if (pr.mmsi_type == 6) { ac.t = "ANAV"; } // Aids to Navigation
     if (pr.mmsi_type == 5) { ac.t = "BASE"; } // Land Base Station
     if (pr.mmsi_type == 3) { ac.t = "COAS"; } // Coast Station
 
-
+    // Si la geometría tiene coordenadas, mapear lat/lon
     if (feature.geometry && feature.geometry.coordinates) {
         const coords = feature.geometry.coordinates;
         ac.lat = coords[1];
@@ -3758,25 +4012,31 @@ function processBoat(feature, now, last) {
         ac.seen_pos = now - pr.last_signal;
     }
     //console.log(ac);
-
+    // Actualiza el objeto plane con estos datos
     plane.updateData(now, last, ac, false);
 }
-
+// Variable usada para guardar JSON temporal
 let djson;
+// Cadena temporal usada para conversiones o debug
 let dstring;
+// Resultado temporal de operaciones con datos
 let dresult;
-
+// Inicia la página después de que todo esté listo
 function startPage() {
+    // Si no se usa heatmap, ocultar indicador de carga
     if (!heatmap)
         jQuery("#loader").hide();
-
+    // Ajusta el zoom inicial según configuración
     changeZoom("init");
+    // Centra el mapa según configuración inicial
     changeCenter("init");
-
+    // Procesa parámetros de la URL (filtros, selección, etc.)
     processURLParams();
+    // Si la URL pide registro por matrícula, descargar el mapa reg->icao
     if (usp.has('reg')) {
         let req = regIcaoDownload();
         req.done(function () {
+            // Extrae consultas y guarda icaos derivadas
             const queries = usp.get('reg').split(',');
             for (let i in queries) {
                 let icao = db.regCache[queries[i].toUpperCase()];
@@ -3785,41 +4045,43 @@ function startPage() {
                     urlIcaos.push(icao);
                 }
             }
+            // Reprocesa parámetros ahora que cache está lista
             processURLParams();
         });
     }
-
+    // Marca que la carga inicial terminó
     loadFinished = true;
-
+    // Activa timers periódicos para la app
     setIntervalTimers();
-
+    // Si se piden trazas temporales, seleccionar todos los aviones
     if (tempTrails)
         selectAllPlanes();
-
+    // Si se pidió modo replay, mostrar barra y cargar replay
     if (replay) {
         showReplayBar();
         loadReplay(replay.ts);
     }
-
+    // Si heatmap activo, dibujar mapa de calor
     if (heatmap) {
         drawHeatmap();
     }
-
+    // Inicializa gestión de visibilidad de pestaña
     initVisibilityChange();
-
+    // Si mostramos tracks persistentes, refrescar listado tras 10s
     if (pTracks)
         setTimeout(TAR.planeMan.refresh, 10000);
-
+    // Limpiar timers al cerrar la página
     window.addEventListener("beforeunload", clearIntervalTimers);
-
+    // Ejecutar tareas después del primer fetch con pequeño retraso
     setTimeout(afterFirstFetch, 50);
-
+    // Marcar fin del tiempo de carga en consola
     console.timeEnd("Page Load");
 }
 
 //
 // Utils begin
 //
+// Encapsula utilidades en el objeto TAR.utils
 (function (global, jQuery, TAR) {
     let utils = TAR.utils = TAR.utils || {};
 
@@ -3827,28 +4089,36 @@ function startPage() {
     // that is a closed circle on the sphere such that the
     // great circle distance from 'center' to each point is
     // 'radius' meters
+    // Crea una polilínea que forma un círculo geodésico alrededor de un punto
     utils.make_geodesic_circle = function (center, radius, points) {
+        // Distancia angular equivalente al radio (en radianes)
         const angularDistance = radius / 6378137.0;
+        // Longitud del centro en radianes
         const lon1 = center[0] * Math.PI / 180.0;
+        // Latitud del centro en radianes
         const lat1 = center[1] * Math.PI / 180.0;
-
+        // Variable que contendrá la geometría creada
         let geom;
+        // Itera sobre el número de puntos solicitados para formar el círculo
         for (let i = 0; i <= points; ++i) {
+            // Ángulo (bearing) desde el centro hasta el punto
             const bearing = i * 2 * Math.PI / points;
-
+            // Calcula latitud del punto en la esfera
             let lat2 = Math.asin(Math.sin(lat1) * Math.cos(angularDistance) +
                 Math.cos(lat1) * Math.sin(angularDistance) * Math.cos(bearing));
+            // Calcula longitud del punto en la esfera
             let lon2 = lon1 + Math.atan2(Math.sin(bearing) * Math.sin(angularDistance) * Math.cos(lat1),
                 Math.cos(angularDistance) - Math.sin(lat1) * Math.sin(lat2));
-
+            // Convertir de radianes a grados
             lat2 = lat2 * 180.0 / Math.PI;
             lon2 = lon2 * 180.0 / Math.PI;
-
+            // Si es el primer punto, crear LineString; si no, añadir coordenada
             if (!geom)
                 geom = new ol.geom.LineString([[lon2, lat2]]);
             else
                 geom.appendCoordinate([lon2, lat2]);
         }
+        // Devolver la geometría construida
         return geom;
     }
 
@@ -3858,25 +4128,28 @@ function startPage() {
 // Utils end
 //
 //
-
+// Intenta añadir una capa WebGL para dibujar iconos con aceleración GPU
 function webglAddLayer() {
+    // Resultado de la creación
     let success = false;
-
+    // Hex falso usado para pruebas iniciales
     const icao = 'c0ffee';
-
+    // Si hay filtro de icao, incluir este temporal para evitar filtrarlo
     if (icaoFilter != null) {
         icaoFilter.push(icao);
     }
-
+    // Crear un avión temporal centrado en la vista para inicializar WebGL
     processAircraft({
         hex: icao, lat: CenterLat, lon: CenterLon, type: 'tisb_other', seen: 0, seen_pos: 0,
         alt_baro: 25000,
     });
+    // Recuperar el objeto plane creado
     let plane = g.planes[icao];
-
+    // Elegir la fuente de sprites: generada o por defecto
     let spriteSrc = spritesDataURL ? spritesDataURL : 'images/sprites_193a0304570bcce84c40d8bd51c6397b.png';
     //console.log(spriteSrc);
     try {
+        // Definir estilo para WebGL con icono, color y transformación
         let glStyle = {
             'icon-src': spriteSrc,
             'icon-color': [
@@ -3897,6 +4170,7 @@ function webglAddLayer() {
             //'icon-scale': [ 'array', ['get', 'scale'], ['get', 'scale'] ],
             'icon-scale': ['abs', ['get', 'scale']],
         };
+        // Si estamos en modo heatmap, usar estilo de círculos en vez de iconos
         if (heatmap) {
             glStyle = {
                 'circle-radius': heatmap.radius * globalScale * 1.25,
@@ -3911,7 +4185,7 @@ function webglAddLayer() {
                 ]
             }
         }
-
+        // Crear la capa WebGL con la fuente vectorial y estilo definido
         webglLayer = new ol.layer.WebGLPoints({
             name: 'webglLayer',
             type: 'overlay',
@@ -3922,28 +4196,31 @@ function webglAddLayer() {
             style: glStyle,
             renderBuffer: renderBuffer,
         });
+        // Si la capa no se creó, indicar fallo
         if (!webglLayer)
             return false;
+        // Si no se ha probado WebGL antes y el renderer no existe, fallar
         if (loStore['webglTested'] != 'true' && !webglLayer.getRenderer()) {
             return false;
         }
-
+        // Añadir la capa al conjunto de capas
         layers.push(webglLayer);
-
+        // Marcar que WebGL está activo
         webgl = true;
 
         // only test webgl once in every browser
         // after that assume that it's working
-
+        // Si no se había probado, forzar dibujo del marcador temporal
         if (loStore['webglTested'] != 'true') {
             plane.visible = true;
             plane.updateMarker();
             OLMap.renderSync();
         }
-
+        // Marcar que WebGL fue exitoso en almacenamiento local
         loStore['webglTested'] = 'true';
         success = true;
     } catch (error) {
+        // Si ocurre error, intentar limpiar la capa y registrar fallo
         try {
             layers.remove(webglLayer);
         } catch (error) {
@@ -3952,20 +4229,22 @@ function webglAddLayer() {
         console.error(error);
         success = false;
     }
+    // Borrar el avión temporal creado para la prueba
     delete g.planes[plane.icao];
     g.planesOrdered.splice(g.planesOrdered.indexOf(plane), 1);
     plane.destroy();
-
+    // Si se añadió al filtro, sacarlo
     if (icaoFilter != null) {
         icaoFilter.pop(icao);
     }
-
+    // Devolver si fue exitoso
     return success;
 }
 
 function webglInit() {
+    // Valor inicial por defecto (se puede leer de loStore en el Toggle)
     let init = true;
-
+    // Crea un switch en la UI para activar/desactivar WebGL
     new Toggle({
         key: "webgl",
         display: "WebGL",
@@ -4013,7 +4292,7 @@ function ol_map_init() {
         jQuery('#iconTestCanvas').remove();
         console.log(spritesDataURL);
     }
-
+    // Crear mapa OpenLayers con vista y controles básicos
     OLMap = new ol.Map({
         target: 'map_canvas',
         layers: layers_group,
@@ -4029,12 +4308,12 @@ function ol_map_init() {
         interactions: new ol.interaction.defaults({ altShiftDragRotate: false, pinchRotate: false, }),
         maxTilesLoading: 4,
     });
-
+    // Inicializar WebGL y medir tiempo
     console.time('webglInit');
     webglInit();
     console.timeEnd('webglInit');
 
-
+    // Buscar si el tipo de mapa configurado existe entre las capas base
     let foundType = false;
     ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
         if (lyr.get('name') && lyr.get('type') == 'base') {
@@ -4043,14 +4322,15 @@ function ol_map_init() {
             }
         }
     });
+    // Si no se encontró, usar 'osm' por defecto
     if (!foundType) {
         MapType_tar1090 = "osm";
     }
-
+    // Recorrer capas base y overlays para ajustar visibilidades iniciales
     ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
         if (!lyr.get('name'))
             return;
-
+        // Registrar evento para cambios de visibilidad en capas base
         if (lyr.get('type') == 'base') {
             if (MapType_tar1090 == lyr.get('name')) {
                 foundType = true;
@@ -4104,6 +4384,7 @@ function ol_map_init() {
                 }
             });
         } else if (lyr.get('type') === 'overlay') {
+            // Decidir visibilidad inicial de overlays según almacenamiento local y defaults
             if (
                 loStore['layer_' + lyr.get('name')] == 'true'
                 || enableOverlays.indexOf(lyr.get('name')) >= 0
@@ -4114,13 +4395,13 @@ function ol_map_init() {
             if (loStore['layer_' + lyr.get('name')] == 'false') {
                 lyr.setVisible(false);
             }
-
+            // Actualizar almacenamiento local cuando cambie visibilidad
             lyr.on('change:visible', function (evt) {
                 loStore['layer_' + evt.target.get('name')] = evt.target.getVisible();
             });
         }
     })
-
+    // Si despues no se encontró ningún base visible, hacer visible la primera base encontrada
     if (!foundType) {
         ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
             if (foundType)
@@ -4131,18 +4412,18 @@ function ol_map_init() {
             }
         });
     }
-
+    // Guardar proyección y extensión actual del mapa
     OLProj = OLMap.getView().getProjection();
     OLProjExtent = OLProj.getExtent();
-
+    // Aplicar rotación inicial del mapa
     OLMap.getView().setRotation(g.mapOrientation); // adjust orientation
-
+    // Añadir control de selección de capas personalizado
     OLMap.addControl(new ol.control.LayerSwitcher({
         groupSelectStyle: 'none',
         activationMode: 'click', // click sucks in the current implementation
         target: 'layer-select',
     }));
-
+    // Reducir opacidad de WebGL en mov. para mejorar rendimiento visual
     OLMap.on('movestart', function (event) {
         if (webgl) {
             if (TrackedAircraftPositions > webglIconMapMoveOpacityCrowdedThreshold) {
@@ -4152,48 +4433,68 @@ function ol_map_init() {
             }
         }
     });
-
+    // Al terminar el movimiento, restaurar opacidad y comprobar movimiento
     OLMap.on('moveend', function (event) {
         checkMovement();
         webgl && webglLayer.setOpacity(webglIconOpacity);
     });
-
+    // Maneja clic simple y doble clic en el mapa para selección, trazas y modos especiales
     OLMap.on(['singleclick', 'dblclick'], function (evt) {
+        // Guarda el identificador del avión encontrado en una traza (si hay).
         let trailHex = null;
+        // Guarda el timestamp de la traza si se ha hecho clic en una traza.
         let trailTS = null;
+        // Guarda el identificador (hex) del avión sobre el que se hizo clic (si hay).
         let planeHex = null;
-
+        // Selecciona la fuente de features adecuada según si WebGL está activo.
         let source = webgl ? webglFeatures : PlaneIconFeatures;
+        // Convierte el pixel del evento a coordenadas del mapa.
         let evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
+        // Busca la feature (icono/traza) más cercana a la coordenada del clic.
         let feature = source.getClosestFeatureToCoordinate(evtCoords);
+        // Si existe una feature cercana:
         if (feature) {
+            // Calcula la posición en píxeles de la feature encontrada.
             let fPixel = evt.map.getPixelFromCoordinate(feature.getGeometry().getCoordinates());
+            // Diferencia horizontal entre feature y clic.
             let a = fPixel[0] - evt.pixel[0];
+            // Diferencia vertical entre feature y clic.
             let b = fPixel[1] - evt.pixel[1];
+            // Radio de tolerancia en píxeles adaptado a la escala y dispositivo.
             let c = globalScale * (onMobile ? 30 : 20);
+            // Si la distancia al clic está dentro de la tolerancia, considerar que se hizo clic en el avión.
             if (a ** 2 + b ** 2 < c ** 2) {
                 planeHex = feature.hex;
             } else {
+                // Si está fuera de la tolerancia, no es clic sobre avión.
                 planeHex = null;
             }
         }
-
+        // Si no hay avión cercano o estamos en modo mostrar traza, buscar trazas cercanas.
         if (!planeHex || showTrace) {
+            // Lista temporal de features de trazas cercanas.
             let features = [];
+            // Feature de traza más cercana.
             let trailFeature = null;
+            // Variante rápida: recorrer capas de trazas y buscar la más cercana.
             if (1) {
                 for (const layer of trailGroup.getArray()) {
+                    // Ignorar capas de trazas ocultas.
                     if (!layer.getVisible()) {
                         continue;
                     }
+                    // Obtener la fuente de la capa de traza.
                     const source = layer.getSource();
+                    // Buscar la feature de traza más cercana en esa fuente.
                     trailFeature = source.getClosestFeatureToCoordinate(evtCoords);
+                    // Si encontró una, añadirla a la lista.
                     if (trailFeature) {
                         features.push(trailFeature);
                     }
                 }
             } else {
                 // old variant, slower in most cases
+                // Variante antigua (no usada) para obtener features en el píxel.
                 features = evt.map.getFeaturesAtPixel(
                     evt.pixel,
                     {
@@ -4202,44 +4503,57 @@ function ol_map_init() {
                     }
                 );
             }
+            // Si se encontraron features de traza cercanas:
             if (features.length > 0) {
+                // Define tolerancia de impacto en píxeles (ajustada por escala y móvil).
                 let hitTolerance = globalScale * (onMobile ? 30 : 20);
                 // just rubber band to the closest trace for showTrace
+                // Si estamos forzando modo traza, usar una tolerancia grande para "pegar" a la traza más cercana.
                 if (showTrace) { hitTolerance = 10000; }
+                // Guardar el cuadrado de la distancia de tolerancia para comparaciones.
                 let close2 = hitTolerance * hitTolerance;
+                // Variable para la feature más cercana.
                 let closest = null;
+                // Recorrer cada feature encontrada para hallar el punto más cercano.
                 for (let j in features) {
                     let feature = features[j];
+                    // Coordenadas a comprobar: si la feature es etiqueta, tratar su punto; si no, tomar todas las coords.
                     let coords;
                     if (feature.isLabel)
                         coords = [feature.getGeometry().getCoordinates()];
                     else
                         coords = feature.getGeometry().getCoordinates();
-
+                    // Recorrer cada coordenada de la feature (polilíneas o puntos) para medir distancia al clic.
                     for (let k in coords) {
                         let fPixel = evt.map.getPixelFromCoordinate(coords[k]);
                         let a = fPixel[0] - evt.pixel[0];
                         let b = fPixel[1] - evt.pixel[1];
                         let distance2 = a ** 2 + b ** 2;
+                        // Si esta coordenada está más cerca que la previa, guardarla como la más cercana.
                         if (distance2 < close2) {
                             closest = feature;
                             close2 = distance2;
                         }
                     }
                 }
+                // Si se halló la feature más cercana:
                 if (closest) {
+                    // Si estamos en modo traza, guardar el timestamp de la traza encontrada.
                     if (showTrace)
                         trailTS = closest.timestamp;
                     else
+                        // En modo normal, guardar el hex del avión asociado a la traza.
                         trailHex = closest.hex;
                 }
             }
         }
-
+        // Indica si el evento fue doble clic y no estamos en modo traza.
         const dblclick = (evt.type === 'dblclick') && !showTrace;
-
+        // Si estamos en modo mostrar traza y encontramos timestamp, saltar a ese tiempo.
         if (showTrace && trailTS) {
+            // Evita seleccionar un avión actual.
             planeHex = null;
+            // Ir al tiempo de la traza seleccionada.
             gotoTime(trailTS);
         }
 
@@ -4701,25 +5015,30 @@ function ol_map_init() {
     // show the hover box
     checkPointermove();
 }
-
+// Inicia configuración temprana del mapa antes de cargar todo lo demás
 function initMapEarly() {
 
     // Load stored map settings if present
+    // Si hay una preferencia fija de tipo de mapa, usarla
     if (overrideMapType)
         MapType_tar1090 = overrideMapType;
+    // Si no, usar la última preferida guardada por el usuario
     else if (loStore['MapType_tar1090']) {
         MapType_tar1090 = loStore['MapType_tar1090'];
     }
 
+    // Aplica ajustes visuales y de comportamiento según el tipo de mapa elegido
     mapTypeSettings();
 
     // Initialize OpenLayers
-
+    // Crea las capas base del mapa y guarda el grupo resultante
     layers_group = createBaseLayers();
+    // Extrae la lista manipulable de capas desde el grupo
     layers = layers_group.getLayers();
 
     //add_kml_overlay('https://developers.google.com/kml/documentation/KML_Samples.kml', 'samples', 0.8);
 
+    // Crea una capa que dibuja círculos concéntricos alrededor del sitio (ej. rangos)
     siteCircleLayer = new ol.layer.Vector({
         name: 'siteCircles',
         type: 'overlay',
@@ -4731,15 +5050,16 @@ function initMapEarly() {
         renderBuffer: renderBuffer,
     });
     layers.push(siteCircleLayer);
-
+    // Cuando se muestre la capa de círculos, intentar obtener la posición del usuario
     siteCircleLayer.on('change:visible', function (evt) {
         if (evt.target.getVisible()) {
             runAfterLoad(geoFindMe);
         }
     });
 }
-
+// Muestra u oculta los botones y barras de la interfaz según la preferencia
 function showHideButtons() {
+    // Si la opción pide ocultar botones, esconder controles importantes de la UI
     if (hideButtons) {
         jQuery('#header_top').hide();
         jQuery('#header_side').hide();
@@ -4760,21 +5080,26 @@ function showHideButtons() {
 }
 
 // Initalizes the map and starts up our timers to call various functions
+// Inicializa el mapa y arranca temporizadores y capas
 function initMap() {
-
+    // Recupera centro longitudinal guardado o usa el valor por defecto
     CenterLon = Number(lopaStore['CenterLon']) || DefaultCenterLon;
+    // Recupera centro latitudinal guardado o usa el valor por defecto
     CenterLat = Number(lopaStore['CenterLat']) || DefaultCenterLat;
     //console.log("initMap Centerlat: " + CenterLat);
+    // Recupera nivel de zoom guardado o usa el por defecto
     g.zoomLvl = Number(lopaStore['zoomLvl']) || DefaultZoomLvl;
+    // Guarda una copia del zoom actual
     g.zoomLvlCache = g.zoomLvl;
 
     // always hide this, it really only shows the number of positions saved
+    // Oculta contador de historia que no se muestra normalmente
     jQuery('#dump1090_total_history_td').hide();
-
+    // Si vista global con agregador, ocultar indicador de tasa
     if (globeIndex && aggregator) {
         jQuery('#dump1090_message_rate_td').hide();
     }
-
+    // Crea la capa que mostrará la posición del receptor o la del usuario
     locationDotLayer = new ol.layer.Vector({
         name: 'locationDot',
         type: 'overlay',
@@ -4786,21 +5111,24 @@ function initMap() {
         renderBuffer: renderBuffer,
     });
     layers.push(locationDotLayer);
-
+    // Cuando se muestre la capa de posición, intentar obtener la ubicación del navegador
     locationDotLayer.on('change:visible', function (evt) {
         if (evt.target.getVisible()) {
             runAfterLoad(geoFindMe);
         }
     });
 
-
+    // Decide si usar contorno real del rango según configuración y datos del receptor
     actualOutline.enabled = multiOutline || (receiverJson && receiverJson.outlineJson);
-
+    // Si se debe usar contorno real, configurar refresco, URL y estilo visual
     if (actualOutline.enabled) {
+        // Frecuencia de actualización del contorno
         actualOutline.refresh = 15000;
+        // Ruta del JSON con el contorno (puede ser múltiple o simple)
         actualOutline.url = multiOutline ? 'data/multiOutline.json' : 'data/outline.json';
-
+        // Fuente donde se guardarán las features del contorno
         actualOutline.features = new ol.source.Vector();
+        // Estilo visual para dibujar el contorno (color, grosor, guion)
         actualOutline.style = new ol.style.Style({
             fill: null,
             stroke: new ol.style.Stroke({
@@ -4821,6 +5149,7 @@ function initMap() {
         });
         layers.push(actualOutline.layer);*/
     }
+    // Si hay datos calculados del contorno (terrain-based), crear la capa y dibujar
     if (calcOutlineData) {
         calcOutlineLayer = new ol.layer.Vector({
             name: 'calcOutline',
@@ -4832,10 +5161,11 @@ function initMap() {
             renderBuffer: renderBuffer,
         });
         layers.push(calcOutlineLayer);
+        // Dibuja los contornos basados en datos externos
         drawUpintheair();
     }
 
-
+    // Capa dummy vacía usada como placeholder para las trazas
     const dummyLayer = new ol.layer.Vector({
         name: 'dummy',
         renderOrder: null,
@@ -4843,7 +5173,7 @@ function initMap() {
     });
 
     trailGroup.push(dummyLayer);
-
+    // Crea un grupo que contendrá todas las capas de trazas de aeronaves
     trailLayers = new ol.layer.Group({
         name: 'ac_trail',
         title: 'Aircraft trails',
@@ -4854,6 +5184,7 @@ function initMap() {
 
     layers.push(trailLayers);
 
+    // Crea la capa que contendrá los iconos/posiciones actuales de aeronaves
     iconLayer = new ol.layer.Vector({
         name: 'iconLayer',
         type: 'overlay',
@@ -4864,7 +5195,7 @@ function initMap() {
         renderBuffer: renderBuffer,
     });
     layers.push(iconLayer);
-
+    // Capa que dibuja líneas entre aviones cuando se mide distancia aire‑aire
     distanceLineLayer = new ol.layer.Vector({
         source: new ol.source.Vector(),
         style: new ol.style.Style({
@@ -4876,7 +5207,7 @@ function initMap() {
         zIndex: 300
     });
     layers.push(distanceLineLayer);
-
+    // Asegura la fuente para puntos del modo elevación y crea la capa para marcar A/B
     if (!elevationPointSource) elevationPointSource = new ol.source.Vector();
         elevationPointLayer = new ol.layer.Vector({
         name: 'elevPoints',
@@ -4894,7 +5225,7 @@ function initMap() {
         visible: true
     });
     layers.push(elevationPointLayer);
-    
+    // Asegura la fuente para la línea A-B de elevación y crea la capa que la dibuja
     if (!elevationLineSource) elevationLineSource = new ol.source.Vector();
     elevationLineLayer = new ol.layer.Vector({
         name: 'elevLine',
@@ -4910,7 +5241,9 @@ function initMap() {
     layers.push(elevationLineLayer);
 
     try {
+        // Asegura la fuente para puntos tierra‑tierra
         if (!ggPointSource) ggPointSource = new ol.source.Vector();
+        // Si la capa no existe, crearla con estilo de punto; si existe, asignar la fuente y ocultarla por defecto
         if (!ggPointLayer) {
             ggPointLayer = new ol.layer.Vector({
                 name: 'ggPoints',
@@ -4928,12 +5261,15 @@ function initMap() {
                 })
             });
         } else {
+            // Si ya existía la capa, re-conectar la fuente y esconderla hasta ser usada
             ggPointLayer.setSource(ggPointSource);
             ggPointLayer.setVisible(false);
         }
         layers.push(ggPointLayer);
 
+        // Asegura la fuente para las líneas tierra‑tierra
         if (!ggLineSource) ggLineSource = new ol.source.Vector();
+        // Si la capa de líneas no existe, crearla con estilo; si existe, reusar y ocultar
         if (!ggLineLayer) {
             ggLineLayer = new ol.layer.Vector({
                 name: 'groundToGround',
@@ -5122,18 +5458,22 @@ function initMap() {
     //toggleLayer('#acpositions_checkbox', 'webglLayer');
     //});
 
+    // Si se cierra el panel de información, ejecutar acciones de limpieza y estado
     jQuery('#infoblock_close').on('click', function () {
+        // Si se estaba viendo una traza histórica, salir de ese modo
         if (showTrace)
             toggleShowTrace();
+        // Si estaba activo el modo "solo seleccionado", desactivarlo
         if (onlySelected)
             toggleIsolation();
-
+        // Deseleccionar el avión actualmente seleccionado
         deselect(SelectedPlane);
+        // Refrescar filtros/tabla tras el cambio
         refreshFilter();
     });
 
 
-
+    // Crea un control Toggle para alternar colores más oscuros en la UI
     new Toggle({
         key: "darkerColors",
         display: "Darker Colors",
@@ -5147,7 +5487,7 @@ function initMap() {
             }
         }
     });
-
+    // Guardar la paleta actual como versión "clara"
     tableColorsLight = tableColors;
     tableColorsDark = JSON.parse(JSON.stringify(tableColors));
     let darkVals = Object.values(tableColorsDark);
@@ -5162,6 +5502,7 @@ function initMap() {
             obj[key] = hslToRgb(hsl);
         }
     }
+    // Crear el toggle para el modo oscuro (Dark Mode)
     new Toggle({
         key: "darkMode",
         display: "Dark Mode",
@@ -5206,16 +5547,20 @@ function initMap() {
         }
     });
 
+    // Inicializar la leyenda con colores para fuentes no seleccionadas
     initLegend(tableColors.unselected);
 
+    // Inicializar filtros en la UI
     initFilters();
 
+    // Registrar un manejador para cada capa base que permita atenuar el mapa al renderizar
     ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
         if (lyr.get('type') != 'base')
             return;
         lyr.dimKey = lyr.on('postrender', dim);
     });
 
+    // Toggle para atenuar el mapa (Dim Map)
     new Toggle({
         key: "MapDim",
         display: "Dim Map",
@@ -5244,29 +5589,38 @@ function initMap() {
         }
     });
 
+    // Escucha teclas para atajos globales y acciones rápidas
     window.addEventListener('keydown', function (e) {
+        // Marca que el usuario está activo (reset timeout)
         active();
+        // Si el evento ya fue manejado, no hacer nada
         if (e.defaultPrevented) {
             return; // Do nothing if the event was already processed
         }
+        // Si el foco está en un campo de texto, no interpretar el atajo
         if (e.target.type == "text") {
             return;
         }
+        // Si el foco está en un input, no interpretar el atajo
         if (e.srcElement.nodeName == 'INPUT') {
             return;
         }
-
+        // Ignora combinaciones con Ctrl/Alt/Meta (evitar conflictos del navegador)
         if (e.ctrlKey || e.altKey || e.metaKey) {
             return;
         }
+        // Variables temporales para mover/centrar el mapa
         let oldCenter, extent, newCenter;
+        // Elegir acción según la tecla pulsada
         switch (e.key) {
+            // Deselecciona todos los aviones
             case "c":
             case "Esc":
             case "Escape":
                 deselectAllPlanes();
                 break;
             // zoom and movement
+            // Acercar/Alejar y atajos de zoom
             case "q":
             case "-":
             case "Subtract":
@@ -5277,6 +5631,7 @@ function initMap() {
             case "Add":
                 zoomIn();
                 break;
+            // Mover vista hacia arriba
             case "ArrowUp":
             case "w":
                 oldCenter = OLMap.getView().getCenter();
@@ -5285,6 +5640,7 @@ function initMap() {
                 OLMap.getView().setCenter(newCenter);
                 toggleFollow(false);
                 break;
+            // Mover vista hacia abajo
             case "ArrowDown":
             case "s":
                 oldCenter = OLMap.getView().getCenter();
@@ -5293,6 +5649,7 @@ function initMap() {
                 OLMap.getView().setCenter(newCenter);
                 toggleFollow(false);
                 break;
+            // Mover vista izquierda
             case "ArrowLeft":
             case "a":
                 oldCenter = OLMap.getView().getCenter();
@@ -5301,6 +5658,7 @@ function initMap() {
                 OLMap.getView().setCenter(newCenter);
                 toggleFollow(false);
                 break;
+            // Mover vista derecha
             case "ArrowRight":
                 oldCenter = OLMap.getView().getCenter();
                 extent = OLMap.getView().calculateExtent(OLMap.getSize());
@@ -5308,46 +5666,58 @@ function initMap() {
                 OLMap.getView().setCenter(newCenter);
                 toggleFollow(false);
                 break;
+            // Alterna modo de medir distancia entre aviones
             case "d":
                 toggleDistance();
                 break;
             // misc
+            // Misc: alternar atenuado del mapa
             case "b":
                 toggles['MapDim'].toggle();
                 break;
+            // Alternar selección múltiple
             case "m":
                 toggleMultiSelect();
                 break;
+            // Mostrar/ocultar tabla en vista
             case "v":
                 toggleTableInView();
                 break;
+            // Seguir o dibujar heatmap o elegir avión aleatorio
             case "r":
                 if (heatmap)
                     drawHeatmap();
                 else
                     followRandomPlane();
                 break;
+            // Forzar fetch de datos
             case "R":
                 fetchData();
                 break;
+            // Seleccionar todos los aviones
             case "t":
                 selectAllPlanes();
                 break;
+            // Alternar mostrar sólo sin GPS
             case "G":
                 nogpsOnly = !nogpsOnly;
                 refreshFilter();
                 break;
+            // Reset mapa
             case "h":
                 resetMap();
                 break;
+            // Mostrar/ocultar botones de UI
             case "H":
                 hideButtons = !hideButtons;
                 showHideButtons();
                 break;
+            // Alternar seguimiento del avión seleccionado
             case "f":
                 toggleFollow();
                 break;
             // filters
+            // Filtros y toggles varios (T, u, i, p, l, o, k)
             case "T":
                 filterTISB = !filterTISB;
                 refreshFilter();
@@ -5373,19 +5743,23 @@ function initMap() {
                 toggleTrackLabels();
                 break;
             // debug stuff
+            // Debug: alterna último tramo
             case "L":
                 toggles['lastLeg'].toggle();
                 break;
+            // Debug: activar log de depuración
             case "D":
                 debug = !debug;
                 loStore['debug'] = debug;
                 console.log('debug = ' + debug);
                 break;
+            // Debug posición filtro
             case "P":
                 debugPosFilter = !debugPosFilter;
                 loStore['debugPosFilter'] = debugPosFilter;
                 console.log('debugPosFilter = ' + debugPosFilter);
                 break;
+            // Muestra info detallada del avión seleccionado
             case "?":
                 if (!SelectedPlane) {
                     console.log("No plane selected");
@@ -5395,14 +5769,17 @@ function initMap() {
                 console.log(SelectedPlane);
                 console.log(SelectedPlane.milRange());
                 break;
+            // Saltar a avión por hex y seguirlo
             case "j":
                 selectPlaneByHex(jumpTo, { follow: true });
                 break;
+            // Debug jump toggle
             case "J":
                 debugJump = !debugJump;
                 loStore['debugJump'] = debugJump;
                 console.log('debugJump = ' + debugJump);
                 break;
+            // Alternar uso de MLAT
             case "N":
                 noMLAT = !noMLAT;
                 loStore['noMLAT'] = noMLAT;
@@ -5411,7 +5788,7 @@ function initMap() {
         }
     }, true);
 
-
+    // Decide si usar la ubicación del navegador o la posición del sitio según parámetros URL
     if (!usp.has('icao')
         && !usp.has("lat") && !usp.has("lon")
         && !usp.has('airport')
@@ -5424,6 +5801,7 @@ function initMap() {
 }
 
 // This looks for planes to reap out of the master g.planes variable
+// Busca y elimina aviones que no han enviado mensajes por mucho tiempo (limpieza de memoria)
 let lastReap = 0;
 let reapInProgress = false;
 function reaper(all) {
@@ -5433,8 +5811,10 @@ function reaper(all) {
         return;
     }
 
+    // Marca el tiempo del último reap
     lastReap = now;
 
+    // Si está activado noVanish y no se pide reap completo, no eliminar nada
     if (noVanish && !all) {
         return;
     }
@@ -5446,6 +5826,7 @@ function reaper(all) {
     }
 
     // Look for planes where we have seen no messages for >300 seconds
+    // Recorre la lista y borra aviones que han estado inactivos más allá del timeout
     let plane;
     let length = g.planesOrdered.length;
     let temp = []
@@ -5470,8 +5851,10 @@ function reaper(all) {
         }
 
         // Keep it.
+        // Mantener el avión
         temp.push(plane);
 
+        // Si es vista tipo globo, gestionar limpieza de trazas diferida
         if (globeIndex) {
             if (plane.clearTraceAfter) {
                 //console.log(now - plane.clearTraceAfter);
@@ -5496,6 +5879,7 @@ function reaper(all) {
 }
 
 // Page Title update function
+// Actualiza el título de la pestaña con número de aviones y tasa de mensajes si corresponde
 function refreshPageTitle() {
     if (pTracks)
         return;
@@ -5524,7 +5908,7 @@ function refreshPageTitle() {
         document.title = subtitle;
     }
 }
-
+// Muestra la silueta del avión seleccionado cuando no hay foto disponible
 function displaySil() {
     jQuery('#copyrightInfo').html("");
     if (!showSil) {
@@ -5539,7 +5923,7 @@ function displaySil() {
     setPhotoHtml(new_html);
     selected.icao.toUpperCase();
 }
-
+// Muestra la foto real del avión si la API devolvió imágenes
 function displayPhoto() {
     if (!SelectedPlane)
         return;
@@ -5563,7 +5947,7 @@ function displayPhoto() {
     setPhotoHtml(new_html);
     adjustInfoBlock();
 }
-
+// Consulta APIs externas (planespotters / planespotting) para obtener fotos y actualizar la UI
 function refreshPhoto(selected) {
     if (!showPictures || selected.icao[0] == '~' || (!planespottingAPI && !planespottersAPI)) {
         displaySil();
@@ -5641,13 +6025,14 @@ function refreshPhoto(selected) {
         });
     }
 }
-
+// Variables auxiliares para la selección actual (llamadas, icao, registro)
 let selCall = null;
 let selIcao = null;
 let selReg = null;
 
 let somethingSelected = false;
 // Refresh the detail window about the plane
+// Actualiza el panel lateral con toda la información del avión seleccionado
 function refreshSelected() {
     const selected = SelectedPlane;
 
@@ -6032,7 +6417,9 @@ function refreshSelected() {
     adjustInfoBlock();
 }
 
+// Indica si hay actualmente un avión resaltado por el cursor
 let somethingHighlighted = false;
+// Muestra información breve junto al cursor para el avión resaltado
 function refreshHighlighted() {
     // this is following nearly identical logic, etc, as the refreshSelected function, but doing less junk for the highlighted pane
     let highlighted = HighlightedPlane;
@@ -6112,12 +6499,12 @@ function refreshHighlighted() {
 
     jQuery('#highlighted_rssi').text(highlighted.rssi != null ? highlighted.rssi.toFixed(1) + ' dBFS' : "n/a");
 }
-
+// Quita cualquier avión resaltado
 function removeHighlight() {
     HighlightedPlane = null;
     refreshHighlighted();
 }
-
+// Devuelve la hora actual en milisegundos
 function mstime() {
     return new Date().getTime();
 }
@@ -6125,9 +6512,10 @@ function mstime() {
 // recreating all OpenLayers Features for the planes every now and then releases some retained memory
 // Haven't been able to create a reproducer ... regardless let's stick with this workaround
 // in other words: probably not an issue with OpenLayers.
-
+// Frecuencia próxima para limpieza de cachés
 let nextCacheClear = mstime() + 300 * 1000;
 
+// Libera memoria recreando estilos y marcadores para evitar fugas
 function releaseMem() {
     if (!loadFinished || mstime() < nextCacheClear) {
         return;
@@ -6148,7 +6536,7 @@ function releaseMem() {
     TAR.planeMan.redraw();
     refresh();
 }
-
+// Fuerza la actualización de "features" (marcadores/trazas) de todos los aviones
 function refreshFeatures() {
     if (!loadFinished) {
         return;
@@ -6162,9 +6550,11 @@ function refreshFeatures() {
 //
 // g.planes table begin
 //
+// Módulo que gestiona la tabla lateral de aviones (definición de columnas, orden, render)
 (function (global, jQuery, TAR) {
     let planeMan = TAR.planeMan = TAR.planeMan || {};
 
+    // Comparador simple alfabético (A < B)
     function compareAlpha(xa, ya) {
         if (xa === ya)
             return 0;
@@ -6173,6 +6563,7 @@ function refreshFeatures() {
         return 1;
     }
 
+    // Comparador que tiene en cuenta orden ascendente/descendente y una heurística secundaria
     function compareBeta(xa, ya) {
         if (xa === ya)
             return 0;
@@ -6183,6 +6574,7 @@ function refreshFeatures() {
         return 1;
     }
 
+    // Comparador numérico para ordenar valores numéricos
     function compareNumeric(xf, yf) {
         if (Math.abs(xf - yf) < 1e-9)
             return 0;
@@ -6190,6 +6582,7 @@ function refreshFeatures() {
         return xf - yf;
     }
 
+    // Definición de columnas: texto, cómo ordenar, cómo extraer valor y estilo
     const cols = planeMan.cols = {};
 
     cols.icao = {
@@ -6338,6 +6731,7 @@ function refreshFeatures() {
         header: function () { return 'Wind' + NBSP + '(' + get_unit_label("speed", DisplayUnits) + ')'; },
     };
 
+    // Normaliza columnas para uso interno (id, header, td por defecto)
     const colsEntries = Object.entries(cols);
     for (let i in colsEntries) {
         let key = colsEntries[i][0];
@@ -6349,7 +6743,7 @@ function refreshFeatures() {
         if (!value.td)
             value.td = value.align ? ('<td style="text-align: ' + value.align + '">') : '<td>';
     }
-
+    // Construye la lista de columnas en orden guardado o por defecto
     let columns = createOrderedColumns();
     let activeCols = null;
 
@@ -6359,6 +6753,7 @@ function refreshFeatures() {
     let htmlTable = null;
     let tbody = null;
 
+    // Inicializa la tabla: obtiene la tabla DOM y prepara visibilidades
     planeMan.init = function () {
         // initialize columns
         htmlTable = document.getElementById('planesTable');
@@ -6379,6 +6774,7 @@ function refreshFeatures() {
         }
     }
 
+    // Reconstruye la estructura HTML de la tabla y plantilla de fila, sin rellenar datos
     planeMan.redraw = function () {
         activeCols = [];
         for (let i in columns) {
@@ -6418,6 +6814,7 @@ function refreshFeatures() {
         }
     }
 
+    // Cambia visibilidad de una columna y redibuja si corresponde
     planeMan.setColumnVis = function (col, visible) {
         cols[col].visible = visible;
 
@@ -6426,6 +6823,7 @@ function refreshFeatures() {
     }
 
     // Refreshes the larger table of all the planes
+    // Rellena o actualiza las filas de la tabla con los datos actuales de g.planesOrdered
     planeMan.refresh = function () {
         if (!loadFinished) {
             return;
@@ -6571,11 +6969,13 @@ function refreshFeatures() {
     // ---- table sorting begin ----
     //
 
+    // Estado actual de ordenado: columna, comparador, extractor y dirección
     planeMan.sortId = '';
     planeMan.sortCompare = null;
     planeMan.sortExtract = null;
     planeMan.sortAscending = true;
 
+    // Función de comparación estable usada tras extraer valores de fila
     function sortFunction(x, y) {
         const xv = x._sort_value;
         const yv = y._sort_value;
@@ -6592,6 +6992,7 @@ function refreshFeatures() {
         return x._sort_pos - y._sort_pos;
     }
 
+    // Prepara la lista pList antes de aplicar sort(), aplicando ordenaciones preliminares
     function resortTable(pList) {
         if (!planeMan.sortExtract)
             return;
@@ -6661,6 +7062,7 @@ function refreshFeatures() {
         }
     }
 
+    // Cambia la columna de orden actual, guarda la preferencia y refresca tabla
     function sortBy(id, sc, se) {
         loStore['sortCol'] = id;
 
@@ -6682,6 +7084,7 @@ function refreshFeatures() {
     // ---- table sorting end ----
     //
 
+    // Crea toggles en la UI para mostrar/ocultar columnas y permite reordenarlas por drag'n'drop
     function createColumnToggles() {
         const prefix = 'dd_';
         const sortableColumns = jQuery('#sortableColumns').sortable({
@@ -6713,6 +7116,7 @@ function refreshFeatures() {
         }
     }
 
+    // Devuelve columnas en el orden guardado por el usuario o el orden por defecto
     function createOrderedColumns() {
         const order = loStore['columnOrder'];
         if (order !== undefined) {
@@ -6735,8 +7139,9 @@ function refreshFeatures() {
 //
 // g.planes table end
 //
-
+// Último avión que fue deseleccionado (para posible reuso)
 let lastSelected = null;
+// Quita un avión de la selección y actualiza la interfaz
 function deselect(plane) {
     if (!plane || !plane.selected)
         return;
@@ -6759,6 +7164,7 @@ function deselect(plane) {
     updateAddressBar();
 }
 let scount = 0;
+// Marca un avión como seleccionado, lo muestra en el panel y opcionalmente activa seguimiento
 function select(plane, options) {
     if (!plane)
         return;
@@ -6781,7 +7187,7 @@ function select(plane, options) {
         toggleFollow(false);
     }
 }
-
+// Selecciona un avión por su identificador hex (usa trazas si es necesario)
 function selectPlaneByHex(hex, options) {
     active();
     options = options || {};
@@ -6849,6 +7255,7 @@ function selectPlaneByHex(hex, options) {
 }
 
 // loop through the planes and mark them as selected to show the paths for all planes
+// Selecciona todos los aviones (muestra sus trazas) o los desactiva si ya está activo
 function selectAllPlanes() {
     HighlightedPlane = null;
     // if all planes are already selected, deselect them all
@@ -6882,6 +7289,7 @@ function selectAllPlanes() {
 }
 
 // deselect all the planes
+// Deselecciona todos los aviones; puede mantener el principal si se pide
 function deselectAllPlanes(keepMain) {
     if (showTrace && !keepMain)
         return;
@@ -6911,7 +7319,7 @@ function deselectAllPlanes(keepMain) {
     refreshFilter();
     updateAddressBar();
 }
-
+// Activa o desactiva el seguimiento del avión seleccionado (centra la vista)
 function toggleFollow(override) {
     if (override == true)
         FollowSelected = true;
@@ -6933,7 +7341,7 @@ function toggleFollow(override) {
     }
     buttonActive('#F', FollowSelected);
 }
-
+// Centra y restablece el mapa al sitio por defecto o al receptor
 function resetMap() {
     geoFindMe().always(function () {
         if (SitePosition) {
@@ -6959,14 +7367,14 @@ function resetMap() {
         jQuery("#update_error").css('display', 'none');
     });
 }
-
+// Avisa al mapa que su tamaño cambió (ej. al mostrar/ocultar sidebar)
 function updateMapSize() {
     if (OLMap)
         OLMap.updateSize();
 
     updatePanoramaOverlayBounds();
 }
-
+// Oculta el mapa y expande la barra lateral (modo solo lista)
 function expandSidebar(e) {
     e.preventDefault();
     jQuery("#map_container").hide()
@@ -6979,7 +7387,7 @@ function expandSidebar(e) {
     updateMapSize();
     adjustInfoBlock();
 }
-
+// Muestra el mapa y restaura la barra lateral a su anchura guardada
 function showMap() {
     jQuery('#sidebar_container').width(loStore['sidebar_width']).css('margin-left', '0');
     jQuery("#map_container").show()
@@ -6991,9 +7399,8 @@ function showMap() {
     updateMapSize();
 }
 
-
 let selectedPhotoCache = null;
-
+// Pone la foto (HTML) del avión seleccionado en el contenedor, evitando recargas iguales
 function setPhotoHtml(source) {
     if (selectedPhotoCache == source)
         return;
@@ -7001,7 +7408,7 @@ function setPhotoHtml(source) {
     selectedPhotoCache = source;
     jQuery('#selected_photo').html(source);
 }
-
+// Ajusta tamaño y disposición del bloque de información lateral según espacio y opciones
 function adjustInfoBlock() {
     if (wideInfoBlock) {
         infoBlockWidth = baseInfoBlockWidth + 40;
@@ -7062,7 +7469,7 @@ function adjustInfoBlock() {
 
     updatePanoramaOverlayBounds();
 }
-
+// Inicializa el selector de unidades (métrico/imperial) y sus etiquetas
 function initializeUnitsSelector() {
     // Get display unit preferences from local storage otherwise use value previously set defaults_86d9793e4a0945a79fb7bffb2437e312.js or config.js
     if (loStore.getItem('displayUnits')) {
@@ -7080,6 +7487,7 @@ function initializeUnitsSelector() {
     jQuery(".verticalRateUnit").text(get_unit_label("verticalRate", DisplayUnits));
 }
 
+// Cambia la unidad mostrada y actualiza todo lo que depende de ello
 function onDisplayUnitsChanged(e) {
     loStore['displayUnits'] = DisplayUnits = e.target.value;
 
@@ -7110,7 +7518,7 @@ function onDisplayUnitsChanged(e) {
     remakeTrails();
     refreshSelected();
 }
-
+// Aplica el filtro de altitud desde el formulario y refresca la vista
 function onFilterByAltitude(e) {
     e.preventDefault();
     jQuery("#altitude_filter_min").blur();
@@ -7119,7 +7527,7 @@ function onFilterByAltitude(e) {
     updateAltFilter();
     refreshFilter();
 }
-
+// Alterna el filtro para vehículos en tierra y lo guarda
 function filterGroundVehicles(switchFilter) {
     if (typeof loStore['groundVehicleFilter'] === 'undefined') {
         loStore['groundVehicleFilter'] = 'not_filtered';
@@ -7136,7 +7544,7 @@ function filterGroundVehicles(switchFilter) {
     loStore['groundVehicleFilter'] = groundFilter;
     PlaneFilter.groundVehicles = groundFilter;
 }
-
+// Alterna el filtro para MLAT bloqueado y lo guarda
 function filterBlockedMLAT(switchFilter) {
     if (typeof loStore['blockedMLATFilter'] === 'undefined') {
         loStore['blockedMLATFilter'] = 'not_filtered';
@@ -7153,7 +7561,7 @@ function filterBlockedMLAT(switchFilter) {
     loStore['blockedMLATFilter'] = blockedMLATFilter;
     PlaneFilter.blockedMLAT = blockedMLATFilter;
 }
-
+// Marca visualmente un botón como activo/inactivo
 function buttonActive(id, state) {
     if (state) {
         jQuery(id).addClass('activeButton');
@@ -7163,7 +7571,7 @@ function buttonActive(id, state) {
         jQuery(id).removeClass('activeButton');
     }
 }
-
+// Activa/desactiva "solo seleccionados" y fuerza recarga de datos si hace falta
 function toggleIsolation(state, noRefresh) {
     let prevState = onlySelected;
     if (showTrace && state !== "on")
@@ -7181,7 +7589,7 @@ function toggleIsolation(state, noRefresh) {
 
     fetchData({ force: true });
 }
-
+// Muestra solo militares o no, y fuerza actualización
 function toggleMilitary() {
     onlyMilitary = !onlyMilitary;
     buttonActive('#U', onlyMilitary);
@@ -7206,7 +7614,7 @@ function togglePersistence() {
 
     refreshFilter();
 }
-
+// Evita que aviones "desaparezcan" y reconstruye trazas
 function toggleDistance() {
     // Si está apagado, activarlo en el primer modo
     if (!distanceBetweenPlanesMode) {
@@ -7242,7 +7650,7 @@ function toggleDistance() {
         hideDistanceGuide();
     }
 }
-
+// Aplica atenuado/contraste al lienzo del mapa según ajustes
 function dim(evt) {
     try {
         let currentDimPercentage = mapDimPercentage * layerDimFactor;
@@ -7280,6 +7688,7 @@ function dim(evt) {
         console.error(error);
     }
 }
+// Invierte colores del mapa (efecto visual)
 function invertMap(evt) {
     const ctx = evt.context;
     ctx.globalCompositeOperation = 'difference';
@@ -7291,7 +7700,7 @@ function invertMap(evt) {
 }
 //
 // Altitude Chart begin
-//
+// Crea gradientes de color que representan alturas para la leyenda
 (function (global, jQuery, TAR) {
     let altitudeChart = TAR.altitudeChart = TAR.altitudeChart || {};
 
@@ -7306,7 +7715,7 @@ function invertMap(evt) {
         }
         return stops;
     }
-
+    // Convierte el SVG de la leyenda en una URL para background-image
     function createLegendUrl(data) {
         jQuery(data).find('#linear-gradient').html(createLegendGradientStops());
 
@@ -7314,7 +7723,7 @@ function invertMap(evt) {
 
         return 'url("data:image/svg+xml;base64,' + global.btoa(svg) + '")';
     }
-
+    // Carga el SVG base de la leyenda y lo pinta según unidades
     function loadLegend() {
         let baseLegend = (DisplayUnits === 'metric') ? 'images/alt_legend_m.svg' : 'images/alt_legend_ft.svg';
 
@@ -7323,7 +7732,7 @@ function invertMap(evt) {
             jQuery('#altitude_chart').show();
         });
     }
-
+    // Muestra/oculta la leyenda según toggle
     altitudeChart.render = function () {
         if (toggles['altitudeChart'].state) {
             runAfterLoad(loadLegend);
@@ -7331,7 +7740,7 @@ function invertMap(evt) {
             jQuery('#altitude_chart').hide();
         }
     }
-
+    // Inicializa el toggle y estado por defecto del gráfico de altitud
     altitudeChart.init = function () {
         let chartOn = (onMobile ? false : altitudeChartDefaultState);
         if (usp.has('altitudeChart')) {
@@ -7351,7 +7760,7 @@ function invertMap(evt) {
 //
 // Altitude Chart end
 //
-
+// Selecciona un avión aleatorio válido y lo sigue
 function followRandomPlane() {
     if (showTrace)
         return;
@@ -7366,7 +7775,7 @@ function followRandomPlane() {
     if (this_one)
         selectPlaneByHex(this_one.icao, { follow: true });
 }
-
+// Alterna la forma en que la tabla lista aviones (solo los visibles o todos)
 function toggleTableInView(arg) {
     if (arg == 'enable') {
         tableInView = true;
@@ -7386,7 +7795,7 @@ function toggleTableInView(arg) {
 
     buttonActive('#V', tableInView);
 }
-
+// Enciende/apaga etiquetas en el mapa y actualiza marcadores
 function toggleLabels() {
     g.enableLabels = !g.enableLabels;
     loStore['enableLabels'] = g.enableLabels;
@@ -7399,7 +7808,7 @@ function toggleLabels() {
     if (showTrace)
         remakeTrails();
 }
-
+// Cicla modos de etiquetas extendidas (varios niveles)
 function toggleExtendedLabels(options) {
     if (isNaN(g.extendedLabels))
         g.extendedLabels = 0;
@@ -7416,7 +7825,7 @@ function toggleExtendedLabels(options) {
     }
     buttonActive('#O', g.extendedLabels);
 }
-
+// Activa/desactiva etiquetas en las trazas (texto sobre líneas)
 function toggleTrackLabels() {
     trackLabels = !trackLabels;
     loStore['trackLabels'] = trackLabels;
@@ -7425,7 +7834,7 @@ function toggleTrackLabels() {
 
     buttonActive('#K', trackLabels);
 }
-
+// Enciende/apaga selección múltiple de aviones
 function toggleMultiSelect(newState) {
     let prevState = multiSelect;
     multiSelect = !multiSelect;
@@ -7508,14 +7917,14 @@ function onSearch(e) {
     return false;
 }
 */
-
+// Oculta el aviso de búsqueda si está visible
 function hideSearchWarning() {
     const searchWarning = jQuery('#search_warning');
     if (searchWarning.css('display') !== 'none') {
         searchWarning.hide('slow');
     }
 }
-
+// Muestra un aviso de búsqueda simple y lo oculta luego automáticamente
 function showSearchWarning(message) {
     const searchWarning = jQuery('#search_warning');
     searchWarning.text(message)
@@ -7600,7 +8009,7 @@ function searchAirport(airport) {
     if (coords) executeJump(coords);
     else showSearchWarning('No se encontró: ' + airport);
 }
-
+// Deselecciona todo y resetea modos relacionados con búsqueda
 function onSearchClear(e) {
     deselectAllPlanes();
     toggleIsolation("off");
@@ -7608,7 +8017,7 @@ function onSearchClear(e) {
     jQuery("#search_input").val("");
     jQuery("#search_input").blur();
 }
-
+// Resetea filtros de altitud en la UI y aplica cambios
 function onResetAltitudeFilter(e) {
     jQuery("#altitude_filter_min").val("");
     jQuery("#altitude_filter_max").val("");
@@ -7618,7 +8027,7 @@ function onResetAltitudeFilter(e) {
     updateAltFilter();
     refreshFilter();
 }
-
+// Lee y normaliza valores del filtro de altitud; convierte si hace falta a pies
 function updateAltFilter() {
     let minAltitude = parseFloat(jQuery("#altitude_filter_min").val().trim());
     let maxAltitude = parseFloat(jQuery("#altitude_filter_max").val().trim());
@@ -7649,7 +8058,7 @@ function updateAltFilter() {
         PlaneFilter.maxAltitude = maxAltitude;
     }
 }
-
+// Crea un enlace a FlightAware para un identificador (callsign)
 function getFlightAwareIdentLink(ident, linkText) {
     if (ident !== null && ident !== "") {
         if (!linkText) {
@@ -7660,7 +8069,7 @@ function getFlightAwareIdentLink(ident, linkText) {
 
     return "";
 }
-
+// Resetea selección del filtro por fuente
 function onResetSourceFilter(e) {
     jQuery('#sourceFilter .ui-selected').removeClass('ui-selected');
 
@@ -7668,7 +8077,7 @@ function onResetSourceFilter(e) {
 
     updateSourceFilter();
 }
-
+// Aplica el filtro por fuentes y refresca la lista
 function updateSourceFilter(e) {
     if (e)
         e.preventDefault();
@@ -7677,7 +8086,7 @@ function updateSourceFilter(e) {
 
     refreshFilter();
 }
-
+// Resetea filtro por banderas (military/PIA/LADD)
 function onResetFlagFilter(e) {
     jQuery('#flagFilter .ui-selected').removeClass('ui-selected');
 
@@ -7685,7 +8094,7 @@ function onResetFlagFilter(e) {
 
     updateFlagFilter();
 }
-
+// Guarda filtro por banderas y refresca
 function updateFlagFilter(e) {
     if (e)
         e.preventDefault();
@@ -7694,11 +8103,11 @@ function updateFlagFilter(e) {
 
     refreshFilter();
 }
-
+// Container para filtros definidos en UI
 const filters = {};
 const filter_list = [];
 const filters_active = [];
-
+// Constructor para crear un filtro de texto reutilizable en la UI
 function Filter(arg) {
     this.key = arg.key;
     this.field = arg.field;
@@ -7713,7 +8122,7 @@ function Filter(arg) {
 
     this.init();
 }
-
+// Al enviar el formulario de filtro, toma el texto y aplica el patrón
 Filter.prototype.update = function (e) {
     if (e) {
         e.preventDefault();
@@ -7726,6 +8135,7 @@ Filter.prototype.update = function (e) {
 
     return false;
 }
+// Aplica el patrón de filtro y actualiza la lista activa
 Filter.prototype.set = function (val) {
 
     this.input.val(val);
@@ -7742,7 +8152,7 @@ Filter.prototype.set = function (val) {
 
     refreshFilter();
 }
-
+// Resetea el filtro (vacía campo y lo desactiva)
 Filter.prototype.reset = function (e) {
     if (e) {
         e.preventDefault();
@@ -7750,7 +8160,7 @@ Filter.prototype.reset = function (e) {
     this.set("");
     return false;
 }
-
+// Crea la fila HTML del filtro en la tabla indicada y vincula eventos
 Filter.prototype.init = function () {
     // don't F directly with the innerhtml of the body because it will drop event listeners / recreate dom elements
     const row = this.tbody.insertRow();
@@ -7767,7 +8177,7 @@ Filter.prototype.init = function () {
     this.form.onsubmit = (e) => { return this.update(e); };
     jQuery(this.sid + '_reset').click((e) => { return this.reset(e); });
 }
-
+// Crea todos los filtros disponibles en la UI y restaura valores guardados
 function initFilters() {
     initSourceFilter(tableColors.unselected);
     initFlagFilter(tableColors.unselected);
@@ -7859,7 +8269,7 @@ function initFilters() {
 
 
 
-
+// Enlace a FlightAware para ver datos por código MODE‑S (si está disponible)
 function getFlightAwareModeSLink(code, ident, linkText) {
     if (code !== null && code.length > 0 && code[0] !== '~' && code !== "000000") {
         if (!linkText) {
@@ -7876,7 +8286,7 @@ function getFlightAwareModeSLink(code, ident, linkText) {
 
     return "";
 }
-
+// Enlace a la foto/galería del avión según el servicio habilitado
 function getPhotoLink(ac) {
     if (jetphotoLinks) {
         if (ac.registration == null || ac.registration == "")
@@ -7892,6 +8302,7 @@ function getPhotoLink(ac) {
 }
 
 // takes in an elemnt jQuery path and the OL3 layer name and toggles the visibility based on clicking it
+// Conecta un control de la UI con una capa del mapa para alternar su visibilidad
 function toggleLayer(element, layer) {
     // set initial checked status
     ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
@@ -7919,6 +8330,7 @@ function toggleLayer(element, layer) {
 }
 
 let fetchingPf = false;
+// Descarga datos "pf" (ruta, mach, flightno) y los aplica a los aviones existentes
 function fetchPfData() {
     if (fetchingPf)
         return;
@@ -7949,7 +8361,7 @@ function fetchPfData() {
         });
     }
 }
-
+// Divide los aviones visibles en 4 grupos y solicita trazas para cada grupo
 function solidGoldT(arg) {
     solidT = true;
     let list = [[], [], [], []];
@@ -7965,7 +8377,7 @@ function solidGoldT(arg) {
     getTrace(null, null, { onlyRecent: arg == 2, onlyFull: arg == 1, list: list[2], });
     getTrace(null, null, { onlyRecent: arg == 2, onlyFull: arg == 1, list: list[3], });
 }
-
+// Calcula el rumbo en grados desde position1 hacia position2 (lon,lat)
 function bearingFromLonLat(position1, position2) {
     // Positions in format [lon in deg, lat in deg]
     const lon1 = position1[0] * Math.PI / 180;
@@ -7978,21 +8390,21 @@ function bearingFromLonLat(position1, position2) {
         - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
     return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
 }
-
+// Acerca el mapa un nivel (mantiene seguimiento si está activo)
 function zoomIn() {
     const zoom = OLMap.getView().getZoom();
     OLMap.getView().setZoom((zoom + 1).toFixed());
     if (FollowSelected)
         toggleFollow(true);
 }
-
+// Aleja el mapa un nivel (mantiene seguimiento si está activo)
 function zoomOut() {
     const zoom = OLMap.getView().getZoom();
     OLMap.getView().setZoom((zoom - 1).toFixed());
     if (FollowSelected)
         toggleFollow(true);
 }
-
+// Actualiza estado interno cuando cambia el zoom del mapa
 function changeZoom(init) {
     if (!OLMap)
         return;
@@ -8013,7 +8425,7 @@ function changeZoom(init) {
 
     checkPointermove();
 }
-
+// Ajusta tamaño de iconos y factores según zoom y recuentos
 function checkScale() {
     if (g.zoomLvl > markerZoomDivide) {
         iconSize = markerBig;
@@ -8031,6 +8443,7 @@ function checkScale() {
     // disable, doesn't work well
     // iconSize *= 1 - 0.37 * Math.pow(TrackedAircraftPositions + 1, 0.8) / Math.pow(10000, 0.8);
 }
+// Aplica escala global a variables visibles y redibuja si corresponde
 function setGlobalScale(scale, init) {
     globalScale = scale;
     document.documentElement.style.setProperty("--SCALE", globalScale);
@@ -8046,7 +8459,7 @@ function setGlobalScale(scale, init) {
         remakeTrails();
     }
 }
-
+// Activa o desactiva el evento de mover el puntero según condiciones
 function checkPointermove() {
     if ((webgl || g.zoomLvl > 5.5) && enableMouseover && !onMobile) {
         OLMap.on('pointermove', onPointermove);
@@ -8056,7 +8469,7 @@ function checkPointermove() {
     }
 }
 
-
+// Guarda el nuevo centro del mapa en variables y evita salirse de latitudes válidas
 function changeCenter(init) {
     const rawCenter = OLMap.getView().getCenter();
     const center = ol.proj.toLonLat(rawCenter);
@@ -8088,7 +8501,7 @@ let lastMovement = 0;
 let checkMoveZoom;
 let checkMoveCenter = [0, 0];
 let checkMoveDone = 0;
-
+// Tarea que se ejecuta frecuentemente: mira cambios de mapa, busca rutas y decide refesh/fetch
 function checkMovement() {
     if (!OLMap)
         return;
@@ -8141,17 +8554,18 @@ function checkMovement() {
 
     fetchData();
 }
-
+// Devuelve zoom actual
 function getZoom() {
     return OLMap.getView().getZoom();
 }
-
+// Devuelve centro actual en lon/lat
 function getCenter() {
     return ol.proj.toLonLat(OLMap.getView().getCenter());
 }
 
 let lastRefresh = 0;
 let refreshZoom, refreshCenter;
+// Decide si hacer 'refresh' completo según posición, zoom y tiempo transcurrido
 function checkRefresh() {
     if (showTrace)
         return;
@@ -8174,6 +8588,7 @@ function checkRefresh() {
         }
     }
 }
+// Redibuja mapa, tabla y detalles (actualiza visibilidad antes)
 function refresh(redraw) {
     lastRefresh = new Date().getTime();
 
@@ -8202,7 +8617,7 @@ function refresh(redraw) {
 
     triggerRefresh = 0;
 }
-
+// Refresca filtros, trazas y heatmap; actualiza URL si está activado compartir filtros
 function refreshFilter() {
     if (filterTracks)
         remakeTrails();
@@ -8215,7 +8630,7 @@ function refreshFilter() {
     }
 }
 
-
+// Marca qué aviones están actualmente en vista y cuenta cuántos
 function updateVisible() {
     if (mapIsVisible || !lastRenderExtent) {
         lastRenderExtent = getRenderExtent();
@@ -8228,7 +8643,7 @@ function updateVisible() {
     }
     checkScale();
 }
-
+// Prepara lista de aviones a dibujar en el mapa y actualiza sus features
 function mapRefresh(redraw) {
     if (!mapIsVisible || heatmap)
         return;
@@ -8282,7 +8697,7 @@ function onPointermove(evt) {
     //pointerMoveTimeout = setTimeout(highlight(evt), 100);
     highlight(evt);
 }
-
+// Resalta avión bajo el cursor y actualiza el panel de info breve
 function highlight(evt) {
     let evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
     let source = webgl ? webglFeatures : PlaneIconFeatures;
@@ -8326,6 +8741,7 @@ function highlight(evt) {
     refreshHighlighted();
 }
 let urlIcaos = [];
+// Parsea parámetro 'icao' de la URL y marca aviones para selección inicial
 function parseURLIcaos() {
     if (usp.has('icao')) {
         let inArray = usp.get('icao').toLowerCase().split(',');
@@ -8344,6 +8760,7 @@ function parseURLIcaos() {
         }
     }
 }
+// Procesa parámetros de la URL (zoom, lat/lon, seleccion, colores, modos) y los aplica
 function processURLParams() {
     if (usp.has('showTrace')) {
         let date = setTraceDate({ string: usp.get('showTrace') });
@@ -8480,6 +8897,7 @@ function processURLParams() {
 }
 
 let regIcaoDownloadRunning = false;
+// Descarga el fichero regIcao.js y lo guarda en la caché local 'db.regCache'
 function regIcaoDownload(opts) {
     regIcaoDownloadRunning = true;
     let req = jQuery.ajax({
@@ -8497,6 +8915,7 @@ function regIcaoDownload(opts) {
     });
     return req;
 }
+// Busca aviones por ICAO, callsign, matrícula o tipo y maneja selección/advertencias
 function findPlanes(queries, byIcao, byCallsign, byReg, byType, showWarnings) {
     if (queries == null)
         return;
@@ -8583,7 +9002,7 @@ function trailReaper() {
         g.planesOrdered[i].reapTrail();
     }
 }
-
+// Calcula y guarda la distancia desde 'center' a un tile del globo (para priorizar peticiones)
 function setIndexDistance(index, center, coords) {
     if (index >= 1000) {
         globeIndexDist[index] = ol.sphere.getDistance(center, coords);
@@ -8596,7 +9015,7 @@ function setIndexDistance(index, center, coords) {
     min = Math.min(min, ol.sphere.getDistance(center, [tile[3], tile[2]]));
     globeIndexDist[index] = min;
 }
-
+// Devuelve los índices de tiles del globo que están dentro de la vista actual
 function globeIndexes() {
     const center = ol.proj.toLonLat(OLMap.getView().getCenter());
     if (mapIsVisible || lastGlobeExtent == null) {
@@ -8658,7 +9077,7 @@ function globeIndexes() {
     globeTilesViewCount = indexes.length;
     return indexes;
 }
-
+// Transforma lat/lon a un índice de tile del globo, teniendo en cuenta tiles especiales
 function globe_index(lat, lon) {
     let grid = globeIndexGrid;
 
@@ -8692,7 +9111,7 @@ function globe_index(lat, lon) {
 
     return index;
 }
-
+// Devuelve un objeto con los límites en lon/lat a partir de una extensión del mapa
 function myExtent(extent) {
     let bottomLeft = ol.proj.toLonLat([extent[0], extent[1]]);
     let topRight = ol.proj.toLonLat([extent[2], extent[3]]);
@@ -8704,7 +9123,7 @@ function myExtent(extent) {
         maxLat: topRight[1],
     }
 }
-
+// Indica si una posición (lon,lat) está dentro de la vista dada (maneja el cruce por +/-180°)
 function inView(pos, ex) {
     if (pos == null)
         return false;
@@ -8738,6 +9157,7 @@ let lastAddressBarUpdate = 0;
 let updateAddressBarTimeout;
 let updateAddressBarPushed = false;
 let updateAddressBarString = "";
+// Construye la URL que representa el estado actual (selección, zoom, filtros) y la escribe en la barra del navegador
 function updateAddressBar() {
     if (!window.history || !window.history.replaceState)
         return;
@@ -8879,7 +9299,7 @@ function updateAddressBar() {
         window.history.replaceState("object or string", "Title", string);
     }
 }
-
+// Calcula el intervalo de refresco recomendado según contexto (globo, carga, visibilidad)
 function refreshInt() {
     let refresh = RefreshInterval;
 
@@ -8954,7 +9374,7 @@ function refreshInt() {
 
     return refresh;
 }
-
+// Enciende/apaga el modo que muestra trazas históricas y ajusta la UI/selección
 function toggleShowTrace() {
     showTrace = !showTrace;
     if (showTrace) {
@@ -8994,7 +9414,7 @@ function toggleShowTrace() {
     jQuery('#history_collapse').toggle();
     jQuery('#show_trace').toggleClass('active');
 }
-
+// Cambia el tramo (leg) mostrado dentro de la traza histórica del avión
 function legShift(offset, plane) {
     if (!offset)
         offset = 0;
@@ -9076,7 +9496,7 @@ function legShift(offset, plane) {
 
     updateAddressBar();
 }
-
+// Selecciona y valida la fecha para buscar trazas históricas
 function setTraceDate(options) {
     options = options || {};
     let numbers = options.string ? options.string.split('-') : [];
@@ -9103,7 +9523,7 @@ function setTraceDate(options) {
 
     return traceDate;
 }
-
+// Cambia la fecha de trazas (por días) y solicita recarga de trazas para los seleccionados
 function shiftTrace(offset) {
     if (traceRate > 180) {
         jQuery('#leg_sel').text('Slow down! ...');
@@ -9133,7 +9553,7 @@ function shiftTrace(offset) {
     updateAddressBar();
 }
 
-
+// Calcula y crea estilos (grosor, puntos) usados para dibujar trazas y marcar fallos
 function setLineWidth() {
     newWidth = lineWidth * Math.pow(2, globalScale) / 2 * globalScale
 
@@ -9187,6 +9607,7 @@ function setLineWidth() {
     bgFill = new ol.style.Stroke({ color: 'rgba(0,0,0,0.25' });
 }
 let lastCallLocationChange = 0;
+// Actualiza la posición del "sitio" (receptor/usuario) con los datos del GPS del navegador
 function onLocationChange(position) {
     if (SiteOverride) {
         return;
@@ -9208,12 +9629,14 @@ function onLocationChange(position) {
     //followRandomPlane();
     //togglePersistence();
 }
+// Simple wrapper para logear errores de geolocalización
 function logArg(error) {
     console.log(error);
 }
 
 let watchPositionId;
 let pollPositionSeconds = 10;
+// Si está activado, consulta la ubicación periódicamente (fallback para navegadores que no actualizan bien)
 function pollPositionInterval() {
     if (!updateLocation || !geoFindEnabled()) {
         return;
@@ -9241,7 +9664,7 @@ function pollPositionInterval() {
         }, logArg, geoposOptions);
     }, pollPositionSeconds * 1000);
 }
-
+// Activa el watchPosition del navegador para recibir actualizaciones continuas de ubicación
 function watchPosition() {
     if (watchPositionId != null) {
         navigator.geolocation.clearWatch(watchPositionId);
@@ -9263,6 +9686,7 @@ function watchPosition() {
 }
 
 let geoFindInterval = null;
+// Pide una vez la ubicación actual al navegador y programa actualizaciones periódicas cada 15 minutos
 function geoFindMe() {
     //console.trace();
 
@@ -9327,6 +9751,7 @@ function geoFindMe() {
 }
 
 let initSitePosFirstRun = true;
+// Inicializa la posición del sitio desde almacenamiento o valores detectados y ajusta tabla/ordenación
 function initSitePos() {
     // fall back to loStore position
     if (loStore['SiteLat'] != null && loStore['SiteLon'] != null && SiteLat == null && SiteLon == null) {
@@ -9381,7 +9806,7 @@ function drawAlt() {
     }
 }
 */
-
+// Fuerza la recreación de todas las trazas para que se redibujen
 function remakeTrails() {
     for (let i in g.planesOrdered) {
         const plane = g.planesOrdered[i];
@@ -9390,7 +9815,7 @@ function remakeTrails() {
         plane.updateFeatures();
     }
 }
-
+// Dibuja el punto que representa la ubicación del receptor/usuario en el mapa
 function createLocationDot() {
     locationDotFeatures.clear();
     let markerStyle = new ol.style.Style({
@@ -9408,6 +9833,7 @@ function createLocationDot() {
     feature.setStyle(markerStyle);
     locationDotFeatures.addFeature(feature);
 }
+// Dibuja anillos de distancia alrededor del sitio y etiqueta cada anillo con su distancia
 function drawSiteCircle() {
     //console.trace();
     siteCircleFeatures.clear();
@@ -9454,6 +9880,7 @@ function drawSiteCircle() {
 
 let calcOutlineFeatures = new ol.source.Vector();
 let calcOutlineLayer;
+// Dibuja anillos de visibilidad basados en datos de terreno (si se proporcionaron)
 function drawUpintheair() {
     // Add terrain-limit rings. To enable this:
     //
@@ -9504,7 +9931,7 @@ function drawUpintheair() {
         }
     }
 }
-
+// Descarga un JSON con contornos reales (rango) y lo dibuja en la capa correspondiente
 function drawOutlineJson() {
     let request = jQuery.ajax({
         url: actualOutline.url,
@@ -9547,7 +9974,7 @@ function drawOutlineJson() {
         // no rings available, do nothing
     });
 }
-
+// En modo traza, mueve la visualización al tiempo indicado o anima el marcador si corresponde
 function gotoTime(timestamp) {
     //console.log(`gotoTime(${timestamp}) animate: {${traceOpts.animate}}`);
     clearTimeout(traceOpts.showTimeout);
@@ -9577,7 +10004,7 @@ function gotoTime(timestamp) {
         traceOpts.showTimeout = setTimeout(gotoTime, traceOpts.animateStepTime);
     }
 }
-
+// Comprueba si el mapa sigue centrado en el avión que estamos siguiendo; si no, apaga el seguimiento
 function checkFollow() {
     if (!FollowSelected)
         return false;
@@ -9599,7 +10026,7 @@ function checkFollow() {
     }
     return true;
 }
-
+// Ejecuta tareas cortas que deben ocurrir cada segundo (por ejemplo ajustar contadores y caché)
 function everySecond() {
     if (traceRate > 0)
         traceRate = traceRate * 0.985 - 1;
@@ -9608,6 +10035,7 @@ function everySecond() {
 }
 
 let getTraceTimeout = null;
+// Solicita (o recupera) la traza histórica o reciente de un avión, gestiona reintentos y callbacks
 function getTrace(newPlane, hex, options) {
 
     if (options.list) {
@@ -9761,7 +10189,7 @@ function getTrace(newPlane, hex, options) {
 
     return newPlane;
 }
-
+// Prepara las capas y fuentes necesarias para dibujar el mapa de calor
 function initHeatmap() {
     heatmap.init = false;
     if (heatFeatures.length == 0) {
@@ -9790,14 +10218,14 @@ function initHeatmap() {
     });
     trailGroup.push(realHeat);
 }
-
+// Devuelve el número de elementos en un Set o Map (fallback simple)
 function setSize(set) {
     let count = 0;
     for (const i in set.values())
         count++;
     return count;
 }
-
+// Lee los datos del heatmap y dibuja puntos dentro del área visible, aplicando filtros y límites
 function drawHeatmap() {
     if (!heatmap)
         return;
@@ -10043,14 +10471,14 @@ function drawHeatmap() {
     console.timeEnd("drawHeat");
     jQuery("#loader").hide();
 }
-
+// Devuelve el área visible actual del mapa, opcionalmente escalada
 function currentExtent(factor) {
     let size = OLMap.getSize();
     if (factor != null)
         size = [size[0] * factor, size[1] * factor];
     return myExtent(OLMap.getView().calculateExtent(size));
 }
-
+// Genera valores por defecto para el modo "replay" (reproducción histórica)
 function replayDefaults(ts) {
     jQuery("#replayPlay").html("Pause");
     let playing = true;
@@ -10075,14 +10503,14 @@ function replayDefaults(ts) {
         minutes: ts.getUTCMinutes(),
     };
 }
-
+// Detiene y limpia lo necesario al quitar el modo replay
 function replayClear() {
     clearTimeout(refreshId);
     reaper(true);
     refreshFilter();
     replayPlanes = {};
 }
-
+// Calcula qué archivo binario (chunk) corresponde a un timestamp de replay
 function replayGetChunk(ts) {
     let time = new Date(ts);
     let sDate = sDateString(time);
@@ -10091,7 +10519,7 @@ function replayGetChunk(ts) {
     let url = "globe_history/" + sDate + "/heatmap/" + index.toString().padStart(2, '0') + ".bin.ttf";
     return { date: sDate, index: index, key: key, url: url, };
 }
-
+// Carga (y valida) el chunk de replay necesario; gestiona caché y errores
 function loadReplay(ts) {
     if (isNaN(ts.getTime())) {
         ts = new Date();
@@ -10229,7 +10657,7 @@ function initReplay(chunk, data) {
     replay.index = index;
     replayStep();
 }
-
+// Actualiza pistas/etiquetas de tiempo del replay en la UI
 function setReplayTimeHint(date) {
     if (true || utcTimesHistoric) {
         jQuery("#replayDateHintLocal").html(TIMEZONE + " Date: " + lDateString(date));
@@ -10253,6 +10681,7 @@ function replayOnSliderMove() {
     setReplayTimeHint(date);
 }
 let replayJumpEnabled = true;
+// Ordena y carga el replay para la hora indicada por los controles; evita saltos pequeños innecesarios
 function replayJump() {
     if (!showingReplayBar)
         return;
@@ -10300,7 +10729,7 @@ function replaySetTimeHint(arg) {
     jQuery('#minuteSelect').slider("option", "value", minutes);
     replayJumpEnabled = true;
 }
-
+// Avanza un paso en el replay: procesa un slice, actualiza tiempos y procesa aeronaves del slice
 function replayStep(arg) {
     if (!replay || showTrace) {
         return;
@@ -10479,7 +10908,7 @@ function replayStep(arg) {
     }
     replay.index = index + 1;
 }
-
+// Intenta cargar imágenes SVG en la caché si están listas, reintenta si no aún
 function updateIconCache() {
     let item;
     let tryAgain = [];
@@ -10506,15 +10935,15 @@ function updateIconCache() {
     }
     addToIconCache = tryAgain;
 }
-
+// Devuelve el tiempo en segundos desde la última interacción del usuario
 function getInactive() {
     return (new Date().getTime() - lastActive) / 1000;
 }
-
+// Marca al usuario como activo (resetea el contador de inactividad)
 function active() {
     lastActive = new Date().getTime();
 }
-
+// Dibuja los bordes de un tile del globo en el mapa (mostrar límites de petición)
 function drawTileBorder(data) {
     let southWest = ol.proj.fromLonLat([data.west, data.south]);
     let south180p = ol.proj.fromLonLat([180, data.south]);
@@ -10546,7 +10975,7 @@ function drawTileBorder(data) {
         siteCircleFeatures.addFeature(eastF);
     }
 }
-
+// Actualiza la tasa de mensajes usando diferentes formatos de datos (mensajes directos o contadores)
 function updateMessageRate(data) {
     if (data.messageRate && data.messageRate > 0) {
         MessageRate = data.messageRate;
@@ -10599,6 +11028,7 @@ function updateMessageRate(data) {
         MessageRate = null;
     }
 }
+// Controla si el replay está en marcha o en pausa
 function playReplay(state) {
     if (!replay) {
         return;
@@ -10617,7 +11047,7 @@ function playReplay(state) {
         clearTimeout(refreshId);
     }
 };
-
+// Muestra u oculta la barra de controles del replay y prepara sus elementos
 function showReplayBar() {
     console.log('showReplayBar()');
     showingReplayBar = !showingReplayBar;
@@ -10731,7 +11161,7 @@ function setupSliderDecorations(selector, minTxt, maxTxt) {
     }
 
 }
-
+// Se llama periódicamente cuando hay un timeout global; fuerza nueva consulta de datos
 function timeoutFetch() {
     console.log("timeoutFetch " + localTime(new Date()));
     fetchData();
@@ -10743,7 +11173,7 @@ function timeoutFetch() {
         reaper();
     }
 }
-
+// Si la pestaña vuelve a estar visible, carga el historial si hace falta y gestiona UI
 function refreshHistory() {
     if (heatmap || replay || globeIndex || pTracks || uuid || !HistoryChunks) {
         noLongerHidden();
@@ -10800,7 +11230,7 @@ function refreshHistory() {
     });
 }
 
-
+// Detecta cuando la pestaña del navegador cambia de visible a oculta y ajusta timers/estado
 function handleVisibilityChange() {
     const prevHidden = tabHidden;
     if (document[hideName])
@@ -10832,7 +11262,7 @@ function handleVisibilityChange() {
         }
     }
 }
-
+// Restaura timers y refresca cuando la pestaña vuelve a estar activa
 function noLongerHidden() {
     active();
     setIntervalTimers();
@@ -10869,6 +11299,7 @@ function noLongerHidden() {
 }
 
 let hideName;
+// Configura el detector de visibilidad de la pestaña (API Page Visibility)
 function initVisibilityChange() {
     // Set the name of the hidden property and the change event for visibility
     let visibilityChange;
@@ -10892,17 +11323,19 @@ function initVisibilityChange() {
     handleVisibilityChange();
 }
 // for debugging visibilitychange:
+// Forzar estado "oculto" para pruebas
 function testHide() {
     Object.defineProperty(window.document, 'hidden', { get: function () { return true; }, configurable: true });
     Object.defineProperty(window.document, 'visibilityState', { get: function () { return 'hidden'; }, configurable: true });
     window.document.dispatchEvent(new Event('visibilitychange'));
 }
+// Forzar estado "visible" para pruebas
 function testUnhide() {
     Object.defineProperty(window.document, 'hidden', { get: function () { return false; }, configurable: true });
     Object.defineProperty(window.document, 'visibilityState', { get: function () { return 'visible'; }, configurable: true });
     window.document.dispatchEvent(new Event('visibilitychange'));
 }
-
+// Busca el avión más cercano a la posición de referencia y lo selecciona automáticamente
 function autoSelectClosest() {
     if (!loadFinished)
         return;
@@ -10933,6 +11366,7 @@ function autoSelectClosest() {
         return;
     selectPlaneByHex(closest.icao, { noDeselect: true, follow: FollowSelected, });
 }
+// Activa el autoselect en un intervalo periódico
 function setAutoselect() {
     clearInterval(timers.autoselect);
     if (!autoselect)
@@ -10940,6 +11374,7 @@ function setAutoselect() {
     timers.autoselect = window.setInterval(autoSelectClosest, 5000);
     autoSelectClosest();
 }
+// Construye enlace para buscar matrícula en ANAC (Brasil) si aplica
 function registrationLink(plane) {
     if (plane.country === 'Brazil') {
         return `https://sistemas.anac.gov.br/aeronaves/cons_rab_resposta_en.asp?textMarca=${plane.registration}`;
@@ -10953,7 +11388,7 @@ function registrationLink(plane) {
 jQuery.fn.updateText = function (text) {
     this.text() !== String(text) && this.text(text);
 }
-
+// Añade ceros a la izquierda a un número (formato simple)
 function zeroPad(num, size) {
     var s = num + "";
     while (s.length < size) s = "0" + s;
@@ -10962,6 +11397,7 @@ function zeroPad(num, size) {
 
 // Converts "hiccup"-style structures (https://github.com/weavejester/hiccup)
 // to XML.
+// Convierte estructura tipo "hiccup" a XML (usado para exportar KML)
 function hiccup(node) {
     if (Array.isArray(node)) {
         const [tag, attribs, ...children] = node;
@@ -10984,6 +11420,7 @@ function hiccup(node) {
 }
 
 // Prompts a browser to download a data: URL.
+// Forzar descarga de un archivo generado en la página (data URL)
 function download(name, contentType, data) {
     var link = document.createElement("a");
     link.download = name;
@@ -10992,12 +11429,13 @@ function download(name, contentType, data) {
     link.click();
     document.body.removeChild(link);
 }
-
+// Genera nombre base para exportar múltiples aeronaves (por matrícula o hex)
 function baseExportFilenameForAircrafts(aircrafts) {
     return aircrafts.map((a) => (a.registration || a.icao).toUpperCase()).join('-');
 }
 
 // Returns an array of {pos, alt, ts} for an aircraft.
+// Prepara una lista de coordenadas/altitudes/tiempos para exportar la traza de un avión
 function coordsForExport(plane) {
     let coords = [];
     let numSegs = plane.track_linesegs.length;
@@ -11087,6 +11525,7 @@ function coordsForExport(plane) {
 // We use this to give each aircraft a different color track in a
 // multi-select export scenario. From colorbrewer, but I moved the red
 // to be first.
+// Paleta de colores usada para colorear las trazas al exportar (lista corta de colores)
 const EXPORT_RGB_COLORS = [
     'e31a1c',
     'a6cee3',
@@ -11103,11 +11542,14 @@ const EXPORT_RGB_COLORS = [
 ];
 
 // Converts "rrggbb" colors to KML format, "aabbggrr".
+// Convierte un color RGB (hex rrggbb) al formato que entiende KML (aabbggrr)
+// (sirve para poner colores correctos en archivos KML)
 let RGBColorToKMLColor = function (c) {
     return 'ff' + c.substring(4, 6) + c.substring(2, 4) + c.substring(0, 2);
 }
 
 // Returns an array of selected planes, ordered by registration-or-ICAO.
+// Devuelve la lista de aviones actualmente seleccionados, ordenada por matrícula o hex
 function selectedPlanes() {
     const planes = [];
     for (let key in SelPlanes) {
@@ -11127,9 +11569,10 @@ function selectedPlanes() {
 }
 
 // Exports currently selected aircraft as KML.
-
+// Variables para controlar la carga de la librería EGM (corrección de altitudes)
 let egmScript = null;
 let egmLoaded = false;
+// Carga la librería que convierte altitudes geométricas a EGM96 (si se necesita)
 function loadEGM() {
     if (egmScript) {
         return null;
@@ -11142,6 +11585,7 @@ function loadEGM() {
     document.body.appendChild(egmScript);
     return egmScript;
 }
+// Ajusta una altitud geométrica usando EGM96 si está habilitado (devuelve alt corregida)
 function adjust_geom_alt(alt, pos) {
     if (geomUseEGM && egmLoaded) {
         if (alt == null) {
@@ -11153,6 +11597,7 @@ function adjust_geom_alt(alt, pos) {
     }
 }
 let kmlStyle = '';
+// Exporta las aeronaves seleccionadas a KML; soporta varias opciones de altitud
 function exportKML(altStyle) {
     if (altStyle) {
         kmlStyle = altStyle;
@@ -11268,7 +11713,7 @@ function exportKML(altStyle) {
         'application/vnd.google-earth.kml+xml',
         xml);
 }
-
+// Borra las trazas almacenadas en memoria para todos los aviones
 function deleteTraces() {
     for (let i in g.planesOrdered) {
         let plane = g.planesOrdered[i];
@@ -11276,7 +11721,7 @@ function deleteTraces() {
         delete plane.fullTrace;
     }
 }
-
+// Controla si las imágenes de aviones se muestran en la interfaz según APIs disponibles
 function setPictureVisibility() {
     showPictures = planespottersAPI || planespottingAPI;
     if (showPictures) {
@@ -11292,6 +11737,7 @@ function setPictureVisibility() {
 }
 
 // just an idea, unused
+// Objeto de ejemplo con información para mostrar (no usado activamente)
 let infoBits = {
     type: {
         head: 'Type:',
@@ -11299,11 +11745,11 @@ let infoBits = {
         value: function (plane) { return plane.icaoType || 'n/a'; },
     },
 };
-
+// Indica si la búsqueda de ubicación por navegador está permitida en este contexto
 function geoFindEnabled() {
     return (!disableGeoLocation && !SiteOverride && (globeIndex || uuid || askLocation) && (window && window.location && window.location.protocol == 'https:'));
 }
-
+// Imprime en consola una traza para depuración (formato interno)
 function _printTrace(trace) {
     for (let i = 0; i < trace.length; i++) {
         const state = trace[i];
@@ -11313,14 +11759,14 @@ function _printTrace(trace) {
         console.log(zuluTime(new Date(timestamp * 1000)) + ' ' + (state[1] + ',' + state[2]).padStart(26, ' ') + ' ' + String(state[3]).padStart(6, ' ') + ' ' + state[6]);
     }
 }
-
+// Muestra las trazas completas y recientes del avión seleccionado en la consola
 function printTrace() {
     console.log('full trace');
     _printTrace(SelectedPlane.fullTrace.trace);
     console.log('recent trace');
     _printTrace(SelectedPlane.recentTrace.trace);
 }
-
+// Copia el enlace de compartir al portapapeles y marca tiempo/avión copiado
 function copyShareLink() {
     navigator.clipboard.writeText(shareLink);
 
@@ -11331,7 +11777,7 @@ function copyShareLink() {
 
 let copyLinkTime = 0;
 let copiedIcao = null;
-
+// Actualiza la visualización del identificador ICAO/Hex del avión seleccionado, y añade enlace para copiar
 function setSelectedIcao() {
     const selected = SelectedPlane;
     if (selected.icao == selIcao && copiedIcao == null) {
@@ -11352,7 +11798,7 @@ function setSelectedIcao() {
 
     jQuery('a.identSmall').prop('href', shareLink);
 }
-
+// Ajustes visuales según el tipo de mapa seleccionado (modifica atenuado y contraste)
 function mapTypeSettings() {
     if (MapType_tar1090.startsWith('maptiler_sat') || MapType_tar1090.startsWith('maptiler_hybrid')) {
         layerDimFactor = 0.25;
@@ -11374,14 +11820,14 @@ function mapTypeSettings() {
         layerExtraContrast = 0;
     }
 }
-
+// Devuelve el área visible del mapa ampliada por un factor (útil para cálculo de peticiones)
 function getViewOversize(factor) {
     factor || (factor = 1);
     let mapSize = OLMap.getSize();
     let size = [mapSize[0] * factor, mapSize[1] * factor];
     return myExtent(OLMap.getView().calculateExtent(size));
 }
-
+// Devuelve el área de renderizado teniendo en cuenta un extra en píxeles
 function getRenderExtent(extra) {
     extra || (extra = 0);
     const mapSize = OLMap.getSize();
@@ -11389,7 +11835,7 @@ function getRenderExtent(extra) {
     const size = [mapSize[0] + over, mapSize[1] + over];
     return myExtent(OLMap.getView().calculateExtent(size));
 }
-
+// Construye la caja de petición (lat/lon min/max) usada para pedir datos al servidor
 function requestBoxString() {
     if (!mapIsVisible && lastRequestBox) {
         return lastRequestBox;
@@ -11402,7 +11848,7 @@ function requestBoxString() {
     }
     return `${extent.minLat.toFixed(6)},${extent.maxLat.toFixed(6)},${minLon},${maxLon}`;
 }
-
+// Muestra advertencia en la UI si el agregador está en modo 'inaccurate'
 if (aggregator && window.location.hostname.startsWith('inaccurate')) {
     jQuery('#inaccurate_warning').removeClass('hidden');
     document.getElementById('inaccurate_warning').innerHTML = `
@@ -11417,16 +11863,17 @@ Please add a disclaimer to any screenshots of this website or better yet just re
         `;
 
 }
-
+// Ajusta contadores de actualización (uso manual, debug)
 function getn(n) {
     limitUpdates = n; RefreshInterval = 0; fetchCalls = 0;
 }
-
+// Maneja el formulario/acción para poner QNH estándar (1013.25)
 function onAltimeterSetStandard(e) {
     e.preventDefault();
     jQuery("#altimeter_input").val(1013.25);
     onAltimeterChange(e);
 }
+// Usa la QNH del avión seleccionado para rellenar el input del altímetro
 function onAltimeterSetSelected(e) {
     e.preventDefault();
     if (!SelectedPlane || !SelectedPlane.nav_qnh) {
@@ -11435,6 +11882,7 @@ function onAltimeterSetSelected(e) {
     jQuery("#altimeter_input").val(SelectedPlane.nav_qnh);
     onAltimeterChange(e);
 }
+// Aplica la QNH introducida en el formulario a las correcciones de altitud y actualiza la UI
 function onAltimeterChange(e) {
     e.preventDefault();
     jQuery("#altimeter_input").blur();
@@ -11460,6 +11908,7 @@ function onAltimeterChange(e) {
 // Inverse equation on wikipedia seems imprecise,
 // used the the weather.gov pdf and inverted the equation myself
 // This uses ISA atmosphere (should be the same as altimeters in planes)
+// Convierte altitud barométrica según QNH activo (devuelve alt corregida)
 function adjust_baro_alt(alt) {
     if (!baroUseQNH || alt == null || alt == "ground") {
         return alt;
@@ -11469,7 +11918,7 @@ function adjust_baro_alt(alt) {
     let res = (1 - Math.pow(station_pressure / baroCorrectQNH, 0.190284)) * 145366.45;
     return res;
 }
-
+// Consulta al servidor rates/config del globo si procede y actualiza variables locales
 function globeRateUpdate() {
     if (aggregator) {
         dynGlobeRate = true;
@@ -11497,7 +11946,7 @@ globeRateUpdate();
 
 parseURLIcaos();
 initialize();
-
+// Actualiza el reloj UTC visible en la interfaz cada segundo
 function updateTime() {
     const now = new Date();
     const h = String(now.getUTCHours()).padStart(2, '0');
@@ -11571,7 +12020,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-
+// Limpia y resetea todo lo relacionado con el cálculo de distancia entre aviones
 function resetDistanceCalculation() {
     selectedPlanesForDistance = [];
     planesMissingSince = null;

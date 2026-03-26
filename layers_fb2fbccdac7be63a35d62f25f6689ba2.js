@@ -12,12 +12,16 @@
 //			"url" : "https://{a-c}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png"
 //			"url" : "https://{a-c}.tile.openstreetmap.se/osm/{z}/{x}/{y}.png"
 
+// Crea las capas base y las agrupa para devolverlas al mapa
 function createBaseLayers() {
+    // Lista donde se guardarán todas las capas creadas
     let layers = new ol.Collection();
+    // Agrupador que contendrá la colección principal de capas
     let layers_group = new ol.layer.Group({
         layers: layers,
     });
 
+    // Sublistas para diferentes conjuntos de capas
     let world = new ol.Collection();
     let us = new ol.Collection();
     let europe = new ol.Collection();
@@ -28,8 +32,10 @@ function createBaseLayers() {
     let TMA_BNA = new ol.Collection();
     let TMA_GNA = new ol.Collection();
 
+    // Control del efecto de transición de los tiles (0 desactiva transición)
     const tileTransition = onMobile ? 0 : 0;
 
+    // Si hay URL de tiles personalizada en ajustes, añadirla a la lista de capas personalizadas
     if (loStore['customTiles'] != undefined) {
         custom_layers.push(new ol.layer.Tile({
             source: new ol.source.OSM({
@@ -54,6 +60,7 @@ function createBaseLayers() {
     */
 
            //if (offlineMapDetail > 0) {
+           // Añade una capa "en blanco" para VFR (sirve como base vacía)
            vfr.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -67,6 +74,7 @@ function createBaseLayers() {
             title: 'VFR Blank',
             type: 'base',
         }));
+        // Añade la capa VFR con tiles locales en carpeta mapdata/VFR
         vfr.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/VFR/{z}/{x}/{y}.png",
@@ -80,7 +88,8 @@ function createBaseLayers() {
             title: 'VFR',
             type: 'overlay',
             
-        }));
+        }));    
+                // Capas alternativas VFR inactivas por defecto
                 vfr.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -124,7 +133,7 @@ function createBaseLayers() {
             visible: false,
         }));
     //}
-    
+        // Añade una capa "en blanco" para IFR Low
         ifrlow.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -141,6 +150,7 @@ function createBaseLayers() {
 
     //if (offlineMapDetail > 0) {
     
+        // Añade los tiles locales para IFR Low (oculta por defecto)
         ifrlow.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/IFR_Low/{z}/{x}/{y}.png",
@@ -155,6 +165,7 @@ function createBaseLayers() {
             type: 'overlay',
             visible: false,
         }));
+        // Capas alternativas IFR Low ocultas
         ifrlow.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -201,6 +212,7 @@ function createBaseLayers() {
     
     //if (offlineMapDetail > 0) {
 
+        // Capa "en blanco" para IFR High
         ifrhigh.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -214,6 +226,7 @@ function createBaseLayers() {
             title: 'IFR High Blank',
             type: 'base',
         }));
+        // Tiles locales para IFR High (ruta mapdata/IFR_Hight)
         ifrhigh.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/IFR_Hight/{z}/{x}/{y}.png",
@@ -228,6 +241,7 @@ function createBaseLayers() {
             type: 'overlay',
             visible: false,
         }));
+        // Capas lternativas IFR High ocultas
         ifrhigh.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -273,6 +287,7 @@ function createBaseLayers() {
     //}
 
     //if (offlineMapDetail > 0) {
+        // Añade varias capas para la TMA Maiquetía (MIQ)
         TMA_MIQ.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -286,6 +301,7 @@ function createBaseLayers() {
             title: 'TMA Maiquetía_Blank',
             type: 'base',
         }));
+        // Capa con tiles locales para TMA MIQ
         TMA_MIQ.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/TMA_MIQ/{z}/{x}/{y}.png",
@@ -314,6 +330,7 @@ function createBaseLayers() {
             type: 'overlay',
             visible: false,
         }));
+        // Capas alternativas MIQ ocultas
         TMA_MIQ.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -346,6 +363,7 @@ function createBaseLayers() {
     
 
     //if (offlineMapDetail > 0) {
+        // Añade capas para TMA Barcelona (BNA)
         TMA_BNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -360,6 +378,7 @@ function createBaseLayers() {
             type: 'base',
             visible: false,
         }));
+        // Tiles locales para TMA Barcelona
         TMA_BNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/TMA_BNA/{z}/{x}/{y}.png",
@@ -374,6 +393,7 @@ function createBaseLayers() {
             type: 'overlay',
             visible: false,
         }));
+        // Capas alternativas BNA ocultas
         TMA_BNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -418,6 +438,7 @@ function createBaseLayers() {
         }));
     //}
     //if (offlineMapDetail > 0) {
+        // Añade capas para TMA Guayana (GNA)
         TMA_GNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -432,6 +453,7 @@ function createBaseLayers() {
             type: 'base',
             
         }));
+        // Capa con tiles locales GNA
         TMA_GNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "mapdata/TMA_GNA/{z}/{x}/{y}.png",
@@ -446,6 +468,7 @@ function createBaseLayers() {
             type: 'overlay',
             visible: false,
         }));
+        // Capas alternativas GNA ocultas
         TMA_GNA.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 "url" : "",
@@ -566,6 +589,7 @@ function createBaseLayers() {
         }));
     }*/
 
+        // Si hay configuradas teselas offline (detalle > 0), añadir la capa de mapa offline
         if (offlineMapDetail > 0) {
         world.push(new ol.layer.Tile({
             source: new ol.source.OSM({
@@ -579,7 +603,7 @@ function createBaseLayers() {
             type: 'base',
         }));
     }
-    
+        // Añade la capa base estándar de OpenStreetMap desde la red
         world.push(new ol.layer.Tile({
         source: new ol.source.OSM({
             maxZoom: 17,
@@ -591,7 +615,7 @@ function createBaseLayers() {
         type: 'base',
     }));
 
-
+    // Bloque siempre verdadero que añade una capa satélite de ESRI (imágenes aéreas)
     if (1) {
         world.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -637,7 +661,9 @@ function createBaseLayers() {
     }
 
     // testing ...
+    // Opción de mapa en inglés
     if (0) {
+        // Crea una capa vectorial pensada para mostrar mapas en inglés
         let english_map = new ol.layer.VectorTile({
             declutter: true,
             type: 'base',
@@ -649,7 +675,9 @@ function createBaseLayers() {
         world.push(english_map);
     }
 
+    // Opción de prueba para capas vectoriales
     if (0) {
+        // Crea una capa vectorial que carga datos en formato vector PBF
         let vtlayer = new ol.layer.VectorTile({
             source: new ol.source.VectorTile({
                 url: "http://test02.dev.adsf.com/tiles/{z}/{x}/{y}.pbf",
@@ -663,6 +691,7 @@ function createBaseLayers() {
             renderMode: 'image',
         });
 
+        // Petición para descargar un archivo de estilo JSON asociado a la capa
         jQuery.ajax({
             url: 'osm-liberty/style.json',
             dataType: 'json',
@@ -736,10 +765,13 @@ function createBaseLayers() {
         }
     } */
 
+    // Si en la configuración hay una clave de Bing, asígnala a la variable local
     if (loStore['bingKey'] != undefined)
         BingMapsAPIKey = loStore['bingKey'];
 
+    // Si ahora tenemos una clave de Bing, añade capas que usan Bing
     if (BingMapsAPIKey) {
+        // Añade una capa que muestra fotos aéreas (vista satélite) de Bing
         world.push(new ol.layer.Tile({
             source: new ol.source.BingMaps({
                 key: BingMapsAPIKey,
@@ -750,6 +782,7 @@ function createBaseLayers() {
             title: 'Bing Aerial',
             type: 'base',
         }));
+        // Añade otra capa que muestra el estilo de carreteras de Bing
         world.push(new ol.layer.Tile({
             source: new ol.source.BingMaps({
                 key: BingMapsAPIKey,
@@ -762,10 +795,13 @@ function createBaseLayers() {
         }));
     }
 
+    // Si en la configuración hay una clave de Mapbox, asígnala a la variable local
     if (loStore['mapboxKey'] != undefined)
         MapboxAPIKey = loStore['mapboxKey'];
 
+    // Si ahora hay clave de Mapbox, añade varias opciones de mapas de Mapbox
     if (MapboxAPIKey) {
+        // Añade la capa Mapbox estilo "streets" (calles y etiquetas)
         world.push(new ol.mapboxStyle.MapboxVectorLayer({
             styleUrl: 'mapbox://styles/mapbox/streets-v10',
             accessToken: MapboxAPIKey,
@@ -775,6 +811,7 @@ function createBaseLayers() {
                 type: 'base',
             },
         }));
+        // Añade la capa Mapbox estilo "light" (fondo claro)
         world.push(new ol.mapboxStyle.MapboxVectorLayer({
             styleUrl: 'mapbox://styles/mapbox/light-v11',
             accessToken: MapboxAPIKey,
@@ -784,6 +821,7 @@ function createBaseLayers() {
                 type: 'base',
             },
         }));
+        // Añade la capa Mapbox estilo "dark" (fondo oscuro)
         world.push(new ol.mapboxStyle.MapboxVectorLayer({
             styleUrl: 'mapbox://styles/mapbox/dark-v11',
             accessToken: MapboxAPIKey,
@@ -793,6 +831,7 @@ function createBaseLayers() {
                 type: 'base',
             },
         }));
+        // Añade la capa Mapbox estilo "outdoors" (enfocado en terreno y naturaleza)
         world.push(new ol.mapboxStyle.MapboxVectorLayer({
             styleUrl: 'mapbox://styles/mapbox/outdoors-v10',
             accessToken: MapboxAPIKey,
@@ -893,6 +932,7 @@ function createBaseLayers() {
         }
     } */
 
+    // Añade al conjunto una capa que muestra información aeronáutica de openAIP
     world.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url" : "https://map.adsbexchange.com/mapproxy/tiles/1.0.0/openaip/ul_grid/{z}/{x}/{y}.png",
@@ -1135,13 +1175,15 @@ function createBaseLayers() {
         europe.push(dwd);
     }
 */
+    // Activa el bloque que maneja la capa de radar meteorológico
     if (true) {
+        // Función que devuelve listas de capas disponibles en RainViewer
         g.getRainviewerLayers = async function(key) {
             const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", {credentials: "omit",});
             const jsonData = await response.json();
             return jsonData[key];
         }
-
+        // Representa la capa de radar que se añadirá al mapa
         const rainviewerRadar = new ol.layer.Tile({
             name: 'rainviewer_radar',
             title: 'RainViewer Radar',
@@ -1150,6 +1192,7 @@ function createBaseLayers() {
             visible: false,
             zIndex: 99,
         });
+        // Función que actualiza la fuente de imágenes del radar con la última hora disponible
         g.refreshRainviewerRadar = async function() {
             const latestLayer = await g.getRainviewerLayers('radar');
             const rainviewerRadarSource = new ol.source.XYZ({
@@ -1161,6 +1204,7 @@ function createBaseLayers() {
             rainviewerRadar.setSource(rainviewerRadarSource);
         };
 
+        // Cuando cambie la visibilidad de la capa de radar, iniciar o parar la actualización periódica
         rainviewerRadar.on('change:visible', function(evt) {
             if (evt.target.getVisible()) {
                 g.refreshRainviewerRadar();
@@ -1173,6 +1217,7 @@ function createBaseLayers() {
         world.push(rainviewerRadar);
     }
 
+    // Crea una función reutilizable que carga un GeoJSON y lo prepara como capa (con color y borde)
     let createGeoJsonLayer = function (title, name, url, fill, stroke, showLabel = true) {
         return new ol.layer.Vector({
             type: 'overlay',
@@ -1232,6 +1277,7 @@ function createBaseLayers() {
 
     //us.push(createGeoJsonLayer('US ARTCC Boundaries', 'usartccboundaries', 'geojson/US_ARTCC_boundaries.geojson', 'rgba(255, 0, 255, 0.3)', 'rgba(255, 0, 255, 1)', false));
 
+    // Si hay avisos específicos del Reino Unido, añadir sus datos al mapa
     if (uk_advisory) {
         europe.push(createGeoJsonLayer('uka_airports', 'uka_airports', 'geojson/uk_advisory/airports.geojson', 'rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 1)'));
         europe.push(createGeoJsonLayer('uka_airspaces', 'uka_airspaces',
@@ -1243,6 +1289,7 @@ function createBaseLayers() {
         europe.push(createGeoJsonLayer('uka_shoreham', 'uka_shoreham', 'geojson/uk_advisory/shoreham.geojson', 'rgba(0, 0, 0, 0.5)', 'rgba(0, 0, 0, 0.5)'));
     }
 
+    // Si está activado el paquete l3harris, cargar sus archivos de ejemplo
     if (l3harris) {
         let files = ['IFT_NAV_Routes.geojson','IFT_Training_Areas.geojson','USAFA_Training_Areas.geojson'];
         for (let i in files) {
@@ -1251,17 +1298,23 @@ function createBaseLayers() {
         }
     }
 
+    // Si hay configuración para aiscatcher, obtenerla
     if (usp.has('aiscatcher_server')) { aiscatcher_server = usp.get('aiscatcher_server'); }
+    // Si la configuración indica desactivar AIS o estamos en modos incompatibles, limpiar la variable
     if (aiscatcher_server == 'disable' || heatmap || replay ) {
         aiscatcher_server = "";
     }
+    // Si queda una URL válida para aiscatcher, configurar la capa AIS
     if (aiscatcher_server) {
 
+        // Fuente de datos vacía que luego se llenará desde el servidor AIS
         g.aiscatcher_source = new ol.source.Vector({
             format: new ol.format.GeoJSON(),
         });
 
+        // Mapeo que define tamaño y posición del icono según la clase del barco
         const aiscatcher_mapping = {
+            // Clase 0: icono pequeño, posición en sprite (otras clases similares abajo)
             0: { size: [20, 20], offset: [120, 20], comment: 'CLASS_OTHER' },
             1: { size: [20, 20], offset: [120, 20], comment: 'CLASS_UNKNOWN' },
             2: { size: [20, 20], offset: [0, 20], comment: 'CLASS_CARGO' },
@@ -1271,6 +1324,7 @@ function createBaseLayers() {
             6: { size: [20, 20], offset: [80, 20], comment: 'CLASS_TANKER' },
             7: { size: [20, 20], offset: [100, 20], comment: 'CLASS_HIGHSPEED' },
             8: { size: [20, 20], offset: [140, 20], comment: 'CLASS_FISHING' },
+            // Clase 9: icono más grande para aviones (si se usa)
             9: { size: [25, 25], offset: [0, 60], comment: 'CLASS_PLANE' },
             10: { size: [25, 25], offset: [0, 85], comment: 'CLASS_HELICOPTER' },
             11: { size: [20, 20], offset: [20, 40], comment: 'CLASS_STATION' },
@@ -1278,6 +1332,7 @@ function createBaseLayers() {
             13: { size: [20, 20], offset: [40, 40], comment: 'CLASS_SARTEPIRB' }
         };
 
+        // Crea la capa AIS que dibuja cada embarcación con un icono según su clase y movimiento
         g.aiscatcherLayer = new ol.layer.Vector({
             type: 'overlay',
             title: "aiscatcher",
@@ -1315,8 +1370,7 @@ function createBaseLayers() {
         world.push(g.aiscatcherLayer);
     }
 
-
-
+    // Si hay capas globales definidas, agruparlas y añadirlas al selector
     if (world.getLength() > 0) {
         layers.push(new ol.layer.Group({
             name: 'world',
@@ -1325,6 +1379,7 @@ function createBaseLayers() {
             fold: 'close',
         }));
     }
+    // Si hay capas GNA, agruparlas bajo TMA/GNA
     if (TMA_GNA.getLength() > 0) {  
         layers.push(new ol.layer.Group({
             name: 'tma_gna',
@@ -1333,6 +1388,7 @@ function createBaseLayers() {
             fold: 'close',
         }));
     }
+    // Si hay capas BNA, agruparlas bajo TMA/BNA
     if (TMA_BNA.getLength() > 0) {  
         layers.push(new ol.layer.Group({
             name: 'tma_bna',
@@ -1341,6 +1397,7 @@ function createBaseLayers() {
             fold: 'close',
         }));
     }
+    // Si hay capas MIQ, agruparlas bajo TMA/MIQ
     if (TMA_MIQ.getLength() > 0) {
         layers.push(new ol.layer.Group({
             name: 'tma_miq',
@@ -1349,6 +1406,7 @@ function createBaseLayers() {
             fold: 'close',
         }));
     }
+    // Si hay capas IFR Low, agruparlas
     if (ifrlow.getLength() > 0) {
         layers.push(new ol.layer.Group({
             name: 'ifrlow',
@@ -1357,6 +1415,7 @@ function createBaseLayers() {
             fold: 'close',
         }));
     }
+    // Si hay capas IFR High, agruparlas
     if (ifrhigh.getLength() > 0) {
         layers.push(new ol.layer.Group({
             name: 'ifrhigh',
@@ -1365,6 +1424,7 @@ function createBaseLayers() {
             fold: 'close',
         }));
     }
+    // Si hay capas VFR, agruparlas y dejarlas visibles por defecto
     if (vfr.getLength() > 0) {
         layers.push(new ol.layer.Group({
             name: 'vfr',
@@ -1374,6 +1434,6 @@ function createBaseLayers() {
             visible: true,
         }));
     }
-
+    // Devuelve al llamador el grupo con todas las capas listas para usar en el mapa
     return layers_group;
 }

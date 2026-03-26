@@ -1,6 +1,7 @@
 // -*- mode: javascript; indent-tabs-mode: nil; c-basic-offset: 8 -*-
 "use strict";
 
+// Colección de formas de iconos (aviones, globos, helicópteros, etc.)
 let shapes = {
     // A320 + B737 family icons: thank you pimlie for providing refined svgs
     'a319': {
@@ -719,18 +720,27 @@ let shapes = {
     },
 }
 
+// Convierte el objeto 'shapes' a una lista de pares [clave, valor]
 {
+    // Guarda la lista de pares [nombre, forma] de 'shapes'
     let kv = Object.entries(shapes);
+    // Recorre cada par por índice
     for (let i in kv) {
+        // Lee el nombre (clave) de la forma en la posición i
         let key = kv[i][0];
+        // Lee el objeto de la forma en la posición i
         let shape = kv[i][1];
+        // Guarda el nombre dentro del propio objeto de la forma
         shape.name = key;
+        // Asigna un id numérico basado en el índice de la lista
         shape.id = Number(i);
     }
 }
 
+// Define una opción reutilizable para pequeños ultraligeros
 const _ulac = ["cessna", 0.92];
 
+// Mapa principal: relaciona códigos ICAO de modelos con icono y escala
 let TypeDesignatorIcons = {
     'SHIP': ['blimp', 0.94], // Blimp
     'BALL': ['balloon', 1], // Balloon
@@ -1181,6 +1191,7 @@ let TypeDesignatorIcons = {
 //   - Five characters: The ICAO type description code concatenated with the wake turbulence category code, separated by
 //     a dash (e.g. "L2J-M").
 
+// Asocia código de descripción de aeronave con icono y tamaño
 let TypeDescriptionIcons = {
     'H': ['helicopter', 1],
     'G': ['gyrocopter', 1],
@@ -1214,7 +1225,7 @@ let TypeDescriptionIcons = {
     'L4J-M': ['b707' , 0.8],
     'L4J': ['b707' , 0.8],
 };
-
+// Asocia categoría general con icono y escala
 let CategoryIcons = {
     "A1" : ['cessna', 1],// < 7t
 
@@ -1247,6 +1258,7 @@ let CategoryIcons = {
     'C3' : ['ground_tower', 1],
 };
 
+// Elige el icono base según categoría, tipo y otros atributos
 function getBaseMarker(category, typeDesignator, typeDescription, wtc, addrtype, altitude, eastbound) {
 
     //return ['f5_tiger', 1];
@@ -1273,6 +1285,7 @@ function getBaseMarker(category, typeDesignator, typeDescription, wtc, addrtype,
     }
 
     // if type description (from type DB) and broadcasted category disagree, use icon for category
+    // (bloque deshabilitado) lógica para corregir discrepancias entre descripción y categoría
     if (false && typeDescription != null && typeDescription.length === 3 && category in CategoryIcons) {
         if (typeDescription[0] == 'L' && (category[0] != 'A' || category[1] == '7'))
             return CategoryIcons[category];
@@ -1284,16 +1297,20 @@ function getBaseMarker(category, typeDesignator, typeDescription, wtc, addrtype,
             return CategoryIcons[category];
     }
 
+    // Si hay un diseño (manufacturer/type) conocido, devolver su icono y escala
     if (typeDesignator in TypeDesignatorIcons) {
         let shape = TypeDesignatorIcons[typeDesignator][0];
         let scaling = TypeDesignatorIcons[typeDesignator][1];
         return [shape, scaling];
     }
 
+    // Si existe código de descripción ICAO (3 caracteres), intentar usarlo
     if (typeDescription != null && typeDescription.length === 3) {
+        // Caso especial: L1P en categoría B4 -> usar constante _ulac
         if (typeDescription === "L1P" && category === "B4") {
             return _ulac;
         }
+        // Si hay categoría de wake turbulence (wtc), combinarla y buscar mapeo
         if (wtc !== null && wtc.length === 1) {
             let typeDescriptionWithWtc = typeDescription + "-" + wtc;
             if (typeDescriptionWithWtc === "L2J-M" && category === "A2") {
@@ -1306,22 +1323,26 @@ function getBaseMarker(category, typeDesignator, typeDescription, wtc, addrtype,
             }
         }
 
+        // Si la descripción simple está en el mapa, usarla
         if (typeDescription in TypeDescriptionIcons) {
             let shape = TypeDescriptionIcons[typeDescription][0];
             let scaling = TypeDescriptionIcons[typeDescription][1];
             return [shape, scaling];
         }
 
+        // Tomar la primera letra básica y buscar un icono genérico
         let basicType = typeDescription.charAt(0);
         if (basicType in TypeDescriptionIcons) {
             return [TypeDescriptionIcons[basicType][0], 1];
         }
     }
 
+    // Si no se encontró nada antes, pero la categoría es conocida, usar el icono de categoría
     if (category in CategoryIcons) {
         return CategoryIcons[category];
     }
-
+    
+    // Si está en tierra y la fuente es una de las especificadas, mostrar cuadrado de suelo
     if (altitude == 'ground' && (addrtype == 'adsb_icao_nt' || addrtype == 'tisb_other' || addrtype == 'tisb_trackfile'))
         return ['ground_square', 1];
 
@@ -1330,25 +1351,31 @@ function getBaseMarker(category, typeDesignator, typeDescription, wtc, addrtype,
     return ['unknown', 1];
 }
 
+// Convierte una forma (definida en 'shapes') a una cadena SVG con colores y tamaño
 function svgShapeToSVG(shape, fillColor, strokeColor, strokeWidth, scale) {
+    // Si no se pasa escala, usar 1
     scale = scale ? scale : 1;
 
+    // Ajusta el ancho de línea según factor interno de la forma
     strokeWidth *= (shape.strokeScale ? shape.strokeScale : 1);
+    // Calcula ancho y alto finales
     let wi = shape.w * scale;
     let he = shape.h * scale;
 
+    // Si la forma ya trae un SVG completo, insertar colores y tamaño y devolverla
     if (shape.svg) {
         let svg = shape.svg.replace('fillColor', fillColor).replace('strokeColor', strokeColor).replace('strokeWidth', strokeWidth);
         svg = svg.replace('SIZE', 'width="' + wi + 'px" height="' + he + 'px"');
         return svg;
     }
 
-
+    // Construye la cabecera SVG y grupo <g> con transform si existe
     let svg = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="' + shape.viewBox + '" '
         + (shape.noAspect ? 'preserveAspectRatio="none" ' : '')
         + 'width="' + wi + '" height="' + he + '">'
         + '<g' + (shape.transform ? (' transform="' + shape.transform + '"') : '') + '>';
 
+    // Si la forma define un camino (path), añadirlo(s) con fill y stroke
     if (shape.path) {
         let path = shape.path;
         if (! Array.isArray(path))
@@ -1359,6 +1386,7 @@ function svgShapeToSVG(shape, fillColor, strokeColor, strokeWidth, scale) {
         }
     }
 
+    // Si la forma tiene acentos decorativos, dibujarlos como trazos finos
     if (shape.accent) {
         let accentWidth = 0.6 * (shape.accentMult ? shape.accentMult * strokeWidth : strokeWidth);
         let accent = shape.accent;
@@ -1372,22 +1400,29 @@ function svgShapeToSVG(shape, fillColor, strokeColor, strokeWidth, scale) {
 
     svg += '</g></svg>';
 
+    // Devuelve la cadena SVG completa
     return svg;
 }
 
+// Genera una URI data: a partir de la cadena SVG (para usar como fuente de imagen)
 function svgShapeToURI(shape, fillColor, strokeColor, strokeWidth, scale){
     let svg = svgShapeToSVG(shape, fillColor, strokeColor, strokeWidth, scale);
     return "data:image/svg+xml;base64," + btoa(svg);
 }
 
+// Tamaño deseado para iconos en pruebas grandes
 let glIconSize = 86;
+// Columnas por defecto en el mapa de iconos
 let glImapCols = 16;
+// Si el usuario especificó columnas, respetarlas
 if (usp.has('iconTestCols')) {
     glImapCols = usp.getInt('iconTestCols');
 }
 
+// Número de filas calculado a partir del total de shapes y columnas
 let glImapRows = Math.ceil(Object.keys(shapes).length / glImapCols);
 
+// Forma de referencia para dibujar una cuadrícula cruzada sobre los iconos
 let refCross = {
     w: glIconSize,
     h: glIconSize,
@@ -1396,17 +1431,23 @@ let refCross = {
     path: 'M 32,64 32,0 M 64,32 0,32 M 0,64 0,0 M 0,0 64,0 M 64,0 64,64 M 64,64 0,64',
 };
 
+// Calcula la columna sprite X de una forma según su id
 function getSpriteX(shape) {
     return (shape.id % glImapCols);
 }
+// Calcula la fila sprite Y de una forma según su id
 function getSpriteY(shape) {
     return Math.floor(shape.id / glImapCols);
 }
+// Función que muestra una cuadrícula con todos los iconos para pruebas
 function iconTest() {
+    // Por defecto no mostrar etiquetas debajo de cada icono
     let labels = false;
+    // Si el usuario pidió etiquetas, activarlas
     if (usp.has('iconTestLabels')) {
         labels = true;
     }
+    // Oculta elementos de la interfaz para limpiar la vista de prueba
     jQuery('#large_mode_control').hide();
     jQuery('#header_top').hide();
     jQuery('#header_side').hide();
@@ -1417,24 +1458,30 @@ function iconTest() {
     jQuery('.ol-attribution').show();
     jQuery("#loader").addClass("hidden");
 
+    // Obtiene el contenedor donde se colocará el canvas de prueba
     let mapdiv = document.getElementById('iconTestCanvas');
     console.log(mapdiv);
 
+    // Variables locales para el tamaño y disposición de la grilla
     let iconSize = glIconSize;
     let cols = glImapCols;
     let rows = glImapRows;
     let font = '10px sans-serif'
 
     // labels shall not be used when generating sprites.png
+    // Altura reservada para etiquetas; si no hay etiquetas, 0
     let labelHeight = 12;
     if (!labels) {
         labelHeight = 0;
     }
+    // Inserta un canvas con el tamaño necesitado dentro del contenedor
     mapdiv.innerHTML = '<div style="overflow: scroll; max-height: 100%; max-width: 100%"><canvas width="' + iconSize * cols + '" height="' + (iconSize + labelHeight) * rows + '" id="can"></canvas></div>';
 
+    // Obtiene el canvas y su contexto 2D
     let can = document.getElementById('can');
     let con = can.getContext('2d');
 
+    // Si se usan etiquetas, prepara fuente y fondo
     if (labels) {
         con.font = font;
         con.textAlign = 'center';
@@ -1444,40 +1491,50 @@ function iconTest() {
         con.fillRect(0, 0, can.clientWidth, can.height);
         con.fillStyle = 'Black';
     }
-
+    
+    // Objeto que guardará las cadenas SVG generadas
     let svgJson = {};
 
+    // Recorre todas las formas definidas
     for (let shapeName in shapes) {
         let shape = shapes[shapeName];
+        // Comprueba si la forma cabe en la grilla calculada; si no, sugiere aumentar el canvas
         if (getSpriteY(shape) / iconSize >= rows) {
             console.log("make the canvas BIGGER!");
             mapdiv.innerHTML = '';
             break;
         }
+        // Escala la forma para llenar el cuadro de icono
         let max = Math.max(shape.w, shape.h);
         let scale = iconSize / max; // blow it up to the full iconSize
         let diff = scale * Math.abs(shape.w - shape.h);
         let offX = 0;
         let offY = 0;
+        // Centra la forma si no es cuadrada
         if (shape.w >= shape.h)
             offY = diff / 2;
         else
             offX = diff / 2;
 
+        // Crea una etiqueta <img> y dibuja la imagen en el canvas cuando cargue
         let img = document.createElement('img');
         img.onload = function () {
             con.drawImage(this, getSpriteX(shape) * glIconSize + offX, getSpriteY(shape) * (glIconSize + labelHeight) + offY);
         };
+        // Genera la URI de la imagen SVG con colores blanco/negro y ancho de contorno ajustado
         let svgURI = svgShapeToURI(shape, '#FFFFFF', '#000000', outlineWidth * 0.75, scale);
         img.src = svgURI;
 
+        // Si se pidieron etiquetas, escribe el nombre bajo el icono
         if (labels) {
             con.fillText(shapeName, getSpriteX(shape) * glIconSize + glIconSize/2, (1 + getSpriteY(shape)) * (glIconSize + labelHeight));
         }
 
+        // También guarda la cadena SVG en svgJson (para inspección o exportación)
         let svg = svgShapeToSVG(shape, '#FFFFFF', '#000000', outlineWidth * 0.75, 1.4);
         svgJson[shapeName] = svg;
 
+        // Si el usuario pidió mostrar una cuadrícula, dibuja la cruz de referencia encima
         if (usp.has('grid')) {
             let img = document.createElement('img');
             img.onload = function () {
@@ -1488,6 +1545,7 @@ function iconTest() {
         }
     }
 
+    // Muestra por consola el mapa de SVGs generados y devuelve el canvas
     console.log(svgJson);
     return can;
 }

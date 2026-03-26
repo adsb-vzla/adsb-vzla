@@ -1,3 +1,4 @@
+/* Ajustes globales: escala, colores y tamaños base usados en toda la interfaz */
 :root {
     --SCALE: 1;
     --BGCOLOR1: #ffffff;
@@ -10,7 +11,7 @@
     --TXTCOLOR2: rgb(5, 5, 5);
     --TXTCOLOR3: #101010;
 }
-
+/* Estilos base de página: fondo, fuente y comportamiento del scroll */
 html, body {
     -ms-overflow-style: -ms-autohiding-scrollbar;
     margin: calc( 0px * var(--SCALE));
@@ -23,7 +24,7 @@ html, body {
     height: 100%;
     color: var(--TXTCOLOR2);
 }
-
+/* Barra superior: área donde están reloj, búsqueda y botones */
 #navbar {
     position: absolute;
     top: 0;
@@ -43,7 +44,7 @@ html, body {
     justify-content: end;
     box-shadow: none; 
 }
-
+/* Agrupa los controles de la derecha dentro de la barra superior */
 #right_controls {
     display: flex;
     align-items: center;
@@ -63,14 +64,12 @@ html, body {
 }
 
 /* boton del sidebar */
-
 #button_container_closed{
     width: calc( 40px * var(--SCALE));
     padding-bottom: calc( 5px * var(--SCALE));
 }
 
 /* Checkbox del menu de capas*/
-
 input[type="checkbox"],input[type="radio"] {
   accent-color: rgb(252, 84, 4);
 }
@@ -106,31 +105,29 @@ input[type="checkbox"],input[type="radio"] {
     align-items: center;
     justify-content: center;
 }
-
 #search_submit_btn svg {
     width: 18px;
     height: 18px;
     fill: #000000 !important;
     transition: fill 0.2s;
 }
-
 #search_submit_btn:hover svg {
     fill: rgb(255, 136, 1); /* Cambia a azul al pasar el mouse */
 }
 
-
+/* Icono del botón que abre/cierra la barra lateral (estilo) */
 #toggle_sidebar_button svg {
     width: 25px;
     height: 25px;
     fill: white;
 }
-
+/* Contenedor de botones a la derecha dentro de la barra superior */
 #button_container {
     margin-left: auto;
     display: flex; 
     align-items: center;
 }
-
+/* Estilo general de botones en la barra superior (tamaño y centrado) */
 #navbar button {
     background: none;
     border: none;
@@ -144,7 +141,6 @@ input[type="checkbox"],input[type="radio"] {
     align-items: center;
     justify-content: center;
 }
-
 #navbar svg {
     fill: white;
     width: calc( 28px * var(--SCALE));
@@ -152,9 +148,7 @@ input[type="checkbox"],input[type="radio"] {
     transition: opacity 0.2s ease;
     
 }
-
-
-
+/* Área con nombre/logo del sitio, junto al botón izquierdo */
 #name_container {
     display: flex;
     align-items: center;
@@ -208,27 +202,27 @@ input[type="checkbox"],input[type="radio"] {
 #toggle_sidebar_button.hide_sidebar::after {
     transform: translate(-50%, -50%) rotate(-45deg);
 }
-
+/* Estilos de selectores por defecto (tamaño) */
 select {
     font-size: var(--FS2);
     height: calc(22px * var(--SCALE));
 }
-
+/* Pestaña de búsqueda: fondo oscuro */
 #tab-search{
    background-color: #000;
 }
-
+/* Tabla de aviones: evita quiebres de línea en columnas y cursor por defecto */
 #planesTable {
     font-size: var(--FS2);
     white-space: nowrap;
     cursor: default;
 }
-
+/* Contenedor general de layout: sidebar + mapa */
 #layout_container {
     display: flex;
     height: 100%;
 }
-
+/* Panel izquierdo con información del avión seleccionado */
 #selected_infoblock {
     position: absolute;
     left: 0px;
@@ -242,6 +236,7 @@ select {
     max-height: 100vh;
     background-color: #131313 !important;
 }
+/* Marca de fondo tenue para usuarios agregadores (logo tenue) */
 .aggregator-selected-bg:before {
     content: ' ';
     position:absolute;
@@ -257,6 +252,7 @@ select {
     z-index:2;
     opacity: 0.12;
 }
+/* Contenedor interno del infoblock para mantener el orden y capas */
 #infoblock-container {
     position:relative;
     overflow: visible;
@@ -267,21 +263,19 @@ select {
     padding: calc( 5px * var(--SCALE));
     overflow: auto;
 }
-
 #sidebar_container {
     display: flex;
     flex-direction: column;
     left: calc( 0px * var(--SCALE)) !important;
     height: 100%;
 }
-
-
+/* Contenedor del mapa que ocupa el resto del espacio */
 #map_container {
     flex: 1 1 auto;
     position: relative;
     height: 100%;
 }
-
+/* Lienzo del mapa: ocupa todo su contenedor */
 #map_canvas {
     position: absolute;
     width: 100%;
@@ -292,7 +286,7 @@ select {
     width: 100%;
     height: 100%;
 }
-
+/* Botones del sidebar: tamaño, color y comportamiento */
 .sidebar_button {
     width: calc( 32px * var(--SCALE));
     height: calc( 38px * var(--SCALE));
@@ -310,13 +304,13 @@ select {
 #shrink_sidebar_button {
     background-image: url("images/hide_sidebar.png");
 }
-
+/* Botón espejo para expandir (usa la misma imagen girada) */
 #expand_sidebar_button {
     transform: scaleX(-1);
     background-image: url("images/hide_sidebar.png");
 }
 
-
+/* Créditos en la parte inferior central (logo y texto) */
 #credits {
     display: flex;
     align-items: center;
@@ -347,7 +341,7 @@ select {
    z-index: -1;
    background-image: url(https://www.exratione.com/assets/color_background.png);
 }
-
+/* Barra divisoria para ajustar ancho (cursor y fondo) */
 #splitter {
     cursor: ew-resize;
     display: block;
@@ -366,7 +360,7 @@ select {
     background-size: cover;
     transform: scaleX(-1);
 }
-
+/* Separador superior del infoblock (para arrastrar/ajustar en vertical) */
 #splitter-infoblock {
     cursor: ns-resize;
     display: inline-block;
@@ -388,11 +382,12 @@ select {
 }
 
 /* remove the blue highlighting around the map buttons */
+/* Evita el borde azul por defecto en controles del mapa */
 .ol-control button {
     outline: none;
     z-index: 999;
 }
-
+/* Botón de zoom (+) usa imagen y tamaño específico */
 .ol-zoom-in {
     background-image: url("images/zoom-in.png");
     background-size: cover;
@@ -402,7 +397,7 @@ select {
     background-color: transparent !important;
     margin-bottom: calc( 5px * var(--SCALE)) !important;
 }
-
+/* Botón de zoom (-) usa imagen y tamaño específico */
 .ol-zoom-out {
     background-image: url("images/zoom-out.png");
     background-size: cover;
@@ -411,17 +406,17 @@ select {
     height: calc( 25px * var(--SCALE)) !important;
     background-color: transparent !important;
 }
-
+/* Posición del bloque de controles de zoom dentro del mapa */
 .ol-zoom {
     background-color: transparent !important;
     left: calc(100% - calc( 65px * var(--SCALE)));
     top: calc(100% - calc( 85px * var(--SCALE)));
 }
-
+/* Tamaño de texto para el crédito de la librería del mapa */
 .ol-attribution {
     font-size: var(--FS1);
 }
-
+/* Estilo para avisos/advertencias (color de fondo y borde amarillo) */
 .warning {
     margin-top: 1em;
     border: calc( 2px * var(--SCALE)) solid yellow;
@@ -429,7 +424,7 @@ select {
     padding: calc( 5px * var(--SCALE));
     color: black;
 }
-
+/* Caja de error en pantalla (fondo visible y borde rojo) */
 .error_box {
     position: absolute; bottom: calc( 90px * var(--SCALE)); left: calc( 25px * var(--SCALE)); border: calc( 2px * var(--SCALE)) solid red;
     background-color: #FFFFA3; opacity: 0.75; filter:alpha(opacity=75); padding: calc( 5px * var(--SCALE));
@@ -439,14 +434,14 @@ select {
     line-height: 150%;
     text-align: center;
 }
-
+/* Aviso específico cuando los datos pueden no ser exactos */
 .inaccurate_warning {
     position: absolute; top: calc( 25px * var(--SCALE)); left: calc( 280px * var(--SCALE));
     width: 50%;
     background-color: var(--BGCOLOR1);
     padding: calc( 5px * var(--SCALE));
 }
-
+/* Área para mostrar errores JS en pantalla */
 #js_error {
     position: absolute;
     bottom: 5px;
@@ -460,7 +455,7 @@ select {
     z-index: 999;
     white-space: pre-line;
 }
-
+/* Pantalla de carga (overlay con spinner centrado) */
 #loader {
     position: fixed;
     inset: 0;
@@ -474,13 +469,12 @@ select {
 #loader_progress {
     display: none;
 }
-
+/* Componentes del spinner en pantalla de carga (logo, órbita, avión) */
 .spinner {
     position: relative;
     width: 260px;
     height: 260px;
 }
-
 .spinner-logo {
     position: absolute;
     inset: 0;
@@ -490,7 +484,6 @@ select {
     object-fit: contain;
     z-index: 1;
 }
-
 .spinner-orbit {
     position: absolute;
     inset: 0;
@@ -500,7 +493,6 @@ select {
     animation: spinner-rotate 2.5s linear infinite;
     z-index: 2;
 }
-
 .spinner-plane {
     position: absolute;
     top: -100px;
@@ -512,14 +504,12 @@ select {
     object-fit: contain;
     z-index: 3;
 }
-
+/* Animación de rotación usada por el spinner */
 @keyframes spinner-rotate {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
 }
-
-
-
+/* Cabecera de tabla de aviones: color de acento y sombra */
 .aircraft_table_header {
     background-color: var(--ACCENT);
     color: #FFFFFF;
@@ -536,29 +526,29 @@ select {
     padding: calc( 5px * var(--SCALE));
     text-align: center;
 }
-
+/* Flechas/triángulos para indicar tasa vertical (fuente monospace) */
 .verticalRateTriangle {
     font-family: "Courier New",monospace;
 }
-
+/* Columna de ICAO/hex con letra monoespaciada y mayúsculas */
 .icaoCodeColumn {
     font-family: monospace;
     text-transform: uppercase;
 }
-
+/* Filas de la lista de aviones: altura y cursor */
 .plane_table_row {
     cursor: default;
     height: var(--FS2);
 }
-
+/* Clase utilitaria para ocultar elementos */
 .hidden { display: none; }
-
+/* Enlaces dentro de cabeceras de info: color y sin subrayado por defecto */
 .infoblock_heading a  { text-decoration: none; color: blue; font-size: var(--FS2); }
 
 .dim    { opacity: 0.3; filter:alpha(opacity=30); /* For IE8 and earlier */ }
 
 .pointer { cursor: pointer; }
-
+/* Botones grandes usados en paneles (color principal) */
 .sidebarButton {
     background-color: #409EDF;
     padding: calc( 4px * var(--SCALE));
@@ -566,11 +556,10 @@ select {
     font-weight: normal;
     font-size: var(--FS2);
 }
-
 .sidebarButton:hover {
     background-color: #3c6ea3;
 }
-
+/* Input para filtro de altitud: tamaño y colores */
 .altitudeFilterInput {
     width: calc( 50px * var(--SCALE));
     height:  calc(15px * var(--SCALE));
@@ -585,7 +574,7 @@ select {
     background-color: var(--BGCOLOR2);
     border-color: var(--BGCOLOR1);
 }
-
+/* Botones de formulario: color y deshabilitado visible */
 .formButton {
     font-size: var(--FS2);
     color:var(--TXTCOLOR2);
@@ -595,23 +584,21 @@ select {
 .formButton:disabled {
     color:var(--TXTCOLOR3);
 }
-
+/* Inputs con error resaltados en rojo */
 select.error, textarea.error, input.error {
     color: #FF0000;
 }
-
+/* Posicionamiento del selector de capas */
 .layer-select {
     top: calc( -2px * var(--SCALE)) !important;
     right: calc( 2px * var(--SCALE)) !important;
     position: relative !important;
 }
-
 .layer-switcher {
 
     top: unset !important;
     right: unset !important;
 }
-
 .layer-switcher button {
     background-size: calc( 26px * var(--SCALE)) calc( 26px * var(--SCALE));
     background-repeat: no-repeat;
@@ -627,11 +614,9 @@ select.error, textarea.error, input.error {
 .layer-switcher .group button{
     background-color:#9d9d9d !important;
 }
-
 .layer-switcher.shown.layer-switcher-activation-mode-click {
     padding-left: calc(30px * var(--SCALE));
 }
-
 .button-layer{
     background-color: unset;
     width: calc(27px * var(--SCALE));
@@ -643,7 +628,6 @@ select.error, textarea.error, input.error {
     text-align: center;
     background-clip: padding-box;
 }
-
 .layer-switcher !.shown {
     top: calc( 3px * var(--SCALE)) !important;
     right: calc( 44px * var(--SCALE)) !important;
@@ -651,13 +635,11 @@ select.error, textarea.error, input.error {
     height: calc( 32px * var(--SCALE));
     z-index: 999;
 }
-
 .layer-switcher.shown{
     top: 3.5em !important; 
     right: 0.5em !important; 
     margin-right: calc(30px * var(--SCALE)) !important;
 }
-
 .layer-switcher.shown .panel {
     overflow-y: auto;
     height: 95vh;
@@ -666,8 +648,8 @@ select.error, textarea.error, input.error {
 
 }
 
-
 /* new css */
+/* Texto de fecha/hora en la barra (estilo y espacio) */
 .dateTime
 {
     font-weight: bold;
@@ -686,7 +668,7 @@ select.error, textarea.error, input.error {
         display: none;
     }
 }
-
+/* Título de sección dentro del panel (estilo de fondo y mayúsculas) */
 .sectionTitle {
     width: 88%;
     text-transform: uppercase;
@@ -699,11 +681,10 @@ select.error, textarea.error, input.error {
     padding: 0.5rem;
     margin-left: 0.4rem;
 }
-
 .section-title-content {
     padding: calc( 3px * var(--SCALE)) calc( 20px * var(--SCALE));
 }
-
+/* Leyenda: tamaño y espaciado para las etiquetas de leyenda */
 .legend
 {
     font-size: 110%;
@@ -720,12 +701,12 @@ select.error, textarea.error, input.error {
     line-height: calc( 20px * var(--SCALE));
 
 }
-
+/* Estilo común para enlaces visuales (color de acento y subrayado) */
 .link, .link a {
     color: var(--TXTCOLOR1);
     text-decoration: underline;
 }
-
+/* Posición de ciertos botones en la esquina superior derecha */
 #header_side {
     position: absolute;
     right: calc( 0px * var(--SCALE));
@@ -741,13 +722,13 @@ select.error, textarea.error, input.error {
     height: calc( 38px * var(--SCALE));
     z-index: 9;
 }
-
+/* Icono RP (indicador rápido) con tamaño y filtro */
 #RP img{
     width: calc(25px * var(--SCALE)); 
     filter: invert(100); 
     
 }
-
+/* Botones con SVG: color de fondo y tamaño */
 .svgButton {
     background-color: rgb(252, 84, 4);
     width: calc( 27px * var(--SCALE));
@@ -769,7 +750,7 @@ select.error, textarea.error, input.error {
     background-size: 120%;
 }
 
-
+/* Botón principal naranja usado en varias partes */
 .button {
     background-color: rgb(252, 84, 4);
     width: calc( 27px * var(--SCALE));
@@ -782,7 +763,7 @@ select.error, textarea.error, input.error {
     background-clip: padding-box;
 }
 
-
+/* Contenedor de botones grandes (usado en pantallas pequeñas o menús) */
 .buttonContainer {
     display: block;
     margin: calc( 1px * var(--SCALE));
@@ -792,7 +773,7 @@ select.error, textarea.error, input.error {
 .buttonSpacer {
     margin: calc( 9px * var(--SCALE));
 }
-
+/* Texto grande para destacar (identificadores) */
 .buttonText
 {
     font-weight: bold;
@@ -808,7 +789,7 @@ select.error, textarea.error, input.error {
 .inActiveButton {
  color:#fff
 }
-
+/* Ventana de información destacada muestra detalles del avión al pasar */
 #highlighted_infoblock {
     background-color: #131313 !important;
     position: absolute;
@@ -848,7 +829,7 @@ select.error, textarea.error, input.error {
     font-weight: bold;
     color: var(--TXTCOLOR1);
 }
-
+/* Tablas de información: estructura compacta y sin espacios extra */
 .infoSectionTable {
     width: 100%;
     border-collapse: collapse;
@@ -892,7 +873,7 @@ table.infoSectionTable tr td {
     padding-left: calc( 7px * var(--SCALE));
     padding-right: calc( 7px * var(--SCALE));
 }
-
+/* Texto grande para enlaces de la selección actual */
 .largeText a {
     font-weight: bold;
     color: var(--TXTCOLOR1);
@@ -911,14 +892,14 @@ table.infoSectionTable tr td {
 }
 
 
-
+/* Título de leyenda (espaciado y alineación) */
 .legendTitle {
     line-height: calc( 19px * var(--SCALE));
     padding-right: calc( 3px * var(--SCALE));
     padding-left: calc( 3px * var(--SCALE));
     margin: calc( 2px * var(--SCALE));
 }
-
+/* Ventana de configuración: posición fija, sombra y padding */
 #settings_infoblock {
     position: fixed;
     top: 1%;
@@ -953,11 +934,11 @@ table.infoSectionTable tr td {
     background-position: center;
     cursor: pointer;
 }
-
+/* Clase que marca el checkbox como seleccionado visualmente */
 .settingsCheckboxChecked {
     background-image: url('images/box-checked.png') !important;
 }
-
+/* Botón para cerrar la ventana de ajustes (icono) */
 .settingsCloseBox {
     position: absolute;
     right: calc( 8px * var(--SCALE));
@@ -968,7 +949,7 @@ table.infoSectionTable tr td {
     height: calc( 20px * var(--SCALE));
     cursor: pointer;
 }
-
+/* Botón para cerrar el infoblock (icono) */
 .infoblockCloseBox {
     position: absolute;
     right: calc( 20px * var(--SCALE));
@@ -985,7 +966,7 @@ table.infoSectionTable tr td {
     line-height: calc( 20px * var(--SCALE));
     display: table-cell;
 }
-
+/* Gráfico de altitud: posición y rotación para mostrarlo verticalmente */
 #altitude_chart {
   width: 90vh; 
   transform: rotate(-90deg);
@@ -1004,7 +985,7 @@ table.infoSectionTable tr td {
   height: 6.6vh;
 }
 
-
+/* Enlace a FlightAware para el vuelo seleccionado (color y padding) */
 #selected_flightaware_link a {
     background-color: #67b6c3;
     color: white;
@@ -1027,7 +1008,7 @@ table.infoSectionTable tr td {
     vertical-align: middle;
     display: inline;
 }
-
+/* Estilos para pestañas (UI) */
 .ui-tabs {
     background-color: var(--BGCOLOR1);
 }
@@ -1076,7 +1057,7 @@ table.infoSectionTable tr td {
 .ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr {
     border-radius: 3px;
 }
-
+/* Lista de filtros como botones (ancho y comportamiento) */
 .buttonFilter {
     list-style-type: none;
     margin: 0;
@@ -1149,7 +1130,7 @@ table.infoSectionTable tr td {
 .ui-widget-content {
   color:var(--TXTCOLOR2);
 }
-
+/* Estilo del control deslizante (barra y manejador) */
 .ui-slider {
     background-color: var(--BGCOLOR2);
 }
@@ -1188,7 +1169,7 @@ input{
 #histDatePicker{
   background: var(--BGCOLOR1);
 }
-
+/* Barra de replay (historico): disposición por cuadrícula y áreas nombradas */
 #replayBar {
   background: var(--BGCOLOR1);
   display: none;
@@ -1247,7 +1228,7 @@ input{
   grid-area: speedHint;
 }
 
-
+/* Botones para exportar KML: estilo visible y colores llamativos */
 #export_kml_block button {
   background-color: rgb(227, 148, 74);
   border-radius: 0.5rem;
@@ -1262,7 +1243,7 @@ input{
   font-size: 0.8rem;
   cursor: pointer;
 }
-
+/* Marco y apariencia de la foto del avión seleccionado */
 #selected_photo {
   margin: 0 auto;
   border-radius: 0.5rem;
@@ -1275,7 +1256,7 @@ input{
   border-radius: 0.3rem;
   display: block;
 }
-
+/* Título dentro del infoblock que se mantiene visible al hacer scroll */
 #selected_infoblock .highlightedTitle {
   position: sticky;
   top: 0;
@@ -1284,7 +1265,7 @@ input{
   background-color: #131313;
   width: 95%;
 }
-
+/* Mejora de layout si el navegador soporta :has() */
 @supports selector(:has(*)) {
   #selected_infoblock .infoSectionTable tr td:has(.infoHeading):has(.infoData) {
     display: grid;
@@ -1303,7 +1284,7 @@ input{
     align-self: start;
   }
 }
-
+/* Alternativa cuando no se dispone de :has(), usa flex para mantener alineación */
 @supports not (selector(:has(*))) {
   #selected_infoblock .infoSectionTable tr td {
     display: flex;
