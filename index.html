@@ -1014,6 +1014,9 @@
             <span class="buttonText">U</span>
           </div>
           <div>
+            <span id="terrain_profile" title="Perfil de suelo (HeyWhatsThat)" class="button inActiveButton" onclick="toggleTerrainProfile();"><span class="buttonText">⛰️</span></span>
+          </div>
+          <div>
             <span id="H" title="(H)ome / Reset Map" class="button inActiveButton" onclick="resetMap();"><span class="buttonText">H</span></span>
           </div>
           <div>
@@ -1141,6 +1144,9 @@
                     <td id="dump1090_total_history_td"><span class="infoBlockTitleText">History:</span> <span
                         id="dump1090_total_history">n/a</span> positions</td>
                   </tr>
+                </table>
+              </td>
+            </tr>
                 </table>
                 <table style="width: 100%" id="infoblock_altimeter" class="hidden">
                   <tr>
@@ -1278,6 +1284,25 @@
 
           <div id="legend" class="legend">
           </div>
+
+          <!-- right sidebar terrain profile -->
+          <tr id="right_terrain_profile_row" class="infoblock_row hidden">
+            <td>
+              <div id="right_terrain_profile_block" class="infoBlockSection hidden">
+                <div class="sectionTitle">
+                  <div id="right_terrain_profile_content">
+                    <img id="right_terrain_profile_img" style="width:100%;max-height:240px;" alt="Perfil de suelo">
+                    <div class="infoData">
+                      <a id="right_terrain_profile_credit" href="#" target="_blank" rel="noopener">Powered by HeyWhatsThat</a>
+                    </div>
+                  </div>
+                  <div id="right_terrain_profile_caption" style="font-size:0.75em;text-align:center;padding-top:4px;">
+                    Altitud en pies (vertical) · Distancia en millas náuticas (horizontal)
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
 
           <!-- BELOW_LEGEND_ANCHOR -->
         </div>

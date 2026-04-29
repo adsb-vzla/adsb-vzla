@@ -69,6 +69,30 @@ let ppMissingSince = new Map();
 let ppRemoved = new Set();
 // Activa o desactiva el modo de medir distancia suelo‑avión
 let distanceToGroundMode = false;
+// Modo para generar un perfil de suelo de HeyWhatsThat. Si está activo, el
+// siguiente clic en el mapa lanzará una petición al servicio y mostrará la
+// imagen en la barra lateral. El modo se desactiva automáticamente tras la
+// selección.
+let terrainProfileMode = false;
+
+// capa/sórcion para el par de puntos y la línea que los une
+let terrainProfileSource = null;
+let terrainProfileLayer = null;
+
+/**
+ * Quita cualquier perfil mostrado anteriormente, tanto del menú como del mapa.
+ */
+function clearTerrainProfile() {
+    // limpiar imagen y fila
+    jQuery('#right_terrain_profile_img').attr('src','');
+    jQuery('#right_terrain_profile_row').addClass('hidden');
+    jQuery('#right_terrain_profile_block').addClass('hidden');
+    // borrar features en el mapa si existen
+    if (terrainProfileSource) {
+        terrainProfileSource.clear();
+    }
+}
+
 // Overlay que muestra la distancia entre el punto A y el avión
 let distanceGroundOverlay = null;
 // Intervalo que refresca la medición suelo‑avión
@@ -3872,6 +3896,16 @@ lyr.on('change:visible', function (evt) {
 
         let source = webgl ? webglFeatures : PlaneIconFeatures;
         let evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
+        // modo perfil de suelo: la próxima pulsación genera el gráfico
+        if (terrainProfileMode) {
+            const lonlat = ol.proj.toLonLat(evtCoords);
+            showTerrainProfile(lonlat);
+            terrainProfileMode = false;
+            hideDistanceGuide();
+            buttonActive('#terrain_profile', false);
+            evt.stopPropagation();
+            return;
+        }
         let feature = source.getClosestFeatureToCoordinate(evtCoords);
         if (feature) {
             let fPixel = evt.map.getPixelFromCoordinate(feature.getGeometry().getCoordinates());
@@ -4491,6 +4525,7 @@ function initMap() {
             zIndex: 100,
             renderOrder: null,
             renderBuffer: renderBuffer,
+            visible: false,
         });
         layers.push(calcOutlineLayer);
         drawUpintheair();
@@ -6833,7 +6868,147 @@ function togglePersistence() {
     refreshFilter();
 }
 
+
+/**
+ * Alterna el modo de perfil de suelo (HeyWhatsThat).
+ * mientras está activado, el siguiente clic en el mapa genera la imagen
+ * correspondiente y desactiva automáticamente el modo.
+ */
+function toggleTerrainProfile() {
+    // if the sidebar is hidden, make sure it becomes visible so the user can
+    // actually see the terrain profile information on the right side panel.
+    if (jQuery('#sidebar_container').is(':hidden')) {
+        if (toggles && toggles['sidebar_visible']) {
+            toggles['sidebar_visible'].toggle(true);
+        } else {
+            // fallback to manual show in case toggles isn't initialized yet
+            jQuery('#sidebar_container').show();
+            jQuery('#expand_sidebar_button').show();
+            jQuery('#toggle_sidebar_button').removeClass('show_sidebar').addClass('hide_sidebar');
+            updateMapSize();
+        }
+    }
+
+    terrainProfileMode = !terrainProfileMode;
+    if (terrainProfileMode) {
+        // al activar, limpiamos cualquier perfil anterior para que no quede visible
+        clearTerrainProfile();
+        showDistanceGuide('Modo perfil de suelo: haga clic en el mapa para seleccionar el punto destino. Para hacer un nuevo perfil, presione nuevamente el botón')
+        buttonActive('#terrain_profile', true);
+    } else {
+        hideDistanceGuide();
+        buttonActive('#terrain_profile', false);
+        // quitar perfil anterior completamente
+        clearTerrainProfile();
+    }
+    // nos aseguramos también de que el bloque principal esté oculto cuando se
+    // pulsa el botón (evita estados raros si el row todavía estaba visible)
+    jQuery('#right_terrain_profile_block').addClass('hidden');
+}
+
+/**
+ * Solicita el perfil de suelo a HeyWhatsThat y lo muestra en la barra lateral.
+ * @param {[number,number]} lonlat coordenadas [lon,lat] del punto elegido
+ */
+function showTerrainProfile(lonlat) {
+    if (!calcOutlineData || typeof calcOutlineData.lat === 'undefined') {
+        // Try to load the file asynchronously once more
+        jQuery.getJSON('upintheair.json').done(function(data) {
+            calcOutlineData = data;
+            // call again now that we have the data
+            showTerrainProfile(lonlat);
+        }).fail(function() {
+            alert('No hay datos de HeyWhatsThat (upintheair.json) disponibles.');
+        });
+        return;
+    }
+    // borrar cualquier perfil anterior y sus elementos del mapa
+    clearTerrainProfile();
+
+    const baseLat = calcOutlineData.lat;
+    const baseLon = calcOutlineData.lon;
+    const tgtLon = lonlat[0];
+    const tgtLat = lonlat[1];
+
+    // preparar capa/vector si aún no existe
+    if (!terrainProfileSource) {
+        terrainProfileSource = new ol.source.Vector();
+        terrainProfileLayer = new ol.layer.Vector({
+            source: terrainProfileSource,
+            style: function(feat) {
+                const t = feat.get('type');
+                if (t === 'line') {
+                    return new ol.style.Style({
+                        stroke: new ol.style.Stroke({ color: '#ff0', width: 2 })
+                    });
+                }
+                return new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 5,
+                        fill: new ol.style.Fill({ color: '#f00' }),
+                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+                    })
+                });
+            }
+        });
+        if (OLMap) OLMap.addLayer(terrainProfileLayer);
+    }
+
+    // crear features del receptor (A) y del destino (B) y la línea entre ellos
+    const featA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([baseLon, baseLat])));
+    featA.set('type','point');
+    const featB = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([tgtLon, tgtLat])));
+    featB.set('type','point');
+    const line = new ol.Feature(new ol.geom.LineString([
+        ol.proj.fromLonLat([baseLon, baseLat]),
+        ol.proj.fromLonLat([tgtLon, tgtLat])
+    ]));
+    line.set('type','line');
+    terrainProfileSource.addFeature(featA);
+    terrainProfileSource.addFeature(featB);
+    terrainProfileSource.addFeature(line);
+
+    let url = 'https://www.heywhatsthat.com/bin/profile-0904.cgi?src=main'
+            + '&id=' + encodeURIComponent(calcOutlineData.id || '')
+            + '&pt0=' + baseLat + ',' + baseLon
+            + '&pt1=' + tgtLat + ',' + tgtLon
+            + '&greatcircle=1&metric=0'
+            + '&axes=1'  // draw axis lines and labels
+            + '&refraction=' + (calcOutlineData.refraction || 0.25);
+    // derecha solamente: esperar a que la imagen se cargue antes de mostrar el
+    // contenedor para evitar que quede el banner naranja vacío si falla.
+    jQuery('#right_terrain_profile_img')
+        .off('load error')
+        .on('load', function() {
+            showDistanceGuide('Perfil cargado.');
+            setTimeout(hideDistanceGuide, 3000);
+            // ensure the sidebar is visible so the user can actually see the
+            // loaded profile on the right panel
+            if (jQuery('#sidebar_container').is(':hidden')) {
+                if (toggles && toggles['sidebar_visible']) {
+                    toggles['sidebar_visible'].toggle(true);
+                } else {
+                    jQuery('#sidebar_container').show();
+                    jQuery('#expand_sidebar_button').show();
+                    jQuery('#toggle_sidebar_button').removeClass('show_sidebar').addClass('hide_sidebar');
+                    updateMapSize();
+                }
+            }
+            jQuery('#right_terrain_profile_block').removeClass('hidden');
+            jQuery('#right_terrain_profile_row').removeClass('hidden');
+        })
+        .on('error', function() {
+            // si la llamada falla, aseguramos que el row y el bloque permanezcan ocultos
+            jQuery('#right_terrain_profile_row').addClass('hidden');
+            jQuery('#right_terrain_profile_block').addClass('hidden');
+        })
+        .attr('src', url);
+    jQuery('#right_terrain_profile_credit').attr('href', 'https://www.heywhatsthat.com');
+
+}
+
 function toggleDistance() {
+    // existing code unchanged
     // Si está apagado, activarlo en el primer modo
     if (!distanceBetweenPlanesMode) {
         distanceBetweenPlanesMode = true;
