@@ -733,6 +733,7 @@ function Toggle(arg) {
     this.setState = arg.setState;
     this.checkbox = (arg.checkbox == undefined) ? ('#' + this.key + '_cb') : null;
     this.display = arg.display;
+    this.tooltip = arg.tooltip;
     this.container = arg.container;
     this.button = arg.button || this.checkbox;
 
@@ -743,8 +744,9 @@ function Toggle(arg) {
 
 Toggle.prototype.init = function() {
     if (this.container) {
+        let titleAttr = this.tooltip ? ' title="' + this.tooltip + '"' : '';
         jQuery(this.container).append((
-            '<div class="settingsOptionContainer">'
+            '<div class="settingsOptionContainer"' + titleAttr + '>'
             + '<div class="settingsCheckbox" id="' + this.key + '_cb' + '"></div>'
             + '<div class="settingsText">' + this.display + '</div>'
             + '</div>'));

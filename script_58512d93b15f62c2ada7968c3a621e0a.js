@@ -2505,6 +2505,7 @@ function earlyInitPage() {
     new Toggle({
         key: "lastLeg",
         display: "Last Leg only",
+        tooltip: "Only shows the last leg of the plane's trajectory, preventing the map from being filled with long flight lines." ,
         container: "#settingsLeft",
         init: true,
         setState: function (state) {
@@ -2517,8 +2518,18 @@ function earlyInitPage() {
         }
     });
     new Toggle({
+        key: "hideDistanceFunctions",
+        display: "Hide distance functions",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            jQuery("#D, #TA, #TT").toggle(!state);
+        }
+    });
+    new Toggle({
         key: "labelsGeom",
         display: "Labels: geom. alt. (WGS84)",
+        tooltip: "It displays geometric altitude (GPS) instead of standard barometric altitude.",
         container: "#settingsLeft",
         init: labelsGeom,
         setState: function (state) {
@@ -2532,6 +2543,7 @@ function earlyInitPage() {
     new Toggle({
         key: "geomUseEGM",
         display: "Geom. alt.: WGS84 -> EGM conversion (long load)",
+        tooltip: "It applies a mathematical correction to make the GPS altitude more accurate relative to sea level (it takes longer to load).",
         container: "#settingsLeft",
         init: geomUseEGM,
         setState: function (state) {
@@ -2562,6 +2574,7 @@ function earlyInitPage() {
     new Toggle({
         key: "baroUseQNH",
         display: "Baro. alt.: correct for QNH",
+        tooltip: "Adjusts pressure altitude according to local atmospheric pressure (QNH) to display the actual altitude above sea level.",
         container: "#settingsLeft",
         init: baroUseQNH,
         setState: function (state) {
@@ -2593,6 +2606,7 @@ function earlyInitPage() {
     new Toggle({
         key: "utcTimesLive",
         display: "Live track labels: UTC",
+        tooltip: "Displays timestamps on live paths using Universal Time (UTC).",
         container: "#settingsLeft",
         init: utcTimesLive,
         setState: function (state) {
@@ -2605,6 +2619,7 @@ function earlyInitPage() {
     new Toggle({
         key: "utcTimesHistoric",
         display: "Historic track labels: UTC",
+        tooltip: "Displays timestamps on historic paths using Universal Time (UTC).",
         container: "#settingsLeft",
         init: utcTimesHistoric,
         setState: function (state) {
@@ -2617,6 +2632,7 @@ function earlyInitPage() {
     new Toggle({
         key: "windLabelsSlim",
         display: "Smaller wind labels",
+        tooltip: "Reduce the size of the wind indicators (if the aircraft transmits that data).",
         container: "#settingsLeft",
         init: windLabelsSlim,
         setState: function (state) {
@@ -2632,6 +2648,7 @@ function earlyInitPage() {
     new Toggle({
         key: "showLabelUnits",
         display: "Label units",
+        tooltip: "Show units (ft, kts, etc.) in the labels.",
         container: "#settingsLeft",
         init: showLabelUnits,
         setState: function (state) {
@@ -2657,6 +2674,7 @@ function earlyInitPage() {
     new Toggle({
         key: "shareFilters",
         display: "Include Filters In URLs",
+        tooltip: "Include the current filter settings in the URL.",
         container: "#settingsRight",
         init: false,
         setState: function (state) {
@@ -2667,6 +2685,7 @@ function earlyInitPage() {
     new Toggle({
         key: "debugTracks",
         display: "Debug Tracks",
+        tooltip: "Developer options for viewing errors in received data.",
         container: "#settingsRight",
         init: false,
         setState: function (state) {
@@ -2678,6 +2697,7 @@ function earlyInitPage() {
     new Toggle({
         key: "debugAll",
         display: "Debug show all",
+        tooltip: "Show all debug information.",
         container: "#settingsRight",
         init: false,
         setState: function (state) {
@@ -2716,6 +2736,7 @@ function earlyInitPage() {
     new Toggle({
         key: "autoselect",
         display: "Auto-select plane",
+        tooltip: "It automatically selects an aircraft if it is the only one on screen or based on specific criteria.",
         container: "#settingsRight",
         init: autoselect,
         setState: function (state) {
@@ -2731,6 +2752,7 @@ function earlyInitPage() {
     new Toggle({
         key: "ColoredPlanes",
         display: "Colored Planes",
+        tooltip: "Display aircraft markers in color instead of grayscale.",
         container: "#settingsRight",
         init: true,
         setState: function (state) {
@@ -2746,6 +2768,7 @@ function earlyInitPage() {
     new Toggle({
         key: "ColoredTrails",
         display: "Colored Trails",
+        tooltip: "Display aircraft trails in color instead of grayscale.",
         container: "#settingsRight",
         init: true,
         setState: function (state) {
@@ -2816,6 +2839,7 @@ function earlyInitPage() {
     new Toggle({
         key: "planespottingAPI",
         display: "Pictures planespotting.be",
+        tooltip: "Display pictures from planespotting.be (if available).",
         container: "#settingsRight",
         init: planespottingAPI,
         setState: function (state) {
@@ -2830,6 +2854,7 @@ function earlyInitPage() {
     new Toggle({
         key: "planespottersAPI",
         display: "Pictures planespotters.net",
+        tooltip: "Display pictures from planespotters.net (if available).",
         container: "#settingsRight",
         init: planespottersAPI,
         setState: function (state) {
@@ -2850,6 +2875,7 @@ function earlyInitPage() {
         new Toggle({
             key: "useRouteAPI",
             display: "Lookup route",
+            tooltip: "Look up the route of the aircraft (origin and destination airports) using an online API (if available).",
             container: "#settingsRight",
             init: useRouteAPI,
             setState: function (state) {
@@ -2878,6 +2904,7 @@ function earlyInitPage() {
     new Toggle({
         key: "enableInfoblock",
         display: "Enable Infoblock",
+        tooltip: "Show the infoblock with detailed information about the selected aircraft.",
         container: "#settingsRight",
         init: true,
         setState: function (state) {
@@ -2888,6 +2915,7 @@ function earlyInitPage() {
     new Toggle({
         key: "wideInfoblock",
         display: "Wide Infoblock",
+        tooltip: "Use a wider layout for the infoblock, allowing more information to be displayed in a single line.",
         container: "#settingsRight",
         init: wideInfoBlock,
         setState: function (state) {
@@ -2904,6 +2932,7 @@ function earlyInitPage() {
     new Toggle({
         key: "enableMouseover",
         display: "Enable mouse-over block",
+        tooltip: "Show detailed information about the selected aircraft when hovering over it.",
         container: "#settingsRight",
         init: enableMouseover,
         setState: function (state) {
@@ -3666,6 +3695,7 @@ function webglInit() {
     new Toggle({
         key: "webgl",
         display: "WebGL",
+        tooltip: "Use WebGL to display aircraft icons. This can significantly improve performance, especially when many aircraft are displayed, but may cause issues on some devices/browsers.",
         container: "#settingsRight",
         init: init,
         setState: function (state) {
@@ -4849,6 +4879,7 @@ function initMap() {
     new Toggle({
         key: "MapDim",
         display: "Dim Map",
+        tooltip: "Toggle dimming of map layers to enhance visibility of overlays",
         container: "#settingsLeft",
         init: MapDim,
         setState: function (state) {

@@ -414,7 +414,7 @@
               <td>
                 <div class="infoHeading">
                   <span
-                    ttitle="Distance of the aircraft from your ADS-B site at its last known position">Distance:</span>
+                    title="Distance of the aircraft from your ADS-B site at its last known position">Distance:</span>
                 </div>
                 <div class="infoData">
                   <span id="selected_sitedist2">n/a</span>
@@ -903,7 +903,7 @@
           <hr />
         </div>
         <div id="settingsLeft" class="settingsColumn">
-          <div class="settingsOptionContainer">
+          <div class="settingsOptionContainer" title="Select the measurement system">
             <label for="units_selector"><span class="infoBlockTitleText">Units:&nbsp;&nbsp;</span></label>
             <select name="units_selector" id="units_selector">
               <option value="nautical">Aeronautical</option>
@@ -913,11 +913,11 @@
           </div>
           <div class="settingsOptionContainer">
             <div class="settingsCheckbox" id="groundvehicle_filter"></div>
-            <div class="settingsText">Ground Vehicles</div>
+            <div class="settingsText" title="Displays ground service vehicles that emit ADS-B signal.">Ground Vehicles</div>
           </div>
           <div class="settingsOptionContainer">
             <div class="settingsCheckbox" id="blockedmlat_filter"></div>
-            <div class="settingsText">Non-ICAO Targets (radar track / airframe unknown) </div>
+            <div class="settingsText" title="Displays aircraft that do not have a standard ICAO code or whose airframe structure is unknown.">Non-ICAO Targets (radar track / airframe unknown) </div>
           </div>
         </div>
         <div id="settingsRight" class="settingsColumn">
@@ -1010,7 +1010,7 @@
             onclick="toggleIsolation();"><span class="buttonText">I</span></div>
           <!--<div class="buttonSpacer">
           </div>-->
-          <div id="U" title="Mostrar aeronaves militares" class="button inActiveButton" onclick="toggleMilitary();">
+          <div id="U" title="Show military aircraft" class="button inActiveButton" onclick="toggleMilitary();">
             <span class="buttonText">U</span>
           </div>
           <div>
@@ -1024,15 +1024,15 @@
           <div id="RP" title="Replay" class="button inActiveButton" onclick="showReplayBar();">
             <img src="images/replay.png" >
           </div>
-          <div id="D" title="Distancia entre 2 aviones" class="button inActiveButton"
+          <div id="D" title="Distance between 2 planes" class="button inActiveButton"
             onclick="toggleDistance();">
             <span class="buttonText">AA</span>
           </div>
-          <div id="TA" title="Distancia entre punto en tierra y aeronave" class="button inActiveButton"
+          <div id="TA" title="Distance between ground point and aircraft" class="button inActiveButton"
             onclick="onTACycleClick();">
             <span class="buttonText">TA</span>
           </div>
-          <div id="TT" title="Distancia tierra-aeronave" class="button inActiveButton"
+          <div id="TT" title="Ground to aircraft distance" class="button inActiveButton"
             onclick="onTTCycleClick();">
             <span class="buttonText">TT</span>
           </div>
