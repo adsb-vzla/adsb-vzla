@@ -618,11 +618,12 @@ select.error, textarea.error, input.error {
     background-position: center;
     width: calc( 27px * var(--SCALE));
     height: calc( 28px * var(--SCALE));
-    background-color: rgb(3, 171, 251) !important;
+    background-color: rgb(230 213 169) !important;
     position: absolute;
     background-image: url("images/venezuela.png");
     filter: invert(100%);
     top: -2px;
+    padding: 1.2rem;
     }
 .layer-switcher .group button{
     background-color:#9d9d9d !important;
@@ -634,7 +635,7 @@ select.error, textarea.error, input.error {
 
 .button-layer{
     background-color: unset;
-    width: calc(27px * var(--SCALE));
+    width: calc(32px * var(--SCALE));
     height: calc(27px * var(--SCALE));
     border-radius: calc(5px * var(--SCALE));
     margin: calc(2px * var(--SCALE));
@@ -740,12 +741,6 @@ select.error, textarea.error, input.error {
     top: calc( 0px * var(--SCALE));
     height: calc( 38px * var(--SCALE));
     z-index: 9;
-}
-
-#RP img{
-    width: calc(25px * var(--SCALE)); 
-    filter: invert(100); 
-    
 }
 
 .svgButton {
@@ -1336,4 +1331,29 @@ input{
 }
 :root {
     scrollbar-color: rgb(252, 84, 4) transparent !important;
+}
+
+#RP img{
+    filter: invert(100); 
+}
+
+#header_side .buttonContainer .btn .header-icon,
+#RP .header-icon,
+#RP img.header-icon {
+  width: 1.80rem;
+  height: 1.80rem;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+#header_side .buttonContainer .btn {
+  padding: 0; 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ol-zoom {
+  display: none !important;
 }

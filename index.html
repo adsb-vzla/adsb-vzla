@@ -17,6 +17,13 @@
   <link rel="stylesheet" href="libs/jquery-ui-1.13.2.min.css" type="text/css">
   <link rel="stylesheet" href="libs/ol-8.2.0.css" type="text/css" />
   <link rel="stylesheet" href="libs/ol-layerswitcher-4.1.1.css" type="text/css" />
+
+  <link rel="stylesheet" href="tailwind.css" type="text/css" />
+
+    <!-- ...existing code... -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css">
+  <!-- ...existing code... -->
+
   <link rel="stylesheet" href="style_5ee35cf1c5fe35a0b51e3b76df77a007.css" type="text/css" />
 
   <link rel="icon" type="image/png" href="images/plane-icon.png">
@@ -414,7 +421,7 @@
               <td>
                 <div class="infoHeading">
                   <span
-                    title="Distance of the aircraft from your ADS-B site at its last known position">Distance:</span>
+                    ttitle="Distance of the aircraft from your ADS-B site at its last known position">Distance:</span>
                 </div>
                 <div class="infoData">
                   <span id="selected_sitedist2">n/a</span>
@@ -903,7 +910,7 @@
           <hr />
         </div>
         <div id="settingsLeft" class="settingsColumn">
-          <div class="settingsOptionContainer" title="Select the measurement system">
+          <div class="settingsOptionContainer">
             <label for="units_selector"><span class="infoBlockTitleText">Units:&nbsp;&nbsp;</span></label>
             <select name="units_selector" id="units_selector">
               <option value="nautical">Aeronautical</option>
@@ -913,11 +920,11 @@
           </div>
           <div class="settingsOptionContainer">
             <div class="settingsCheckbox" id="groundvehicle_filter"></div>
-            <div class="settingsText" title="Displays ground service vehicles that emit ADS-B signal.">Ground Vehicles</div>
+            <div class="settingsText">Ground Vehicles</div>
           </div>
           <div class="settingsOptionContainer">
             <div class="settingsCheckbox" id="blockedmlat_filter"></div>
-            <div class="settingsText" title="Displays aircraft that do not have a standard ICAO code or whose airframe structure is unknown.">Non-ICAO Targets (radar track / airframe unknown) </div>
+            <div class="settingsText">Non-ICAO Targets (radar track / airframe unknown) </div>
           </div>
         </div>
         <div id="settingsRight" class="settingsColumn">
@@ -977,6 +984,47 @@
               <button id="toggle_sidebar_button" class="show_sidebar sidebar_button " title="Toggle Sidebar"></button>
             </div>
           -->
+          <!-- Opciones de aeronave -->
+          <div class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Aircraft Tools - Open aircraft filtering and tracking options."><i class="fa-solid fa-plane-up fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-[#121e3d] rounded-box z-50 w-52 p-2">
+              <li><a id="V" title="Show only aircraft currently visible on the map." onclick="toggleTableInView();">Current View</a></li>
+              <li><a id="M" title="Enable selecting multiple aircraft at the same time." onclick="toggleMultiSelect();">Multi-Select</a></li>
+              <li><a id="P" title="Keep historical positions visible for a short period." onclick="togglePersistence();">Persistence</a></li>
+              <li><a id="I" title="Show only the selected aircraft and hide the rest." onclick="toggleIsolation();">Isolate</a></li>
+              <li><a id="U" title="Display only aircraft identified as military." onclick="toggleMilitary();">Military Only</a></li>
+              <li><a id="F" title="Keep the selected aircraft centered on the map." onclick="toggleFollow();">Follow</a></li>
+            </ul>
+          </div>
+
+          <!-- Opciones de medición -->
+          <div class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Measurement Tools - Open measurement options."><i class="fa-solid fa-ruler fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-[#121e3d] rounded-box z-50 w-52 p-2">
+              <li><a id="D" title="Measure distance between two aircraft." onclick="toggleDistance();">Aircraft-Aircraft</a></li>
+              <li><a id="TA" title="Measure distance from a ground point to an aircraft." onclick="onTACycleClick();">Ground Point-Aircraft</a></li>
+              <li><a id="TT" title="Measure distance between two ground points." onclick="onTTCycleClick();">Ground Point-Ground Point</a></li>
+            </ul>
+          </div>
+
+          <!-- Opciones de trazas -->
+          <div class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn  btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Track Tools - Open track display options."><i class="fa-solid fa-route fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-[#121e3d] rounded-box z-50 w-52 p-2">
+              <li><a id="T" title="Display tracks for all visible aircraft." onclick="selectAllPlanes();">All Tracks</a></li>
+              <li><a id="K" title="Show or hide labels on aircraft tracks." onclick="toggleTrackLabels();">Track Labels</a></li>
+            </ul>
+          </div>
+          
+          <!-- Opciones de etiquetas -->
+          <div class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Label Tools - Open label visibility options."><i class="fa-solid fa-tags fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-[#121e3d] rounded-box z-50 w-52 p-2">
+              <li><a id="L" title="Show or hide primary aircraft labels." onclick="toggleLabels();">Labels</a></li>
+              <li><a id="O" title="Show or hide extended label information." onclick="toggleExtendedLabels();">Label Details</a></li>
+            </ul>
+          </div>
+          
           <div id="expand_sidebar_control">
               <button id="expand_sidebar_button" class="sidebar_button" title="Expand Sidebar" style="display: none;"></button>
           </div>
@@ -984,58 +1032,61 @@
 
           </div>
           <div id="fullscreenButton" class="svgButton fullscreenButton"></div>
-          <div id="settingsCog" class="svgButton settingsCog"  title="Toggle (S)ettings"></div>
-          <div id="L" title="Toggle (L)abels" class="button inActiveButton" onclick="toggleLabels();"><span
-              class="buttonText">L</span></div>
-          <div id="O" title="Toggle Label Extensi(O)ns" class="button inActiveButton" onclick="toggleExtendedLabels();">
+          <!-- <div id="settingsCog" class="svgButton settingsCog"></div> -->
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Open application preferences and display options." id="settingsCog"><i class="fa-solid fa-gear fa-xl"></i></div>
+          <!-- <div id="L" title="Toggle (L)abels" class="button inActiveButton" onclick="toggleLabels();"><span
+              class="buttonText">L</span></div> -->
+          <!-- <div id="O" title="Toggle Label Extensi(O)ns" class="button inActiveButton" onclick="toggleExtendedLabels();">
             <span class="buttonText">O</span>
-          </div>
-          <div id="K" title="Toggle Trac(K) Labels" class="button inActiveButton" onclick="toggleTrackLabels();"><span
-              class="buttonText">K</span></div>
+          </div> -->
+          <!-- <div id="K" title="Toggle Trac(K) Labels" class="button inActiveButton" onclick="toggleTrackLabels();"><span
+              class="buttonText">K</span></div> -->
           <!--<div class="buttonSpacer">
           </div> -->
           <div style="display: none" id="B" title="Toggle Map (B)rightness" class="button inActiveButton"
             onclick="toggles['MapDim'].toggle();"><span class="buttonText">B</span></div>
           <!--<div class="buttonSpacer">
           </div>-->
-          <div style="display: none" id="V" title="Table: only show aircraft in current (V)iew"
-            class="button inActiveButton" onclick="toggleTableInView();"><span class="buttonText">V</span></div>
-          <div id="M" title="Toggle (M)ultiSelect" class="button inActiveButton" onclick="toggleMultiSelect();"><span
-              class="buttonText">M</span></div>
+          <!-- <div style="display: none" id="V" title="Table: only show aircraft in current (V)iew"
+            class="button inActiveButton" onclick="toggleTableInView();"><span class="buttonText">V</span></div> -->
+          <!-- <div id="M" title="Toggle (M)ultiSelect" class="button inActiveButton" onclick="toggleMultiSelect();"><span
+              class="buttonText">M</span></div> -->
           <!--<div class="buttonSpacer">
           </div>-->
-          <div id="P" title="(P)ersistence mode" class="button inActiveButton" onclick="togglePersistence();"><span
-              class="buttonText">P</span></div>
-          <div id="I" title="(I)solate: only show selected aircraft" class="button inActiveButton"
-            onclick="toggleIsolation();"><span class="buttonText">I</span></div>
+          <!-- <div id="P" title="(P)ersistence mode" class="button inActiveButton" onclick="togglePersistence();"><span
+              class="buttonText">P</span></div> -->
+          <!-- <div id="I" title="(I)solate: only show selected aircraft" class="button inActiveButton"
+            onclick="toggleIsolation();"><span class="buttonText">I</span></div> -->
           <!--<div class="buttonSpacer">
           </div>-->
-          <div id="U" title="Show military aircraft" class="button inActiveButton" onclick="toggleMilitary();">
+          <!-- <div id="U" title="Mostrar aeronaves militares" class="button inActiveButton" onclick="toggleMilitary();">
             <span class="buttonText">U</span>
-          </div>
-          <div>
-            <span id="H" title="(H)ome / Reset Map" class="button inActiveButton" onclick="resetMap();"><span class="buttonText">H</span></span>
-          </div>
-          <div>
+          </div> -->
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" id="H" title="Recenter the map and restore the default view." onclick="resetMap();"><i class="fa-solid fa-location-dot fa-xl"></i></div>
+          <!-- <div>
+            <span id="H" title="(H)ome / Reset Map" class="button inActiveButton" onclick="resetMap();"><span class="buttonText"><i class="fa-solid fa-location-dot fa-l"></i></span></span>
+          </div> -->
+          <!-- <div>
             <span id="T" title="All (T)racks" class="button inActiveButton" onclick="selectAllPlanes();"><span class="buttonText">T</span></span>
-          </div>
-          <div id="F" title="(F)ollow" class="button inActiveButton" onclick="toggleFollow();"><span
-              class="buttonText">F</span></div> 
-          <div id="RP" title="Replay" class="button inActiveButton" onclick="showReplayBar();">
-            <img src="images/replay.png" >
-          </div>
-          <div id="D" title="Distance between 2 planes" class="button inActiveButton"
+          </div> -->
+          <!-- <div id="F" title="(F)ollow" class="button inActiveButton" onclick="toggleFollow();"><span
+              class="buttonText">F</span></div>  -->
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" id="RP" title="Open playback controls for historical flights." onclick="showReplayBar();"><img src="images/replay.png" class="header-icon"></div>
+
+          <!-- <div id="D" title="Distancia entre 2 aviones" class="button inActiveButton"
             onclick="toggleDistance();">
             <span class="buttonText">AA</span>
           </div>
-          <div id="TA" title="Distance between ground point and aircraft" class="button inActiveButton"
+          <div id="TA" title="Distancia entre punto en tierra y aeronave" class="button inActiveButton"
             onclick="onTACycleClick();">
             <span class="buttonText">TA</span>
           </div>
-          <div id="TT" title="Ground to aircraft distance" class="button inActiveButton"
+          <div id="TT" title="Distancia tierra-aeronave" class="button inActiveButton"
             onclick="onTTCycleClick();">
             <span class="buttonText">TT</span>
-          </div>
+          </div> -->
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" id="ZI" title="Zoom In - Increase map zoom level." onclick="zoomInMap();"> <i class="fa-solid fa-plus fa-xl"></i></div>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" id="ZO" title="Zoom Out - Decrease map zoom level." onclick="zoomOutMap();"> <i class="fa-solid fa-minus fa-xl"></i></div>
         </div>
 
       </div>
@@ -1362,6 +1413,23 @@
         }
       });
     })();
+      window.zoomInMap = function () {
+      if (window.OLMap && OLMap.getView) {
+        const v = OLMap.getView();
+        v.setZoom((v.getZoom() ?? 0) + 1);
+        return;
+      }
+      document.querySelector('.ol-zoom-in')?.click();
+    };
+
+    window.zoomOutMap = function () {
+      if (window.OLMap && OLMap.getView) {
+        const v = OLMap.getView();
+        v.setZoom((v.getZoom() ?? 0) - 1);
+        return;
+      }
+      document.querySelector('.ol-zoom-out')?.click();
+    };
   </script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">
