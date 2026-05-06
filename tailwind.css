@@ -1796,6 +1796,69 @@
       }
     }
   }
+  .timeline {
+    @layer daisyui.l1.l2.l3 {
+      position: relative;
+      display: flex;
+      > li {
+        position: relative;
+        display: grid;
+        flex-shrink: 0;
+        align-items: center;
+        grid-template-rows: var(--timeline-row-start, minmax(0, 1fr)) auto var( --timeline-row-end, minmax(0, 1fr) );
+        grid-template-columns: var(--timeline-col-start, minmax(0, 1fr)) auto var( --timeline-col-end, minmax(0, 1fr) );
+        > hr {
+          border: none;
+          width: 100%;
+          &:first-child {
+            grid-column-start: 1;
+            grid-row-start: 2;
+          }
+          &:last-child {
+            grid-column-start: 3;
+            grid-column-end: none;
+            grid-row-start: 2;
+            grid-row-end: auto;
+          }
+          @media print {
+            border: 0.1px solid var(--color-base-300);
+          }
+        }
+      }
+      :where(hr) {
+        height: calc(0.25rem * 1);
+        background-color: var(--color-base-300);
+      }
+      &:has(.timeline-middle hr) {
+        &:first-child {
+          border-start-start-radius: 0;
+          border-end-start-radius: 0;
+          border-start-end-radius: var(--radius-selector);
+          border-end-end-radius: var(--radius-selector);
+        }
+        &:last-child {
+          border-start-start-radius: var(--radius-selector);
+          border-end-start-radius: var(--radius-selector);
+          border-start-end-radius: 0;
+          border-end-end-radius: 0;
+        }
+      }
+      &:not(:has(.timeline-middle)) {
+        :first-child hr:last-child {
+          border-start-start-radius: var(--radius-selector);
+          border-end-start-radius: var(--radius-selector);
+          border-start-end-radius: 0;
+          border-end-end-radius: 0;
+        }
+        :last-child hr:first-child {
+          border-start-start-radius: 0;
+          border-end-start-radius: 0;
+          border-start-end-radius: var(--radius-selector);
+          border-end-end-radius: var(--radius-selector);
+        }
+      }
+    }
+  }
   .checkbox {
     @layer daisyui.l1.l2.l3 {
       border: var(--border) solid var(--input-color, var(--color-base-content));
@@ -1957,55 +2020,6 @@
     :where(&) {
       @layer daisyui.l1.l2 {
         position: relative;
-      }
-    }
-  }
-  .card {
-    @layer daisyui.l1.l2.l3 {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      border-radius: var(--radius-box);
-      outline-width: 2px;
-      transition: outline 0.2s ease-in-out;
-      outline: 0 solid #0000;
-      outline-offset: 2px;
-      &:focus {
-        --tw-outline-style: none;
-        outline-style: none;
-        @media (forced-colors: active) {
-          outline: 2px solid transparent;
-          outline-offset: 2px;
-        }
-      }
-      &:focus-visible {
-        outline-color: currentColor;
-      }
-      :where(figure:first-child) {
-        overflow: hidden;
-        border-start-start-radius: inherit;
-        border-start-end-radius: inherit;
-        border-end-start-radius: unset;
-        border-end-end-radius: unset;
-      }
-      :where(figure:last-child) {
-        overflow: hidden;
-        border-start-start-radius: unset;
-        border-start-end-radius: unset;
-        border-end-start-radius: inherit;
-        border-end-end-radius: inherit;
-      }
-      figure {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      &:has(> input:is(input[type="checkbox"], input[type="radio"])) {
-        cursor: pointer;
-        user-select: none;
-      }
-      &:has(> :checked) {
-        outline: 2px solid currentColor;
       }
     }
   }
@@ -2538,9 +2552,6 @@
   .contents {
     display: contents;
   }
-  .flex {
-    display: flex;
-  }
   .grid {
     display: grid;
   }
@@ -2561,9 +2572,6 @@
   }
   .w-52 {
     width: calc(var(--spacing) * 52);
-  }
-  .border-collapse {
-    border-collapse: collapse;
   }
   .transform {
     transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
@@ -2589,9 +2597,6 @@
   .resize {
     resize: both;
   }
-  .flex-wrap {
-    flex-wrap: wrap;
-  }
   .truncate {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2606,12 +2611,6 @@
   .border {
     border-style: var(--tw-border-style);
     border-width: 1px;
-  }
-  .bg-\[\#121e3d\] {
-    background-color: #121e3d;
-  }
-  .bg-\[\#192a56\] {
-    background-color: #192a56;
   }
   .p-2 {
     padding: calc(var(--spacing) * 2);

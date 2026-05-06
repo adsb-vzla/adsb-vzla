@@ -2504,7 +2504,7 @@ function earlyInitPage() {
 
     new Toggle({
         key: "lastLeg",
-        display: "Last Leg only",
+        display: "Last leg only",
         tooltip: "Only shows the last leg of the plane's trajectory, preventing the map from being filled with long flight lines." ,
         container: "#settingsLeft",
         init: true,
@@ -2518,12 +2518,84 @@ function earlyInitPage() {
         }
     });
     new Toggle({
-        key: "hideDistanceFunctions",
-        display: "Hide distance functions",
+        key: "hideAircraftFunctions",
+        display: "Hide aircraft functions",
+        tooltip: "Hides the aircraft action dropdown and disables aircraft-specific controls (selection, follow, infoblock, and related functions).",
         container: "#settingsLeft",
         init: false,
         setState: function (state) {
-            jQuery("#D, #TA, #TT").toggle(!state);
+            jQuery("#aircraft_dropdown").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideDistanceFunctions",
+        display: "Hide distance functions",
+        tooltip: "Hides the measurement dropdown and disables all distance tools (aircraft-aircraft, ground-aircraft, ground-ground).",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            jQuery("#measurement_dropdown").toggle(!state);
+            // jQuery("#D, #TA, #TT").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideTrackFunctions",
+        display: "Hide track functions",
+        tooltip: "Hides track controls and prevents drawing or interacting with aircraft trails and track-related features.",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            jQuery("#track_dropdown").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideLabelFunctions",
+        display: "Hide label functions",
+        tooltip: "Hides label controls and disables aircraft labels and related label settings (live/historic labels, units, and formatting).",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            jQuery("#label_dropdown").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideLayerFunctions",
+        display: "Hide layer functions",
+        tooltip: "Hides layer controls and prevents changing or interacting with map layers and overlay settings (base layers, overlays, and layer switcher).",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            jQuery("#layer-select").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideRecenterFunction",
+        display: "Hide recenter function",
+        tooltip: "Hides the recenter control and disables manual re-centering of the map to the site.",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            jQuery("#H").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideReplayFunction",
+        display: "Hide replay function",
+        tooltip: "Hides the replay controls and disables timeline playback and related replay controls (play, pause).",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            jQuery("#RP").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideZoomFunctions",
+        display: "Hide zoom functions",
+        tooltip: "Hides zoom controls and disables map zooming.",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            jQuery("#ZI, #ZO").toggle(!state);
         }
     });
     new Toggle({

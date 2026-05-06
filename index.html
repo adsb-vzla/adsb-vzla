@@ -2,39 +2,33 @@
 <html>
 
 <head>
-  <meta name="description" content="ADSB VZLA - Monitoreo de Tráfico Aéreo en Venezuela" />
-
+  <meta name="description" content="ADS-B Venezuela - Monitoreo de Tráfico Aéreo en Venezuela" />
   <meta charset="utf-8" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-
   <meta name="viewport"
     content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui" />
-
-  <!-- HEAD_ANCHOR -->
-
-  <!-- CSS_ANCHOR -->
+  <!-- JQUERY -->
   <link rel="stylesheet" href="libs/jquery-ui-1.13.2.min.css" type="text/css">
+  <!-- OPENLAYERS -->
   <link rel="stylesheet" href="libs/ol-8.2.0.css" type="text/css" />
   <link rel="stylesheet" href="libs/ol-layerswitcher-4.1.1.css" type="text/css" />
-
+  <!-- CUSTOM TAILWIND -->
   <link rel="stylesheet" href="tailwind.css" type="text/css" />
-
-    <!-- ...existing code... -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css">
-  <!-- ...existing code... -->
-
+  <!-- CUSTOM CSS -->
   <link rel="stylesheet" href="style_5ee35cf1c5fe35a0b51e3b76df77a007.css" type="text/css" />
 
-  <link rel="icon" type="image/png" href="images/plane-icon.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css">
 
+  <!-- ICONO -->
+  <link rel="icon" type="image/png" href="images/plane-icon.png">
+  <!-- TITULO -->
   <title>ADSB VZLA</title>
 </head>
 
 <body>
-  <!-- BODY_ANCHOR -->
   <div id="layout_container">
-    <!-- Card con info del avion (se muestra al hacer hover sobre uno) -->
+    <!-- INICIO CARD CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER HOVER AL AVIÓN) -->
     <div id="highlighted_infoblock" style="pointer-events: none">
       <div class="highlightedTitle infoBlockSection">
         <div>
@@ -80,22 +74,20 @@
         </div>
       </div>
     </div>
-    <!-- Fin card con info del avion -->
+    <!-- FIN CARD CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER HOVER AL AVIÓN) -->
 
-    <!-- Sidebar izquierdo con información del avión (al hacer click sobre uno) -->
+    <!-- INICIO SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER CLIC AL AVIÓN) -->
     <div id="selected_infoblock" style="display: none">
-
       <div id="infoblock-container">
-
         <div class="highlightedTitle infoBlockSection">
           <div>
             <span class="identLarge"
-              title="Callsign: Typically the air traffic control callsign or the aircraft's registration, as entered into the transponder by the pilot"
+              title="Typically the air traffic control callsign or the aircraft's registration, as entered into the transponder by the pilot."
               id="selected_callsign">n/a</span>
             <div id="infoblock_close" class="infoblockCloseBox"></div>
           </div>
           <div id="selected_icao"
-            title="ICAO hex ID: The aircraft's unique ICAO identification number shown in hexadecimal format as set in the aircrafts transponder (can be wrong, we will still display the data with the wrong hex)">
+            title="The aircraft's unique ICAO identification number shown in hexadecimal format as set in the aircrafts transponder (can be wrong, we will still display the data with the wrong hex).">
           </div>
           <div style="display: none" id="creditsSelected">
             <table class="infoSectionTable">
@@ -111,7 +103,7 @@
           </div>
         </div>
 
-        <!-- Si la fuente es MLAT, aqui se muestra la información respectiva -->
+        <!-- INICIO INFORMACIÓN FUENTE MLAT -->
         <div id=anon_mlat_info class="infoBlockSection hidden">
           <div>
             <div class="infoHeading">
@@ -138,9 +130,9 @@
             </div>
           </div>
         </div>
-        <!-- Fin info MLAT -->
+        <!-- FIN INFORMACIÓN FUENTE MLAT -->
 
-        <!-- Si la fuente es TIS-B, aqui se muestra la información respectiva -->
+        <!-- INICIO INFORMACIÓN FUENTE TIS-B -->
         <div id=tisb_info class="infoBlockSection hidden">
           <div class="infoHeading">
             <span>Non-ICAO hex, info:</span>
@@ -148,8 +140,8 @@
           <div class="infoHeading">
             <span title="TIS-B link">
               <a class="link" target="_blank"
-                href="https://skybrary.aero/articles/traffic-information-service-broadcast-tis-b"
-                rel="noreferrer">ATC contact broadcast</a></span>
+                href="https://skybrary.aero/articles/traffic-information-service-broadcast-tis-b" rel="noreferrer">ATC
+                contact broadcast</a></span>
           </div>
           <div class="rSpacer">
           </div>
@@ -170,123 +162,100 @@
                 rel="noreferrer">What is a hex ID?</a></span>
           </div>
         </div>
-        <!-- Fin info TIS-B -->
+        <!-- FIN INFORMACIÓN FUENTE TIS-B -->
 
+        <!-- INICIO INFORMACIÓN DEL AVIÓN SELECCIONADO -->
         <!-- Información del avión seleccionado -->
         <div id=reg_info class="infoBlockSection">
           <table class="infoSectionTable">
-
-            <!-- Información de pf (si existe) -->
-            <tr id=pf_info_container class=>
-              <td>
+            <tr id=pf_info_container>
+              <td title="Registration, operator, type and reported route (if available).">
                 <div>
                   <span class="identMedium" id="selected_pf_info"> </span>
                 </div>
               </td>
             </tr>
-
-            <!-- Información de la foto del avión -->
             <tr id=photo_container>
-              <td>
-                <div title="Aircraft Photo" id="selected_photo"></div>
+              <td title="Aircraft image and copyright information.">
+                <div id="selected_photo"></div>
                 <div id="copyrightInfo"></div>
               </td>
             </tr>
-
-            <!-- Matrícula -->
             <tr>
-              <td>
+              <td
+                title="The alphanumeric registration code assigned by the country in which the aircraft is registered.">
                 <div class="infoHeading">
-                  <span
-                    title="Registration: The alphanumeric registration code assigned by the country in which the aircraft is registered.">Reg.:
-                  </span>
+                  <span>Reg.:</span>
                 </div>
                 <div class="infoData"><span id="selected_registration">n/a</span></div>
               </td>
             </tr>
-
-            <!-- País -->
             <tr>
-              <td>
+              <td title="Country of registration as recorded in the aircraft registry.">
                 <div class="infoHeading">
-                  <span title="Country of registration">Country: </span>
+                  <span>Country: </span>
                 </div>
                 <div class="infoData">
-                  <span title="Country of registration" id="selected_country">n/a</span>
+                  <span>n/a</span>
                 </div>
               </td>
             </tr>
-
-            <!-- Flags de identidad: Militar / Privacidad PIA / Privacidad LAD -->
             <tr>
-              <td>
+              <td
+                title="Flags from the aircraft database indicating special statuses such as Military, PIA (Politically Important Aircraft), or LAD (Locally Assigned).">
                 <div class="infoHeading">
-                  <span title="Database flags (military / PIA / LAD)">DB Flags: </span>
+                  <span>DB flags:</span>
                 </div>
                 <div class="infoData"><span id="selected_dbFlags">n/a</span></div>
               </td>
             </tr>
-
-            <!-- Tipo ICAO -->
             <tr>
-              <td>
-                <span class="infoHeading" title="ICAO type code (A320/B738)">Type: </span>
+              <td title="Short ICAO aircraft type designator (e.g., A320, B738).">
+                <span class="infoHeading">Type: </span>
                 <span class="infoData" id="selected_icaotype">n/a</span>
               </td>
             </tr>
-
-            <!-- Año de fabricación / Tipo completo -->
             <tr>
-              <td>
-                <span class="infoData" title="Year of Manufacture / Full Type" id="selected_typelong">n/a</span>
+              <td title="Year of manufacture / Full type">
+                <span class="infoHeading">Year / Full: </span>
+                <span class="infoData" id="selected_typelong">n/a</span>
               </td>
             </tr>
-
-            <!-- Propietario / Operador -->
             <tr>
-              <td>
+              <td title="Owner / Operator">
                 <span class="infoHeading">Owner / Operator:</span>
-                <span class="infoData" title="Owner / Operator" id="selected_ownop">n/a</span>
+                <span class="infoData" id="selected_ownop">n/a</span>
               </td>
             </tr>
-
-            <!-- Descripción del tipo ICAO -->
             <tr>
-              <td>
-                <span class="infoHeading"
-                  title="ICAO type description (L/S/H Landplane/Seaplane/Helicopter 1/2/3/4 Number of P/T/J Reciprocating/Turboprop/Jet Engines)">Type Desc.: </span>
+              <td
+                title="ICAO type description (L/S/H Landplane/Seaplane/Helicopter 1/2/3/4 Number of P/T/J Reciprocating/Turboprop/Jet Engines)">
+                <span class="infoHeading">Type desc.: </span>
                 <span class="infoData" id="selected_typedesc">n/a</span>
               </td>
             </tr>
-
-            <!-- Código Squawk -->
             <tr>
-              <td>
+              <td title="A 4-digit octal code assigned to the aircraft by Air Traffic Control">
                 <div class="infoHeading">
-                  <span title="A 4-digit octal code assigned to the aircraft by Air Traffic Control">Squawk:
-                  </span>
+                  <span>Squawk:</span>
                 </div>
                 <div class="infoData">
                   <span id="selected_squawk1">n/a</span>
                 </div>
               </td>
             </tr>
-
-            <!-- Ruta -->
             <tr id="routeRow" class="hidden">
-              <td>
+              <td title="Reported flight origin and destination according to adsbdb.com">
                 <div class="infoHeading">
-                  <span title="Reported flight origin and destination according to adsbdb.com">Route:</span>
+                  <span>Route:</span>
                 </div>
                 <div class="infoData">
                   <span id="selected_route">n/a</span>
                 </div>
               </td>
             </tr>
-
-            <!-- Enlace de la foto -->
             <tr id="photoLinkRow" class="hidden">
-              <td>
+              <td title="Opens an external image or photo of the aircraft.">
                 <div class="infoHeading">
                   <span class="link" id="selected_photo_link">n/a</span>
                 </div>
@@ -294,6 +263,7 @@
             </tr>
           </table>
         </div>
+        <!-- FIN INFORMACIÓN DEL AVIÓN SELECCIONADO -->
 
         <!-- *** HISTORIAL (ADS-B VZLA LO TIENE OCULTO) *** -->
         <!-- <button id="show_trace" type="button" class="greyButton">History</button>
@@ -347,12 +317,10 @@
           </div> -->
         <!-- *** FIN HISTORIAL *** -->
 
-        <!-- ESPACIAL -->
-        <div class="sectionTitle">
+        <!-- INICIO SECCIÓN ESPACIAL -->
+        <div class="sectionTitle" title="Show or hide spatial data: groundspeed, altitude, position and distance.">
           <div class="section-title-content">
-            <button id="spatial_toggle" class="section-toggle"
-              style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;"
-              aria-expanded="false" aria-controls="spatial_block" title="Show/Hide SPATIAL">
+            <button id="spatial_toggle" class="section-toggle" aria-expanded="false" aria-controls="spatial_block">
               <span>SPATIAL</span>
               <span class="section-toggle-icon">▶</span>
             </button>
@@ -361,35 +329,34 @@
         <div id=spatial_block class="infoBlockSection">
           <table class="infoSectionTable">
             <tr id=receiver_id_div class="infoBlockSection hidden">
-              <td>
-                <span class="infoHeading" title="receiver id that supplied the position data">rId:</span>
+              <td title="receiver id that supplied the position data">
+                <span class="infoHeading">rId:</span>
                 <span class="infoData" id="receiver_id">n/a</span>
               </td>
             </tr>
             <tr>
-              <td>
-                <span class="infoHeading" title="The speed of the aircraft over the ground.">Groundspeed:</span>
+              <td title="The speed of the aircraft over the ground.">
+                <span class="infoHeading">Groundspeed:</span>
                 <span class="infoData" id="selected_speed1">n/a</span>
               </td>
             </tr>
             <tr>
-              <td>
-                <span class="infoHeading" id="selected_altitude1_title"
-                  title="The uncorrected pressure-derived height of the aircraft above mean sea level (based on barometric pressure)">Baro. Altitude:</span>
+              <td
+                title="The uncorrected pressure-derived height of the aircraft above mean sea level (based on barometric pressure)">
+                <span class="infoHeading" id="selected_altitude1_title">Baro. Altitude:</span>
                 <span class="infoData" id="selected_altitude1">n/a</span>
               </td>
             </tr>
             <tr>
-              <td>
-                <span class="infoHeading" id="selected_altitude_geom1_title"
-                  title="The geometric GPS derived altitude referenced to WGS84 ellipsoid (or reference EGM96 when enabled in the settings)">WGS84 Altitude:</span>
+              <td title="The geometric GPS derived altitude referenced to WGS84 ellipsoid (or reference EGM96 when enabled in the settings)">
+                <span class="infoHeading" id="selected_altitude_geom1_title">WGS84 Altitude:</span>
                 <span class="infoData" id="selected_altitude_geom1">n/a</span>
               </td>
             </tr>
             <tr>
-              <td>
+              <td title="Rate of climb or descent">
                 <div class="infoHeading">
-                  <span title="Rate of climb or descent">Vert. Rate:</span>
+                  <span>Vert. rate:</span>
                 </div>
                 <div class="infoData">
                   <span id="selected_vert_rate">n/a</span>
@@ -397,9 +364,9 @@
               </td>
             </tr>
             <tr>
-              <td>
+              <td title="Direction the aircraft is traveling over the ground">
                 <div class="infoHeading">
-                  <span title="Direction the aircraft is traveling over the ground">Track:</span>
+                  <span>Track:</span>
                 </div>
                 <div class="infoData">
                   <span id="selected_track1">n/a</span>
@@ -407,10 +374,9 @@
               </td>
             </tr>
             <tr>
-              <td>
+              <td title="Latitude and longitude coordinates of the aircraft's last known position">
                 <div class="infoHeading">
-                  <span
-                    title="Latitude and longitude coordinates of the aircraft's last known position">Pos.:</span>
+                  <span>Pos.:</span>
                 </div>
                 <div class="infoData">
                   <span id="selected_position">n/a</span>
@@ -418,10 +384,9 @@
               </td>
             </tr>
             <tr>
-              <td>
+              <td title="Distance of the aircraft from your ADS-B site at its last known position">
                 <div class="infoHeading">
-                  <span
-                    ttitle="Distance of the aircraft from your ADS-B site at its last known position">Distance:</span>
+                  <span>Distance:</span>
                 </div>
                 <div class="infoData">
                   <span id="selected_sitedist2">n/a</span>
@@ -430,68 +395,64 @@
             </tr>
           </table>
         </div>
-        <!-- FIN ESPACIAL -->
+        <!-- FIN SECCIÓN ESPACIAL -->
 
-        <!-- SEÑAL -->
-        <div class="sectionTitle">
+        <!-- INICIO SECCIÓN SEÑAL -->
+        <div class="sectionTitle" title="Show or hide signal details such as RSSI, message rate, total messages, last position and last seen.">
           <div class="section-title-content">
             <button class="section-toggle" data-target="signal_block"
-              style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;"
-              aria-expanded="false" aria-controls="signal_block" title="Show/Hide SIGNAL">
+              aria-expanded="false" aria-controls="signal_block">
               <span>SIGNAL</span>
               <span class="section-toggle-icon">▶</span>
             </button>
           </div>
         </div>
         <div class="infoBlockSection">
-          <div>
+          <div title="Data source for the reported aircraft data (e.g., ADS-B, MLAT, Other Mode S)">
             <div class="infoHeading">
-              <span
-                title="Data source for the reported aircraft data (e.g., ADS-B, MLAT, Other Mode S)">Source:</span>
+              <span>Source:</span>
             </div>
             <div class="infoData">
               <span id="selected_source">n/a</span>
             </div>
           </div>
           <div id="selected_showTrace_hide">
-            <div>
+            <div title="Signal strength from this aircraft on your receiver in dBFS">
               <div class="infoHeading">
-                <span title="Signal strength from this aircraft on your receiver in dBFS">RSSI:</span>
+                <span>RSSI:</span>
               </div>
               <div class="infoData">
                 <span id="selected_rssi1">n/a</span>
               </div>
             </div>
-            <div>
+            <div title="Number of messages received from this aircraft per second (averaged over the last 2 update intervals)">
               <div class="infoHeading">
-                <span
-                  title="Number of messages received from this aircraft per second (averaged over the last 2 update intervals)">Msg. Rate:</span>
+                <span>Msg. rate:</span>
               </div>
               <div class="infoData">
                 <span id="selected_message_rate">n/a</span>
               </div>
             </div>
-            <div>
+            <div title="Total number of messages received from this aircraft">
               <div class="infoHeading">
-                <span title="Total number of messages received from this aircraft">Messages:</span>
+                <span>Messages:</span>
               </div>
               <div class="infoData" id="selected_message_count">n/a
               </div>
             </div>
             <div class="rSpacer">
             </div>
-
-            <div>
+            <div title="Time in seconds since a position was received from this aircraft">
               <div class="infoHeading">
-                <span title="Time in seconds since a position was received from this aircraft">Last Pos.:</span>
+                <span>Last pos.:</span>
               </div>
               <div class="infoData">
                 <span id="selected_seen_pos">n/a</span>
               </div>
             </div>
-            <div>
+            <div title="Time in seconds since a message was received from this aircraft">
               <div class="infoHeading">
-                <span title="Time in seconds since a message was received from this aircraft">Last Seen:</span>
+                <span>Last seen:</span>
               </div>
               <div class="infoData">
                 <span id="selected_seen">n/a</span>
@@ -499,284 +460,260 @@
             </div>
           </div>
         </div>
-        <!-- FIN SEÑAL -->
+        <!-- FIN SECCIÓN SEÑAL -->
 
-        <!-- FMS (SELECCIÓN) -->
-        <div class="sectionTitle">
+        <!-- INICIO SECCIÓN FMS (SELECCIÓN) -->
+        <div class="sectionTitle" title="Show or hide selected FMS settings: selected altitude and selected heading.">
           <div class="section-title-content">
-            <button class="section-toggle" data-target="fms_block" aria-expanded="false" aria-controls="fms_block"
-              title="Show/Hide FMS SEL"
-              style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;">
+            <button class="section-toggle" data-target="fms_block" aria-expanded="false" aria-controls="fms_block">
               <span>FMS SEL</span>
               <span class="section-toggle-icon">▶</span>
             </button>
           </div>
         </div>
         <div class="infoBlockSection">
-          <div>
+          <div title="The selected altitude in the aircraft's flight management system">
             <div class="infoHeading">
-              <span title="The selected altitude in the aircraft's flight management system">Sel. Alt.:</span>
+              <span>Sel. alt.:</span>
             </div>
             <div class="infoData">
               <span id="selected_nav_altitude">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="The selected heading in the aircraft's flight management system">
             <div class="infoHeading">
-              <span title="The selected heading in the aircraft's flight management system">Sel. Head.:</span>
+              <span>Sel. head.:</span>
             </div>
             <div class="infoData">
               <span id="selected_nav_heading">n/a</span>
             </div>
           </div>
-        </div> <!-- FMS SEL -->
+        </div>
+        <!-- FIN SECCIÓN FMS (SELECCIÓN) -->
 
-        <!-- FIN FMS (SELECCIÓN) -->
-
-        <!-- VIENTO -->
-        <div class="sectionTitle">
+        <!-- INICIO SECCIÓN VIENTO -->
+        <div class="sectionTitle" title="Show or hide wind data: speed, direction (from), and temperatures (TAT/OAT).">
           <div class="section-title-content">
-            <button class="section-toggle" data-target="wind_block" aria-expanded="false" aria-controls="wind_block"
-              title="Show/Hide WIND"
-              style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;">
+            <button class="section-toggle" data-target="wind_block" aria-expanded="false" aria-controls="wind_block">
               <span>WIND</span>
               <span class="section-toggle-icon">▶</span>
             </button>
           </div>
         </div>
         <div class="infoBlockSection">
-          <div>
+          <div title="Calculated wind speed">
             <div class="infoHeading">
-              <span title="Calculated Wind speed">Speed:</span>
+              <span>Speed:</span>
             </div>
             <div class="infoData">
               <span id="selected_ws">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Calculated wind is blowing out of this direction">
             <div class="infoHeading">
-              <span title="Calculated wind is blowing out of this direction">Direction (from):</span>
+              <span>Direction (from):</span>
             </div>
             <div class="infoData">
               <span id="selected_wd">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Total (TAT) / Static (SAT/OAT) air temperature calculated using Mach and true airspeed">
             <div class="infoHeading">
-              <span
-                title="Total (TAT) / Static (SAT/OAT) air temperature calculated using Mach and true airspeed">TAT
-                /
-                OAT:</span>
+              <span>TAT / OAT:</span>
             </div>
             <div class="infoData">
               <span id="selected_temp">n/a</span>
             </div>
           </div>
         </div>
-        <!-- FIN VIENTO -->
+        <!-- FIN SECCIÓN VIENTO -->
 
-        <!-- VELOCIDAD -->
-        <div class="sectionTitle">
+        <!-- INICIO SECCIÓN VELOCIDAD -->
+        <div class="sectionTitle" title="Show or hide speed data: ground speed, true airspeed, indicated airspeed, and mach number.">
           <div class="section-title-content">
-            <button class="section-toggle" data-target="speed_block" aria-expanded="false" aria-controls="speed_block"
-              title="Show/Hide SPEED"
-              style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;">
+            <button class="section-toggle" data-target="speed_block" aria-expanded="false" aria-controls="speed_block">
               <span>SPEED</span>
               <span class="section-toggle-icon">▶</span>
             </button>
           </div>
         </div>
         <div class="infoBlockSection">
-          <div>
+          <div title="The speed of the aircraft over the ground">
             <div class="infoHeading">
-              <span title="The speed of the aircraft over the ground">Ground:</span>
+              <span>Ground:</span>
             </div>
             <div class="infoData">
               <span id="selected_speed2">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="True airspeed (the speed of the aircraft relative to the airmass in which it is flying)">
             <div class="infoHeading">
-              <span
-                title="True airspeed (the speed of the aircraft relative to the airmass in which it is flying)">True:</span>
+              <span>True:</span>
             </div>
             <div class="infoData">
               <span id="selected_tas">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Indicated airspeed (the airspeed read directly from the airspeed indicator on the aircraft)">
             <div class="infoHeading">
-              <span
-                title="Indicated airspeed (the airspeed read directly from the airspeed indicator on the aircraft)">Indicated:</span>
+              <span>Indicated:</span>
             </div>
             <div class="infoData">
               <span id="selected_ias">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="The ratio of the speed of the aircraft to the speed of sound in the surrounding space">
             <div class="infoHeading">
-              <span
-                title="The ratio of the speed of the aircraft to the speed of sound in the surrounding space">Mach:</span>
+              <span>Mach:</span>
             </div>
             <div class="infoData">
               <span id="selected_mach">n/a</span>
             </div>
           </div>
         </div>
+        <!-- FIN SECCIÓN VELOCIDAD -->
 
-        <!-- ALTITUD -->
-        <div class="sectionTitle">
+        <!-- INICIO SECCIÓN ALTITUD -->
+        <div class="sectionTitle" title="Show or hide altitude details: barometric, geometric, climb/descend rates, and QNH.">
           <div class="section-title-content">
             <button class="section-toggle" data-target="altitude_block" aria-expanded="false"
-              aria-controls="altitude_block" title="Show/Hide ALTITUDE"
-              style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;">
+              aria-controls="altitude_block">
               <span>ALTITUDE</span>
               <span class="section-toggle-icon">▶</span>
             </button>
           </div>
         </div>
         <div class="infoBlockSection">
-          <div>
+          <div title="The uncorrected pressure-derived height of the aircraft above mean sea level (based on barometric pressure)">
             <div class="infoHeading">
-              <span id="selected_altitude2_title"
-                title="The uncorrected pressure-derived height of the aircraft above mean sea level (based on barometric pressure)">Barometric:</span>
+              <span id="selected_altitude2_title">Barometric:</span>
             </div>
             <div class="infoData">
               <span id="selected_altitude2">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Rate of climb or descent (derived from barometric altitude)">
             <div class="infoHeading">
-              <span title="Rate of climb or descent (derived from barometric altitude)">Baro. Rate:</span>
+              <span>Baro. rate:</span>
             </div>
             <div class="infoData">
               <span id="selected_baro_rate">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="The geometric GPS derived altitude referenced to WGS84 ellipsoid (or reference EGM96 when enabled in the settings)">
             <div class="infoHeading">
-              <span id="selected_altitude_geom2_title"
-                title="The geometric GPS derived altitude referenced to WGS84 ellipsoid (or reference EGM96 when enabled in the settings)">WGS84:</span>
+              <span id="selected_altitude_geom2_title">WGS84:</span>
             </div>
             <div class="infoData">
               <span id="selected_altitude_geom2">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Rate of climb or descent (derived from avionics which may be inertial or GNSS/satellite-based)">
             <div class="infoHeading fourColumnSection3">
-              <span
-                title="Rate of climb or descent (derived from avionics which may be inertial or GNSS/satellite-based)">Geom. Rate:</span>
+              <span>Geom. rate:</span>
             </div>
             <div class="infoData fourColumnSection4">
               <span id="selected_geom_rate">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="The altimeter/QNH setting used by the aircraft's navigation systems">
             <div class="infoHeading">
-              <span
-                title="The altimeter/QNH setting used by the aircraft's navigation systems">QNH:</span>
+              <span>QNH:</span>
             </div>
             <div class="infoData">
               <span id="selected_nav_qnh">n/a</span>
             </div>
           </div>
         </div>
-        <!-- FIN ALTITUD -->
+        <!-- FIN SECCIÓN ALTITUD -->
 
-        <!-- DIRECCIÓN -->
-        <div class="sectionTitle">
+        <!-- INICIO SECCIÓN DIRECCIÓN -->
+        <div class="sectionTitle" title="Show or hide direction data: ground track, true heading, magnetic heading, magnetic declination, track rate and roll.">
           <button class="section-toggle" data-target="direction_block" aria-expanded="false"
-            aria-controls="direction_block" title="Show/Hide DIRECTION"
-            style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;">
+            aria-controls="direction_block">
             <span>DIRECTION</span>
             <span class="section-toggle-icon">▶</span>
           </button>
         </div>
         <div class="infoBlockSection">
-          <div>
+          <div title="Direction the aircraft is traveling over the ground">
             <div class="infoHeading">
-              <span title="Direction the aircraft is traveling over the ground">Ground Track:</span>
+              <span>Ground track:</span>
             </div>
             <div class="infoData">
               <span id="selected_track2">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="The aircraft's nose heading relative to true north">
             <div class="infoHeading">
-              <span title="The aircraft's nose heading relative to true north">True Heading:</span>
+              <span>True heading:</span>
             </div>
             <div class="infoData">
               <span id="selected_true_heading">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="The aircraft's nose heading relative to magnetic north">
             <div class="infoHeading">
-              <span title="The aircraft's nose heading relative to magnetic north">Magnetic Heading:</span>
+              <span>Magnetic heading:</span>
             </div>
             <div class="infoData">
               <span id="selected_mag_heading">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Magnetic Declination looked up from the World Magnetic Model">
             <div class="infoHeading">
-              <span title="Magnetic Declination looked up from the World Magnetic Model">Magnetic Decl.:</span>
+              <span>Magnetic decl.:</span>
             </div>
             <div class="infoData">
               <span id="selected_mag_declination">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Rate of turn of the ground track">
             <div class="infoHeading">
-              <span title="Rate of turn of the ground track">Track Rate:</span>
+              <span>Track rate:</span>
             </div>
             <div class="infoData">
               <span id="selected_trackrate">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="The aircraft's roll angle">
             <div class="infoHeading">
-              <span title="The aircraft's roll angle">Roll:</span>
+              <span>Roll:</span>
             </div>
             <div class="infoData">
               <span id="selected_roll">n/a</span>
             </div>
           </div>
         </div>
-        <!-- FIN DIRECCIÓN -->
+        <!-- FIN SECCIÓN DIRECCIÓN -->
 
-        <!-- VARIOS -->
-        <div class="sectionTitle">
-          <button class="section-toggle" data-target="stuff_block" aria-expanded="false" aria-controls="stuff_block"
-            title="Show/Hide STUFF"
-            style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;">
+        <!-- INICIO SECCIÓN VARIOS -->
+        <div class="sectionTitle" title="Show or hide miscellaneous aircraft data such as navigation modes, ADS-B version, and category.">
+          <button class="section-toggle" data-target="stuff_block" aria-expanded="false" aria-controls="stuff_block">
             <span>STUFF</span>
             <span class="section-toggle-icon">▶</span>
           </button>
         </div>
         <div class="infoBlockSection">
-          <div>
+          <div title="The enabled navigation modes as reported by the aircraft (i.e., auto-pilot, Traffic Collision Avoidance System, altitude hold, approach, LNAV approach, and/or VNAV approach)">
             <div class="infoHeading">
-              <span
-                title="The enabled navigation modes as reported by the aircraft (i.e., auto-pilot, Traffic Collision Avoidance System, altitude hold, approach, LNAV approach, and/or VNAV approach)">Nav. Modes:</span>
+              <span>Nav. modes:</span>
             </div>
             <div class="infoData">
               <span id="selected_nav_modes">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="For ADS-B-equipped aircraft, the version of ADS-B to which the aircraft conforms, as reported by the aircraft">
             <div class="infoHeading">
-              <span
-                title="For ADS-B-equipped aircraft, the version of ADS-B to which the aircraft conforms, as reported by the aircraft">ADS-B Ver.:
-              </span>
+              <span>ADS-B ver.:</span>
             </div>
             <div class="infoData">
               <span id="selected_version">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Aircraft category code as reported by the aircraft, this indicates the type of aircraft and, for airplanes, a relative indicator of its size">
             <div class="infoHeading">
-              <span
-                title="Aircraft category code as reported by the aircraft, this indicates the type of aircraft and, for airplanes, a relative indicator of its size">Category:</span>
+              <span>Category:</span>
             </div>
             <div class="infoData">
               <span id="selected_category">n/a</span>
@@ -788,69 +725,61 @@
             </div>
           </div>
         </div>
-        <!-- FIN VARIOS -->
+        <!-- FIN SECCIÓN VARIOS -->
 
-        <!-- PRECISIÓN -->
-        <div class="sectionTitle">
+        <!-- INICIO SECCIÓN PRECISIÓN -->
+        <div class="sectionTitle" title="Show or hide precision and integrity indicators: NACp, SIL, NACv, NIC_BARO, radius of containment (Rc), and position epoch.">
           <button class="section-toggle" data-target="accuracy_block" aria-expanded="false"
-            aria-controls="accuracy_block" title="Show/Hide ACCURACY"
-            style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;">
+            aria-controls="accuracy_block">
             <span>ACCURACY</span>
             <span class="section-toggle-icon">▶</span>
           </button>
         </div>
         <div class="infoBlockSection">
-          <div>
+          <div title="Navigation accuracy category of the position (95% bound on positions)">
             <div class="infoHeading">
-              <span
-                title="Navigation accuracy category of the position (95% bound on positions)">NAC<sub>P</sub>:</span>
+              <span>NAC<sub>P</sub>:</span>
             </div>
             <div class="infoData">
               <span id="selected_nac_p">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Surveillance integrity level (probability of positions lying outside the claimed radius of containment)">
             <div class="infoHeading">
-              <span
-                title="Surveillance integrity level (probability of positions lying outside the claimed radius of containment)">SIL:</span>
+              <span>SIL:</span>
             </div>
             <div class="infoData">
               <span id="selected_sil">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Navigation accuracy category of the velocity (95% bound on velocities)">
             <div class="infoHeading">
-              <span
-                title="Navigation accuracy category of the velocity (95% bound on velocities)">NAC<sub>V</sub>:</span>
+              <span>NAC<sub>V</sub>:</span>
             </div>
             <div class="infoData">
               <span id="selected_nac_v">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Whether the reported pressure altitude has been crosschecked against another source of pressure altitude">
             <div class="infoHeading">
-              <span
-                title="Whether the reported pressure altitude has been crosschecked against another source of pressure altitude">NIC<sub>BARO</sub>:</span>
+              <span>NIC<sub>BARO</sub>:</span>
             </div>
             <div class="infoData">
               <span id="selected_nic_baro">n/a</span>
             </div>
           </div>
-          <div>
+          <div title="Radius of containment, the reported position of the aircraft is expected to be within this distance of the true position, with a failure rate defined by SIL">
             <div class="infoHeading">
-              <span
-                title="Radius of containment, the reported position of the aircraft is expected to be within this distance of the true position, with a failure rate defined by SIL">R<sub>C</sub>:</span>
+              <span>R<sub>C</sub>:</span>
             </div>
             <div class="infoData">
               <span id="selected_rc">n/a</span>
             </div>
           </div>
-
-
           <div class="bottom-info-container">
             <div class="bottom-info-text">Learn more about Mode S data type by hovering over each data label.</div>
           </div>
-          <div>
+          <div title="Unix timestamp of the last received position report from the aircraft.">
             <div class="infoHeading">
               <span>Pos. epoch:</span>
             </div>
@@ -858,48 +787,45 @@
               <span id="selected_pos_epoch">n/a</span>
             </div>
           </div>
-
         </div>
-        <!-- FIN PRECISIÓN -->
+        <!-- FIN SECCIÓN PRECISIÓN -->
 
         <!-- EXPORTAR KML -->
-        <div class="sectionTitle">
+        <div class="sectionTitle" title="Export the current aircraft position to a KML file for viewing in mapping applications. Choose altitude source: geometric, geom_avg, or baro.">
           <button class="section-toggle" data-target="export_kml_block" aria-expanded="false"
-            aria-controls="export_kml_block" title="Show/Hide EXPORT KML"
-            style="background:none;border:none;cursor:pointer;font-size:0.8rem;font-weight:bold;color:#fff;">
+            aria-controls="export_kml_block">
             <span>EXPORT KML</span>
             <span class="section-toggle-icon">▶</span>
           </button>
         </div>
         <div id="export_kml_block" class="infoBlockSection hidden">
-          <button id="export_kml_geom" onclick='exportKML("geom")'>geometric altitude (EGM96)</button>
-          <button id="export_kml_geom_avg" onclick='exportKML("geom_avg")'>baro + avg.(EGM96 - baro)</button>
-          <button id="export_kml_baro" onclick='exportKML("baro")'>uncorrected pressure alt.</button>
+          <button id="export_kml_geom" title="Export KML using geometric altitude (EGM96)." onclick='exportKML("geom")'>geometric altitude (EGM96)</button>
+          <button id="export_kml_geom_avg" title="Export KML using barometric altitude plus EGM96 average correction." onclick='exportKML("geom_avg")'>baro + avg.(EGM96 - baro)</button>
+          <button id="export_kml_baro" title="Export KML using uncorrected pressure altitude (barometric)." onclick='exportKML("baro")'>uncorrected pressure alt.</button>
         </div>
       </div>
     </div>
-    <!-- Fin sidebar izquierdo -->
+    <!-- FIN SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER CLIC AL AVIÓN) -->
 
-    <div id="loader">
+    <!-- <div id="loader">
       <div class="spinner">
         <img class="spinner-logo" src="images/logo-adsb-vzla-planet6.png" alt="">
         <div class="spinner-orbit">
           <img class="spinner-plane" src="images/plane-around-orange-dark.png" alt="">
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div id="map_container" style="background-color:#D2D2D2;">
-      <!-- MAP_CONTAINER_ANCHOR -->
       <div id="map_canvas" style="background-color:#D2D2D2;">
       </div>
       <div id="iconTestCanvas" style="background-color:#D2D2D2;display:none;">
       </div>
-
+      <!-- INICIO MENÚ CONFIGURACIONES -->
       <div id="settings_infoblock">
         <div id="settings_close" class="settingsCloseBox"></div>
         <div class="settingsOptionContainer">
-          <div class="settingsText">Text and Icon size:</div>
+          <div class="settingsText">Text and icon size:</div>
         </div>
         <div style="display: block; width: 100%;" id="userScaleSlider"></div>
         <div class="settingsOptionContainer">
@@ -910,7 +836,7 @@
           <hr />
         </div>
         <div id="settingsLeft" class="settingsColumn">
-          <div class="settingsOptionContainer">
+          <div class="settingsOptionContainer" title="Select the measurement system">
             <label for="units_selector"><span class="infoBlockTitleText">Units:&nbsp;&nbsp;</span></label>
             <select name="units_selector" id="units_selector">
               <option value="nautical">Aeronautical</option>
@@ -918,21 +844,23 @@
               <option value="imperial">Imperial</option>
             </select>
           </div>
-          <div class="settingsOptionContainer">
+          <div class="settingsOptionContainer" title="Displays ground service vehicles that emit ADS-B signal.">
             <div class="settingsCheckbox" id="groundvehicle_filter"></div>
-            <div class="settingsText">Ground Vehicles</div>
+            <div class="settingsText">Ground vehicles</div>
           </div>
-          <div class="settingsOptionContainer">
+          <div class="settingsOptionContainer" title="Displays aircraft that do not have a standard ICAO code or whose airframe structure is unknown.">
             <div class="settingsCheckbox" id="blockedmlat_filter"></div>
-            <div class="settingsText">Non-ICAO Targets (radar track / airframe unknown) </div>
+            <div class="settingsText">Non-ICAO targets (radar track / airframe unknown) </div>
           </div>
         </div>
         <div id="settingsRight" class="settingsColumn">
           <div class="settingsOptionContainer">
-            <button class="formButton" onclick="resetSettings();">Reset All Settings</button>
+            <button class="formButton" onclick="resetSettings();">Reset all settings</button>
           </div>
         </div>
       </div>
+      <!-- FIN MENÚ CONFIGURACIONES -->
+
       <div style="display: none" id="credits">
         <span class=credits-image></span>
         <span class=credits-text>aggregator.com</span>
@@ -946,7 +874,8 @@
         </div> -->
         <div id="right_controls">
           <div id="utc_clock">00:00 <span>UTC</span></div>
-          <div id="tab-search-navbar">
+          <div id="tab-search-navbar"
+            title="Enter decimal coordinates (lat,lon), ICAO24 hex (hex ID), or flight callsign to search.">
             <form id="search_form">
               <input id="search_input" name="searchBox" type="text" placeholder="Search flights, airports..."
                 maxlength="128">
@@ -964,7 +893,9 @@
             <button id="toggle_sidebar_button_closed" class="show_sidebar sidebar_button" title="Open Sidebar"
               style="background: none; border: none; padding: 6px; cursor: pointer;">
               <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="34" height="34" viewBox="0 0 50 50">
-                <path d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z"></path>
+                <path
+                  d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z">
+                </path>
               </svg>
             </button>
           </div>
@@ -985,55 +916,75 @@
             </div>
           -->
           <!-- Opciones de aeronave -->
-          <div class="dropdown dropdown-left">
-            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Aircraft Tools - Open aircraft filtering and tracking options."><i class="fa-solid fa-plane-up fa-xl"></i></div>
-            <ul tabindex="-1" class="dropdown-content menu bg-[#121e3d] rounded-box z-50 w-52 p-2">
-              <li><a id="V" title="Show only aircraft currently visible on the map." onclick="toggleTableInView();">Current View</a></li>
-              <li><a id="M" title="Enable selecting multiple aircraft at the same time." onclick="toggleMultiSelect();">Multi-Select</a></li>
-              <li><a id="P" title="Keep historical positions visible for a short period." onclick="togglePersistence();">Persistence</a></li>
-              <li><a id="I" title="Show only the selected aircraft and hide the rest." onclick="toggleIsolation();">Isolate</a></li>
-              <li><a id="U" title="Display only aircraft identified as military." onclick="toggleMilitary();">Military Only</a></li>
-              <li><a id="F" title="Keep the selected aircraft centered on the map." onclick="toggleFollow();">Follow</a></li>
+          <div id="aircraft_dropdown" class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              title="Aircraft Tools - Open aircraft filtering and tracking options."><i
+                class="fa-solid fa-plane-up fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
+              <li><a id="V" title="Show only aircraft currently visible on the map."
+                  onclick="toggleTableInView();">Current view</a></li>
+              <li><a id="M" title="Enable selecting multiple aircraft at the same time."
+                  onclick="toggleMultiSelect();">Multi-select</a></li>
+              <li><a id="P" title="Keep historical positions visible for a short period."
+                  onclick="togglePersistence();">Persistence</a></li>
+              <li><a id="I" title="Show only the selected aircraft and hide the rest."
+                  onclick="toggleIsolation();">Isolate</a></li>
+              <li><a id="U" title="Display only aircraft identified as military." onclick="toggleMilitary();">Military
+                  only</a></li>
+              <li><a id="F" title="Keep the selected aircraft centered on the map." onclick="toggleFollow();">Follow</a>
+              </li>
             </ul>
           </div>
 
           <!-- Opciones de medición -->
-          <div class="dropdown dropdown-left">
-            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Measurement Tools - Open measurement options."><i class="fa-solid fa-ruler fa-xl"></i></div>
-            <ul tabindex="-1" class="dropdown-content menu bg-[#121e3d] rounded-box z-50 w-52 p-2">
-              <li><a id="D" title="Measure distance between two aircraft." onclick="toggleDistance();">Aircraft-Aircraft</a></li>
-              <li><a id="TA" title="Measure distance from a ground point to an aircraft." onclick="onTACycleClick();">Ground Point-Aircraft</a></li>
-              <li><a id="TT" title="Measure distance between two ground points." onclick="onTTCycleClick();">Ground Point-Ground Point</a></li>
+          <div id="measurement_dropdown" class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              title="Measurement Tools - Open measurement options."><i class="fa-solid fa-ruler fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
+              <li><a id="D" title="Measure distance between two aircraft."
+                  onclick="toggleDistance();">Aircraft-aircraft</a></li>
+              <li><a id="TA" title="Measure distance from a ground point to an aircraft."
+                  onclick="onTACycleClick();">Ground point-aircraft</a></li>
+              <li><a id="TT" title="Measure distance between two ground points." onclick="onTTCycleClick();">Ground
+                  point-ground point</a></li>
             </ul>
           </div>
 
           <!-- Opciones de trazas -->
-          <div class="dropdown dropdown-left">
-            <div tabindex="0" role="button" class="btn  btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Track Tools - Open track display options."><i class="fa-solid fa-route fa-xl"></i></div>
-            <ul tabindex="-1" class="dropdown-content menu bg-[#121e3d] rounded-box z-50 w-52 p-2">
-              <li><a id="T" title="Display tracks for all visible aircraft." onclick="selectAllPlanes();">All Tracks</a></li>
-              <li><a id="K" title="Show or hide labels on aircraft tracks." onclick="toggleTrackLabels();">Track Labels</a></li>
+          <div id="track_dropdown" class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn  btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              title="Track Tools - Open track display options."><i class="fa-solid fa-route fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
+              <li><a id="T" title="Display tracks for all visible aircraft." onclick="selectAllPlanes();">All tracks</a>
+              </li>
+              <li><a id="K" title="Show or hide labels on aircraft tracks." onclick="toggleTrackLabels();">Track
+                  labels</a></li>
             </ul>
           </div>
-          
+
           <!-- Opciones de etiquetas -->
-          <div class="dropdown dropdown-left">
-            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Label Tools - Open label visibility options."><i class="fa-solid fa-tags fa-xl"></i></div>
-            <ul tabindex="-1" class="dropdown-content menu bg-[#121e3d] rounded-box z-50 w-52 p-2">
+          <div id="label_dropdown" class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              title="Label Tools - Open label visibility options."><i class="fa-solid fa-tags fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
               <li><a id="L" title="Show or hide primary aircraft labels." onclick="toggleLabels();">Labels</a></li>
-              <li><a id="O" title="Show or hide extended label information." onclick="toggleExtendedLabels();">Label Details</a></li>
+              <li><a id="O" title="Show or hide extended label information." onclick="toggleExtendedLabels();">Label
+                  details</a></li>
             </ul>
           </div>
-          
+
           <div id="expand_sidebar_control">
-              <button id="expand_sidebar_button" class="sidebar_button" title="Expand Sidebar" style="display: none;"></button>
+            <button id="expand_sidebar_button" class="sidebar_button" title="Expand Sidebar"
+              style="display: none;"></button>
           </div>
           <div id="layer-select" class="button-layer">
 
           </div>
-          <div id="fullscreenButton" class="svgButton fullscreenButton"></div>
+          <!-- <div id="fullscreenButton" class="svgButton fullscreenButton"></div> -->
           <!-- <div id="settingsCog" class="svgButton settingsCog"></div> -->
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" title="Open application preferences and display options." id="settingsCog"><i class="fa-solid fa-gear fa-xl"></i></div>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+            title="Open application preferences and display options." id="settingsCog"><i
+              class="fa-solid fa-gear fa-xl"></i></div>
           <!-- <div id="L" title="Toggle (L)abels" class="button inActiveButton" onclick="toggleLabels();"><span
               class="buttonText">L</span></div> -->
           <!-- <div id="O" title="Toggle Label Extensi(O)ns" class="button inActiveButton" onclick="toggleExtendedLabels();">
@@ -1043,8 +994,8 @@
               class="buttonText">K</span></div> -->
           <!--<div class="buttonSpacer">
           </div> -->
-          <div style="display: none" id="B" title="Toggle Map (B)rightness" class="button inActiveButton"
-            onclick="toggles['MapDim'].toggle();"><span class="buttonText">B</span></div>
+          <!-- <div style="display: none" id="B" title="Toggle Map (B)rightness" class="button inActiveButton"
+            onclick="toggles['MapDim'].toggle();"><span class="buttonText">B</span></div> -->
           <!--<div class="buttonSpacer">
           </div>-->
           <!-- <div style="display: none" id="V" title="Table: only show aircraft in current (V)iew"
@@ -1062,7 +1013,9 @@
           <!-- <div id="U" title="Mostrar aeronaves militares" class="button inActiveButton" onclick="toggleMilitary();">
             <span class="buttonText">U</span>
           </div> -->
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" id="H" title="Recenter the map and restore the default view." onclick="resetMap();"><i class="fa-solid fa-location-dot fa-xl"></i></div>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="H"
+            title="Recenter the map and restore the default view." onclick="resetMap();"><i
+              class="fa-solid fa-location-dot fa-xl"></i></div>
           <!-- <div>
             <span id="H" title="(H)ome / Reset Map" class="button inActiveButton" onclick="resetMap();"><span class="buttonText"><i class="fa-solid fa-location-dot fa-l"></i></span></span>
           </div> -->
@@ -1071,7 +1024,9 @@
           </div> -->
           <!-- <div id="F" title="(F)ollow" class="button inActiveButton" onclick="toggleFollow();"><span
               class="buttonText">F</span></div>  -->
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" id="RP" title="Open playback controls for historical flights." onclick="showReplayBar();"><img src="images/replay.png" class="header-icon"></div>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="RP"
+            title="Open playback controls for historical flights." onclick="showReplayBar();"><img
+              src="images/replay.png" class="header-icon"></div>
 
           <!-- <div id="D" title="Distancia entre 2 aviones" class="button inActiveButton"
             onclick="toggleDistance();">
@@ -1085,8 +1040,12 @@
             onclick="onTTCycleClick();">
             <span class="buttonText">TT</span>
           </div> -->
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" id="ZI" title="Zoom In - Increase map zoom level." onclick="zoomInMap();"> <i class="fa-solid fa-plus fa-xl"></i></div>
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-[#192a56] text-white" id="ZO" title="Zoom Out - Decrease map zoom level." onclick="zoomOutMap();"> <i class="fa-solid fa-minus fa-xl"></i></div>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZI"
+            title="Zoom In - Increase map zoom level." onclick="zoomInMap();"> <i class="fa-solid fa-plus fa-xl"></i>
+          </div>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZO"
+            title="Zoom Out - Decrease map zoom level." onclick="zoomOutMap();"> <i class="fa-solid fa-minus fa-xl"></i>
+          </div>
         </div>
 
       </div>
@@ -1385,35 +1344,35 @@
   <script src="script_58512d93b15f62c2ada7968c3a621e0a.js"></script>
 
   <script>
-    (function(){
-      function updateToggleButtons(){
+    (function () {
+      function updateToggleButtons() {
         var sidebar = document.getElementById('sidebar_container');
         var closedBtn = document.getElementById('toggle_sidebar_button_closed');
         var sidebarBtnContainer = document.getElementById('sidebar_close_button_container');
-        if(!sidebar || !closedBtn || !sidebarBtnContainer) return;
+        if (!sidebar || !closedBtn || !sidebarBtnContainer) return;
         var isHidden = (window.getComputedStyle(sidebar).display === 'none');
         closedBtn.style.display = isHidden ? 'block' : 'none';
         sidebarBtnContainer.style.display = isHidden ? 'none' : 'block';
       }
 
-      function proxyClick(e){
+      function proxyClick(e) {
         var target = document.getElementById('toggle_sidebar_button');
-        if(target) target.click();
+        if (target) target.click();
       }
 
-      document.addEventListener('DOMContentLoaded', function(){
+      document.addEventListener('DOMContentLoaded', function () {
         updateToggleButtons();
         var closed = document.getElementById('toggle_sidebar_button_closed');
-        if(closed) closed.addEventListener('click', proxyClick);
+        if (closed) closed.addEventListener('click', proxyClick);
 
         var sidebar = document.getElementById('sidebar_container');
-        if(sidebar && window.MutationObserver){
-          var mo = new MutationObserver(function(){ updateToggleButtons(); });
+        if (sidebar && window.MutationObserver) {
+          var mo = new MutationObserver(function () { updateToggleButtons(); });
           mo.observe(sidebar, { attributes: true, attributeFilter: ['style'] });
         }
       });
     })();
-      window.zoomInMap = function () {
+    window.zoomInMap = function () {
       if (window.OLMap && OLMap.getView) {
         const v = OLMap.getView();
         v.setZoom((v.getZoom() ?? 0) + 1);
@@ -1430,6 +1389,7 @@
       }
       document.querySelector('.ol-zoom-out')?.click();
     };
+
   </script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">
