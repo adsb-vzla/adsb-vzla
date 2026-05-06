@@ -345,7 +345,7 @@ function updateDistanceLine() {
                 distanceOverlay = new ol.Overlay({ element: element, positioning: 'bottom-center', offset: [0, -10] });
                 OLMap.addOverlay(distanceOverlay);
             }
-            distanceOverlay.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${Math.ceil(15 - secondsMissing)}s`;
+            distanceOverlay.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${Math.ceil(15 - secondsMissing)}s`;
 
             if (secondsMissing >= 15) {
                 // For single-pair mode, reset everything; for multi, mark removed
@@ -460,7 +460,7 @@ function updateDistanceLine() {
                     OLMap && OLMap.addOverlay(ov);
                     distanceOverlaysMap.set(key, ov);
                 }
-                ov.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${remaining}s`;
+                ov.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
                 ov.setOffset(stableOverlayOffset(key));
                 // position overlay at available point if any, else skip
                 if (planeA && planeA.position) ov.setPosition(ol.proj.fromLonLat(planeA.position));
@@ -540,7 +540,7 @@ function setGroundPoint(lonlat) {
         groundPointLayer = new ol.layer.Vector({
             name: 'groundPoint',
             type: 'overlay',
-            title: 'Punto A',
+            title: 'Ground point',
             source: groundPointSource,
             zIndex: 250,
             style: new ol.style.Style({
@@ -572,15 +572,15 @@ function setGroundPoint(lonlat) {
 function taStep1Message() {
     switch (distanceToGroundModeType) {
         case '1A1B':
-            return 'Haga clic en el mapa para marcar el punto A.';
+            return 'Click on the map to mark point A.';
         case '1A_nB':
-            return 'Haga clic en el mapa para marcar un único punto A.';
+            return 'Click on the map to mark a single point A.';
         case 'nA_1B':
-            return 'Haga clic en el mapa para marcar varios puntos A.';
+            return 'Click on the map to mark multiple points A.';
         case 'nA_nB':
-            return 'Haga clic en el mapa para marcar el punto A.';
+            return 'Click on the map to mark point A.';
         default:
-            return 'Haga clic en el mapa para marcar el Punto A.';
+            return 'Click on the map to mark point A.';
     }
 }
 
@@ -588,25 +588,25 @@ function taStep1Message() {
 function taStep2Message() {
     switch (distanceToGroundModeType) {
         case '1A1B':
-            return 'Haga clic sobre un avión para marcar el Punto B.';
+            return 'Click on an aircraft to mark point B.';
         case '1A_nB':
-            return 'Haga clic sobre uno o más aviones para marcar varios puntos B.';
+            return 'Click on one or more aircraft to mark multiple points B.';
         case 'nA_1B':
-            return 'Haga clic sobre un avión para marcar un único punto B.';
+            return 'Click on an aircraft to mark a single point B.';
         case 'nA_nB':
-            return 'Haga clic sobre un avión para marcar el Punto B.';
+            return 'Click on an aircraft to mark point B.';
         default:
-            return 'Haga clic sobre un avión para marcar el Punto B.';
+            return 'Click on an aircraft to mark point B.';
     }
 }
 
 // Mensaje según el modo (tierra-aeronave)
 function taPreMessage() {
     switch (distanceToGroundModeType) {
-        case '1A1B': return 'Modo 1 Punto - 1 Avión';
-        case '1A_nB': return 'Modo 1 Punto - Varios Aviones';
-        case 'nA_1B': return 'Modo Varios Puntos - 1 Avión';
-        case 'nA_nB': return 'Modo Varios Puntos - Varios Aviones';
+        case '1A1B': return '1 Point - 1 Aircraft Mode';
+        case '1A_nB': return '1 Point - Multiple Aircraft Mode';
+        case 'nA_1B': return 'Multiple Points - 1 Aircraft Mode';
+        case 'nA_nB': return 'Multiple Points - Multiple Aircraft Mode';
         default: return '';
     }
 }
@@ -614,35 +614,35 @@ function taPreMessage() {
 // Mensaje según el modo (tierra-tierra)
 function ggPreMessage() {
     return groundToGroundModeType === '1A_nB'
-        ? 'Modo 1 Punto - Varios Puntos'
-        : 'Modo 1 Punto - 1 Punto';
+        ? '1 Point - Multiple Points Mode'
+        : '1 Point - 1 Point Mode';
 }
 
 // Paso 1 guía (tierra-tierra)
 function ggStep1Message() {
     return groundToGroundModeType === '1A_nB'
-        ? 'Marca un único Punto A en tierra.'
-        : 'Marca el Punto A en tierra.';
+        ? 'Mark a single ground point A.'
+        : 'Mark the ground point A.';
 }
 
 // Paso 2 guía (tierra-tierra)
 function ggStep2Message() {
     return groundToGroundModeType === '1A_nB'
-        ? 'Marca hasta 3 puntos B en tierra.'
-        : 'Marca el Punto B en tierra.';
+        ? 'Mark up to 3 ground points B.'
+        : 'Mark the ground point B.';
 }
 
 // Limpiar puntos, líneas y overlays en el modo tierra-aeronave
 function clearTAGroundDrawings(opts = {}) {
 
     // Limpiar la fuente vectorial del punto A si existe
-    try { groundPointSource && groundPointSource.clear() } catch (_) {}
+    try { groundPointSource && groundPointSource.clear() } catch (_) { }
 
     // Limpiar referencias indexadas a Features de puntos A
-    try { groundPointFeaturesByCoord && groundPointFeaturesByCoord.clear() } catch (_) {}
+    try { groundPointFeaturesByCoord && groundPointFeaturesByCoord.clear() } catch (_) { }
 
     // Vaciar la fuente de líneas A‑B 
-    try { groundToPlaneLineSource && groundToPlaneLineSource.clear() } catch (_) {}
+    try { groundToPlaneLineSource && groundToPlaneLineSource.clear() } catch (_) { }
 
     // Resetear referencia a la feature de la línea actual
     groundToPlaneLineFeature = null;
@@ -665,8 +665,8 @@ function clearTAGroundDrawings(opts = {}) {
     }
 
     // Limpiar el mapa genérico de features de líneas A‑B si existe
-    try { groundPlaneFeatures && groundPlaneFeatures.clear(); } catch (_) {}
-    try { typeof groundPlaneFeaturesByHex !== 'undefined' && groundPlaneFeaturesByHex.clear(); } catch (_) {}
+    try { groundPlaneFeatures && groundPlaneFeatures.clear(); } catch (_) { }
+    try { typeof groundPlaneFeaturesByHex !== 'undefined' && groundPlaneFeaturesByHex.clear(); } catch (_) { }
 
     // Resetear variables según opción
     if (opts.reset !== false) {
@@ -677,8 +677,8 @@ function clearTAGroundDrawings(opts = {}) {
         taPairs = [];
         taPendingPlaneHex = null;
         taPendingGround = null;
-        try { groundPlaneMissingSince && groundPlaneMissingSince.clear(); } catch (_) {}
-        try { groundPlaneRemoved && groundPlaneRemoved.clear(); } catch (_) {}
+        try { groundPlaneMissingSince && groundPlaneMissingSince.clear(); } catch (_) { }
+        try { groundPlaneRemoved && groundPlaneRemoved.clear(); } catch (_) { }
     }
 
     // Detener refresco de distancia si está activo
@@ -695,7 +695,7 @@ function clearGroundToGround(opts = {}) {
     try { ggLineSource && ggLineSource.clear(); } catch (_) { }
     // Borrar los puntos A y B
     try { ggPointSource && ggPointSource.clear(); } catch (_) { }
-    
+
     // Limpiar overlays y colección de features
     try { ggLineFeatures && ggLineFeatures.clear(); } catch (_) { }
     if (ggOverlays && ggOverlays.size) {
@@ -797,7 +797,7 @@ function updateDistanceToGroundOverlay() {
 
     // Si la capa de líneas está creada pero el usuario la ocultó, no crear ni volver a añadir overlays.
     if (groundToPlaneLineLayer && !groundToPlaneLineLayer.getVisible()) return;
-    
+
     // Arreglo para almacenar los pares
     const pairs = [];
 
@@ -905,7 +905,7 @@ function updateDistanceToGroundOverlay() {
             }
 
             // Mensaje de señal perdida
-            ov.getElement().innerHTML = `<b style="color:red;">SEÑAL PERDIDA</b><br>Reintentando... ${remaining}s`;
+            ov.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
 
             // Coordenada donde se mostrará el cartel
             let overlayPos;
@@ -913,7 +913,7 @@ function updateDistanceToGroundOverlay() {
             if (groundPlaneFeatures.has(key)) {
                 // Usar el punto medio de esa línea
                 overlayPos = groundPlaneFeatures.get(key).getGeometry().getCoordinateAt(0.5);
-            // Si el avión tiene posición válida pero no hay línea
+                // Si el avión tiene posición válida pero no hay línea
             } else if (!missingPlane && plane.position) {
                 // Proyectar la posición del avión
                 const projPlane = ol.proj.fromLonLat(plane.position);
@@ -921,7 +921,7 @@ function updateDistanceToGroundOverlay() {
                 const projGround = ol.proj.fromLonLat(gp);
                 // Calcular el punto medio entre A y el avión
                 overlayPos = [(projGround[0] + projPlane[0]) / 2, (projGround[1] + projPlane[1]) / 2];
-            // Si no hay posición del avión
+                // Si no hay posición del avión
             } else {
                 // Colocar el cartel sobre el punto A
                 overlayPos = ol.proj.fromLonLat(gp);
@@ -974,7 +974,7 @@ function updateDistanceToGroundOverlay() {
                     // Si existe la feature y la fuente de puntos está disponible
                     if (featA && groundPointSource) {
                         // Intentar quitar el punto A del mapa
-                        try { groundPointSource.removeFeature(featA); } catch (_) {}
+                        try { groundPointSource.removeFeature(featA); } catch (_) { }
                         // Eliminar la entrada del índice para ese punto A    
                         groundPointFeaturesByCoord.delete(groundKey);
                     }
@@ -1101,7 +1101,7 @@ function updateDistanceToGroundOverlay() {
             groundPlaneOverlays.set(key, ov);
         }
         // Mostrar la distancia calculada
-        ov.getElement().innerHTML = `Distancia: ${slantText}`;
+        ov.getElement().innerHTML = `Distance: ${slantText}`;
         // Posicionar el overlay en el punto medio A‑B
         ov.setPosition(midProj);
     }
@@ -1213,7 +1213,7 @@ function updateGroundToGroundOverlay() {
             ggOverlays.set(key, ov);
         }
         // Mostrar la distancia formateada
-        ov.getElement().innerHTML = `Distancia: ${distText}`;
+        ov.getElement().innerHTML = `Distance: ${distText}`;
         // Posicionar el overlay en el punto medio A‑B
         ov.setPosition(mid);
     }
@@ -1305,7 +1305,7 @@ function DistanceToGround() {
             // Mostrar la capa de líneas al activar el modo
             groundToPlaneLineLayer.setVisible(true);
             // Si por cualquier motivo la capa no está añadida al mapa, añadirla
-            if(OLMap && !OLMap.getLayers().getArray().includes(groundToPlaneLineLayer)) {
+            if (OLMap && !OLMap.getLayers().getArray().includes(groundToPlaneLineLayer)) {
                 OLMap.addLayer(groundToPlaneLineLayer);
             }
         }
@@ -2380,12 +2380,12 @@ function earlyInitPage() {
     }
 
     jQuery('#tabs').tabs({
-    active: (loStore['active_tab'] !== undefined) ? loStore['active_tab'] : false,
-    
-    activate: function (event, ui) {
-        loStore['active_tab'] = jQuery("#tabs").tabs("option", "active");
-    },
-    collapsible: true
+        active: (loStore['active_tab'] !== undefined) ? loStore['active_tab'] : false,
+
+        activate: function (event, ui) {
+            loStore['active_tab'] = jQuery("#tabs").tabs("option", "active");
+        },
+        collapsible: true
     });
 
     // Set page basics
@@ -2505,7 +2505,7 @@ function earlyInitPage() {
     new Toggle({
         key: "lastLeg",
         display: "Last leg only",
-        tooltip: "Only shows the last leg of the plane's trajectory, preventing the map from being filled with long flight lines." ,
+        tooltip: "Only shows the last leg of the plane's trajectory, preventing the map from being filled with long flight lines.",
         container: "#settingsLeft",
         init: true,
         setState: function (state) {
@@ -2701,11 +2701,75 @@ function earlyInitPage() {
         }
     });
 
+    function setHideSettingsTooltips(state) {
+        try {
+            const sel = '#settings_infoblock [title], #settingsLeft [title], #settingsRight [title]';
+            if (state) {
+                document.querySelectorAll(sel).forEach(n => {
+                    if (!n.dataset.origTitle) n.dataset.origTitle = n.getAttribute('title') || '';
+                    n.removeAttribute('title');
+                });
+            } else {
+                // Si el modo global está activo, no restaurar aquí
+                if (document.body.classList.contains('hide-tooltips-all')) return;
+                const sel2 = '#settings_infoblock [data-orig-title], #settingsLeft [data-orig-title], #settingsRight [data-orig-title]';
+                document.querySelectorAll(sel2).forEach(n => {
+                    if (n.dataset.origTitle !== undefined) {
+                        n.setAttribute('title', n.dataset.origTitle);
+                        delete n.dataset.origTitle;
+                    }
+                });
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    new Toggle({
+        key: "hideSettingsTooltips",
+        display: "Hide settings tooltips",
+        tooltip: "Hides tooltips for controls inside the settings menu.",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            setHideSettingsTooltips(state);
+        }
+    });
+
+    function setHideAllTooltips(state) {
+        try {
+            if (state) {
+                document.body.classList.add('hide-tooltips-all');
+                document.querySelectorAll('[title]').forEach(n => {
+                    if (!n.dataset.origTitle) n.dataset.origTitle = n.getAttribute('title') || '';
+                    n.removeAttribute('title');
+                });
+            } else {
+                document.body.classList.remove('hide-tooltips-all');
+                document.querySelectorAll('[data-orig-title]').forEach(n => {
+                    if (n.dataset.origTitle !== undefined) {
+                        n.setAttribute('title', n.dataset.origTitle);
+                        delete n.dataset.origTitle;
+                    }
+                });
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    new Toggle({
+        key: "hideAllTooltips",
+        display: "Hide all tooltips",
+        tooltip: "Hides all element tooltips across the entire page (removes/restores title attributes).",
+        container: "#settingsLeft",
+        init: false,
+        setState: function (state) {
+            setHideAllTooltips(state);
+        }
+    });
+
     new Toggle({
         key: "windLabelsSlim",
         display: "Smaller wind labels",
         tooltip: "Reduce the size of the wind indicators (if the aircraft transmits that data).",
-        container: "#settingsLeft",
+        container: "#settingsRight",
         init: windLabelsSlim,
         setState: function (state) {
             windLabelsSlim = state;
@@ -2721,7 +2785,7 @@ function earlyInitPage() {
         key: "showLabelUnits",
         display: "Label units",
         tooltip: "Show units (ft, kts, etc.) in the labels.",
-        container: "#settingsLeft",
+        container: "#settingsRight",
         init: showLabelUnits,
         setState: function (state) {
             showLabelUnits = state;
@@ -2745,7 +2809,7 @@ function earlyInitPage() {
 
     new Toggle({
         key: "shareFilters",
-        display: "Include Filters In URLs",
+        display: "Include filters in URLs",
         tooltip: "Include the current filter settings in the URL.",
         container: "#settingsRight",
         init: false,
@@ -2756,7 +2820,7 @@ function earlyInitPage() {
 
     new Toggle({
         key: "debugTracks",
-        display: "Debug Tracks",
+        display: "Debug tracks",
         tooltip: "Developer options for viewing errors in received data.",
         container: "#settingsRight",
         init: false,
@@ -2798,6 +2862,7 @@ function earlyInitPage() {
         key: "updateLocation",
         display: "Update GPS location",
         container: "#settingsRight",
+        tooltip: "Updates the browser/device GPS location and enables periodic tracking to center the map; requires browser permission.",
         init: updateLocation,
         setState: function (state) {
             updateLocation = state;
@@ -2823,7 +2888,7 @@ function earlyInitPage() {
 
     new Toggle({
         key: "ColoredPlanes",
-        display: "Colored Planes",
+        display: "Colored planes",
         tooltip: "Display aircraft markers in color instead of grayscale.",
         container: "#settingsRight",
         init: true,
@@ -2839,7 +2904,7 @@ function earlyInitPage() {
 
     new Toggle({
         key: "ColoredTrails",
-        display: "Colored Trails",
+        display: "Colored trails",
         tooltip: "Display aircraft trails in color instead of grayscale.",
         container: "#settingsRight",
         init: true,
@@ -2975,7 +3040,7 @@ function earlyInitPage() {
 
     new Toggle({
         key: "enableInfoblock",
-        display: "Enable Infoblock",
+        display: "Enable infoblock",
         tooltip: "Show the infoblock with detailed information about the selected aircraft.",
         container: "#settingsRight",
         init: true,
@@ -2986,7 +3051,7 @@ function earlyInitPage() {
 
     new Toggle({
         key: "wideInfoblock",
-        display: "Wide Infoblock",
+        display: "Wide infoblock",
         tooltip: "Use a wider layout for the infoblock, allowing more information to be displayed in a single line.",
         container: "#settingsRight",
         init: wideInfoBlock,
@@ -3862,7 +3927,7 @@ function ol_map_init() {
                 lyr.setVisible(false);
             }
 
-lyr.on('change:visible', function (evt) {
+            lyr.on('change:visible', function (evt) {
                 if (evt.target.getVisible()) {
                     MapType_tar1090 = loStore['MapType_tar1090'] = evt.target.get('name');
                     mapTypeSettings();
@@ -3872,7 +3937,7 @@ lyr.on('change:visible', function (evt) {
                     // --- LÓGICA DE EXCLUSIVIDAD Y AUTO-ACTIVACIÓN ---
                     try {
                         let currentParentGroup = null;
-                        
+
                         // 1. Identificar el grupo de la capa base activada
                         layers_group.getLayers().forEach(group => {
                             if (group instanceof ol.layer.Group) {
@@ -3886,7 +3951,7 @@ lyr.on('change:visible', function (evt) {
                             // 2. Procesar todos los grupos del mapa
                             layers_group.getLayers().forEach(group => {
                                 if (group instanceof ol.layer.Group) {
-                                    
+
                                     if (group === currentParentGroup) {
                                         // SI ES EL GRUPO ACTUAL: Activamos todos sus overlays
                                         group.getLayers().forEach(l => {
@@ -3902,7 +3967,7 @@ lyr.on('change:visible', function (evt) {
                                             }
                                         });
                                     }
-                                    
+
                                 }
                             });
                         }
@@ -4063,22 +4128,22 @@ lyr.on('change:visible', function (evt) {
 
                 // Siempre marcar punto A antes que avión/es
                 if (distanceToGroundModeType === '1A1B' && groundPoints.length === 0) {
-                    showDistanceGuide('Primero marque el punto A.');
+                    showDistanceGuide('First mark point A.');
                     evt.stopPropagation();
                     return;
                 }
                 if (distanceToGroundModeType === '1A_nB' && groundPoints.length === 0) {
-                    showDistanceGuide('Primero marque el punto A.');
+                    showDistanceGuide('First mark point A.');
                     evt.stopPropagation();
                     return;
                 }
                 if (distanceToGroundModeType === 'nA_1B' && groundPoints.length === 0) {
-                    showDistanceGuide('Primero marque al menos un punto A.');
+                    showDistanceGuide('First mark at least one point A.');
                     evt.stopPropagation();
                     return;
                 }
                 if (distanceToGroundModeType === 'nA_nB' && !taPendingGround) {
-                    showDistanceGuide('Primero marque el punto A.');
+                    showDistanceGuide('First mark point A.');
                     evt.stopPropagation();
                     return;
                 }
@@ -4088,7 +4153,7 @@ lyr.on('change:visible', function (evt) {
                     // Si ya se alcanzó el máximo de pares
                     if (taPairs.length >= TA_MAX_nA_nB) {
                         // Avisar límite alcanzado
-                        showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares.`);
+                        showDistanceGuide(`Maximum ${TA_MAX_nA_nB} pairs.`);
                         // Detener propagación del evento
                         evt.stopPropagation();
                         return;
@@ -4131,7 +4196,7 @@ lyr.on('change:visible', function (evt) {
                         // Si supera el máximo de B
                     } else if (planesForGround.length >= TA_MAX_1A_nB) {
                         // Avisar el límite
-                        showDistanceGuide(`Máximo ${TA_MAX_1A_nB} puntos B.`);
+                        showDistanceGuide(`Maximum ${TA_MAX_1A_nB} B points.`);
                         // Si aún se puede agregar este avión B
                     } else {
                         // Añadir el avión B
@@ -4160,7 +4225,7 @@ lyr.on('change:visible', function (evt) {
                         // Si no tiene posición válida
                     } else {
                         // Aviso de error
-                        showDistanceGuide('Seleccione un avión con posición válida.');
+                        showDistanceGuide('Select an aircraft with a valid position.');
                     }
                 }
                 // Si se hace clic sobre el mapa
@@ -4172,7 +4237,7 @@ lyr.on('change:visible', function (evt) {
                     // Si hay un punto A pendiente sin avión
                     if (taPendingGround && !taPendingPlaneHex) {
                         // Pedir escoger avión
-                        showDistanceGuide('Seleccione un avión para completar el par.');
+                        showDistanceGuide('Select an aircraft to complete the pair.');
                         // Detener propagación
                         evt.stopPropagation();
                         return;
@@ -4182,7 +4247,7 @@ lyr.on('change:visible', function (evt) {
                         // Revisar límite de pares
                         if (taPairs.length >= TA_MAX_nA_nB) {
                             // Aviso de límite
-                            showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares.`);
+                            showDistanceGuide(`Maximum ${TA_MAX_nA_nB} pairs.`);
                             // Detener propagación
                             evt.stopPropagation();
                             return;
@@ -4208,7 +4273,7 @@ lyr.on('change:visible', function (evt) {
                     } else {
                         // Verificar límite de pares
                         if (taPairs.length >= TA_MAX_nA_nB) {
-                            showDistanceGuide(`Máximo ${TA_MAX_nA_nB} pares.`);
+                            showDistanceGuide(`Maximum ${TA_MAX_nA_nB} pairs.`);
                             // Detener propagación
                             evt.stopPropagation();
                             return;
@@ -4232,7 +4297,7 @@ lyr.on('change:visible', function (evt) {
                     // Si alcanza el máximo de puntos A
                     if (groundPoints.length >= TA_MAX_nA_1B) {
                         // Aviso de límite
-                        showDistanceGuide(`Máximo ${TA_MAX_nA_1B} puntos A.`);
+                        showDistanceGuide(`Maximum ${TA_MAX_nA_1B} A points.`);
                         // Si aún puede agregar punto A
                     } else {
                         // Mostrar capa de puntos
@@ -4331,7 +4396,7 @@ lyr.on('change:visible', function (evt) {
                 // Si ya alcanzó el máximo de puntos B
                 if (ggPointsB.length >= GG_MAX_1A_nB) {
                     // Avisar el límite
-                    showDistanceGuide(`Máximo ${GG_MAX_1A_nB} puntos B.`);
+                    showDistanceGuide(`Maximum ${GG_MAX_1A_nB} B points.`);
                     // Si aún se pueden agregar más puntos B
                 } else {
                     // Añadir este clic a la lista de B
@@ -4377,29 +4442,29 @@ lyr.on('change:visible', function (evt) {
                     }
                 }
 
-            // Modo 'pairs': permite pares independientes (A-B, C-D) y anchor A->B,C...
+                // Modo 'pairs': permite pares independientes (A-B, C-D) y anchor A->B,C...
             } else if (planeDistanceModeType === 'pairs') {
                 // If an anchor A is set, clicking adds pair A|planeHex (unless same or duplicate)
                 if (selectedPlaneA) {
                     if (planeHex === selectedPlaneA) {
                         // clicking anchor again clears it
                         selectedPlaneA = null;
-                        showDistanceGuide('Anchor desactivado.');
+                        showDistanceGuide('Anchor disabled.');
                         return;
                     }
 
                     if (pairMap.size >= PP_MAX_PAIRS) {
-                        showDistanceGuide(`Máximo ${PP_MAX_PAIRS} pares alcanzado.`);
+                        showDistanceGuide(`Maximum ${PP_MAX_PAIRS} pairs reached.`);
                         return;
                     }
                     const key = `${selectedPlaneA}|${planeHex}`;
                     if (pairMap.has(key)) {
-                        showDistanceGuide('Par ya existente.');
+                        showDistanceGuide('Pair already exists.');
                         return;
                     }
                     pairMap.set(key, { a: selectedPlaneA, b: planeHex });
                     pairOrder.push(key);
-                    showDistanceGuide('Par añadido.');
+                    showDistanceGuide('Pair added.');
                     updateDistanceLine();
                     if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
                     distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
@@ -4409,7 +4474,7 @@ lyr.on('change:visible', function (evt) {
                 // No anchor active: use pairBuffer to form independent pairs or set anchor by clicking same aircraft twice
                 if (pairBuffer.length === 0) {
                     pairBuffer.push(planeHex);
-                    showDistanceGuide('Primero seleccionado. Haga clic en otro avión para formar par, o haga clic de nuevo en este avión para anclarlo.');
+                    showDistanceGuide('First selected. Click another aircraft to form a pair, or click this aircraft again to anchor it.');
                     return;
                 } else {
                     const first = pairBuffer[0];
@@ -4417,26 +4482,26 @@ lyr.on('change:visible', function (evt) {
                     if (first === planeHex) {
                         selectedPlaneA = planeHex;
                         pairBuffer = [];
-                        showDistanceGuide('Avión anclado. Ahora haga clic en aviones B para crear pares con A. Clic en A otra vez para desanclar.');
+                        showDistanceGuide('Anchor aircraft. Now click on B aircraft to create pairs with A. Click A again to unanchor.');
                         return;
                     }
 
                     // Create independent pair first|planeHex
                     if (pairMap.size >= PP_MAX_PAIRS) {
-                        showDistanceGuide(`Máximo ${PP_MAX_PAIRS} pares alcanzado.`);
+                        showDistanceGuide(`Maximum ${PP_MAX_PAIRS} pairs reached.`);
                         pairBuffer = [];
                         return;
                     }
                     const newKey = `${first}|${planeHex}`;
                     if (pairMap.has(newKey)) {
-                        showDistanceGuide('Par ya existente.');
+                        showDistanceGuide('Pair already exists.');
                         pairBuffer = [];
                         return;
                     }
                     pairMap.set(newKey, { a: first, b: planeHex });
                     pairOrder.push(newKey);
                     pairBuffer = [];
-                    showDistanceGuide('Par independiente añadido.');
+                    showDistanceGuide('Independent pair added.');
                     updateDistanceLine();
                     if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
                     distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
@@ -4646,7 +4711,7 @@ function initMap() {
             ggPointLayer = new ol.layer.Vector({
                 name: 'ggPoints',
                 type: 'overlay',
-                title: 'Puntos A-B (tierra-tierra)',
+                title: 'A-B ground points (ground point-ground point)',
                 source: ggPointSource,
                 zIndex: 245,
                 visible: true,
@@ -4669,7 +4734,7 @@ function initMap() {
             ggLineLayer = new ol.layer.Vector({
                 name: 'groundToGround',
                 type: 'overlay',
-                title: 'Línea A-B (tierra-tierra)',
+                title: 'A-B Line (ground point-ground point)',
                 source: ggLineSource,
                 zIndex: 255,
                 visible: true,
@@ -4720,7 +4785,7 @@ function initMap() {
                     // Crear intervalo que actualice cada segundo
                     distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
                 }
-            } catch (e) {}
+            } catch (e) { }
         });
     }
 
@@ -4729,7 +4794,7 @@ function initMap() {
     groundPointLayer = new ol.layer.Vector({
         name: 'groundPoint',
         type: 'overlay',
-        title: 'Punto A (tierra-aire)',
+        title: 'Ground point (ground point-aircraft)',
         source: groundPointSource,
         zIndex: 250,
         style: new ol.style.Style({
@@ -4747,7 +4812,7 @@ function initMap() {
     groundToPlaneLineLayer = new ol.layer.Vector({
         name: 'groundToPlane',
         type: 'overlay',
-        title: 'Línea A-B (tierra-aire)',
+        title: 'A-B Line (ground point-aircraft)',
         source: groundToPlaneLineSource,
         zIndex: 260,
         style: new ol.style.Style({
@@ -4787,7 +4852,7 @@ function initMap() {
                 if (!distanceGroundUpdateInterval && distanceToGroundMode) {
                     distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
     });
 
@@ -4795,7 +4860,7 @@ function initMap() {
     distanceLineLayer = new ol.layer.Vector({
         name: 'distanceLines',
         type: 'overlay',
-        title: 'Línea A-B (aire-aire)',
+        title: 'A-B Line (aircraft-aircraft)',
         source: new ol.source.Vector(),
         style: new ol.style.Style({
             stroke: new ol.style.Stroke({
@@ -4844,6 +4909,73 @@ function initMap() {
         }
     });
 
+    // Agrupar capas de las opciones de distancia
+    (function buildDistanceLayerTree() {
+        try {
+            const takeLayer = (name) => {
+                let found = null;
+                layers.forEach((l) => {
+                    if (l.get && l.get('name') === name) found = l;
+                });
+                if (found) layers.remove(found);
+                return found;
+            };
+
+            const lAA = takeLayer('distanceLines'); 
+            const lGA_line = takeLayer('groundToPlane');
+            const lGA_point = takeLayer('groundPoint');
+            const lGG_line = takeLayer('groundToGround');
+            const lGG_point = takeLayer('ggPoints');
+
+            // Ground point-ground point
+            const gGG = new ol.layer.Group({
+                title: 'Ground point-ground point',
+                type: 'overlay',
+                fold: 'close',
+                combine: false,
+                layers: new ol.Collection(
+                    [lGG_line, lGG_point].filter(Boolean)
+                )
+            });
+
+            // Ground point-aircraft
+            const gGA = new ol.layer.Group({
+                title: 'Ground point-aircraft',
+                type: 'overlay',
+                fold: 'close',
+                combine: false,
+                layers: new ol.Collection(
+                    [lGA_line, lGA_point].filter(Boolean)
+                )
+            });
+            
+            // Aircraft-aircraft
+            const gAA = new ol.layer.Group({
+                title: 'Aircraft-aircraft',
+                type: 'overlay',
+                fold: 'close',
+                combine: false,
+                layers: new ol.Collection(
+                    [lAA].filter(Boolean)
+                )
+            });
+
+            // Menú padre
+            const distanceRoot = new ol.layer.Group({
+                name: 'distance_tools',
+                title: 'Distance tools',
+                type: 'overlay',
+                fold: 'close',
+                combine: false,
+                layers: new ol.Collection([gGG, gGA, gAA])
+            });
+
+            layers.push(distanceRoot);
+        } catch (e) {
+            console.error('Error agrupando capas de distancia:', e);
+        }
+    })();
+
     ol_map_init();
 
     // handle the layer settings pane checkboxes
@@ -4868,8 +5000,9 @@ function initMap() {
 
     new Toggle({
         key: "darkerColors",
-        display: "Darker Colors",
-        container: "#settingsLeft",
+        display: "Darker colors",
+        container: "#settingsRight",
+        tooltip: "Darkens map and UI elements and increases contrast to improve visibility and reduce glare.",
         init: darkerColors,
         setState: function (state) {
             darkerColors = state;
@@ -4896,8 +5029,9 @@ function initMap() {
     }
     new Toggle({
         key: "darkMode",
-        display: "Dark Mode",
-        container: "#settingsLeft",
+        display: "Dark mode",
+        container: "#settingsRight",
+        tooltip: "Switches the interface to a dark color scheme, lowering brightness and improving readability in low-light conditions.",
         init: darkModeDefault,
         setState: function (state) {
             let root = document.documentElement;
@@ -4950,9 +5084,9 @@ function initMap() {
 
     new Toggle({
         key: "MapDim",
-        display: "Dim Map",
+        display: "Dim map",
         tooltip: "Toggle dimming of map layers to enhance visibility of overlays",
-        container: "#settingsLeft",
+        container: "#settingsRight",
         init: MapDim,
         setState: function (state) {
             /*
@@ -6945,7 +7079,7 @@ function toggleDistance() {
         selectedPlaneA = null;
         // Asegurar limpieza de restos
         resetDistanceCalculation();
-        showDistanceGuide(`<center>Modo ${planeDistanceModeType}</center><br>Haga clic en dos aviones para medir la distancia.`);
+        showDistanceGuide(`<center>${planeDistanceModeType} Mode</center><br>Click on two aircraft to measure the distance.`);
         buttonActive('#D', true);
         return;
     }
@@ -6960,7 +7094,7 @@ function toggleDistance() {
         selectedPlanesForDistance = [];
         // Mostrar guía según modo
         if (planeDistanceModeType === 'pairs') {
-            showDistanceGuide('<center>Modo Pares</center><br>Haga clic en dos aviones consecutivos para crear pares independientes (A-B, C-D), o haga clic dos veces en un avión para anclarlo y luego seleccione varios puntos B.');
+            showDistanceGuide('<center>Pairs Mode</center><br>Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.');
         } else {
             showDistanceGuide(`<center>Modo ${planeDistanceModeType}</center>`);
         }
@@ -7068,7 +7202,8 @@ function invertMap(evt) {
         }
         new Toggle({
             key: "altitudeChart",
-            display: "Altitude Chart",
+            display: "Altitude chart",
+            tooltip: "Displays an altitude profile chart, showing altitude with units and a color legend.",
             container: "#settingsRight",
             init: chartOn,
             setState: altitudeChart.render

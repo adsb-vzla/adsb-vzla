@@ -617,20 +617,19 @@ select.error, textarea.error, input.error {
     right: unset !important;
 }
 
-.layer-switcher button {
+.layer-switcher > button {
     background-size: calc( 26px * var(--SCALE)) calc( 26px * var(--SCALE));
     background-repeat: no-repeat;
     background-position: center;
     width: calc( 27px * var(--SCALE));
     height: calc( 28px * var(--SCALE));
     background-color: var(--BASE-COLOR) !important;
-    /* background-color: rgb(230 213 169) !important; */
     position: absolute;
     background-image: url("images/venezuela.png");
-    /* filter: invert(100%); */
     top: -2px;
     padding: 1.2rem;
-    }
+}
+
 .layer-switcher .group button{
     background-color:#9d9d9d !important;
 }

@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <meta name="description" content="ADS-B Venezuela - Monitoreo de Tráfico Aéreo en Venezuela" />
+  <meta name="description" content="ADS‑B Venezuela - Air traffic monitoring in Venezuela" />
   <meta charset="utf-8" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,7 +18,9 @@
   <!-- CUSTOM CSS -->
   <link rel="stylesheet" href="style_5ee35cf1c5fe35a0b51e3b76df77a007.css" type="text/css" />
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css">
+  <!-- FONT AWESOME -->
+  <link rel="stylesheet" href="fontawesome-free-7.2.0-web/css/fontawesome.css" type="text/css" />
+  <link rel="stylesheet" href="fontawesome-free-7.2.0-web/css/solid.css" type="text/css" />
 
   <!-- ICONO -->
   <link rel="icon" type="image/png" href="images/plane-icon.png">
@@ -915,10 +917,10 @@
               <button id="toggle_sidebar_button" class="show_sidebar sidebar_button " title="Toggle Sidebar"></button>
             </div>
           -->
-          <!-- Opciones de aeronave -->
+          <!-- INICIO OPCIONES DE AERONAVES -->
           <div id="aircraft_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
-              title="Aircraft Tools - Open aircraft filtering and tracking options."><i
+              title="Aircraft tools - Open aircraft filtering and tracking options."><i
                 class="fa-solid fa-plane-up fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
               <li><a id="V" title="Show only aircraft currently visible on the map."
@@ -935,11 +937,12 @@
               </li>
             </ul>
           </div>
+          <!-- FIN OPCIONES DE AERONAVES -->
 
-          <!-- Opciones de medición -->
+          <!-- INICIO OPCIONES DE MEDICIÓN -->
           <div id="measurement_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
-              title="Measurement Tools - Open measurement options."><i class="fa-solid fa-ruler fa-xl"></i></div>
+              title="Measurement tools - Open measurement options."><i class="fa-solid fa-ruler fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
               <li><a id="D" title="Measure distance between two aircraft."
                   onclick="toggleDistance();">Aircraft-aircraft</a></li>
@@ -949,11 +952,12 @@
                   point-ground point</a></li>
             </ul>
           </div>
+          <!-- FIN OPCIONES DE MEDICIÓN -->
 
-          <!-- Opciones de trazas -->
+          <!-- INICIO OPCIONES DE TRAZAS -->
           <div id="track_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn  btn-neutral m-1 w-9 truncate bg-base-color text-white"
-              title="Track Tools - Open track display options."><i class="fa-solid fa-route fa-xl"></i></div>
+              title="Track tools - Open track display options."><i class="fa-solid fa-route fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
               <li><a id="T" title="Display tracks for all visible aircraft." onclick="selectAllPlanes();">All tracks</a>
               </li>
@@ -961,30 +965,42 @@
                   labels</a></li>
             </ul>
           </div>
+          <!-- FIN OPCIONES DE TRAZAS -->
 
-          <!-- Opciones de etiquetas -->
+          <!-- INICIO OPCIONES DE ETIQUETAS -->
           <div id="label_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
-              title="Label Tools - Open label visibility options."><i class="fa-solid fa-tags fa-xl"></i></div>
+              title="Label tools - Open label visibility options."><i class="fa-solid fa-tags fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
               <li><a id="L" title="Show or hide primary aircraft labels." onclick="toggleLabels();">Labels</a></li>
               <li><a id="O" title="Show or hide extended label information." onclick="toggleExtendedLabels();">Label
                   details</a></li>
             </ul>
           </div>
+          <!-- FIN OPCIONES DE ETIQUETAS -->
 
+          <!-- INICIO EXPANDIR/OCULTAR SIDEBAR DERECHO -->
           <div id="expand_sidebar_control">
             <button id="expand_sidebar_button" class="sidebar_button" title="Expand Sidebar"
               style="display: none;"></button>
           </div>
+          <!-- FIN EXPANDIR/OCULTAR SIDEBAR DERECHO -->
+          
+          <!-- INICIO OPCIONES DE CAPAS -->
           <div id="layer-select" class="button-layer">
+          <!-- FIN OPCIONES DE CAPAS -->
 
           </div>
           <!-- <div id="fullscreenButton" class="svgButton fullscreenButton"></div> -->
           <!-- <div id="settingsCog" class="svgButton settingsCog"></div> -->
+
+          <!-- INICIO OPCIONES Y CONFIGURACIONES -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
             title="Open application preferences and display options." id="settingsCog"><i
-              class="fa-solid fa-gear fa-xl"></i></div>
+              class="fa-solid fa-gear fa-xl"></i>
+          </div>
+          <!-- FIN OPCIONES Y CONFIGURACIONES -->
+
           <!-- <div id="L" title="Toggle (L)abels" class="button inActiveButton" onclick="toggleLabels();"><span
               class="buttonText">L</span></div> -->
           <!-- <div id="O" title="Toggle Label Extensi(O)ns" class="button inActiveButton" onclick="toggleExtendedLabels();">
@@ -1013,9 +1029,14 @@
           <!-- <div id="U" title="Mostrar aeronaves militares" class="button inActiveButton" onclick="toggleMilitary();">
             <span class="buttonText">U</span>
           </div> -->
+
+          <!-- INICIO OPCIÓN PARA RECENTRAR EL MAPA -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="H"
             title="Recenter the map and restore the default view." onclick="resetMap();"><i
-              class="fa-solid fa-location-dot fa-xl"></i></div>
+              class="fa-solid fa-location-dot fa-xl"></i>
+          </div>
+          <!-- FIN OPCIÓN PARA RECENTRAR EL MAPA -->
+
           <!-- <div>
             <span id="H" title="(H)ome / Reset Map" class="button inActiveButton" onclick="resetMap();"><span class="buttonText"><i class="fa-solid fa-location-dot fa-l"></i></span></span>
           </div> -->
@@ -1024,9 +1045,13 @@
           </div> -->
           <!-- <div id="F" title="(F)ollow" class="button inActiveButton" onclick="toggleFollow();"><span
               class="buttonText">F</span></div>  -->
+          
+          <!-- INICIO OPCIÓN DE REPLAY -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="RP"
             title="Open playback controls for historical flights." onclick="showReplayBar();"><img
-              src="images/replay.png" class="header-icon"></div>
+              src="images/replay.png" class="header-icon">
+          </div>
+          <!-- FIN OPCIÓN DE REPLAY -->
 
           <!-- <div id="D" title="Distancia entre 2 aviones" class="button inActiveButton"
             onclick="toggleDistance();">
@@ -1040,18 +1065,26 @@
             onclick="onTTCycleClick();">
             <span class="buttonText">TT</span>
           </div> -->
+
+          <!-- INICIO OPCIONES DE ZOOM -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZI"
-            title="Zoom In - Increase map zoom level." onclick="zoomInMap();"> <i class="fa-solid fa-plus fa-xl"></i>
+            title="Zoom on - Increase map zoom level." onclick="zoomInMap();"> <i class="fa-solid fa-plus fa-xl"></i>
           </div>
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZO"
             title="Zoom Out - Decrease map zoom level." onclick="zoomOutMap();"> <i class="fa-solid fa-minus fa-xl"></i>
           </div>
+          <!-- FIN OPCIONES DE ZOOM -->
         </div>
 
       </div>
+
+      <!-- INICIO TABLA DE ALTITUDES -->
       <div id="altitude_chart" class="ol-unselectable ol-control altitudeFeet">
         <button id="altitude_chart_button"></button>
       </div>
+      <!-- FIN TABLA DE ALTITUDES -->
+
+      <!-- INICIO BARRA DE REPLAY -->
       <div id="replayBar">
         <button id="replayPlay">Play</button>
         <p id="replayDateHint">Date:</p>
@@ -1065,9 +1098,9 @@
         <p id="replaySpeedSelect"></p>
         <p id="replayLoading"></p>
         <p></p>
-      </div> <!-- replayBar -->
-
-    </div> <!-- map_container-->
+      </div>
+      <!-- FIN BARRA DE REPLAY -->
+    </div>
 
     <div id="sidebar_container" style="display: none; height: 100%; position: relative;">
       <div id="sidebar_close_button_container" style="position: absolute; top: 8px; right: 8px; z-index: 1200;">
