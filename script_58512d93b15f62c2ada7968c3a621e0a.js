@@ -6860,6 +6860,7 @@ function expandSidebar(e) {
     e.preventDefault();
     jQuery("#map_container").hide()
     mapIsVisible = false;
+    jQuery("#toggle_sidebar_button").hide();
     jQuery("#toggle_sidebar_control").hide();
     jQuery("#splitter").hide();
     jQuery("#shrink_sidebar_button").show();
@@ -6873,6 +6874,7 @@ function showMap() {
     jQuery('#sidebar_container').width(loStore['sidebar_width']).css('margin-left', '0');
     jQuery("#map_container").show()
     mapIsVisible = true;
+    jQuery("#toggle_sidebar_button").show();
     jQuery("#toggle_sidebar_control").show();
     jQuery("#splitter").show();
     jQuery("#shrink_sidebar_button").hide();

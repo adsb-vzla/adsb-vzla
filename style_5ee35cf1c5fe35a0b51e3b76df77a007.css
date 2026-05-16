@@ -661,17 +661,27 @@ select.error, textarea.error, input.error {
 }
 
 .layer-switcher.shown{
-    top: 3.5em !important; 
-    right: 0.5em !important; 
+    position: absolute !important;
+    top: 3.5em !important;
+    right: 0.5em !important;
     margin-right: calc(30px * var(--SCALE)) !important;
+    height: calc(100vh - 5.5em) !important;
+    max-height: calc(100vh - 5.5em) !important;
+    min-height: calc(100vh - 5.5em) !important;
 }
 
 .layer-switcher.shown .panel {
-    overflow-y: auto;
-    height: 95vh;
+    position: relative !important;
+    overflow-y: auto !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
     border: var(--DARKER-BASE-COLOR) solid calc( 2px * var(--SCALE)) !important;
-    position: relative;
-
+    width: calc(250px * var(--SCALE));
+    min-width: calc(240px * var(--SCALE));
+    max-width: calc(260px * var(--SCALE));
+    box-sizing: border-box;
 }
 
 
