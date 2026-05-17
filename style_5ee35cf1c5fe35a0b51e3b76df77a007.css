@@ -1365,7 +1365,7 @@ table.infoSectionTable tr td {
   -webkit-backdrop-filter: blur(3px);
 
   grid-template-columns:
-    minmax(70px, auto)
+    minmax(30px, auto)
     minmax(100px, auto)
     minmax(300px, 300px)
     minmax(300px, 300px)
@@ -1434,17 +1434,23 @@ table.infoSectionTable tr td {
 
 #replayPlay {
   grid-area: play;
-  padding: 0.2rem;
+  padding: 0.5rem;
   font-weight: bold;
-  border-radius: 28px;
+  /* border-radius: 28px; */
+  border-radius: 0.5rem;
   color: #fff;
   font-size: 16px;
-  background: linear-gradient(180deg, #355692 0%, #1f335e 100%);
-  border: 1px solid rgba(130,160,255,0.32);
+  /* background: linear-gradient(180deg, #355692 0%, #1f335e 100%);
+  border: 1px solid rgba(130,160,255,0.32); */
+  /* background: rgba(8,12,22,0.7);
+  border: 1px solid rgba(120,160,255,0.18); */
+  background: var(--LIGHTER-BASE-COLOR);
+  border: 1px solid var(--DARKER-BASE-COLOR);
   box-shadow:
     0 4px 10px rgba(0,0,0,0.35),
     inset 0 1px 0 rgba(255,255,255,0.15);
   align-self: center;
+  cursor: pointer;
 }
 
 #replayPlay:hover { filter: brightness(1.08); }
@@ -1453,7 +1459,8 @@ table.infoSectionTable tr td {
   grid-area: datepicker;
   padding: 0.5rem;
   font-weight: bold;
-  border-radius: 20px;
+  /* border-radius: 20px; */
+  border-radius: 0.5rem;
   background: rgba(8,12,22,0.7);
   border: 1px solid rgba(120,160,255,0.18);
   color: #fff;
@@ -1468,7 +1475,9 @@ table.infoSectionTable tr td {
   border-radius: 10px;
   padding-left: 8px;
   padding-right: 8px;
-  background: linear-gradient(180deg, #23365f 0%, #091225 100%);
+  /* background: linear-gradient(180deg, #23365f 0%, #091225 100%); */
+  background: rgba(8,12,22,0.7);
+  border: 1px solid rgba(120,160,255,0.18);
   box-shadow:
     inset 0 1px 2px rgba(255,255,255,0.06),
     inset 0 -1px 2px rgba(0,0,0,0.5);
