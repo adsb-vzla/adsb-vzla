@@ -12,7 +12,8 @@
     --DARKER-BASE-COLOR: #0c152b;
     --replay-handle-size: 25px;
     --replay-handle-half: calc(var(--replay-handle-size) / 2);
-    --replay-handle-gap: 16px;
+    --replay-handle-gap: 28px;
+    --layer-switcher-offset: 0px;
 
 }
 
@@ -660,7 +661,7 @@ select.error, textarea.error, input.error {
     z-index: 999;
 }
 
-.layer-switcher.shown{
+/* .layer-switcher.shown{
     position: absolute !important;
     top: 3.5em !important;
     right: 0.5em !important;
@@ -668,6 +669,16 @@ select.error, textarea.error, input.error {
     height: calc(100vh - 5.5em) !important;
     max-height: calc(100vh - 5.5em) !important;
     min-height: calc(100vh - 5.5em) !important;
+} */
+
+.layer-switcher.shown {
+    position: absolute !important;
+    top: calc(3.5em + var(--layer-switcher-offset)) !important;
+    right: 0.5em !important;
+    margin-right: calc(30px * var(--SCALE)) !important;
+    height: calc(100vh - 5.5em - var(--layer-switcher-offset)) !important;
+    max-height: calc(100vh - 5.5em - var(--layer-switcher-offset)) !important;
+    min-height: 0 !important;
 }
 
 .layer-switcher.shown .panel {
@@ -1353,9 +1364,14 @@ table.infoSectionTable tr td {
   left: 0;
   right: 0;
   bottom: 0;
+  gap: calc(6px * var(--SCALE));
+  align-items: center;
+  padding: calc(6px * var(--SCALE)) calc(10px * var(--SCALE));
+  max-width: 100%;
+  overflow: visible;
   z-index: 20;
   box-sizing: border-box;
-  padding: 12px 18px 14px;
+  /* padding: 12px 18px 14px; */
   color: #e9edf7;
   background: linear-gradient(180deg, rgba(45,45,45,0.82) 0%, rgba(18,18,18,0.94) 100%);
   box-shadow:
@@ -1365,22 +1381,34 @@ table.infoSectionTable tr td {
   -webkit-backdrop-filter: blur(3px);
 
   grid-template-columns:
-    minmax(30px, auto)
-    minmax(100px, auto)
-    minmax(300px, 300px)
-    minmax(300px, 300px)
-    minmax(350px, 350px);
+    minmax(150px, 150px)
+    minmax(200px, 200px)
+    minmax(150px, auto)
+    minmax(150px, auto)
+    minmax(170px, auto);
   grid-template-rows: auto 64px;
-  gap: 10px 36px;
-  align-items: center;
+  /* gap: 10px 36px; */
   grid-template-areas:
     "dateLocal timeHint hoursHint minutesHint speedHint"
     "play datepicker hourSlider minuteSlider speedSlider";
 }
 
+
 #replayBar > * {
-  margin: 0;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#replayBar button#replayPlay {
+  flex: 0 0 auto;
+}
+#replayBar input.datepicker {
+  flex: 0 1 140px;
+  min-width: 100px;
 }
 
 #replayBar p:empty {
@@ -1484,9 +1512,22 @@ table.infoSectionTable tr td {
   overflow: visible;
 }
 
-#hourSelect { grid-area: hourSlider; }
-#minuteSelect { grid-area: minuteSlider; }
-#replaySpeedSelect { grid-area: speedSlider; }
+#hourSelect { 
+    grid-area: hourSlider;
+    margin-right: calc(var(--replay-handle-gap) / 2); 
+    margin-left: calc(var(--replay-handle-gap) / 2); 
+
+}
+#minuteSelect { 
+    grid-area: minuteSlider;
+    margin-right: calc(var(--replay-handle-gap) / 2); 
+    margin-left: calc(var(--replay-handle-gap) / 2);
+}
+#replaySpeedSelect { 
+    grid-area: speedSlider; 
+    margin-right: calc(var(--replay-handle-gap) / 2); 
+    margin-left: calc(var(--replay-handle-gap) / 2);
+}
 
 #hourSelect .ui-slider,
 #minuteSelect .ui-slider,
@@ -1598,4 +1639,8 @@ div.ui-slider .ui-slider-handle {
   height: 20px !important;
   top: 40% !important;
   transform: translate(-50%, -50%) !important;
+}
+
+.layer-switcher.shown.layer-switcher-activation-mode-click > button{
+    color: #eee !important;
 }

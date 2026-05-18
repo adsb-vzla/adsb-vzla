@@ -59,7 +59,8 @@ let actual_range_outline_dash = null; // null - solid line, [5, 5] - dashed line
 let actual_range_show = false;
 
 // which map is displayed to new visitors
-let MapType_tar1090 = "VFR_Blank";
+// let MapType_tar1090 = "VFR_Blank";
+let MapType_tar1090 = "osm";
 let defaultOverlays = [];
 let dwdLayers = 'dwd:RADOLAN-RY';
 

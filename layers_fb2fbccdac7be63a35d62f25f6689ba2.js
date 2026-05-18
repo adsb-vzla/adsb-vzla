@@ -79,6 +79,7 @@ function createBaseLayers() {
             name: 'VFR',
             title: 'VFR',
             type: 'overlay',
+            visible: false,
             
         }));
                 vfr.push(new ol.layer.Tile({

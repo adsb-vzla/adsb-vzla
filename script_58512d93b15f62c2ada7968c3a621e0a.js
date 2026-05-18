@@ -1304,9 +1304,6 @@ function DistanceToGround() {
         if (!groundPointSource) groundPointSource = new ol.source.Vector();
         if (groundPointLayer) {
             groundPointLayer.setSource(groundPointSource);
-            if (OLMap && !OLMap.getLayers().getArray().includes(groundPointLayer)) {
-                OLMap.addLayer(groundPointLayer);
-            }
             groundPointLayer.setVisible(true);
         }
 
@@ -1316,10 +1313,6 @@ function DistanceToGround() {
             groundToPlaneLineLayer.setSource(groundToPlaneLineSource);
             // Mostrar la capa de líneas al activar el modo
             groundToPlaneLineLayer.setVisible(true);
-            // Si por cualquier motivo la capa no está añadida al mapa, añadirla
-            if (OLMap && !OLMap.getLayers().getArray().includes(groundToPlaneLineLayer)) {
-                OLMap.addLayer(groundToPlaneLineLayer);
-            }
         }
 
         // Mostrar guía paso 1 según modo actual
@@ -1364,8 +1357,6 @@ function DistanceGroundToGround() {
         if (ggPointLayer) {
             // Asignar la fuente recién creada a la capa de puntos.
             ggPointLayer.setSource(ggPointSource);
-            // Añadir la capa al mapa si aún no está presente.
-            if (OLMap && !OLMap.getLayers().getArray().includes(ggPointLayer)) OLMap.addLayer(ggPointLayer);
             // Asegurar que la capa de puntos sea visible.
             ggPointLayer.setVisible(true);
         }
@@ -1376,8 +1367,6 @@ function DistanceGroundToGround() {
         if (ggLineLayer) {
             // Asignar la fuente de líneas a la capa correspondiente.
             ggLineLayer.setSource(ggLineSource);
-            // Añadir la capa de líneas al mapa si falta.
-            if (OLMap && !OLMap.getLayers().getArray().includes(ggLineLayer)) OLMap.addLayer(ggLineLayer);
             // Asegurar que la capa de líneas sea visible.
             ggLineLayer.setVisible(true);
         }
@@ -4418,20 +4407,20 @@ function ol_map_init() {
                 // 1A_nB
             } else {
                 // Si ya alcanzó el máximo de puntos B
-                if (ggPointsB.length >= GG_MAX_1A_nB) {
-                    // Avisar el límite
-                    showDistanceGuide(`Maximum ${GG_MAX_1A_nB} B points.`);
-                    // Si aún se pueden agregar más puntos B
-                } else {
-                    // Añadir este clic a la lista de B
-                    ggPointsB.push(lonlat);
-                    // Dibujar el nuevo punto B
-                    ggPointSource && ggPointSource.addFeature(
-                        new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
-                    );
-                    // Ocultar guía
-                    hideDistanceGuide();
-                }
+                // if (ggPointsB.length >= GG_MAX_1A_nB) {
+                //     // Avisar el límite
+                //     showDistanceGuide(`Maximum ${GG_MAX_1A_nB} B points.`);
+                //     // Si aún se pueden agregar más puntos B
+                // } else {
+                // Añadir este clic a la lista de B
+                ggPointsB.push(lonlat);
+                // Dibujar el nuevo punto B
+                ggPointSource && ggPointSource.addFeature(
+                    new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                );
+                // Ocultar guía
+                hideDistanceGuide();
+                // }
             }
 
             // Recalcular y pintar líneas/overlays A‑B
@@ -4735,7 +4724,7 @@ function initMap() {
             ggPointLayer = new ol.layer.Vector({
                 name: 'ggPoints',
                 type: 'overlay',
-                title: 'A-B ground points (ground point-ground point)',
+                title: 'A-B ground points',
                 source: ggPointSource,
                 zIndex: 245,
                 visible: true,
@@ -4758,7 +4747,7 @@ function initMap() {
             ggLineLayer = new ol.layer.Vector({
                 name: 'groundToGround',
                 type: 'overlay',
-                title: 'A-B Line (ground point-ground point)',
+                title: 'A-B Line',
                 source: ggLineSource,
                 zIndex: 255,
                 visible: true,
@@ -4818,7 +4807,7 @@ function initMap() {
     groundPointLayer = new ol.layer.Vector({
         name: 'groundPoint',
         type: 'overlay',
-        title: 'Ground point (ground point-aircraft)',
+        title: 'Ground point',
         source: groundPointSource,
         zIndex: 250,
         style: new ol.style.Style({
@@ -4836,7 +4825,7 @@ function initMap() {
     groundToPlaneLineLayer = new ol.layer.Vector({
         name: 'groundToPlane',
         type: 'overlay',
-        title: 'A-B Line (ground point-aircraft)',
+        title: 'A-B Line',
         source: groundToPlaneLineSource,
         zIndex: 260,
         style: new ol.style.Style({
@@ -4884,7 +4873,7 @@ function initMap() {
     distanceLineLayer = new ol.layer.Vector({
         name: 'distanceLines',
         type: 'overlay',
-        title: 'A-B Line (aircraft-aircraft)',
+        title: 'A-B Line',
         source: new ol.source.Vector(),
         style: new ol.style.Style({
             stroke: new ol.style.Stroke({
@@ -4893,6 +4882,7 @@ function initMap() {
             })
         }),
         zIndex: 300,
+        visible: true,
         renderBuffer: renderBuffer,
     });
     layers.push(distanceLineLayer);
@@ -6902,7 +6892,7 @@ function adjustInfoBlock() {
     jQuery('#selected_infoblock').css("width", infoBlockWidth * globalScale + 'px');
 
     jQuery('.ol-scale-line').css('left', (infoBlockWidth * globalScale + 8) + 'px');
-    jQuery('#replayBar').css('left', (infoBlockWidth * globalScale + 8) + 'px');
+    jQuery('#replayBar').css('left', (infoBlockWidth * globalScale) + 'px');
 
     if (SelectedPlane && toggles['enableInfoblock'].state) {
 

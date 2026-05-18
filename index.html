@@ -838,10 +838,10 @@
       </div>
     </div> -->
 
-    <div id="map_container" style="background-color:#D2D2D2;">
-      <div id="map_canvas" style="background-color:#D2D2D2;">
+    <div id="map_container" style="background-color:#727272;">
+      <div id="map_canvas" style="background-color:#727272;">
       </div>
-      <div id="iconTestCanvas" style="background-color:#D2D2D2;display:none;">
+      <div id="iconTestCanvas" style="background-color:#727272;display:none;">
       </div>
       <!-- INICIO MENÚ CONFIGURACIONES -->
       <div id="settings_infoblock">
@@ -1010,7 +1010,6 @@
           <!-- INICIO OPCIONES DE CAPAS -->
           <div id="layer-select" class="button-layer">
             <!-- FIN OPCIONES DE CAPAS -->
-
           </div>
           <!-- <div id="fullscreenButton" class="svgButton fullscreenButton"></div> -->
           <!-- <div id="settingsCog" class="svgButton settingsCog"></div> -->
@@ -1089,7 +1088,7 @@
 
           <!-- INICIO OPCIONES DE ZOOM -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZI"
-            title="Zoom on - Increase map zoom level." onclick="zoomInMap();"> <i class="fa-solid fa-plus fa-xl"></i>
+            title="Zoom In - Increase map zoom level." onclick="zoomInMap();"> <i class="fa-solid fa-plus fa-xl"></i>
           </div>
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZO"
             title="Zoom Out - Decrease map zoom level." onclick="zoomOutMap();"> <i class="fa-solid fa-minus fa-xl"></i>
@@ -1460,6 +1459,82 @@
       }
       document.querySelector('.ol-zoom-out')?.click();
     };
+
+    // Ajustar el tamaño del menú de mapas al abrir dropdowns
+    (function () {
+      const menuIds = [
+        'aircraft_dropdown',
+        'measurement_dropdown',
+        'track_dropdown',
+        'label_dropdown'
+      ];
+
+      const layerSelect = document.getElementById('layer-select');
+      if (!layerSelect) return;
+
+      function isOpen(root) {
+        const content = root.querySelector('.dropdown-content');
+        if (!content) return false;
+        const rect = content.getBoundingClientRect();
+        const cs = getComputedStyle(content);
+        return root.matches(':focus-within') &&
+          rect.height > 0 &&
+          cs.display !== 'none' &&
+          cs.visibility !== 'hidden';
+      }
+
+      function updateLayerSelectOffset() {
+        const extraSpacing = 12;
+        const menuIds = [
+          'aircraft_dropdown',
+          'measurement_dropdown',
+          'track_dropdown',
+          'label_dropdown'
+        ];
+        const navbar = document.getElementById('navbar');
+        const navbarBottom = navbar ? navbar.getBoundingClientRect().bottom : 0;
+
+        let needed = 0;
+
+        for (const id of menuIds) {
+          const root = document.getElementById(id);
+          if (!root) continue;
+          const content = root.querySelector('.dropdown-content');
+          if (!content) continue;
+          const cs = getComputedStyle(content);
+          if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+          const rect = content.getBoundingClientRect();
+          // si el dropdown se extiende por debajo del navbar, calcular cuánto empuja
+          const push = Math.max(0, Math.ceil(rect.bottom - navbarBottom) + extraSpacing);
+          needed = Math.max(needed, push);
+        }
+
+        layerSelect.style.setProperty('--layer-switcher-offset', `${needed}px`);
+
+        if (layerSelect.classList.contains('shown')) {
+          const top = layerSelect.getBoundingClientRect().top;
+          const available = Math.max(0, window.innerHeight - top - 12);
+          layerSelect.style.height = `${available}px`;
+          layerSelect.style.maxHeight = `${available}px`;
+        } else {
+          layerSelect.style.height = '';
+          layerSelect.style.maxHeight = '';
+        }
+      }
+
+      document.addEventListener('focusin', updateLayerSelectOffset);
+      document.addEventListener('focusout', () => setTimeout(updateLayerSelectOffset, 0));
+      document.addEventListener('click', () => setTimeout(updateLayerSelectOffset, 0));
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') setTimeout(updateLayerSelectOffset, 0);
+      });
+      window.addEventListener('resize', updateLayerSelectOffset);
+
+      const observer = new MutationObserver(updateLayerSelectOffset);
+      observer.observe(layerSelect, { attributes: true, attributeFilter: ['class', 'style'] });
+
+      updateLayerSelectOffset();
+    })();
 
   </script>
 
