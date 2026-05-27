@@ -149,6 +149,8 @@ const ggLineFeatures = new Map();
 const ggOverlays = new Map();
 // Intervalo de refresco del modo tierra‑tierra
 let ggUpdateInterval = null;
+// Indicador de zoom
+let zoomIndicatorBaseline = null;
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -1387,6 +1389,44 @@ function DistanceGroundToGround() {
         buttonActive('#TT', false);
     }
 }
+
+// Indicador de Zoom
+function updateZoomIndicator() {
+    const el = document.getElementById('zoom_indicator');
+    if (!el || !OLMap || !OLMap.getView) return;
+
+    const view = OLMap.getView();
+    const z = Number(view.getZoom()) || 0;
+
+    if (zoomIndicatorBaseline === null) {
+        zoomIndicatorBaseline = z;
+    }
+
+    const factor = Math.pow(2, z - zoomIndicatorBaseline);
+    const pct = Math.round(100 * factor);
+
+    el.textContent = pct + '%';
+    el.title = `Zoom: ${z.toFixed(2)} (base ${zoomIndicatorBaseline.toFixed(2)})`;
+}
+
+// Zoom In - Zoom Out
+function zoomInMap() {
+    if (!OLMap || !OLMap.getView) return;
+    const v = OLMap.getView();
+    v.setZoom((v.getZoom() ?? 0) + 1);
+    updateZoomIndicator();
+    if (FollowSelected) toggleFollow(true);
+}
+
+function zoomOutMap() {
+    if (!OLMap || !OLMap.getView) return;
+    const v = OLMap.getView();
+    v.setZoom((v.getZoom() ?? 0) - 1);
+    updateZoomIndicator();
+    if (FollowSelected) toggleFollow(true);
+}
+
+
 
 function processAircraft(ac, init, uat) {
     const isArray = Array.isArray(ac);
@@ -4043,7 +4083,12 @@ function ol_map_init() {
     OLMap.on('moveend', function (event) {
         checkMovement();
         webgl && webglLayer.setOpacity(webglIconOpacity);
+        updateZoomIndicator();
     });
+
+    OLMap.getView().on('change:resolution', updateZoomIndicator);
+
+    setTimeout(updateZoomIndicator, 0);
 
     OLMap.on(['singleclick', 'dblclick'], function (evt) {
         let trailHex = null;
@@ -7867,25 +7912,27 @@ function bearingFromLonLat(position1, position2) {
     return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
 }
 
-function zoomIn() {
-    const zoom = OLMap.getView().getZoom();
-    OLMap.getView().setZoom((zoom + 1).toFixed());
-    if (FollowSelected)
-        toggleFollow(true);
-}
+// function zoomIn() {
+//     const zoom = OLMap.getView().getZoom();
+//     OLMap.getView().setZoom((zoom + 1).toFixed());
+//     if (FollowSelected)
+//         toggleFollow(true);
+// }
 
-function zoomOut() {
-    const zoom = OLMap.getView().getZoom();
-    OLMap.getView().setZoom((zoom - 1).toFixed());
-    if (FollowSelected)
-        toggleFollow(true);
-}
+// function zoomOut() {
+//     const zoom = OLMap.getView().getZoom();
+//     OLMap.getView().setZoom((zoom - 1).toFixed());
+//     if (FollowSelected)
+//         toggleFollow(true);
+// }
 
 function changeZoom(init) {
     if (!OLMap)
         return;
 
     g.zoomLvl = OLMap.getView().getZoom();
+    // Actualizar el indicador al hacer zoom
+    updateZoomIndicator();
 
     checkScale();
 

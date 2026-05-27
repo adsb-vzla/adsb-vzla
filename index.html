@@ -897,8 +897,9 @@
         </div> -->
         <div id="right_controls">
           <div id="utc_clock">00:00 <span>UTC</span></div>
+          <div id="zoom_indicator" class="dateTime" title="Zoom">100%</div>
           <div id="tab-search-navbar"
-            title="Enter decimal coordinates (lat,lon), ICAO24 hex (hex ID), or flight callsign to search.">
+            title="Use decimal coordinates (lat,lon) to search airports. Use ICAO24 hex or callsign to search flights."></div>
             <form id="search_form">
               <input id="search_input" name="searchBox" type="text" placeholder="Search flights, airports..."
                 maxlength="128">
@@ -1442,23 +1443,6 @@
         }
       });
     })();
-    window.zoomInMap = function () {
-      if (window.OLMap && OLMap.getView) {
-        const v = OLMap.getView();
-        v.setZoom((v.getZoom() ?? 0) + 1);
-        return;
-      }
-      document.querySelector('.ol-zoom-in')?.click();
-    };
-
-    window.zoomOutMap = function () {
-      if (window.OLMap && OLMap.getView) {
-        const v = OLMap.getView();
-        v.setZoom((v.getZoom() ?? 0) - 1);
-        return;
-      }
-      document.querySelector('.ol-zoom-out')?.click();
-    };
 
     // Ajustar el tamaño del menú de mapas al abrir dropdowns
     (function () {
