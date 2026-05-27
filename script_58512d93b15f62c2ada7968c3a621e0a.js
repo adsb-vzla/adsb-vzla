@@ -377,7 +377,9 @@ function updateDistanceLine() {
         }
         // ----------------------------------------------
 
-        planesMissingSince = null;
+        // planesMissingSince = null;
+        ppMissingSince.delete(key);
+        ppRemoved.delete(key);
 
         let coords1 = plane1.position;
         let coords2 = plane2.position;
