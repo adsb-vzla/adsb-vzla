@@ -127,14 +127,22 @@ const groundPlaneRemoved = new Set();
 let groundToGroundMode = false;
 // Modo activo por defecto
 let groundToGroundModeType = '1A1B';
+
 // Modos disponibles tierra‑tierra
-const GG_MODES = ['1A1B', '1A_nB'];
+// const GG_MODES = ['1A1B', '1A_nB'];
+const GG_MODES = ['1A1B', '1A_nB', 'nA_nB'];
+
 // Límite de puntos B en modo 1A_nB
 const GG_MAX_1A_nB = 3;
 // Punto A actual en tierra
 let ggPointA = null;
 // Lista de puntos B marcados en tierra
 let ggPointsB = [];
+
+// Soporte nA_nB
+let ggPairs = [];
+let ggPendingA = null;
+
 // Fuente vectorial de las líneas A‑B
 let ggLineSource = null;
 // Capa que dibuja las líneas A‑B
@@ -623,17 +631,29 @@ function ggPreMessage() {
 }
 
 // Paso 1 guía (tierra-tierra)
+// function ggStep1Message() {
+//     return groundToGroundModeType === '1A_nB'
+//         ? 'Mark a single ground point A.'
+//         : 'Mark the ground point A.';
+// }
+
 function ggStep1Message() {
     return groundToGroundModeType === '1A_nB'
         ? 'Mark a single ground point A.'
-        : 'Mark the ground point A.';
+        : (groundToGroundModeType === 'nA_nB' ? 'Mark one or more ground points A (click to add each A).' : 'Mark the ground point A.');
 }
 
 // Paso 2 guía (tierra-tierra)
+// function ggStep2Message() {
+//     return groundToGroundModeType === '1A_nB'
+//         ? 'Mark up to 3 ground points B.'
+//         : 'Mark the ground point B.';
+// }
+
 function ggStep2Message() {
     return groundToGroundModeType === '1A_nB'
         ? 'Mark up to 3 ground points B.'
-        : 'Mark the ground point B.';
+        : (groundToGroundModeType === 'nA_nB' ? 'After marking A, click to add B for the last A (creates A‑B pairs).' : 'Mark the ground point B.');
 }
 
 // Limpiar puntos, líneas y overlays en el modo tierra-aeronave
@@ -706,6 +726,10 @@ function clearGroundToGround(opts = {}) {
         ggOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
         try { ggOverlays.clear(); } catch (_) { }
     }
+
+    // Limpiar pares y estado pendiente para nA_nB
+    try { ggPairs && (ggPairs.length = 0); } catch (_) { }
+    ggPendingA = null;
 
     // Si se pide reset completo:
     if (opts.reset !== false) {
@@ -1156,7 +1180,15 @@ function updateGroundToGroundOverlay() {
             // Guardar los pares A‑B con claves basadas en el índice
             ggPointsB.forEach((pt, idx) => pairs.push({ key: `${idx}`, a: ggPointA, b: pt }));
         }
+    } else if (groundToGroundModeType === 'nA_nB') {
+        // Modo nA_nB: usar los pares acumulados (ggPairs)
+        if (ggPairs && ggPairs.length) {
+            for (const p of ggPairs) {
+                pairs.push({ key: p.key, a: p.a, b: p.b });
+            }
+        }
     }
+
     // Si no hay pares, no se dibuja nada
     if (!pairs.length) return;
     // Asegurar que la capa de líneas esté visible
@@ -4412,6 +4444,41 @@ function ol_map_init() {
 
             // Asegurar que la capa de puntos esté visible
             if (ggPointLayer) ggPointLayer.setVisible(true);
+
+            // Modo nA_nB: crear pares A|B por clicks alternados (pendiente A -> B)
+            if (groundToGroundModeType === 'nA_nB') {
+                // Si no hay A pendiente, marcar A pendiente y dibujar su punto
+                if (!ggPendingA) {
+                    ggPendingA = lonlat;
+                    ggPointSource && ggPointSource.addFeature(
+                        new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                    );
+                    showDistanceGuide(ggStep2Message());
+                } else {
+                    // Crear par A-B y limpiar pendiente
+                    const a = ggPendingA;
+                    const b = lonlat;
+                    const key = `${a[0].toFixed(6)},${a[1].toFixed(6)}|${b[0].toFixed(6)},${b[1].toFixed(6)}`;
+                    ggPairs.push({ key, a, b });
+                    // Añadir punto B visualmente
+                    ggPointSource && ggPointSource.addFeature(
+                        new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(b)))
+                    );
+                    ggPendingA = null;
+                    hideDistanceGuide();
+                }
+
+                // Recalcular y pintar líneas/overlays A‑B
+                updateGroundToGroundOverlay();
+                // Si no hay intervalo de refresco activo
+                if (!ggUpdateInterval) {
+                    // Programar refresco cada segundo
+                    ggUpdateInterval = setInterval(updateGroundToGroundOverlay, 1000);
+                }
+                // Evitar que el clic lo manejen otros listeners
+                evt.stopPropagation();
+                return;
+            }
 
             // Si aún no se fijó el punto A
             if (!ggPointA) {
