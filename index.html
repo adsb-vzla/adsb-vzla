@@ -845,6 +845,7 @@
       </div>
       <!-- INICIO MENÚ CONFIGURACIONES -->
       <div id="settings_infoblock">
+        <div class="panel-title">Settings</div>
         <div id="settings_close" class="settingsCloseBox"></div>
         <div class="settingsOptionContainer">
           <div class="settingsText">Text and icon size:</div>
@@ -945,6 +946,7 @@
               title="Aircraft tools - Open aircraft filtering and tracking options."><i
                 class="fa-solid fa-plane-up fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
+              <li class="dropdown-menu-title">Aircraft tools</li>
               <li><a id="V" title="Show only aircraft currently visible on the map."
                   onclick="toggleTableInView();">Current view</a></li>
               <li><a id="M" title="Enable selecting multiple aircraft at the same time."
@@ -966,6 +968,7 @@
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
               title="Measurement tools - Open measurement options."><i class="fa-solid fa-ruler fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
+              <li class="dropdown-menu-title">Measurement tools</li>
               <li><a id="D" title="Measure distance between two aircraft."
                   onclick="toggleDistance();">Aircraft-aircraft</a></li>
               <li><a id="TA" title="Measure distance from a ground point to an aircraft."
@@ -981,6 +984,7 @@
             <div tabindex="0" role="button" class="btn  btn-neutral m-1 w-9 truncate bg-base-color text-white"
               title="Track tools - Open track display options."><i class="fa-solid fa-route fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
+              <li class="dropdown-menu-title">Track tools</li>
               <li><a id="T" title="Display tracks for all visible aircraft." onclick="selectAllPlanes();">All tracks</a>
               </li>
               <li><a id="K" title="Show or hide labels on aircraft tracks." onclick="toggleTrackLabels();">Track
@@ -994,6 +998,7 @@
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
               title="Label tools - Open label visibility options."><i class="fa-solid fa-tags fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
+              <li class="dropdown-menu-title">Label tools</li>
               <li><a id="L" title="Show or hide primary aircraft labels." onclick="toggleLabels();">Labels</a></li>
               <li><a id="O" title="Show or hide extended label information." onclick="toggleExtendedLabels();">Label
                   details</a></li>
@@ -1520,6 +1525,45 @@
       updateLayerSelectOffset();
     })();
 
+  </script>
+
+  <!-- Generar título para layer-select -->
+  <script>
+    (function () {
+      const TITLE_CLASS = 'layer-panel-title';
+      const TITLE_TEXT = 'Layer tools';
+
+      function insertTitleIntoPanel(panel) {
+        if (!panel) return;
+        if (panel.querySelector(`:scope > .${TITLE_CLASS}`)) return;
+        const title = document.createElement('div');
+        title.className = TITLE_CLASS;
+        title.textContent = TITLE_TEXT;
+        panel.prepend(title);
+      }
+
+      function scanForPanels() {
+        document.querySelectorAll('.layer-switcher').forEach(ls => {
+          const panel = ls.querySelector('.panel');
+          if (panel) insertTitleIntoPanel(panel);
+          // ensure we react when OpenLayers injects/removes panel content
+          if (window.MutationObserver && !ls.__layerTitleObserver) {
+            ls.__layerTitleObserver = new MutationObserver(() => insertTitleIntoPanel(ls.querySelector('.panel')));
+            ls.__layerTitleObserver.observe(ls, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+          }
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        scanForPanels();
+        if (window.MutationObserver) {
+          const mo = new MutationObserver(scanForPanels);
+          mo.observe(document.body, { childList: true, subtree: true });
+          const layerSelect = document.getElementById('layer-select');
+          if (layerSelect) new MutationObserver(scanForPanels).observe(layerSelect, { attributes: true, attributeFilter: ['class', 'style'] });
+        }
+      });
+    })();
   </script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">

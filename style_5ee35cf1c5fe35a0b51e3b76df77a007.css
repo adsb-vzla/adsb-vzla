@@ -1644,3 +1644,38 @@ div.ui-slider .ui-slider-handle {
 .layer-switcher.shown.layer-switcher-activation-mode-click > button{
     color: #eee !important;
 }
+
+.dropdown-menu-title,
+.panel-title,
+.layer-tools-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  padding: 0.4rem 0.75rem 0.6rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--TXTCOLOR2, #fff);
+}
+
+.dropdown-content .dropdown-menu-title {
+  pointer-events: none;
+  cursor: default;
+}
+
+#settings_infoblock .panel-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+
+.layer-switcher .layer-panel-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  color: var(--TXTCOLOR2, #fff);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.layer-switcher .panel { padding-top: 0.25rem; }
