@@ -3092,9 +3092,9 @@ function earlyInitPage() {
     });
 
     if (routeApiUrl) {
-        if (location.protocol == 'http:' && routeApiUrl == "https://adsb.im/api/0/routeset") {
+        if (location.protocol == 'http:' && routeApiUrl == "https://api.adsb.lol/api/0/routeset") {
             // adsb.im API provider kindly asks that tar1090 uses http for the route API if possible
-            routeApiUrl = "http://adsb.im/api/0/routeset";
+            routeApiUrl = "https://api.adsb.lol/api/0/routesetl";
         }
         new Toggle({
             key: "useRouteAPI",
