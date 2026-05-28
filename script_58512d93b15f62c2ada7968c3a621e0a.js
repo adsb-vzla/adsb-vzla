@@ -10056,7 +10056,7 @@ function currentExtent(factor) {
 }
 
 function replayDefaults(ts) {
-    jQuery("#replayPlay").html("Pause");
+    jQuery("#replayPlay").html("Play");
     let playing = true;
     let speed = 30;
     if (usp.has("replaySpeed")) {
