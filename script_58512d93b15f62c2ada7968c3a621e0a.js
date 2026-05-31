@@ -5668,7 +5668,22 @@ function refreshSelected() {
 
     refreshPhoto(selected);
 
-    jQuery('#selected_callsign').updateText(selected.name);
+    if (selected.name) {
+        // Verificamos si el avión tiene coordenadas válidas en este instante
+        if (selected.position && selected.position.length >= 2) {
+            const lat = selected.position[1];
+            const lon = selected.position[0];
+            
+            // Creamos el hipervínculo que ejecuta el salto usando executeJump([lat, lon])
+            const callsignLink = `<a class="link" href="#" style="text-decoration: none; color: inherit;" onclick="executeJump([${lat}, ${lon}]); return false;">${selected.name.toUpperCase()}</a>`;
+            jQuery('#selected_callsign').html(callsignLink);
+        } else {
+            // Si no tiene posición en el mapa, se muestra como texto plano normal
+            jQuery('#selected_callsign').updateText(selected.name.toUpperCase());
+        }
+    } else {
+        jQuery('#selected_callsign').updateText('');
+    }
 
     if (showTrace) {
         if (selected.position_time) {
@@ -5774,8 +5789,25 @@ function refreshSelected() {
 
     if (useRouteAPI) {
         if (selected.routeString) {
-            jQuery('#selected_route').updateText(selected.routeString);
             jQuery('#selected_route').attr('title', selected.routeVerbose);
+
+            // Intentamos separar el string (ej. de "LEMD-KJFK" pasamos a ["LEMD", "KJFK"])
+            const airports = selected.routeString.split('-');
+
+            if (airports.length === 2) {
+                const origin = airports[0].trim();
+                const destination = airports[1].trim();
+
+                // Creamos dos enlaces independientes que llaman a la búsqueda de aeropuerto
+                const originLink = `<a class="link" href="#" onclick="searchAirport('${origin.toUpperCase()}'); return false;">${origin}</a>`;
+                const destLink = `<a class="link" href="#" onclick="searchAirport('${destination.toUpperCase()}'); return false;">${destination}</a>`;
+
+                // Los unimos con el guion clásico
+                jQuery('#selected_route').html(`${originLink} - ${destLink}`);
+            } else {
+                // Si el formato de la ruta es extraño o no tiene guion, lo ponemos normal
+                jQuery('#selected_route').updateText(selected.routeString);
+            }
         } else {
             jQuery('#selected_route').updateText('n/a');
         }
