@@ -1,7 +1,7 @@
 // Some global variables are defined in early_2fb3798b27b8a81aea55bad8e31f020b.js
 // early_2fb3798b27b8a81aea55bad8e31f020b.js takes care of getting some history files while the html page and
 // some javascript libraries are still loading, hopefully speeding up loading
-
+// Hola
 
 "use strict";
 
@@ -127,6 +127,8 @@ const TA_MODES = ['1A1B', '1A_nB', 'nA_1B', 'nA_nB'];
 const groundPlaneMissingSince = new Map();
 // Pares A‑B ya descartados tras perder señal
 const groundPlaneRemoved = new Set();
+// Manejar qué pares tierra-avión están 
+let groundPlaneHiddenState = new Map();
 // Flag del modo distancia tierra‑tierra
 let groundToGroundMode = false;
 // Modo activo por defecto
@@ -137,7 +139,7 @@ let groundToGroundModeType = '1A1B';
 const GG_MODES = ['1A1B', '1A_nB', 'nA_nB'];
 
 // Límite de puntos B en modo 1A_nB
-const GG_MAX_1A_nB = 3;
+// const GG_MAX_1A_nB = 3;
 // Punto A actual en tierra
 let ggPointA = null;
 // Lista de puntos B marcados en tierra
@@ -907,6 +909,11 @@ function ggStep2Message() {
 // Limpiar puntos, líneas y overlays en el modo tierra-aeronave
 function clearTAGroundDrawings(opts = {}) {
 
+    // Limpiar estado oculto de pares tierra‑avión
+    if (groundPlaneHiddenState) {
+        groundPlaneHiddenState.clear();
+    }
+
     // Limpiar la fuente vectorial del punto A si existe
     try { groundPointSource && groundPointSource.clear() } catch (_) { }
 
@@ -1148,154 +1155,319 @@ function updateDistanceToGroundOverlay() {
             }
         }
 
-        // Si el avión está “viejo” o sin señal
         if (isStale) {
-            // Marca el par como activo (en espera)
             active.add(key);
 
-            // Tiempo en que empezó a faltar la señal
             const started = groundPlaneMissingSince.get(key) || Date.now();
-            // Registrar/actualizar el inicio de la ausencia
             groundPlaneMissingSince.set(key, started);
-            // Segundos sin señal
             const secondsMissing = (Date.now() - started) / 1000;
-            // Segundos para expirar
             const remaining = Math.max(0, Math.ceil(15 - secondsMissing));
 
-            // Buscar overlay existente para este par
             let ov = groundPlaneOverlays.get(key);
-            // Si no existe, crear uno nuevo
             if (!ov) {
                 const el = document.createElement('div');
-                Object.assign(el.style, {
-                    background: 'rgba(255,255,255,0.85)',
-                    border: '1px solid #000',
-                    padding: '6px',
-                    fontSize: '12px',
-                    color: '#000',
-                    pointerEvents: 'none',
+                el.id = `ta-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                el.style.background = 'rgba(255, 255, 255, 0.9)';
+                el.style.border = '1px solid black';
+                el.style.padding = '5px';
+                el.style.fontSize = '12px';
+                el.style.color = 'black';
+                el.style.pointerEvents = 'auto';
+                el.style.borderRadius = '4px';
+
+                el.innerHTML = `
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
+                <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
+                <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+            </div>
+            <div class="ta-text-content"></div>
+        `;
+
+                // Inicializar estado oculto si no existe
+                if (!groundPlaneHiddenState.has(key)) groundPlaneHiddenState.set(key, false);
+
+                const toggleBtn = el.querySelector('.ta-toggle-btn');
+                const closeBtn = el.querySelector('.ta-close-btn');
+                const textContainer = el.querySelector('.ta-text-content');
+
+                // Evento: Ocultar/Mostrar
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isHidden = groundPlaneHiddenState.get(key) || false;
+                    const newHidden = !isHidden;
+                    groundPlaneHiddenState.set(key, newHidden);
+
+                    if (newHidden) {
+                        textContainer.style.display = 'none';
+                        toggleBtn.className = 'fa-solid fa-eye';
+                        const feat = groundPlaneFeatures.get(key);
+                        if (feat) feat.setStyle(new ol.style.Style({}));
+                    } else {
+                        textContainer.style.display = 'block';
+                        toggleBtn.className = 'fa-solid fa-eye-slash';
+                        const feat = groundPlaneFeatures.get(key);
+                        if (feat) feat.setStyle(null);
+                    }
                 });
-                ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+
+                // Evento: Cerrar (eliminar el par)
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+
+                    // Eliminar línea
+                    const feat = groundPlaneFeatures.get(key);
+                    if (feat && groundToPlaneLineSource) {
+                        groundToPlaneLineSource.removeFeature(feat);
+                        groundPlaneFeatures.delete(key);
+                    }
+
+                    // Eliminar overlay
+                    if (ov) OLMap && OLMap.removeOverlay(ov);
+                    groundPlaneOverlays.delete(key);
+
+                    // Limpiar estado
+                    groundPlaneHiddenState.delete(key);
+                    groundPlaneMissingSince.delete(key);
+                    groundPlaneRemoved.delete(key);
+
+                    // --- LÓGICA ESPECIAL PARA LIMPIAR PUNTOS A ---
+                    if (distanceToGroundModeType === '1A1B') {
+                        // Limpiar lógica
+                        groundPoints = [];
+                        groundPointCoord = null;
+                        planesForGround = [];
+                        selectedPlaneForGround = null;
+
+                        // Limpiar visualmente el punto A del mapa
+                        if (groundPointSource) {
+                            groundPointSource.clear();
+                            groundPointFeaturesByCoord.clear();
+                            // Forzar notificación de cambio
+                            groundPointSource.changed();
+                        }
+
+                        // Ocultar la capa del punto A
+                        if (groundPointLayer) {
+                            groundPointLayer.setVisible(false);
+                            // Forzar redibujado de la capa
+                            groundPointLayer.changed();
+                        }
+
+                        // Forzar redibujado completo del mapa
+                        if (OLMap) {
+                            OLMap.renderSync();
+                        }
+                    }
+                    else if (distanceToGroundModeType === 'nA_nB') {
+                        // 1. Obtener la clave del punto A
+                        const gpKey = key.split('|')[0];
+
+                        // 2. Verificar si este punto A es usado por otros pares
+                        const stillUsed = taPairs.some(p => p.key !== key && p.key.startsWith(gpKey + '|'));
+
+                        // 3. Eliminar el punto A de la fuente visual SOLO si ya no es usado
+                        if (!stillUsed && groundPointSource) {
+                            // Buscar la feature por coordenada
+                            const featA = groundPointFeaturesByCoord.get(gpKey);
+                            if (featA) {
+                                groundPointSource.removeFeature(featA);
+                                groundPointFeaturesByCoord.delete(gpKey);
+                            }
+
+                            // 🔧 IMPORTANTE: También buscar cualquier feature con coordenadas similares
+                            // (por si la clave no coincide exactamente)
+                            const featuresToRemove = [];
+                            groundPointSource.forEachFeature(feat => {
+                                const geom = feat.getGeometry();
+                                if (geom) {
+                                    const coords = geom.getCoordinates();
+                                    const lonLat = ol.proj.toLonLat(coords);
+                                    const candidateKey = `${lonLat[0].toFixed(6)},${lonLat[1].toFixed(6)}`;
+                                    if (candidateKey === gpKey) {
+                                        featuresToRemove.push(feat);
+                                    }
+                                }
+                            });
+                            featuresToRemove.forEach(feat => groundPointSource.removeFeature(feat));
+
+                            // Forzar actualización de la fuente
+                            groundPointSource.changed();
+                        }
+
+                        // 4. Eliminar el par del array
+                        taPairs = taPairs.filter(p => p.key !== key);
+
+                        // 5. Gestionar la visibilidad de la capa de puntos
+                        if (groundPointSource && groundPointSource.getFeatures().length === 0) {
+                            if (groundPointLayer) {
+                                groundPointLayer.setVisible(false);
+                                groundPointLayer.changed();
+                            }
+                        } else if (groundPointLayer && !groundPointLayer.getVisible()) {
+                            groundPointLayer.setVisible(true);
+                            groundPointLayer.changed();
+                        }
+
+                        // 6. Forzar redibujado completo del mapa
+                        if (OLMap) {
+                            OLMap.renderSync();
+                        }
+                    }
+
+                    else if (distanceToGroundModeType === '1A_nB') {
+                        planesForGround = planesForGround.filter(h => h !== hex);
+                    }
+                    else if (distanceToGroundModeType === 'nA_1B') {
+                        planesForGround = [];
+                        selectedPlaneForGround = null;
+                    }
+
+                    updateDistanceToGroundOverlay();
+                });
+
+                ov = new ol.Overlay({
+                    element: el,
+                    positioning: 'center-center',
+                    offset: [0, -10],
+                    stopEvent: true
+                });
                 OLMap && OLMap.addOverlay(ov);
                 groundPlaneOverlays.set(key, ov);
             }
 
-            // Mensaje de señal perdida
-            ov.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
+            // Actualizar el contenido del texto
+            const textContainer = ov.getElement().querySelector('.ta-text-content');
+            if (textContainer) {
+                textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
+            }
 
-            // Coordenada donde se mostrará el cartel
-            let overlayPos;
-            // Si ya hay una línea A‑B dibujada para este par
-            if (groundPlaneFeatures.has(key)) {
-                // Usar el punto medio de esa línea
-                overlayPos = groundPlaneFeatures.get(key).getGeometry().getCoordinateAt(0.5);
-                // Si el avión tiene posición válida pero no hay línea
-            } else if (!missingPlane && plane.position) {
-                // Proyectar la posición del avión
-                const projPlane = ol.proj.fromLonLat(plane.position);
-                // Proyectar el punto A en tierra
-                const projGround = ol.proj.fromLonLat(gp);
-                // Calcular el punto medio entre A y el avión
-                overlayPos = [(projGround[0] + projPlane[0]) / 2, (projGround[1] + projPlane[1]) / 2];
-                // Si no hay posición del avión
+            // Aplicar estado de oculto actual
+            const isHidden = groundPlaneHiddenState.get(key) || false;
+            if (isHidden) {
+                if (textContainer) textContainer.style.display = 'none';
+                const toggleIcon = ov.getElement().querySelector('.ta-toggle-btn');
+                if (toggleIcon) toggleIcon.className = 'fa-solid fa-eye';
+                const feat = groundPlaneFeatures.get(key);
+                if (feat) feat.setStyle(new ol.style.Style({}));
             } else {
-                // Colocar el cartel sobre el punto A
+                if (textContainer) textContainer.style.display = 'block';
+                const toggleIcon = ov.getElement().querySelector('.ta-toggle-btn');
+                if (toggleIcon) toggleIcon.className = 'fa-solid fa-eye-slash';
+                const feat = groundPlaneFeatures.get(key);
+                if (feat) feat.setStyle(null);
+            }
+
+            // Posicionar el overlay
+            let overlayPos;
+            if (groundPlaneFeatures.has(key)) {
+                overlayPos = groundPlaneFeatures.get(key).getGeometry().getCoordinateAt(0.5);
+            } else if (!missingPlane && plane.position) {
+                const projPlane = ol.proj.fromLonLat(plane.position);
+                const projGround = ol.proj.fromLonLat(gp);
+                overlayPos = [(projGround[0] + projPlane[0]) / 2, (projGround[1] + projPlane[1]) / 2];
+            } else {
                 overlayPos = ol.proj.fromLonLat(gp);
             }
-            // Anclar el overlay en su centro
             ov.setPositioning('center-center');
-            // Sin desplazamiento adicional
             ov.setOffset([0, 0]);
-            // Posiciona el overlay en la coordenada calculada
             ov.setPosition(overlayPos);
 
-            // Si lleva 15s sin señal, se descarta el par
+            // Si supera los 15 segundos, eliminar el par
             if (secondsMissing >= 15) {
-                // Limpiar el registro de ausencia
                 groundPlaneMissingSince.delete(key);
-                // Marcar el par como eliminado
                 groundPlaneRemoved.add(key);
 
-                // Recuperar la línea A‑B de este par
                 const feat = groundPlaneFeatures.get(key);
                 if (feat) {
-                    // Quitar la línea del mapa
                     groundToPlaneLineSource && groundToPlaneLineSource.removeFeature(feat);
-                    // Borrar la referencia de la línea
                     groundPlaneFeatures.delete(key);
                 }
-                // Quitar el overlay del mapa
                 OLMap && ov && OLMap.removeOverlay(ov);
-                // Eliminar el overlay del registro
                 groundPlaneOverlays.delete(key);
+                groundPlaneHiddenState.delete(key);
 
-                // Ajustar listas según el modo activo
-                if (distanceToGroundModeType === '1A_nB') {
-                    // Quitar avión B
-                    planesForGround = planesForGround.filter(h => h !== hex);
-                } else if (distanceToGroundModeType === 'nA_1B') {
-                    // Limpiar avión B
+                if (distanceToGroundModeType === '1A1B') {
+                    // Limpiar lógica
+                    groundPoints = [];
+                    groundPointCoord = null;
                     planesForGround = [];
-                    // Borrar selección de avión
                     selectedPlaneForGround = null;
+
+                    // Limpiar visualmente el punto A
+                    if (groundPointSource) {
+                        groundPointSource.clear();
+                        groundPointFeaturesByCoord.clear();
+                        groundPointSource.changed();
+                    }
+                    if (groundPointLayer) {
+                        groundPointLayer.setVisible(false);
+                        groundPointLayer.changed();
+                    }
                 } else if (distanceToGroundModeType === 'nA_nB') {
-                    // Quitar el par A‑B almacenado
+                    // 1. Obtener la clave del punto A
+                    const gpKey = key.split('|')[0];
+
+                    // 2. Verificar si este punto A es usado por otros pares
+                    const stillUsed = taPairs.some(p => p.key !== key && p.key.startsWith(gpKey + '|'));
+
+                    // 3. Eliminar el punto A de la fuente visual SOLO si ya no es usado
+                    if (!stillUsed && groundPointSource) {
+                        // Buscar la feature por coordenada
+                        const featA = groundPointFeaturesByCoord.get(gpKey);
+                        if (featA) {
+                            groundPointSource.removeFeature(featA);
+                            groundPointFeaturesByCoord.delete(gpKey);
+                        }
+
+                        // 🔧 IMPORTANTE: También buscar cualquier feature con coordenadas similares
+                        // (por si la clave no coincide exactamente)
+                        const featuresToRemove = [];
+                        groundPointSource.forEachFeature(feat => {
+                            const geom = feat.getGeometry();
+                            if (geom) {
+                                const coords = geom.getCoordinates();
+                                const lonLat = ol.proj.toLonLat(coords);
+                                const candidateKey = `${lonLat[0].toFixed(6)},${lonLat[1].toFixed(6)}`;
+                                if (candidateKey === gpKey) {
+                                    featuresToRemove.push(feat);
+                                }
+                            }
+                        });
+                        featuresToRemove.forEach(feat => groundPointSource.removeFeature(feat));
+
+                        // Forzar actualización de la fuente
+                        groundPointSource.changed();
+                    }
+
+                    // 4. Eliminar el par del array
                     taPairs = taPairs.filter(p => p.key !== key);
 
-                    // Extraer la clave de la coordenada del punto A
-                    const groundKey = key.split('|')[0];
-
-                    // Recuperar la feature del punto A si estaba indexada
-                    const featA = groundPointFeaturesByCoord.get(groundKey);
-                    // Si existe la feature y la fuente de puntos está disponible
-                    if (featA && groundPointSource) {
-                        // Intentar quitar el punto A del mapa
-                        try { groundPointSource.removeFeature(featA); } catch (_) { }
-                        // Eliminar la entrada del índice para ese punto A    
-                        groundPointFeaturesByCoord.delete(groundKey);
-                    }
-                    // Borrar la clave aunque no hubiera feature
-                    groundPointFeaturesByCoord.delete(groundKey);
-
-                    // Si hay fuente de puntos A activa
-                    if (groundPointSource) {
-                        // Limpiar todos los puntos A del mapa
-                        groundPointSource.clear();
-                        // Vaciar el índice de puntos A por coordenada
-                        groundPointFeaturesByCoord.clear();
-                        // Recorrer cada par tierra‑avión almacenado
-                        for (const { gp } of taPairs) {
-                            // Clave de la coord con 6 decimales
-                            const gpKey = `${gp[0].toFixed(6)},${gp[1].toFixed(6)}`;
-                            // Si ya existe ese punto, saltarlo
-                            if (groundPointFeaturesByCoord.has(gpKey)) continue;
-                            // Crear la feature del punto A
-                            const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(gp)));
-                            // Registrar la feature en el índice por coord
-                            groundPointFeaturesByCoord.set(gpKey, f);
-                            // Añadir el punto A a la fuente para dibujarlo
-                            groundPointSource.addFeature(f);
+                    // 5. Gestionar la visibilidad de la capa de puntos
+                    if (groundPointSource && groundPointSource.getFeatures().length === 0) {
+                        if (groundPointLayer) {
+                            groundPointLayer.setVisible(false);
+                            groundPointLayer.changed();
                         }
-                        // Contar cuántos puntos A hay
-                        const count = groundPointSource.getFeatures().length;
-                        // Mostrar u ocultar la capa según haya puntos
-                        if (groundPointLayer) groundPointLayer.setVisible(count > 0);
-                        // Forzar a la fuente a notificar cambios
-                        groundPointSource.changed();
-                        // Forzar a la capa a redibujarse
-                        groundPointLayer && groundPointLayer.changed();
-                        // Redibujar el mapa inmediatamente
-                        OLMap && OLMap.renderSync();
+                    } else if (groundPointLayer && !groundPointLayer.getVisible()) {
+                        groundPointLayer.setVisible(true);
+                        groundPointLayer.changed();
                     }
-                    // Si no quedan puntos A, ocultar la capa
-                    if (groundPointLayer && groundPointSource && groundPointSource.getFeatures().length === 0) {
-                        groundPointLayer.setVisible(false);
+
+                    // 6. Forzar redibujado completo del mapa
+                    if (OLMap) {
+                        OLMap.renderSync();
                     }
+                } else if (distanceToGroundModeType === '1A_nB') {
+                    planesForGround = planesForGround.filter(h => h !== hex);
+                } else if (distanceToGroundModeType === 'nA_1B') {
+                    planesForGround = [];
+                    selectedPlaneForGround = null;
                 }
+
+                if (OLMap) OLMap.renderSync();
             }
 
             continue;
-
         }
 
         // Borrar el registro de ausencia del par
@@ -1361,23 +1533,201 @@ function updateDistanceToGroundOverlay() {
         // Punto medio A‑B
         const midProj = feat.getGeometry().getCoordinateAt(0.5);
 
-        // Buscar el overlay de texto para el par
         let ov = groundPlaneOverlays.get(key);
-        // Si no existe, crear uno nuevo
         if (!ov) {
             const el = document.createElement('div');
-            el.style.background = 'rgba(255,255,255,0.85)';
-            el.style.border = '1px solid #000';
-            el.style.padding = '6px';
+            el.id = `ta-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
+            el.style.background = 'rgba(255, 255, 255, 0.9)';
+            el.style.border = '1px solid black';
+            el.style.padding = '5px';
             el.style.fontSize = '12px';
-            el.style.color = '#000';
-            el.style.pointerEvents = 'none';
-            ov = new ol.Overlay({ element: el, positioning: 'center-center', offset: [0, -10] });
+            el.style.color = 'black';
+            el.style.pointerEvents = 'auto';
+            el.style.borderRadius = '4px';
+
+            // Estructura con botones y contenedor de texto
+            el.innerHTML = `
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
+            <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
+            <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+        </div>
+        <div class="ta-text-content"></div>
+    `;
+
+            // Inicializar estado oculto para este par si no existe
+            if (!groundPlaneHiddenState.has(key)) groundPlaneHiddenState.set(key, false);
+
+            const toggleBtn = el.querySelector('.ta-toggle-btn');
+            const closeBtn = el.querySelector('.ta-close-btn');
+            const textContainer = el.querySelector('.ta-text-content');
+
+            // Evento: Ocultar/Mostrar
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = groundPlaneHiddenState.get(key) || false;
+                const newHidden = !isHidden;
+                groundPlaneHiddenState.set(key, newHidden);
+
+                const feat = groundPlaneFeatures.get(key);
+                if (newHidden) {
+                    textContainer.style.display = 'none';
+                    toggleBtn.className = 'fa-solid fa-eye';
+                    if (feat) feat.setStyle(new ol.style.Style({}));
+                } else {
+                    textContainer.style.display = 'block';
+                    toggleBtn.className = 'fa-solid fa-eye-slash';
+                    if (feat) feat.setStyle(null);
+                }
+            });
+
+            // Evento: Cerrar (eliminar el par)
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                // Eliminar línea
+                const feat = groundPlaneFeatures.get(key);
+                if (feat && groundToPlaneLineSource) {
+                    groundToPlaneLineSource.removeFeature(feat);
+                    groundPlaneFeatures.delete(key);
+                }
+
+                // Eliminar overlay
+                if (ov) OLMap && OLMap.removeOverlay(ov);
+                groundPlaneOverlays.delete(key);
+
+                // Limpiar estado
+                groundPlaneHiddenState.delete(key);
+                groundPlaneMissingSince.delete(key);
+                groundPlaneRemoved.delete(key);
+
+                // LIMPIAR PUNTOS A ---
+                if (distanceToGroundModeType === '1A1B') {
+                    // Limpiar lógica
+                    groundPoints = [];
+                    groundPointCoord = null;
+                    planesForGround = [];
+                    selectedPlaneForGround = null;
+
+                    // Limpiar visualmente el punto A del mapa
+                    if (groundPointSource) {
+                        groundPointSource.clear();
+                        groundPointFeaturesByCoord.clear();
+                        // Forzar notificación de cambio
+                        groundPointSource.changed();
+                    }
+
+                    // Ocultar la capa del punto A
+                    if (groundPointLayer) {
+                        groundPointLayer.setVisible(false);
+                        // Forzar redibujado de la capa
+                        groundPointLayer.changed();
+                    }
+
+                    // Forzar redibujado completo del mapa
+                    if (OLMap) {
+                        OLMap.renderSync();
+                    }
+                }
+                else if (distanceToGroundModeType === 'nA_nB') {
+                    // 1. Obtener la clave del punto A
+                    const gpKey = key.split('|')[0];
+
+                    // 2. Verificar si este punto A es usado por otros pares
+                    const stillUsed = taPairs.some(p => p.key !== key && p.key.startsWith(gpKey + '|'));
+
+                    // 3. Eliminar el punto A de la fuente visual SOLO si ya no es usado
+                    if (!stillUsed && groundPointSource) {
+                        // Buscar la feature por coordenada
+                        const featA = groundPointFeaturesByCoord.get(gpKey);
+                        if (featA) {
+                            groundPointSource.removeFeature(featA);
+                            groundPointFeaturesByCoord.delete(gpKey);
+                        }
+
+                        // 🔧 IMPORTANTE: También buscar cualquier feature con coordenadas similares
+                        // (por si la clave no coincide exactamente)
+                        const featuresToRemove = [];
+                        groundPointSource.forEachFeature(feat => {
+                            const geom = feat.getGeometry();
+                            if (geom) {
+                                const coords = geom.getCoordinates();
+                                const lonLat = ol.proj.toLonLat(coords);
+                                const candidateKey = `${lonLat[0].toFixed(6)},${lonLat[1].toFixed(6)}`;
+                                if (candidateKey === gpKey) {
+                                    featuresToRemove.push(feat);
+                                }
+                            }
+                        });
+                        featuresToRemove.forEach(feat => groundPointSource.removeFeature(feat));
+
+                        // Forzar actualización de la fuente
+                        groundPointSource.changed();
+                    }
+
+                    // 4. Eliminar el par del array
+                    taPairs = taPairs.filter(p => p.key !== key);
+
+                    // 5. Gestionar la visibilidad de la capa de puntos
+                    if (groundPointSource && groundPointSource.getFeatures().length === 0) {
+                        if (groundPointLayer) {
+                            groundPointLayer.setVisible(false);
+                            groundPointLayer.changed();
+                        }
+                    } else if (groundPointLayer && !groundPointLayer.getVisible()) {
+                        groundPointLayer.setVisible(true);
+                        groundPointLayer.changed();
+                    }
+
+                    // 6. Forzar redibujado completo del mapa
+                    if (OLMap) {
+                        OLMap.renderSync();
+                    }
+                }
+                else if (distanceToGroundModeType === '1A_nB') {
+                    // Modo 1A_nB: NO eliminar el punto A, solo el avión B
+                    planesForGround = planesForGround.filter(h => h !== hex);
+                    // El punto A permanece porque puede seguir siendo usado por otros B
+                }
+                else if (distanceToGroundModeType === 'nA_1B') {
+                    // Modo nA_1B: NO eliminar el punto A, solo el avión B
+                    planesForGround = [];
+                    selectedPlaneForGround = null;
+                    // Los puntos A permanecen (pueden seguir usándose si se selecciona otro avión)
+                }
+
+                updateDistanceToGroundOverlay();
+            });
+
+            ov = new ol.Overlay({
+                element: el,
+                positioning: 'center-center',
+                offset: [0, -10],
+                stopEvent: true
+            });
             OLMap && OLMap.addOverlay(ov);
             groundPlaneOverlays.set(key, ov);
         }
-        // Mostrar la distancia calculada
-        ov.getElement().innerHTML = `Distance: ${slantText}`;
+
+        // Actualizar contenido de texto
+        const textContainer = ov.getElement().querySelector('.ta-text-content');
+        if (textContainer) {
+            textContainer.innerHTML = `Distance: ${slantText}`;
+        }
+
+        // Aplicar estado de oculto actual
+        const isHidden = groundPlaneHiddenState.get(key) || false;
+        if (isHidden) {
+            textContainer.style.display = 'none';
+            const toggleIcon = ov.getElement().querySelector('.ta-toggle-btn');
+            if (toggleIcon) toggleIcon.className = 'fa-solid fa-eye';
+            const feat = groundPlaneFeatures.get(key);
+            if (feat) feat.setStyle(new ol.style.Style({}));
+        } else {
+            textContainer.style.display = 'block';
+            const lineFeat = groundPlaneFeatures.get(key);
+            if (lineFeat) lineFeat.setStyle(null);
+        }
+
         // Posicionar el overlay en el punto medio A‑B
         ov.setPosition(midProj);
     }
