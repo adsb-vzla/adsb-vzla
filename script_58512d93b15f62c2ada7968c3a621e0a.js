@@ -54,6 +54,10 @@ let distanceLineLayer = null;
 let distanceLineFeature = null;
 let distanceOverlay = null;
 let distanceUpdateInterval = null;
+// Rastrear la visibilidad en el modo 1A1B
+let distance1A1BHidden = false;
+// Rastrear la visibilidad en el modo pares
+let pairHiddenState = new Map();
 // Plane-plane distance modes and storage for multiple pairs
 let planeDistanceModeType = '1A1B';
 const PP_MODES = ['1A1B', 'pairs'];
@@ -314,6 +318,61 @@ function updateDistanceLine() {
     if (planeDistanceModeType === '1A1B') {
         if (selectedPlanesForDistance.length !== 2) return;
 
+        // --- NUEVO: Inicializar el Overlay con estructura y botones ---
+        if (!distanceOverlay) {
+            let element = document.createElement('div');
+            element.id = 'distance-label-tag';
+            element.style.background = 'rgba(255, 255, 255, 0.9)';
+            element.style.border = '1px solid black';
+            element.style.padding = '5px';
+            element.style.fontSize = '12px';
+            element.style.color = 'black';
+            element.style.pointerEvents = 'auto'; // CRÍTICO: Permitir clics en los íconos
+            element.style.borderRadius = '4px';
+
+            // Estructura: Controles arriba, texto de medición abajo
+            element.innerHTML = `
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
+                    <i id="dist-toggle-btn" class="fa-solid fa-eye-slash" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
+                    <i id="dist-close-btn" class="fa-solid fa-xmark" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+                </div>
+                <div id="dist-text-content"></div>
+            `;
+
+            distanceOverlay = new ol.Overlay({
+                element: element,
+                positioning: 'bottom-center',
+                offset: [0, -10],
+                stopEvent: true // Evita que los clics pasen al mapa (no seleccionará aviones por error)
+            });
+            OLMap.addOverlay(distanceOverlay);
+
+            // Funcionalidad de Ocultar/Mostrar
+            document.getElementById('dist-toggle-btn').addEventListener('click', function (e) {
+                e.stopPropagation();
+                distance1A1BHidden = !distance1A1BHidden;
+
+                let textContent = document.getElementById('dist-text-content');
+
+                if (distance1A1BHidden) {
+                    textContent.style.display = 'none'; // Oculta el texto
+                    this.className = 'fa-solid fa-eye'; // Cambia el ícono
+                    // Ocultar la línea visualmente sin eliminar el dato
+                    if (distanceLineFeature) distanceLineFeature.setStyle(new ol.style.Style({}));
+                } else {
+                    textContent.style.display = 'block'; // Muestra el texto
+                    this.className = 'fa-solid fa-eye-slash'; // Cambia el ícono
+                    // Restaura la línea
+                    if (distanceLineFeature) distanceLineFeature.setStyle(null);
+                }
+            });
+            // Funcionalidad de Cerrar
+            document.getElementById('dist-close-btn').addEventListener('click', function (e) {
+                e.stopPropagation();
+                resetDistanceCalculation(); // Limpia la medición por completo
+            });
+        }
+
         let p1 = selectedPlanesForDistance[0];
         let p2 = selectedPlanesForDistance[1];
 
@@ -342,20 +401,26 @@ function updateDistanceLine() {
             let secondsMissing = (Date.now() - ppMissingSince.get(key)) / 1000;
 
             // Durante la espera, podemos avisar en el cartel
-            if (!distanceOverlay) {
-                let element = document.createElement('div');
-                element.id = 'distance-label-tag';
-                element.style.background = 'rgba(255, 255, 255, 0.8)';
-                element.style.border = '1px solid black';
-                element.style.padding = '5px';
-                element.style.fontSize = '12px';
-                element.style.color = 'black';
-                element.style.pointerEvents = 'none';
+            // if (!distanceOverlay) {
+            //     let element = document.createElement('div');
+            //     element.id = 'distance-label-tag';
+            //     element.style.background = 'rgba(255, 255, 255, 0.8)';
+            //     element.style.border = '1px solid black';
+            //     element.style.padding = '5px';
+            //     element.style.fontSize = '12px';
+            //     element.style.color = 'black';
+            //     element.style.pointerEvents = 'none';
 
-                distanceOverlay = new ol.Overlay({ element: element, positioning: 'bottom-center', offset: [0, -10] });
-                OLMap.addOverlay(distanceOverlay);
+            //     distanceOverlay = new ol.Overlay({ element: element, positioning: 'bottom-center', offset: [0, -10] });
+            //     OLMap.addOverlay(distanceOverlay);
+            // }
+            // distanceOverlay.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${Math.ceil(15 - secondsMissing)}s`;
+
+            // Actualizar solo el contenedor de texto, respetando los botones
+            let textContainer = document.getElementById('dist-text-content');
+            if (textContainer) {
+                textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${Math.ceil(15 - secondsMissing)}s`;
             }
-            distanceOverlay.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${Math.ceil(15 - secondsMissing)}s`;
 
             if (secondsMissing >= 15) {
                 // For single-pair mode, reset everything; for multi, mark removed
@@ -407,30 +472,44 @@ function updateDistanceLine() {
             distanceLineFeature.getGeometry().setCoordinates(lineCoords);
         }
 
+        // Respetar la elección visual del usuario en cada refresco de coordenadas
+        if (distance1A1BHidden) {
+            distanceLineFeature.setStyle(new ol.style.Style({}));
+        } else {
+            distanceLineFeature.setStyle(null);
+        }
+
         // Actualizar o crear el Cartel (Overlay)
         let midPoint = [(coords1[0] + coords2[0]) / 2, (coords1[1] + coords2[1]) / 2];
         let midPointProj = ol.proj.fromLonLat(midPoint);
 
-        if (!distanceOverlay) {
-            let element = document.createElement('div');
-            element.id = 'distance-label-tag'; // ID para limpieza forzada
-            element.style.background = 'rgba(255, 255, 255, 0.8)';
-            element.style.border = '1px solid black';
-            element.style.padding = '5px';
-            element.style.fontSize = '12px';
-            element.style.color = 'black';
-            element.style.pointerEvents = 'none';
+        // if (!distanceOverlay) {
+        //     let element = document.createElement('div');
+        //     element.id = 'distance-label-tag'; // ID para limpieza forzada
+        //     element.style.background = 'rgba(255, 255, 255, 0.8)';
+        //     element.style.border = '1px solid black';
+        //     element.style.padding = '5px';
+        //     element.style.fontSize = '12px';
+        //     element.style.color = 'black';
+        //     element.style.pointerEvents = 'none';
 
-            distanceOverlay = new ol.Overlay({
-                element: element,
-                positioning: 'bottom-center',
-                offset: [0, -10]
-            });
-            OLMap.addOverlay(distanceOverlay);
+        //     distanceOverlay = new ol.Overlay({
+        //         element: element,
+        //         positioning: 'bottom-center',
+        //         offset: [0, -10]
+        //     });
+        //     OLMap.addOverlay(distanceOverlay);
+        // }
+
+        // // Actualizamos el texto solo si tenemos números válidos
+        // distanceOverlay.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+
+        // Actualizamos solo el contenedor de texto
+        let textContainer = document.getElementById('dist-text-content');
+        if (textContainer) {
+            textContainer.innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
         }
 
-        // Actualizamos el texto solo si tenemos números válidos
-        distanceOverlay.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
         distanceOverlay.setPosition(midPointProj);
         return;
     }
@@ -465,17 +544,104 @@ function updateDistanceLine() {
                 const remaining = Math.max(0, Math.ceil(15 - secondsMissing));
 
                 let ov = distanceOverlaysMap.get(key);
+                // if (!ov) {
+                //     const el = document.createElement('div');
+                //     Object.assign(el.style, { background: 'rgba(255,255,255,0.85)', border: '1px solid #000', padding: '6px', fontSize: '12px', color: '#000', pointerEvents: 'none' });
+                //     ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+                //     OLMap && OLMap.addOverlay(ov);
+                //     distanceOverlaysMap.set(key, ov);
+                // }
                 if (!ov) {
                     const el = document.createElement('div');
-                    Object.assign(el.style, { background: 'rgba(255,255,255,0.85)', border: '1px solid #000', padding: '6px', fontSize: '12px', color: '#000', pointerEvents: 'none' });
-                    ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+                    el.id = `distance-label-${key.replace(/\|/g, '_')}`;
+                    el.style.background = 'rgba(255,255,255,0.9)';
+                    el.style.border = '1px solid black';
+                    el.style.padding = '5px';
+                    el.style.fontSize = '12px';
+                    el.style.color = 'black';
+                    el.style.pointerEvents = 'auto';
+                    el.style.borderRadius = '4px';
+                    el.innerHTML = `
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
+                        <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
+                        <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+                    </div>
+                    <div class="pair-text-content"></div>
+                `;
+
+                    // Inicializar estado de oculto para este par (por defecto visible)
+                    if (!pairHiddenState.has(key)) pairHiddenState.set(key, false);
+
+                    // Configurar eventos
+                    const toggleBtn = el.querySelector('.pair-toggle-btn');
+                    const closeBtn = el.querySelector('.pair-close-btn');
+                    const textContent = el.querySelector('.pair-text-content');
+
+                    toggleBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const currentHidden = pairHiddenState.get(key) || false;
+                        const newHidden = !currentHidden;
+                        pairHiddenState.set(key, newHidden);
+
+                        if (newHidden) {
+                            textContent.style.display = 'none';
+                            toggleBtn.className = 'fa-solid fa-eye';
+                            // Ocultar la línea
+                            const feat = distanceLineFeaturesMap.get(key);
+                            if (feat) feat.setStyle(new ol.style.Style({}));
+                        } else {
+                            textContent.style.display = 'block';
+                            toggleBtn.className = 'fa-solid fa-eye-slash';
+                            // Restaurar la línea
+                            const feat = distanceLineFeaturesMap.get(key);
+                            if (feat) feat.setStyle(null);
+                        }
+                    });
+
+                    closeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Eliminar el par permanentemente
+                        const feat = distanceLineFeaturesMap.get(key);
+                        if (feat) {
+                            distanceLineLayer.getSource().removeFeature(feat);
+                            distanceLineFeaturesMap.delete(key);
+                        }
+                        if (ov) OLMap && OLMap.removeOverlay(ov);
+                        distanceOverlaysMap.delete(key);
+                        pairHiddenState.delete(key);
+                        pairMap.delete(key);
+                        pairOrder = pairOrder.filter(k => k !== key);
+                        // Limpiar del buffer si estaba pendiente
+                        if (selectedPlaneA === hexA || selectedPlaneA === hexB) selectedPlaneA = null;
+                        selectedPlanesForDistance = selectedPlanesForDistance.filter(p => p.hex !== hexA && p.hex !== hexB);
+                    });
+
+                    ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10], stopEvent: true });
                     OLMap && OLMap.addOverlay(ov);
                     distanceOverlaysMap.set(key, ov);
                 }
-                ov.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
-                ov.setOffset(stableOverlayOffset(key));
-                // position overlay at available point if any, else skip
-                if (planeA && planeA.position) ov.setPosition(ol.proj.fromLonLat(planeA.position));
+
+                const textContainer = ov.getElement().querySelector('.pair-text-content');
+                if (textContainer) {
+                    textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
+                }
+
+                // Posicionar el overlay donde sea posible
+                let overlayPos = null;
+                if (planeA && planeA.position) {
+                    overlayPos = ol.proj.fromLonLat(planeA.position);
+                } else if (planeB && planeB.position) {
+                    overlayPos = ol.proj.fromLonLat(planeB.position);
+                }
+                if (overlayPos) ov.setPosition(overlayPos);
+
+                const isHidden = pairHiddenState.get(key) || false;
+                if (isHidden && textContainer) textContainer.style.display = 'none';
+
+                // ov.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
+                // ov.setOffset(stableOverlayOffset(key));
+                // // position overlay at available point if any, else skip
+                // if (planeA && planeA.position) ov.setPosition(ol.proj.fromLonLat(planeA.position));
 
                 if (secondsMissing >= 15) {
                     ppMissingSince.delete(key);
@@ -487,6 +653,7 @@ function updateDistanceLine() {
                     }
                     OLMap && ov && OLMap.removeOverlay(ov);
                     distanceOverlaysMap.delete(key);
+                    pairHiddenState.delete(key);
                     // remove pair
                     pairMap.delete(key);
                     pairOrder = pairOrder.filter(k => k !== key);
@@ -512,18 +679,98 @@ function updateDistanceLine() {
                 feat.getGeometry().setCoordinates(lineCoords);
             }
 
+            // Aplicar estado de oculto a la línea
+            const isHidden = pairHiddenState.get(key) || false;
+            if (isHidden) {
+                feat.setStyle(new ol.style.Style({}));
+            } else {
+                feat.setStyle(null);
+            }
+
             let ov = distanceOverlaysMap.get(key);
             if (!ov) {
                 const el = document.createElement('div');
-                Object.assign(el.style, { background: 'rgba(255,255,255,0.85)', border: '1px solid #000', padding: '6px', fontSize: '12px', color: '#000', pointerEvents: 'none' });
-                ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+                el.id = `distance-label-${key.replace(/\|/g, '_')}`;
+                el.style.background = 'rgba(255,255,255,0.9)';
+                el.style.border = '1px solid black';
+                el.style.padding = '5px';
+                el.style.fontSize = '12px';
+                el.style.color = 'black';
+                el.style.pointerEvents = 'auto';
+                el.style.borderRadius = '4px';
+                el.innerHTML = `
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
+                    <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
+                    <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+                </div>
+                <div class="pair-text-content"></div>
+            `;
+                if (!pairHiddenState.has(key)) pairHiddenState.set(key, false);
+
+                const toggleBtn = el.querySelector('.pair-toggle-btn');
+                const closeBtn = el.querySelector('.pair-close-btn');
+                const textContent = el.querySelector('.pair-text-content');
+
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const currentHidden = pairHiddenState.get(key) || false;
+                    const newHidden = !currentHidden;
+                    pairHiddenState.set(key, newHidden);
+
+                    if (newHidden) {
+                        textContent.style.display = 'none';
+                        toggleBtn.className = 'fa-solid fa-eye';
+                        const lineFeat = distanceLineFeaturesMap.get(key);
+                        if (lineFeat) lineFeat.setStyle(new ol.style.Style({}));
+                    } else {
+                        textContent.style.display = 'block';
+                        toggleBtn.className = 'fa-solid fa-eye-slash';
+                        const lineFeat = distanceLineFeaturesMap.get(key);
+                        if (lineFeat) lineFeat.setStyle(null);
+                    }
+                });
+
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const lineFeat = distanceLineFeaturesMap.get(key);
+                    if (lineFeat) {
+                        distanceLineLayer.getSource().removeFeature(lineFeat);
+                        distanceLineFeaturesMap.delete(key);
+                    }
+                    if (ov) OLMap && OLMap.removeOverlay(ov);
+                    distanceOverlaysMap.delete(key);
+                    pairHiddenState.delete(key);
+                    pairMap.delete(key);
+                    pairOrder = pairOrder.filter(k => k !== key);
+                    if (selectedPlaneA === hexA || selectedPlaneA === hexB) selectedPlaneA = null;
+                    selectedPlanesForDistance = selectedPlanesForDistance.filter(p => p.hex !== hexA && p.hex !== hexB);
+                });
+                ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10], stopEvent: true });
                 OLMap && OLMap.addOverlay(ov);
                 distanceOverlaysMap.set(key, ov);
             }
+
+            const textContainer = ov.getElement().querySelector('.pair-text-content');
+            if (textContainer) {
+                textContainer.innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+                if (isHidden) textContainer.style.display = 'none';
+                else textContainer.style.display = 'block';
+            }
+
             const midPoint = [(coordsA[0] + coordsB[0]) / 2, (coordsA[1] + coordsB[1]) / 2];
-            ov.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
             ov.setPosition(ol.proj.fromLonLat(midPoint));
         }
+        // if (!ov) {
+        //     const el = document.createElement('div');
+        //     Object.assign(el.style, { background: 'rgba(255,255,255,0.85)', border: '1px solid #000', padding: '6px', fontSize: '12px', color: '#000', pointerEvents: 'none' });
+        //     ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
+        //     OLMap && OLMap.addOverlay(ov);
+        //     distanceOverlaysMap.set(key, ov);
+        // }
+        // const midPoint = [(coordsA[0] + coordsB[0]) / 2, (coordsA[1] + coordsB[1]) / 2];
+        // ov.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+        // ov.setPosition(ol.proj.fromLonLat(midPoint));
+        // }
 
         // cleanup features/overlays for keys not active
         for (const [k, feat] of distanceLineFeaturesMap) {
@@ -536,6 +783,7 @@ function updateDistanceLine() {
             if (!pairMap.has(k)) {
                 OLMap && OLMap.removeOverlay(ov);
                 distanceOverlaysMap.delete(k);
+                pairHiddenState.delete(k);
             }
         }
     }
@@ -5673,7 +5921,7 @@ function refreshSelected() {
         if (selected.position && selected.position.length >= 2) {
             const lat = selected.position[1];
             const lon = selected.position[0];
-            
+
             // Creamos el hipervínculo que ejecuta el salto usando executeJump([lat, lon])
             const callsignLink = `<a class="link" href="#" style="text-decoration: none; color: inherit;" onclick="executeJump([${lat}, ${lon}]); return false;">${selected.name.toUpperCase()}</a>`;
             jQuery('#selected_callsign').html(callsignLink);
@@ -11609,6 +11857,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function resetDistanceCalculation() {
     selectedPlanesForDistance = [];
     planesMissingSince = null;
+    distance1A1BHidden = false;
+
+    // Limpiar estado de oculto de pares
+    if (pairHiddenState) pairHiddenState.clear();
 
     if (distanceUpdateInterval) {
         clearInterval(distanceUpdateInterval);
