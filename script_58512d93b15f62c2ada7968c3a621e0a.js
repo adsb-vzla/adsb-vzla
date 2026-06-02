@@ -117,12 +117,6 @@ let taPendingPlaneHex = null;
 let taPendingGround = null;
 // Modos de distancia tierra-aeronave
 const TA_MODES = ['1A1B', '1A_nB', 'nA_1B', 'nA_nB'];
-// Límite de cuántas aeronaves se pueden seleccionar en el modo 1A_nB
-// const TA_MAX_1A_nB = 3;
-// Límite de cuantos puntos en tierra se pueden marcar en el modo nA_1B
-// const TA_MAX_nA_1B = 3;
-// Límite de cuantos pares A-B se pueden acumular en el modo nA_nB
-// const TA_MAX_nA_nB = 3;
 // Tiempo desde que cada par A‑B perdió señal
 const groundPlaneMissingSince = new Map();
 // Pares A‑B ya descartados tras perder señal
@@ -133,22 +127,14 @@ let groundPlaneHiddenState = new Map();
 let groundToGroundMode = false;
 // Modo activo por defecto
 let groundToGroundModeType = '1A1B';
-
-// Modos disponibles tierra‑tierra
-// const GG_MODES = ['1A1B', '1A_nB'];
 const GG_MODES = ['1A1B', '1A_nB', 'nA_nB'];
-
-// Límite de puntos B en modo 1A_nB
-// const GG_MAX_1A_nB = 3;
 // Punto A actual en tierra
 let ggPointA = null;
 // Lista de puntos B marcados en tierra
 let ggPointsB = [];
-
 // Soporte nA_nB
 let ggPairs = [];
 let ggPendingA = null;
-
 // Fuente vectorial de las líneas A‑B
 let ggLineSource = null;
 // Capa que dibuja las líneas A‑B
@@ -163,6 +149,11 @@ const ggLineFeatures = new Map();
 const ggOverlays = new Map();
 // Intervalo de refresco del modo tierra‑tierra
 let ggUpdateInterval = null;
+let ggHiddenState = new Map();
+let ggMissingSince = new Map();
+let ggRemoved = new Set();
+let ggPairMap = new Map();
+let ggPairOrder = [];  
 // Indicador de zoom
 let zoomIndicatorBaseline = null;
 let loadStart = new Date().getTime();
@@ -875,35 +866,38 @@ function taPreMessage() {
 
 // Mensaje según el modo (tierra-tierra)
 function ggPreMessage() {
-    return groundToGroundModeType === '1A_nB'
-        ? '1 Point - Multiple Points Mode'
-        : '1 Point - 1 Point Mode';
+    switch (groundToGroundModeType) {
+        case '1A1B': return '1 Point - 1 Point Mode';
+        case '1A_nB': return '1 Point - Multiple Points Mode';
+        case 'nA_nB': return 'Multiple Points - Multiple Points Mode';
+        default: return '';
+    }
 }
-
-// Paso 1 guía (tierra-tierra)
-// function ggStep1Message() {
-//     return groundToGroundModeType === '1A_nB'
-//         ? 'Mark a single ground point A.'
-//         : 'Mark the ground point A.';
-// }
 
 function ggStep1Message() {
-    return groundToGroundModeType === '1A_nB'
-        ? 'Mark a single ground point A.'
-        : (groundToGroundModeType === 'nA_nB' ? 'Mark one or more ground points A (click to add each A).' : 'Mark the ground point A.');
+    switch (groundToGroundModeType) {
+        case '1A1B':
+            return 'Click on the map to mark point A.';
+        case '1A_nB':
+            return 'Click on the map to mark a single point A.';
+        case 'nA_nB':
+            return 'Click on the map to mark point A.';
+        default:
+            return 'Click on the map to mark point A.';
+    }
 }
 
-// Paso 2 guía (tierra-tierra)
-// function ggStep2Message() {
-//     return groundToGroundModeType === '1A_nB'
-//         ? 'Mark up to 3 ground points B.'
-//         : 'Mark the ground point B.';
-// }
-
 function ggStep2Message() {
-    return groundToGroundModeType === '1A_nB'
-        ? 'Mark up to 3 ground points B.'
-        : (groundToGroundModeType === 'nA_nB' ? 'After marking A, click to add B for the last A (creates A‑B pairs).' : 'Mark the ground point B.');
+    switch (groundToGroundModeType) {
+        case '1A1B':
+            return 'Click on the map to mark point B.';
+        case '1A_nB':
+            return 'Click on the map to mark multiple points B.';
+        case 'nA_nB':
+            return 'Click on the map to mark point B.';
+        default:
+            return 'Click on the map to mark point B.';
+    }
 }
 
 // Limpiar puntos, líneas y overlays en el modo tierra-aeronave
@@ -982,6 +976,12 @@ function clearGroundToGround(opts = {}) {
         try { ggOverlays.clear(); } catch (_) { }
     }
 
+    if (ggHiddenState) ggHiddenState.clear();
+    if (ggMissingSince) ggMissingSince.clear();
+    if (ggRemoved) ggRemoved.clear();
+    if (ggPairMap) ggPairMap.clear();
+    if (ggPairOrder) ggPairOrder.length = 0;
+
     // Limpiar pares y estado pendiente para nA_nB
     try { ggPairs && (ggPairs.length = 0); } catch (_) { }
     ggPendingA = null;
@@ -1055,7 +1055,7 @@ function onTTCycleClick() {
         if (ggPointLayer) ggPointLayer.setVisible(true);
 
         // Mostrar nombre del modo activo y guía paso 1
-        showDistanceGuide(`<center>${ggPreMessage()}</center><br>${ggStep1Message()}`);
+        showDistanceGuide(`<center>${ggPreMessage()}</center><br><center>${ggStep1Message()}</center>`);
         // Refrescar la medición con el nuevo modo
         updateGroundToGroundOverlay();
     } else {
@@ -1757,29 +1757,147 @@ function updateDistanceToGroundOverlay() {
 
 }
 
+
+
 // Función para actualizar la medición tierra-tierra
+// function updateGroundToGroundOverlay() {
+//     // Si la capa de líneas existe pero el usuario la ocultó, respetar su elección y no volver a crear/añadir nada.
+//     if (ggLineLayer && !ggLineLayer.getVisible()) return;
+
+//     // Lista de pares A‑B que se van a mostrar
+//     const pairs = [];
+//     // Modo 1A1B: un punto en tierra a otro punto en tierra
+//     if (groundToGroundModeType === '1A1B') {
+//         // Solo si existe el punto A y un único punto B
+//         if (ggPointA && ggPointsB.length === 1) {
+//             // Guardar el par A‑B con clave fija
+//             pairs.push({ key: '0', a: ggPointA, b: ggPointsB[0] });
+//         }
+//         // Modo 1AnB: un punto en tierra a otros puntos en tierra
+//     } else if (groundToGroundModeType === '1A_nB') {
+//         // Solo si existe el punto A y al menos un punto B
+//         if (ggPointA && ggPointsB.length) {
+//             // Guardar los pares A‑B con claves basadas en el índice
+//             ggPointsB.forEach((pt, idx) => pairs.push({ key: `${idx}`, a: ggPointA, b: pt }));
+//         }
+//     } else if (groundToGroundModeType === 'nA_nB') {
+//         // Modo nA_nB: usar los pares acumulados (ggPairs)
+//         if (ggPairs && ggPairs.length) {
+//             for (const p of ggPairs) {
+//                 pairs.push({ key: p.key, a: p.a, b: p.b });
+//             }
+//         }
+//     }
+
+//     // Si no hay pares, no se dibuja nada
+//     if (!pairs.length) return;
+//     // Asegurar que la capa de líneas esté visible
+//     // if (ggLineLayer) ggLineLayer.setVisible(true);
+//     // Conjunto de pares que siguen activos
+//     const active = new Set();
+
+//     // Recorrer cada par tierra‑tierra activo
+//     for (const { key, a, b } of pairs) {
+//         // Calcular distancia en millas náuticas
+//         const distNm = haversineDistance(a[1], a[0], b[1], b[0]);
+//         // Convertir distancia a metros
+//         const distM = distNm * 1852;
+//         // Formatear la distancia
+//         const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
+
+//         // Proyectar el punto A al mapa
+//         const projA = ol.proj.fromLonLat(a);
+//         // Proyectar el punto B al mapa
+//         const projB = ol.proj.fromLonLat(b);
+
+//         // Marcar el par como activo en el ciclo
+//         active.add(key);
+
+//         // Buscar la línea A‑B ya dibujada
+//         let feat = ggLineFeatures.get(key);
+//         // Si no existe, crearla
+//         if (!feat) {
+//             // Línea entre A y B
+//             feat = new ol.Feature(new ol.geom.LineString([projA, projB]));
+//             // Añadir la línea a la fuente vectorial
+//             ggLineSource && ggLineSource.addFeature(feat);
+//             // Guardar la línea en el registro
+//             ggLineFeatures.set(key, feat);
+//         } else {
+//             // Actualizar coordenadas de la línea existente
+//             feat.getGeometry().setCoordinates([projA, projB]);
+//         }
+
+//         // Calcular el punto medio A‑B
+//         const mid = feat.getGeometry().getCoordinateAt(0.5);
+
+//         // Buscar overlay de distancia para el par
+//         let ov = ggOverlays.get(key);
+//         // Si no existe, crearlo
+//         if (!ov) {
+//             const el = document.createElement('div');
+//             Object.assign(el.style, {
+//                 background: 'rgba(255,255,255,0.85)',
+//                 border: '1px solid #000',
+//                 padding: '6px',
+//                 fontSize: '12px',
+//                 color: '#000',
+//                 pointerEvents: 'none',
+//             });
+//             ov = new ol.Overlay({ element: el, positioning: 'center-center', offset: [0, -10] });
+//             OLMap && OLMap.addOverlay(ov);
+//             ggOverlays.set(key, ov);
+//         }
+//         // Mostrar la distancia formateada
+//         ov.getElement().innerHTML = `Distance: ${distText}`;
+//         // Posicionar el overlay en el punto medio A‑B
+//         ov.setPosition(mid);
+//     }
+
+//     // Recorrer todas las líneas tierra‑tierra dibujadas
+//     for (const [k, feat] of ggLineFeatures) {
+//         // Si la línea no quedó activa en este ciclo
+//         if (!active.has(k)) {
+//             // Se quita de la fuente del mapa
+//             ggLineSource && ggLineSource.removeFeature(feat);
+//             // Se elimina del registro de líneas
+//             ggLineFeatures.delete(k);
+//         }
+//     }
+//     // Recorrer todos los overlays de distancia
+//     for (const [k, ov] of ggOverlays) {
+//         // Si el overlay no quedó activo en este ciclo
+//         if (!active.has(k)) {
+//             // Se retira del mapa
+//             OLMap && OLMap.removeOverlay(ov);
+//             // Se elimina del registro de overlays
+//             ggOverlays.delete(k);
+//         }
+//     }
+// }
+
+
+
 function updateGroundToGroundOverlay() {
-    // Si la capa de líneas existe pero el usuario la ocultó, respetar su elección y no volver a crear/añadir nada.
+    // If line layer is hidden by user, don't create/add overlays
     if (ggLineLayer && !ggLineLayer.getVisible()) return;
 
-    // Lista de pares A‑B que se van a mostrar
     const pairs = [];
-    // Modo 1A1B: un punto en tierra a otro punto en tierra
+
+    // Mode 1A1B: single point A to single point B
     if (groundToGroundModeType === '1A1B') {
-        // Solo si existe el punto A y un único punto B
         if (ggPointA && ggPointsB.length === 1) {
-            // Guardar el par A‑B con clave fija
             pairs.push({ key: '0', a: ggPointA, b: ggPointsB[0] });
         }
-        // Modo 1AnB: un punto en tierra a otros puntos en tierra
-    } else if (groundToGroundModeType === '1A_nB') {
-        // Solo si existe el punto A y al menos un punto B
+    }
+    // Mode 1A_nB: single point A to multiple points B
+    else if (groundToGroundModeType === '1A_nB') {
         if (ggPointA && ggPointsB.length) {
-            // Guardar los pares A‑B con claves basadas en el índice
             ggPointsB.forEach((pt, idx) => pairs.push({ key: `${idx}`, a: ggPointA, b: pt }));
         }
-    } else if (groundToGroundModeType === 'nA_nB') {
-        // Modo nA_nB: usar los pares acumulados (ggPairs)
+    }
+    // Mode nA_nB: multiple pairs accumulated
+    else if (groundToGroundModeType === 'nA_nB') {
         if (ggPairs && ggPairs.length) {
             for (const p of ggPairs) {
                 pairs.push({ key: p.key, a: p.a, b: p.b });
@@ -1787,92 +1905,232 @@ function updateGroundToGroundOverlay() {
         }
     }
 
-    // Si no hay pares, no se dibuja nada
     if (!pairs.length) return;
-    // Asegurar que la capa de líneas esté visible
-    // if (ggLineLayer) ggLineLayer.setVisible(true);
-    // Conjunto de pares que siguen activos
-    const active = new Set();
 
-    // Recorrer cada par tierra‑tierra activo
+    const activeKeys = new Set();
+
     for (const { key, a, b } of pairs) {
-        // Calcular distancia en millas náuticas
+        // Calculate distance in nautical miles
         const distNm = haversineDistance(a[1], a[0], b[1], b[0]);
-        // Convertir distancia a metros
         const distM = distNm * 1852;
-        // Formatear la distancia
         const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
 
-        // Proyectar el punto A al mapa
         const projA = ol.proj.fromLonLat(a);
-        // Proyectar el punto B al mapa
         const projB = ol.proj.fromLonLat(b);
 
-        // Marcar el par como activo en el ciclo
-        active.add(key);
+        activeKeys.add(key);
 
-        // Buscar la línea A‑B ya dibujada
         let feat = ggLineFeatures.get(key);
-        // Si no existe, crearla
         if (!feat) {
-            // Línea entre A y B
             feat = new ol.Feature(new ol.geom.LineString([projA, projB]));
-            // Añadir la línea a la fuente vectorial
             ggLineSource && ggLineSource.addFeature(feat);
-            // Guardar la línea en el registro
             ggLineFeatures.set(key, feat);
         } else {
-            // Actualizar coordenadas de la línea existente
             feat.getGeometry().setCoordinates([projA, projB]);
         }
 
-        // Calcular el punto medio A‑B
         const mid = feat.getGeometry().getCoordinateAt(0.5);
 
-        // Buscar overlay de distancia para el par
         let ov = ggOverlays.get(key);
-        // Si no existe, crearlo
         if (!ov) {
             const el = document.createElement('div');
-            Object.assign(el.style, {
-                background: 'rgba(255,255,255,0.85)',
-                border: '1px solid #000',
-                padding: '6px',
-                fontSize: '12px',
-                color: '#000',
-                pointerEvents: 'none',
+            el.id = `gg-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
+            el.style.background = 'rgba(255, 255, 255, 0.9)';
+            el.style.border = '1px solid black';
+            el.style.padding = '5px';
+            el.style.fontSize = '12px';
+            el.style.color = 'black';
+            el.style.pointerEvents = 'auto';
+            el.style.borderRadius = '4px';
+
+            el.innerHTML = `
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
+                    <i class="fa-solid fa-eye-slash gg-toggle-btn" style="cursor: pointer; color: #444;" title="Hide/Show line"></i>
+                    <i class="fa-solid fa-xmark gg-close-btn" style="cursor: pointer; color: #c00;" title="Close measurement"></i>
+                </div>
+                <div class="gg-text-content"></div>
+            `;
+
+            if (!ggHiddenState.has(key)) ggHiddenState.set(key, false);
+
+            const toggleBtn = el.querySelector('.gg-toggle-btn');
+            const closeBtn = el.querySelector('.gg-close-btn');
+            const textContainer = el.querySelector('.gg-text-content');
+
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = ggHiddenState.get(key) || false;
+                const newHidden = !isHidden;
+                ggHiddenState.set(key, newHidden);
+
+                const lineFeat = ggLineFeatures.get(key);
+                if (newHidden) {
+                    textContainer.style.display = 'none';
+                    toggleBtn.className = 'fa-solid fa-eye';
+                    if (lineFeat) lineFeat.setStyle(new ol.style.Style({}));
+                } else {
+                    textContainer.style.display = 'block';
+                    toggleBtn.className = 'fa-solid fa-eye-slash';
+                    if (lineFeat) lineFeat.setStyle(null);
+                }
             });
-            ov = new ol.Overlay({ element: el, positioning: 'center-center', offset: [0, -10] });
+
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                // Remove line
+                const lineFeat = ggLineFeatures.get(key);
+                if (lineFeat && ggLineSource) {
+                    ggLineSource.removeFeature(lineFeat);
+                    ggLineFeatures.delete(key);
+                }
+
+                // Remove overlay
+                if (ov && OLMap) OLMap.removeOverlay(ov);
+                ggOverlays.delete(key);
+
+                // Clean up state
+                ggHiddenState.delete(key);
+                ggMissingSince.delete(key);
+                ggRemoved.delete(key);
+
+                // --- Special logic for cleaning points ---
+                if (groundToGroundModeType === '1A1B') {
+                    // Remove both points
+                    if (ggPointSource) ggPointSource.clear();
+                    ggPointA = null;
+                    ggPointsB = [];
+                    if (ggPointLayer) ggPointLayer.setVisible(false);
+                }
+                else if (groundToGroundModeType === 'nA_nB') {
+                    const aKey = `${a[0].toFixed(6)},${a[1].toFixed(6)}|${b[0].toFixed(6)},${b[1].toFixed(6)}`;
+                    const stillUsed = ggPairs.some(p => p.key !== key && 
+                        p.a[0].toFixed(6) === a[0].toFixed(6) && 
+                        p.a[1].toFixed(6) === a[1].toFixed(6));
+                    
+                    // Remove point A only if no longer used by other pairs
+                    if (!stillUsed && ggPointSource) {
+                        const featuresToRemove = [];
+                        ggPointSource.forEachFeature(feat => {
+                            const geom = feat.getGeometry();
+                            if (geom) {
+                                const coords = ol.proj.toLonLat(geom.getCoordinates());
+                                if (Math.abs(coords[0] - a[0]) < 1e-8 && Math.abs(coords[1] - a[1]) < 1e-8) {
+                                    featuresToRemove.push(feat);
+                                }
+                            }
+                        });
+                        featuresToRemove.forEach(f => ggPointSource.removeFeature(f));
+                        ggPointSource.changed();
+                    }
+                    
+                    // Remove point B
+                    if (ggPointSource) {
+                        const featuresToRemove = [];
+                        ggPointSource.forEachFeature(feat => {
+                            const geom = feat.getGeometry();
+                            if (geom) {
+                                const coords = ol.proj.toLonLat(geom.getCoordinates());
+                                if (Math.abs(coords[0] - b[0]) < 1e-8 && Math.abs(coords[1] - b[1]) < 1e-8) {
+                                    featuresToRemove.push(feat);
+                                }
+                            }
+                        });
+                        featuresToRemove.forEach(f => ggPointSource.removeFeature(f));
+                        ggPointSource.changed();
+                    }
+                    
+                    // Remove the pair from array
+                    ggPairs = ggPairs.filter(p => p.key !== key);
+                    
+                    // Hide layer if no points left
+                    if (ggPointSource && ggPointSource.getFeatures().length === 0 && ggPointLayer) {
+                        ggPointLayer.setVisible(false);
+                        ggPointLayer.changed();
+                    } else if (ggPointLayer && !ggPointLayer.getVisible() && ggPointSource.getFeatures().length > 0) {
+                        ggPointLayer.setVisible(true);
+                        ggPointLayer.changed();
+                    }
+                }
+                else if (groundToGroundModeType === '1A_nB') {
+                    // Only remove point B, keep point A
+                    if (ggPointSource) {
+                        const featuresToRemove = [];
+                        ggPointSource.forEachFeature(feat => {
+                            const geom = feat.getGeometry();
+                            if (geom) {
+                                const coords = ol.proj.toLonLat(geom.getCoordinates());
+                                if (Math.abs(coords[0] - b[0]) < 1e-8 && Math.abs(coords[1] - b[1]) < 1e-8) {
+                                    featuresToRemove.push(feat);
+                                }
+                            }
+                        });
+                        featuresToRemove.forEach(f => ggPointSource.removeFeature(f));
+                        ggPointSource.changed();
+                    }
+                    
+                    // Remove from points B list
+                    ggPointsB = ggPointsB.filter(p => 
+                        Math.abs(p[0] - b[0]) > 1e-8 || Math.abs(p[1] - b[1]) > 1e-8
+                    );
+                }
+
+                if (OLMap) OLMap.renderSync();
+                updateGroundToGroundOverlay();
+            });
+
+            ov = new ol.Overlay({
+                element: el,
+                positioning: 'center-center',
+                offset: [0, -10],
+                stopEvent: true
+            });
             OLMap && OLMap.addOverlay(ov);
             ggOverlays.set(key, ov);
         }
-        // Mostrar la distancia formateada
-        ov.getElement().innerHTML = `Distance: ${distText}`;
-        // Posicionar el overlay en el punto medio A‑B
+
+        const textContainer = ov.getElement().querySelector('.gg-text-content');
+        if (textContainer) {
+            textContainer.innerHTML = `Distance: ${distText}`;
+        }
+
+        const isHidden = ggHiddenState.get(key) || false;
+        if (isHidden) {
+            if (textContainer) textContainer.style.display = 'none';
+            const toggleIcon = ov.getElement().querySelector('.gg-toggle-btn');
+            if (toggleIcon) toggleIcon.className = 'fa-solid fa-eye';
+            const lineFeat = ggLineFeatures.get(key);
+            if (lineFeat) lineFeat.setStyle(new ol.style.Style({}));
+        } else {
+            if (textContainer) textContainer.style.display = 'block';
+            const toggleIcon = ov.getElement().querySelector('.gg-toggle-btn');
+            if (toggleIcon) toggleIcon.className = 'fa-solid fa-eye-slash';
+            const lineFeat = ggLineFeatures.get(key);
+            if (lineFeat) lineFeat.setStyle(null);
+        }
+
         ov.setPosition(mid);
     }
 
-    // Recorrer todas las líneas tierra‑tierra dibujadas
+    // Remove lines and overlays for inactive keys
     for (const [k, feat] of ggLineFeatures) {
-        // Si la línea no quedó activa en este ciclo
-        if (!active.has(k)) {
-            // Se quita de la fuente del mapa
+        if (!activeKeys.has(k)) {
             ggLineSource && ggLineSource.removeFeature(feat);
-            // Se elimina del registro de líneas
             ggLineFeatures.delete(k);
         }
     }
-    // Recorrer todos los overlays de distancia
     for (const [k, ov] of ggOverlays) {
-        // Si el overlay no quedó activo en este ciclo
-        if (!active.has(k)) {
-            // Se retira del mapa
+        if (!activeKeys.has(k)) {
             OLMap && OLMap.removeOverlay(ov);
-            // Se elimina del registro de overlays
             ggOverlays.delete(k);
         }
     }
 }
+
+
+
+
+
 
 // Overlay de guía para usar el modo distancia suelo‑avión
 let distanceGuideEl = null;
@@ -1950,7 +2208,7 @@ function DistanceToGround() {
         }
 
         // Mostrar guía paso 1 según modo actual
-        showDistanceGuide(`<center>${taPreMessage()}</center><br>${taStep1Message()}`);
+        showDistanceGuide(`<center>${taPreMessage()}</center><br><center>${taStep1Message()}</center>`);
 
         // Intervalo de refresco
         distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
@@ -2006,7 +2264,7 @@ function DistanceGroundToGround() {
         }
 
         // Mostrar guía con el modo y paso 1
-        showDistanceGuide(`<center>${ggPreMessage()}</center><br>${ggStep1Message()}`);
+        showDistanceGuide(`<center>${ggPreMessage()}</center><br><center>${ggStep1Message()}</center>`);
         // Refrescar medición cada segundo
         ggUpdateInterval = setInterval(updateGroundToGroundOverlay, 1000);
         // Marcar el botón como activo
