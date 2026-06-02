@@ -33,7 +33,7 @@ function createBaseLayers() {
     if (loStore['customTiles'] != undefined) {
         custom_layers.push(new ol.layer.Tile({
             source: new ol.source.OSM({
-                "url" : loStore['customTiles'],
+                "url": loStore['customTiles'],
                 maxZoom: 20,
                 transition: tileTransition,
             }),
@@ -53,443 +53,1200 @@ function createBaseLayers() {
     }));
     */
 
-           //if (offlineMapDetail > 0) {
-           vfr.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 8,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'VFR_Blank',
-            title: 'VFR Blank',
-            type: 'base',
-        }));
-        vfr.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "mapdata/VFR/{z}/{x}/{y}.png",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 8,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'VFR',
-            title: 'VFR',
-            type: 'overlay',
-            visible: false,
-            
-        }));
-                vfr.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 8,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'VFR2',
-            title: 'VFR2',
-            type: 'overlay',
-            visible: false,
-        }));
-                vfr.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 8,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'VFR3',
-            title: 'VFR3',
-            type: 'overlay',
-            visible: false,
-        }));
-                vfr.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 8,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'VFR4',
-            title: 'VFR4',
-            type: 'overlay',
-            visible: false,
-        }));
+    //if (offlineMapDetail > 0) {
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Base',
+        title: 'Base',
+        type: 'base',
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "mapdata/VFR/{z}/{x}/{y}.png",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Map',
+        title: 'Map',
+        type: 'overlay',
+        visible: false,
+
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airports_Aerodromes',
+        title: 'Airports / Aerodromes',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airspace_Classes',
+        title: 'Airspace Classes',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airways_Air Routes',
+        title: 'Airways / Air Routes',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Controlled Airspace',
+        title: 'Controlled Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Grid_MORA_MEA',
+        title: 'Grid MORA / MEA',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Navaids',
+        title: 'Navaids',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Obstacles',
+        title: 'Obstacles',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Political_Boundaries',
+        title: 'Political Boundaries',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Special_Use_Airspace',
+        title: 'Special Use Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Terrain_Topography',
+        title: 'Terrain / Topography',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Waypoints_Fixes',
+        title: 'Waypoints / Fixes',
+        type: 'overlay',
+        visible: false,
+    }));
+    vfr.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Weather_Radar',
+        title: 'Weather / Radar',
+        type: 'overlay',
+        visible: false,
+    }));
     //}
+
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Base',
+        title: 'Base',
+        type: 'base',
+    }));
+
+    //if (offlineMapDetail > 0) {
+
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "mapdata/IFR_Low/{z}/{x}/{y}.png",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Map',
+        title: 'Map',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airports_Aerodromes',
+        title: 'Airports / Aerodromes',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airspace_Classes',
+        title: 'Airspace Classes',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airways_Air Routes',
+        title: 'Airways / Air Routes',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Controlled Airspace',
+        title: 'Controlled Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Grid_MORA_MEA',
+        title: 'Grid MORA / MEA',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Navaids',
+        title: 'Navaids',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Obstacles',
+        title: 'Obstacles',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Political_Boundaries',
+        title: 'Political Boundaries',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Special_Use_Airspace',
+        title: 'Special Use Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Terrain_Topography',
+        title: 'Terrain / Topography',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Waypoints_Fixes',
+        title: 'Waypoints / Fixes',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrlow.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Weather_Radar',
+        title: 'Weather / Radar',
+        type: 'overlay',
+        visible: false,
+    }));
+    //}
+
+    //if (offlineMapDetail > 0) {
+
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Base',
+        title: 'Base',
+        type: 'base',
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "mapdata/IFR_Hight/{z}/{x}/{y}.png",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Map',
+        title: 'Map',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airports_Aerodromes',
+        title: 'Airports / Aerodromes',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airspace_Classes',
+        title: 'Airspace Classes',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airways_Air Routes',
+        title: 'Airways / Air Routes',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Controlled Airspace',
+        title: 'Controlled Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Grid_MORA_MEA',
+        title: 'Grid MORA / MEA',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Navaids',
+        title: 'Navaids',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Obstacles',
+        title: 'Obstacles',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Political_Boundaries',
+        title: 'Political Boundaries',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Special_Use_Airspace',
+        title: 'Special Use Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Terrain_Topography',
+        title: 'Terrain / Topography',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Waypoints_Fixes',
+        title: 'Waypoints / Fixes',
+        type: 'overlay',
+        visible: false,
+    }));
+    ifrhigh.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Weather_Radar',
+        title: 'Weather / Radar',
+        type: 'overlay',
+        visible: false,
+    }));
     
-        ifrlow.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_Low_Blank',
-            title: 'IFR Low Blank',
-            type: 'base',
-        }));
+    //}
 
     //if (offlineMapDetail > 0) {
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Base',
+        title: 'Base',
+        type: 'base',
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "mapdata/TMA_MIQ/{z}/{x}/{y}.png",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Map',
+        title: 'Map',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airports_Aerodromes',
+        title: 'Airports / Aerodromes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airspace_Classes',
+        title: 'Airspace Classes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airways_Air Routes',
+        title: 'Airways / Air Routes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Controlled Airspace',
+        title: 'Controlled Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Grid_MORA_MEA',
+        title: 'Grid MORA / MEA',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Navaids',
+        title: 'Navaids',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Obstacles',
+        title: 'Obstacles',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Political_Boundaries',
+        title: 'Political Boundaries',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Special_Use_Airspace',
+        title: 'Special Use Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Terrain_Topography',
+        title: 'Terrain / Topography',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Waypoints_Fixes',
+        title: 'Waypoints / Fixes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_MIQ.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Weather_Radar',
+        title: 'Weather / Radar',
+        type: 'overlay',
+        visible: false,
+    }));
     
-        ifrlow.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "mapdata/IFR_Low/{z}/{x}/{y}.png",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_Low1',
-            title: 'IFR Low 1',
-            type: 'overlay',
-            visible: false,
-        }));
-        ifrlow.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_Low2',
-            title: 'IFR Low 2',
-            type: 'overlay',
-            visible: false,
-        }));
-        ifrlow.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_Low3',
-            title: 'IFR Low 3',
-            type: 'overlay',
-            visible: false,
-        }));
-        ifrlow.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_Low4',
-            title: 'IFR Low 4',
-            type: 'overlay',
-            visible: false,
-        }));
-    //}
-    
-    //if (offlineMapDetail > 0) {
-
-        ifrhigh.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_High_Blank',
-            title: 'IFR High Blank',
-            type: 'base',
-        }));
-        ifrhigh.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "mapdata/IFR_Hight/{z}/{x}/{y}.png",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_High1',
-            title: 'IFR High 1',
-            type: 'overlay',
-            visible: false,
-        }));
-        ifrhigh.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_High2',
-            title: 'IFR High 2',
-            type: 'overlay',
-            visible: false,
-        }));
-        ifrhigh.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_High3',
-            title: 'IFR High 3',
-            type: 'overlay',
-            visible: false,
-        }));
-        ifrhigh.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'IFR_High4',
-            title: 'IFR High 4',
-            type: 'overlay',
-            visible: false,
-        }));
     //}
 
-    //if (offlineMapDetail > 0) {
-        TMA_MIQ.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_MIQ_Blank',
-            title: 'TMA Maiquetía Blank',
-            type: 'base',
-        }));
-        TMA_MIQ.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "mapdata/TMA_MIQ/{z}/{x}/{y}.png",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_MIQ1',
-            title: 'TMA Maiquetía 1',
-            type: 'overlay',
-            visible: false,
-        }));
-        TMA_MIQ.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_MIQ2',
-            title: 'TMA Maiquetía 2',
-            type: 'overlay',
-            visible: false,
-        }));
-        TMA_MIQ.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_MIQ3',
-            title: 'TMA Maiquetía 3',
-            type: 'overlay',
-            visible: false,
-        }));
-        TMA_MIQ.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_MIQ4',
-            title: 'TMA Maiquetía 4',
-            type: 'overlay',
-            visible: false,
-        }));
-    //}
-    
 
     //if (offlineMapDetail > 0) {
-        TMA_BNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_BNA_Blank',
-            title: 'TMA Barcelona Blank',
-            type: 'base',
-            visible: false,
-        }));
-        TMA_BNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "mapdata/TMA_BNA/{z}/{x}/{y}.png",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_BNA1',
-            title: 'TMA Barcelona 1',
-            type: 'overlay',
-            visible: false,
-        }));
-        TMA_BNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_BNA2',
-            title: 'TMA Barcelona 2',
-            type: 'overlay',
-            visible: false,
-        }));
-        TMA_BNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_BNA3',
-            title: 'TMA Barcelona 3',
-            type: 'overlay',
-            visible: false,
-        }));
-        TMA_BNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_BNA4',
-            title: 'TMA Barcelona 4',
-            type: 'overlay',
-            visible: false,
-        }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Base',
+        title: 'Base',
+        type: 'base',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "mapdata/TMA_BNA/{z}/{x}/{y}.png",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Map',
+        title: 'Map',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airports_Aerodromes',
+        title: 'Airports / Aerodromes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airspace_Classes',
+        title: 'Airspace Classes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airways_Air Routes',
+        title: 'Airways / Air Routes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Controlled Airspace',
+        title: 'Controlled Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Grid_MORA_MEA',
+        title: 'Grid MORA / MEA',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Navaids',
+        title: 'Navaids',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Obstacles',
+        title: 'Obstacles',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Political_Boundaries',
+        title: 'Political Boundaries',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Special_Use_Airspace',
+        title: 'Special Use Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Terrain_Topography',
+        title: 'Terrain / Topography',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Waypoints_Fixes',
+        title: 'Waypoints / Fixes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_BNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Weather_Radar',
+        title: 'Weather / Radar',
+        type: 'overlay',
+        visible: false,
+    }));
     //}
     //if (offlineMapDetail > 0) {
-        TMA_GNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_GNA_Blank',
-            title: 'TMA Guayana Blank',
-            type: 'base',
-            
-        }));
-        TMA_GNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "mapdata/TMA_GNA/{z}/{x}/{y}.png",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_GNA1',
-            title: 'TMA Guayana 1',
-            type: 'overlay',
-            visible: false,
-        }));
-        TMA_GNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_GNA2',
-            title: 'TMA Guayana 2',
-            type: 'overlay',
-            visible: false,
-        }));
-        TMA_GNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_GNA3',
-            title: 'TMA Guayana 3',
-            type: 'overlay',
-            visible: false,
-        }));
-        TMA_GNA.push(new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                "url" : "",
-                attributionsCollapsible: false,
-                //maxZoom: offlineMapDetail,
-                minZoom: 1,
-                maxZoom: 15,
-                transition: tileTransition,
-            }),
-            name: 'TMA_GNA4',
-            title: 'TMA Guayana4',
-            type: 'overlay',
-            visible: false,
-        }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Base',
+        title: 'Base',
+        type: 'base',
 
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "mapdata/TMA_GNA/{z}/{x}/{y}.png",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 1,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Map',
+        title: 'Map',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airports_Aerodromes',
+        title: 'Airports / Aerodromes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airspace_Classes',
+        title: 'Airspace Classes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Airways_Air Routes',
+        title: 'Airways / Air Routes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Controlled Airspace',
+        title: 'Controlled Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Grid_MORA_MEA',
+        title: 'Grid MORA / MEA',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Navaids',
+        title: 'Navaids',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Obstacles',
+        title: 'Obstacles',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Political_Boundaries',
+        title: 'Political Boundaries',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Special_Use_Airspace',
+        title: 'Special Use Airspace',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Terrain_Topography',
+        title: 'Terrain / Topography',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Waypoints_Fixes',
+        title: 'Waypoints / Fixes',
+        type: 'overlay',
+        visible: false,
+    }));
+    TMA_GNA.push(new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            "url": "",
+            attributionsCollapsible: false,
+            //maxZoom: offlineMapDetail,
+            minZoom: 8,
+            maxZoom: 15,
+            transition: tileTransition,
+        }),
+        name: 'Weather_Radar',
+        title: 'Weather / Radar',
+        type: 'overlay',
+        visible: false,
+    }));
 
 
     /*world.push(new ol.layer.Tile({
@@ -567,10 +1324,10 @@ function createBaseLayers() {
         }));
     }*/
 
-        if (offlineMapDetail > 0) {
+    if (offlineMapDetail > 0) {
         world.push(new ol.layer.Tile({
             source: new ol.source.OSM({
-                "url" : "osm_tiles_offline/{z}/{x}/{y}.png",
+                "url": "osm_tiles_offline/{z}/{x}/{y}.png",
                 attributionsCollapsible: false,
                 maxZoom: offlineMapDetail,
                 transition: tileTransition,
@@ -580,8 +1337,8 @@ function createBaseLayers() {
             type: 'base',
         }));
     }
-    
-        world.push(new ol.layer.Tile({
+
+    world.push(new ol.layer.Tile({
         source: new ol.source.OSM({
             maxZoom: 17,
             attributionsCollapsible: false,
@@ -598,7 +1355,7 @@ function createBaseLayers() {
             source: new ol.source.XYZ({
                 url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
                 attributions: 'Powered by <a href="https://www.esri.com">Esri.com</a>' +
-                '— Sources: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                    '— Sources: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
                 attributionsCollapsible: false,
                 maxZoom: 17,
                 transition: tileTransition,
@@ -608,7 +1365,7 @@ function createBaseLayers() {
             type: 'base',
         }));
 
-        
+
         /* world.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
                 url: "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
@@ -669,7 +1426,7 @@ function createBaseLayers() {
             dataType: 'json',
             layer: vtlayer,
             cache: false,
-        }).done(function(glStyle) {
+        }).done(function (glStyle) {
             ol.mbApplyStyle(this.layer, glStyle, 'openmaptiles');
         });
 
@@ -896,8 +1653,8 @@ function createBaseLayers() {
 
     world.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
-            "url" : "https://map.adsbexchange.com/mapproxy/tiles/1.0.0/openaip/ul_grid/{z}/{x}/{y}.png",
-            "attributions" : "openAIP.net",
+            "url": "https://map.adsbexchange.com/mapproxy/tiles/1.0.0/openaip/ul_grid/{z}/{x}/{y}.png",
+            "attributions": "openAIP.net",
             attributionsCollapsible: false,
             maxZoom: 12,
             transition: tileTransition,
@@ -1137,8 +1894,8 @@ function createBaseLayers() {
     }
 */
     if (true) {
-        g.getRainviewerLayers = async function(key) {
-            const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", {credentials: "omit",});
+        g.getRainviewerLayers = async function (key) {
+            const response = await fetch("https://api.rainviewer.com/public/weather-maps.json", { credentials: "omit", });
             const jsonData = await response.json();
             return jsonData[key];
         }
@@ -1151,7 +1908,7 @@ function createBaseLayers() {
             visible: false,
             zIndex: 99,
         });
-        g.refreshRainviewerRadar = async function() {
+        g.refreshRainviewerRadar = async function () {
             const latestLayer = await g.getRainviewerLayers('radar');
             const rainviewerRadarSource = new ol.source.XYZ({
                 url: 'https://tilecache.rainviewer.com/v2/radar/' + latestLayer.past[latestLayer.past.length - 1].time + '/512/{z}/{x}/{y}/6/1_1.png',
@@ -1162,7 +1919,7 @@ function createBaseLayers() {
             rainviewerRadar.setSource(rainviewerRadarSource);
         };
 
-        rainviewerRadar.on('change:visible', function(evt) {
+        rainviewerRadar.on('change:visible', function (evt) {
             if (evt.target.getVisible()) {
                 g.refreshRainviewerRadar();
                 g.refreshRainviewerRadarInterval = window.setInterval(g.refreshRainviewerRadar, 2 * 60 * 1000);
@@ -1185,14 +1942,14 @@ function createBaseLayers() {
                 url: url,
                 transition: tileTransition,
                 format: new ol.format.GeoJSON({
-                    defaultDataProjection :'EPSG:4326',
+                    defaultDataProjection: 'EPSG:4326',
                     projection: 'EPSG:3857'
                 })
             }),
             style: function style(feature) {
                 return new ol.style.Style({
                     fill: new ol.style.Fill({
-                        color : fill
+                        color: fill
                     }),
                     stroke: new ol.style.Stroke({
                         color: stroke,
@@ -1245,7 +2002,7 @@ function createBaseLayers() {
     }
 
     if (l3harris) {
-        let files = ['IFT_NAV_Routes.geojson','IFT_Training_Areas.geojson','USAFA_Training_Areas.geojson'];
+        let files = ['IFT_NAV_Routes.geojson', 'IFT_Training_Areas.geojson', 'USAFA_Training_Areas.geojson'];
         for (let i in files) {
             let name = files[i].split('.')[0];
             us.push(createGeoJsonLayer(name, 'ift' + i, 'geojson/IFT/' + files[i], 'rgba(52, 50, 168, 0.3)', 'rgba(52, 50, 168, 1)'));
@@ -1253,7 +2010,7 @@ function createBaseLayers() {
     }
 
     if (usp.has('aiscatcher_server')) { aiscatcher_server = usp.get('aiscatcher_server'); }
-    if (aiscatcher_server == 'disable' || heatmap || replay ) {
+    if (aiscatcher_server == 'disable' || heatmap || replay) {
         aiscatcher_server = "";
     }
     if (aiscatcher_server) {
@@ -1326,7 +2083,7 @@ function createBaseLayers() {
             fold: 'close',
         }));
     }
-    if (TMA_GNA.getLength() > 0) {  
+    if (TMA_GNA.getLength() > 0) {
         layers.push(new ol.layer.Group({
             name: 'tma_gna',
             title: 'TMA/GNA',
@@ -1334,7 +2091,7 @@ function createBaseLayers() {
             fold: 'close',
         }));
     }
-    if (TMA_BNA.getLength() > 0) {  
+    if (TMA_BNA.getLength() > 0) {
         layers.push(new ol.layer.Group({
             name: 'tma_bna',
             title: 'TMA/BNA',
