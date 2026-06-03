@@ -845,7 +845,12 @@
       </div>
       <!-- INICIO MENÚ CONFIGURACIONES -->
       <div id="settings_infoblock">
-        <div class="panel-title">Settings</div>
+        <div class="panel-title" style="display: flex; flex-direction: row; justify-content: space-between;">
+          Settings
+          <div class="settingsOptionContainer">
+            <button class="formButton" onclick="resetSettings();">Reset all settings</button>
+          </div>
+        </div>
         <div id="settings_close" class="settingsCloseBox"></div>
         <div class="settingsOptionContainer">
           <div class="settingsText">Text and icon size:</div>
@@ -855,21 +860,21 @@
           <div class="settingsText">Icon size multiplier:</div>
         </div>
         <div style="display: block; width: 100%;" id="iconScaleSlider"></div>
-        <div class="rSpacer">
-          <hr />
-        </div>
-
-        <div class="settingsOptionContainer" title="Select the measurement system">
-            <label for="units_selector"><span class="infoBlockTitleText">Units:&nbsp;&nbsp;</span></label>
-            <select name="units_selector" id="units_selector">
-              <option value="nautical">Aeronautical</option>
-              <option value="metric">Metric</option>
-              <option value="imperial">Imperial</option>
-            </select>
-          </div>
-
 
         <div id="settingsLeft" class="settingsColumn">
+          <!-- Categoría UNITS -->
+          <div id="category-units" class="settings-category">
+            <div class="settings-category-title">UNITS</div>
+            <div id="category-units-container">
+              <div class="settingsOptionContainer" title="Select the measurement system">
+                <select name="units_selector" id="units_selector" class="units-select">
+                  <option value="nautical">Aeronautical</option>
+                  <option value="metric">Metric</option>
+                  <option value="imperial">Imperial</option>
+                </select>
+              </div>
+            </div>
+          </div>
           <!-- Categoría DISPLAY -->
           <div id="category-display" class="settings-category">
             <div class="settings-category-title">DISPLAY</div>
@@ -911,9 +916,6 @@
             <div class="settings-category-title">INFORMATION</div>
             <div id="category-info-container"></div>
           </div>
-          <!-- <div class="settingsOptionContainer">
-            <button class="formButton" onclick="resetSettings();">Reset all settings</button>
-          </div> -->
         </div>
       </div>
       <!-- FIN MENÚ CONFIGURACIONES -->
