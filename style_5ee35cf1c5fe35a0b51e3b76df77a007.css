@@ -1679,3 +1679,21 @@ div.ui-slider .ui-slider-handle {
   z-index: 5;
 }
 .layer-switcher .panel { padding-top: 0.25rem; }
+
+.settings-category {
+    margin-bottom: 20px;
+}
+
+.settings-category-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--TXTCOLOR2, #ccc);
+    color: var(--TXTCOLOR1, #333);
+}
+
+/* Espaciado entre toggles dentro de cada categoría */
+/* .settings-category-container .settingsCheckbox {
+    margin-bottom: 8px;
+} */

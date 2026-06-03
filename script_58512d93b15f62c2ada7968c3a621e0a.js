@@ -3445,11 +3445,102 @@ function earlyInitPage() {
         refresh();
     });
 
+    
+    new Toggle({
+        key: "hideAircraftFunctions",
+        display: "Hide aircraft functions",
+        tooltip: "Hides the aircraft action dropdown and disables aircraft-specific controls (selection, follow, infoblock, and related functions).",
+        // container: "#settingsLeft",
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#aircraft_dropdown").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideDistanceFunctions",
+        display: "Hide distance functions",
+        tooltip: "Hides the measurement dropdown and disables all distance tools (aircraft-aircraft, ground-aircraft, ground-ground).",
+        // container: "#settingsLeft",
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#measurement_dropdown").toggle(!state);
+            // jQuery("#D, #TA, #TT").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideLabelFunctions",
+        display: "Hide label functions",
+        tooltip: "Hides label controls and disables aircraft labels and related label settings (live/historic labels, units, and formatting).",
+        // container: "#settingsLeft",
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#label_dropdown").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideLayerFunctions",
+        display: "Hide layer functions",
+        tooltip: "Hides layer controls and prevents changing or interacting with map layers and overlay settings (base layers, overlays, and layer switcher).",
+        // container: "#settingsLeft",
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#layer-select").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideRecenterFunction",
+        display: "Hide recenter function",
+        tooltip: "Hides the recenter control and disables manual re-centering of the map to the site.",
+        // container: "#settingsLeft",
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#H").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideReplayFunction",
+        display: "Hide replay function",
+        tooltip: "Hides the replay controls and disables timeline playback and related replay controls (play, pause).",
+        // container: "#settingsLeft",
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#RP").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideTrackFunctions",
+        display: "Hide track functions",
+        tooltip: "Hides track controls and prevents drawing or interacting with aircraft trails and track-related features.",
+        // container: "#settingsLeft",
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#track_dropdown").toggle(!state);
+        }
+    });
+    new Toggle({
+        key: "hideZoomFunctions",
+        display: "Hide zoom functions",
+        tooltip: "Hides zoom controls and disables map zooming.",
+        // container: "#settingsLeft",
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#ZI, #ZO").toggle(!state);
+        }
+    });
     new Toggle({
         key: "lastLeg",
         display: "Last leg only",
         tooltip: "Only shows the last leg of the plane's trajectory, preventing the map from being filled with long flight lines.",
-        container: "#settingsLeft",
+        // container: "#settingsLeft",
+        container: "#category-filters-container",
         init: true,
         setState: function (state) {
             lastLeg = state;
@@ -3460,95 +3551,25 @@ function earlyInitPage() {
             }
         }
     });
+
     new Toggle({
-        key: "hideAircraftFunctions",
-        display: "Hide aircraft functions",
-        tooltip: "Hides the aircraft action dropdown and disables aircraft-specific controls (selection, follow, infoblock, and related functions).",
-        container: "#settingsLeft",
-        init: true,
+        key: "baroUseQNH",
+        display: "Baro. alt.: correct for QNH",
+        tooltip: "Adjusts pressure altitude according to local atmospheric pressure (QNH) to display the actual altitude above sea level.",
+        // container: "#settingsLeft",
+        container: "#category-data-container",
+        init: baroUseQNH,
         setState: function (state) {
-            jQuery("#aircraft_dropdown").toggle(!state);
-        }
-    });
-    new Toggle({
-        key: "hideDistanceFunctions",
-        display: "Hide distance functions",
-        tooltip: "Hides the measurement dropdown and disables all distance tools (aircraft-aircraft, ground-aircraft, ground-ground).",
-        container: "#settingsLeft",
-        init: true,
-        setState: function (state) {
-            jQuery("#measurement_dropdown").toggle(!state);
-            // jQuery("#D, #TA, #TT").toggle(!state);
-        }
-    });
-    new Toggle({
-        key: "hideTrackFunctions",
-        display: "Hide track functions",
-        tooltip: "Hides track controls and prevents drawing or interacting with aircraft trails and track-related features.",
-        container: "#settingsLeft",
-        init: true,
-        setState: function (state) {
-            jQuery("#track_dropdown").toggle(!state);
-        }
-    });
-    new Toggle({
-        key: "hideLabelFunctions",
-        display: "Hide label functions",
-        tooltip: "Hides label controls and disables aircraft labels and related label settings (live/historic labels, units, and formatting).",
-        container: "#settingsLeft",
-        init: true,
-        setState: function (state) {
-            jQuery("#label_dropdown").toggle(!state);
-        }
-    });
-    new Toggle({
-        key: "hideLayerFunctions",
-        display: "Hide layer functions",
-        tooltip: "Hides layer controls and prevents changing or interacting with map layers and overlay settings (base layers, overlays, and layer switcher).",
-        container: "#settingsLeft",
-        init: true,
-        setState: function (state) {
-            jQuery("#layer-select").toggle(!state);
-        }
-    });
-    new Toggle({
-        key: "hideRecenterFunction",
-        display: "Hide recenter function",
-        tooltip: "Hides the recenter control and disables manual re-centering of the map to the site.",
-        container: "#settingsLeft",
-        init: true,
-        setState: function (state) {
-            jQuery("#H").toggle(!state);
-        }
-    });
-    new Toggle({
-        key: "hideReplayFunction",
-        display: "Hide replay function",
-        tooltip: "Hides the replay controls and disables timeline playback and related replay controls (play, pause).",
-        container: "#settingsLeft",
-        init: true,
-        setState: function (state) {
-            jQuery("#RP").toggle(!state);
-        }
-    });
-    new Toggle({
-        key: "hideZoomFunctions",
-        display: "Hide zoom functions",
-        tooltip: "Hides zoom controls and disables map zooming.",
-        container: "#settingsLeft",
-        init: true,
-        setState: function (state) {
-            jQuery("#ZI, #ZO").toggle(!state);
-        }
-    });
-    new Toggle({
-        key: "labelsGeom",
-        display: "Labels: geom. alt. (WGS84)",
-        tooltip: "It displays geometric altitude (GPS) instead of standard barometric altitude.",
-        container: "#settingsLeft",
-        init: labelsGeom,
-        setState: function (state) {
-            labelsGeom = state;
+            baroUseQNH = state;
+            if (baroUseQNH) {
+                jQuery('#selected_altitude1_title').updateText('Corr. baro-alt');
+                jQuery('#selected_altitude2_title').updateText('Corr. baro.');
+                jQuery('#infoblock_altimeter').removeClass('hidden');
+            } else {
+                jQuery('#selected_altitude1_title').updateText('Alt. baro.:');
+                jQuery('#selected_altitude2_title').updateText('Alt. baro.:');
+                jQuery('#infoblock_altimeter').addClass('hidden');
+            }
             if (loadFinished) {
                 remakeTrails();
                 refreshSelected();
@@ -3559,7 +3580,8 @@ function earlyInitPage() {
         key: "geomUseEGM",
         display: "Geom. alt.: WGS84 -> EGM conversion (long load)",
         tooltip: "It applies a mathematical correction to make the GPS altitude more accurate relative to sea level (it takes longer to load).",
-        container: "#settingsLeft",
+        // container: "#settingsLeft",
+        container: "#category-data-container",
         init: geomUseEGM,
         setState: function (state) {
             geomUseEGM = state;
@@ -3587,26 +3609,16 @@ function earlyInitPage() {
     });
 
     new Toggle({
-        key: "baroUseQNH",
-        display: "Baro. alt.: correct for QNH",
-        tooltip: "Adjusts pressure altitude according to local atmospheric pressure (QNH) to display the actual altitude above sea level.",
-        container: "#settingsLeft",
-        init: baroUseQNH,
+        key: "utcTimesHistoric",
+        display: "Historic track labels: UTC",
+        tooltip: "Displays timestamps on historic paths using Universal Time (UTC).",
+        // container: "#settingsLeft",
+        container: "#category-data-container",
+        init: utcTimesHistoric,
         setState: function (state) {
-            baroUseQNH = state;
-            if (baroUseQNH) {
-                jQuery('#selected_altitude1_title').updateText('Corr. baro-alt');
-                jQuery('#selected_altitude2_title').updateText('Corr. baro.');
-                jQuery('#infoblock_altimeter').removeClass('hidden');
-            } else {
-                jQuery('#selected_altitude1_title').updateText('Alt. baro.:');
-                jQuery('#selected_altitude2_title').updateText('Alt. baro.:');
-                jQuery('#infoblock_altimeter').addClass('hidden');
-            }
-            if (loadFinished) {
-                remakeTrails();
-                refreshSelected();
-            }
+            utcTimesHistoric = state;
+            remakeTrails();
+            refreshSelected();
         }
     });
 
@@ -3619,10 +3631,27 @@ function earlyInitPage() {
     }
 
     new Toggle({
+        key: "labelsGeom",
+        display: "Labels: geom. alt. (WGS84)",
+        tooltip: "It displays geometric altitude (GPS) instead of standard barometric altitude.",
+        // container: "#settingsLeft",
+        container: "#category-data-container",
+        init: labelsGeom,
+        setState: function (state) {
+            labelsGeom = state;
+            if (loadFinished) {
+                remakeTrails();
+                refreshSelected();
+            }
+        }
+    });
+
+    new Toggle({
         key: "utcTimesLive",
         display: "Live track labels: UTC",
         tooltip: "Displays timestamps on live paths using Universal Time (UTC).",
-        container: "#settingsLeft",
+        // container: "#settingsLeft",
+        container: "#category-data-container",
         init: utcTimesLive,
         setState: function (state) {
             utcTimesLive = state;
@@ -3631,18 +3660,7 @@ function earlyInitPage() {
         }
     });
 
-    new Toggle({
-        key: "utcTimesHistoric",
-        display: "Historic track labels: UTC",
-        tooltip: "Displays timestamps on historic paths using Universal Time (UTC).",
-        container: "#settingsLeft",
-        init: utcTimesHistoric,
-        setState: function (state) {
-            utcTimesHistoric = state;
-            remakeTrails();
-            refreshSelected();
-        }
-    });
+    
 
     function setHideSettingsTooltips(state) {
         try {
@@ -3666,17 +3684,6 @@ function earlyInitPage() {
         } catch (e) { console.error(e); }
     };
 
-    new Toggle({
-        key: "hideSettingsTooltips",
-        display: "Hide settings tooltips",
-        tooltip: "Hides tooltips for controls inside the settings menu.",
-        container: "#settingsLeft",
-        init: false,
-        setState: function (state) {
-            setHideSettingsTooltips(state);
-        }
-    });
-
     function setHideAllTooltips(state) {
         try {
             if (state) {
@@ -3697,51 +3704,6 @@ function earlyInitPage() {
         } catch (e) { console.error(e); }
     };
 
-    new Toggle({
-        key: "hideAllTooltips",
-        display: "Hide all tooltips",
-        tooltip: "Hides all element tooltips across the entire page (removes/restores title attributes).",
-        container: "#settingsLeft",
-        init: false,
-        setState: function (state) {
-            setHideAllTooltips(state);
-        }
-    });
-
-    new Toggle({
-        key: "windLabelsSlim",
-        display: "Smaller wind labels",
-        tooltip: "Reduce the size of the wind indicators (if the aircraft transmits that data).",
-        container: "#settingsRight",
-        init: windLabelsSlim,
-        setState: function (state) {
-            windLabelsSlim = state;
-            if (!loadFinished)
-                return;
-            for (let key in g.planesOrdered) {
-                g.planesOrdered[key].updateMarker();
-            }
-        }
-    });
-
-    new Toggle({
-        key: "showLabelUnits",
-        display: "Label units",
-        tooltip: "Show units (ft, kts, etc.) in the labels.",
-        container: "#settingsRight",
-        init: showLabelUnits,
-        setState: function (state) {
-            showLabelUnits = state;
-            if (!loadFinished)
-                return;
-            for (let key in g.planesOrdered) {
-                g.planesOrdered[key].updateMarker();
-            }
-            remakeTrails();
-            refreshSelected();
-        }
-    });
-
 
     jQuery('#tStop').on('click', function () { traceOpts.replaySpeed = 0; gotoTime(traceOpts.showTime); });
     jQuery('#t1x').on('click', function () { replaySpeedChange(1); });
@@ -3749,43 +3711,6 @@ function earlyInitPage() {
     jQuery('#t10x').on('click', function () { replaySpeedChange(10); });
     jQuery('#t20x').on('click', function () { replaySpeedChange(20); });
     jQuery('#t40x').on('click', function () { replaySpeedChange(40); });
-
-    new Toggle({
-        key: "shareFilters",
-        display: "Include filters in URLs",
-        tooltip: "Include the current filter settings in the URL.",
-        container: "#settingsRight",
-        init: false,
-        setState: function (state) {
-            updateAddressBar();
-        }
-    });
-
-    new Toggle({
-        key: "debugTracks",
-        display: "Debug tracks",
-        tooltip: "Developer options for viewing errors in received data.",
-        container: "#settingsRight",
-        init: false,
-        setState: function (state) {
-            debugTracks = state;
-            remakeTrails();
-        }
-    });
-
-    new Toggle({
-        key: "debugAll",
-        display: "Debug show all",
-        tooltip: "Show all debug information.",
-        container: "#settingsRight",
-        init: false,
-        setState: function (state) {
-            if (state)
-                debugAll = true;
-            else
-                debugAll = false;
-        }
-    });
 
     /*
     new Toggle({
@@ -3801,23 +3726,14 @@ function earlyInitPage() {
     });
     */
 
-    new Toggle({
-        key: "updateLocation",
-        display: "Update GPS location",
-        container: "#settingsRight",
-        tooltip: "Updates the browser/device GPS location and enables periodic tracking to center the map; requires browser permission.",
-        init: updateLocation,
-        setState: function (state) {
-            updateLocation = state;
-            runAfterLoad(watchPosition);
-        }
-    });
+    
 
     new Toggle({
         key: "autoselect",
         display: "Auto-select plane",
         tooltip: "It automatically selects an aircraft if it is the only one on screen or based on specific criteria.",
-        container: "#settingsRight",
+        // container: "#settingsRight",
+        container: "#category-system-container",
         init: autoselect,
         setState: function (state) {
             autoselect = state;
@@ -3830,10 +3746,85 @@ function earlyInitPage() {
     }
 
     new Toggle({
+        key: "debugAll",
+        display: "Debug show all",
+        tooltip: "Show all debug information.",
+        // container: "#settingsRight",
+        container: "#category-system-container",
+        init: false,
+        setState: function (state) {
+            if (state)
+                debugAll = true;
+            else
+                debugAll = false;
+        }
+    });
+    new Toggle({
+        key: "debugTracks",
+        display: "Debug tracks",
+        tooltip: "Developer options for viewing errors in received data.",
+        // container: "#settingsRight",
+        container: "#category-system-container",
+        init: false,
+        setState: function (state) {
+            debugTracks = state;
+            remakeTrails();
+        }
+    });
+    new Toggle({
+        key: "hideAllTooltips",
+        display: "Hide all tooltips",
+        tooltip: "Hides all element tooltips across the entire page (removes/restores title attributes).",
+        // container: "#settingsLeft",
+        container: "#category-system-container",
+        init: false,
+        setState: function (state) {
+            setHideAllTooltips(state);
+        }
+    });
+    new Toggle({
+        key: "hideSettingsTooltips",
+        display: "Hide settings tooltips",
+        tooltip: "Hides tooltips for controls inside the settings menu.",
+        // container: "#settingsLeft",
+        container: "#category-system-container",
+        init: false,
+        setState: function (state) {
+            setHideSettingsTooltips(state);
+        }
+    });
+
+    new Toggle({
+        key: "shareFilters",
+        display: "Include filters in URLs",
+        tooltip: "Include the current filter settings in the URL.",
+        // container: "#settingsRight",
+        container: "#category-system-container",
+        init: false,
+        setState: function (state) {
+            updateAddressBar();
+        }
+    });
+
+    new Toggle({
+        key: "updateLocation",
+        display: "Update GPS location",
+        // container: "#settingsRight",
+        container: "#category-system-container",
+        tooltip: "Updates the browser/device GPS location and enables periodic tracking to center the map; requires browser permission.",
+        init: updateLocation,
+        setState: function (state) {
+            updateLocation = state;
+            runAfterLoad(watchPosition);
+        }
+    });
+
+    new Toggle({
         key: "ColoredPlanes",
         display: "Colored planes",
         tooltip: "Display aircraft markers in color instead of grayscale.",
-        container: "#settingsRight",
+        // container: "#settingsRight",
+        container: "#category-display-container",
         init: true,
         setState: function (state) {
             if (state)
@@ -3849,7 +3840,8 @@ function earlyInitPage() {
         key: "ColoredTrails",
         display: "Colored trails",
         tooltip: "Display aircraft trails in color instead of grayscale.",
-        container: "#settingsRight",
+        // container: "#settingsRight",
+        container: "#category-display-container",
         init: true,
         setState: function (state) {
             if (state)
@@ -3860,6 +3852,7 @@ function earlyInitPage() {
             remakeTrails();
         }
     });
+    
 
     new Toggle({
         key: "sidebar_visible",
@@ -3916,34 +3909,29 @@ function earlyInitPage() {
         planespottingAPI = false;
         planespottersAPI = false;
     }
+
     new Toggle({
-        key: "planespottingAPI",
-        display: "Pictures planespotting.be",
-        tooltip: "Display pictures from planespotting.be (if available).",
+        key: "enableInfoblock",
+        display: "Enable infoblock",
+        tooltip: "Show the infoblock with detailed information about the selected aircraft.",
         container: "#settingsRight",
-        init: planespottingAPI,
+        init: true,
         setState: function (state) {
-            planespottingAPI = state;
-            if (state) {
-                toggles['planespottersAPI'] && toggles['planespottersAPI'].toggle(false);
-            }
-            setPictureVisibility();
-            refreshSelected();
+            adjustInfoBlock();
         }
     });
+
     new Toggle({
-        key: "planespottersAPI",
-        display: "Pictures planespotters.net",
-        tooltip: "Display pictures from planespotters.net (if available).",
+        key: "enableMouseover",
+        display: "Enable mouse-over block",
+        tooltip: "Show detailed information about the selected aircraft when hovering over it.",
         container: "#settingsRight",
-        init: planespottersAPI,
+        init: enableMouseover,
         setState: function (state) {
-            planespottersAPI = state;
-            if (state) {
-                toggles['planespottingAPI'] && toggles['planespottingAPI'].toggle(false);
+            enableMouseover = state;
+            if (loadFinished) {
+                checkPointermove();
             }
-            setPictureVisibility();
-            refreshSelected();
         }
     });
 
@@ -3980,15 +3968,34 @@ function earlyInitPage() {
         useRouteAPI = false;
     }
 
-
     new Toggle({
-        key: "enableInfoblock",
-        display: "Enable infoblock",
-        tooltip: "Show the infoblock with detailed information about the selected aircraft.",
+        key: "planespottingAPI",
+        display: "Pictures planespotting.be",
+        tooltip: "Display pictures from planespotting.be (if available).",
         container: "#settingsRight",
-        init: true,
+        init: planespottingAPI,
         setState: function (state) {
-            adjustInfoBlock();
+            planespottingAPI = state;
+            if (state) {
+                toggles['planespottersAPI'] && toggles['planespottersAPI'].toggle(false);
+            }
+            setPictureVisibility();
+            refreshSelected();
+        }
+    });
+    new Toggle({
+        key: "planespottersAPI",
+        display: "Pictures planespotters.net",
+        tooltip: "Display pictures from planespotters.net (if available).",
+        container: "#settingsRight",
+        init: planespottersAPI,
+        setState: function (state) {
+            planespottersAPI = state;
+            if (state) {
+                toggles['planespottingAPI'] && toggles['planespottingAPI'].toggle(false);
+            }
+            setPictureVisibility();
+            refreshSelected();
         }
     });
 
@@ -4009,19 +4016,7 @@ function earlyInitPage() {
         (typeof hideById != 'undefined') && (hideById) && (hideById('tracking_leaderboard_container'));
     }
 
-    new Toggle({
-        key: "enableMouseover",
-        display: "Enable mouse-over block",
-        tooltip: "Show detailed information about the selected aircraft when hovering over it.",
-        container: "#settingsRight",
-        init: enableMouseover,
-        setState: function (state) {
-            enableMouseover = state;
-            if (loadFinished) {
-                checkPointermove();
-            }
-        }
-    });
+    
 
 
 
@@ -4774,9 +4769,10 @@ function webglInit() {
 
     new Toggle({
         key: "webgl",
-        display: "WebGL",
+        display: "Canvas WebGL",
         tooltip: "Use WebGL to display aircraft icons. This can significantly improve performance, especially when many aircraft are displayed, but may cause issues on some devices/browsers.",
-        container: "#settingsRight",
+        // container: "#settingsRight",
+        container: "#category-display-container",
         init: init,
         setState: function (state) {
             if (state) {
@@ -5985,7 +5981,8 @@ function initMap() {
     new Toggle({
         key: "darkerColors",
         display: "Darker colors",
-        container: "#settingsRight",
+        // container: "#settingsRight",
+        container: "#category-display-container",
         tooltip: "Darkens map and UI elements and increases contrast to improve visibility and reduce glare.",
         init: darkerColors,
         setState: function (state) {
@@ -6014,7 +6011,8 @@ function initMap() {
     new Toggle({
         key: "darkMode",
         display: "Dark mode",
-        container: "#settingsRight",
+        // container: "#settingsRight",
+        container: "#category-display-container",
         tooltip: "Switches the interface to a dark color scheme, lowering brightness and improving readability in low-light conditions.",
         init: darkModeDefault,
         setState: function (state) {
@@ -6070,7 +6068,8 @@ function initMap() {
         key: "MapDim",
         display: "Dim map",
         tooltip: "Toggle dimming of map layers to enhance visibility of overlays",
-        container: "#settingsRight",
+        // container: "#settingsRight",
+        container: "#category-display-container",
         init: MapDim,
         setState: function (state) {
             /*
@@ -6092,6 +6091,42 @@ function initMap() {
                 OLMap.render();
             }
             buttonActive('#B', state);
+        }
+    });
+
+    new Toggle({
+        key: "showLabelUnits",
+        display: "Label units",
+        tooltip: "Show units (ft, kts, etc.) in the labels.",
+        // container: "#settingsRight",
+        container: "#category-display-container",
+        init: showLabelUnits,
+        setState: function (state) {
+            showLabelUnits = state;
+            if (!loadFinished)
+                return;
+            for (let key in g.planesOrdered) {
+                g.planesOrdered[key].updateMarker();
+            }
+            remakeTrails();
+            refreshSelected();
+        }
+    });
+
+    new Toggle({
+        key: "windLabelsSlim",
+        display: "Smaller wind labels",
+        tooltip: "Reduce the size of the wind indicators (if the aircraft transmits that data).",
+        // container: "#settingsRight",
+        container: "#category-display-container",
+        init: windLabelsSlim,
+        setState: function (state) {
+            windLabelsSlim = state;
+            if (!loadFinished)
+                return;
+            for (let key in g.planesOrdered) {
+                g.planesOrdered[key].updateMarker();
+            }
         }
     });
 

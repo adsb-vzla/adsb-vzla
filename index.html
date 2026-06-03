@@ -858,8 +858,8 @@
         <div class="rSpacer">
           <hr />
         </div>
-        <div id="settingsLeft" class="settingsColumn">
-          <div class="settingsOptionContainer" title="Select the measurement system">
+
+        <div class="settingsOptionContainer" title="Select the measurement system">
             <label for="units_selector"><span class="infoBlockTitleText">Units:&nbsp;&nbsp;</span></label>
             <select name="units_selector" id="units_selector">
               <option value="nautical">Aeronautical</option>
@@ -867,20 +867,53 @@
               <option value="imperial">Imperial</option>
             </select>
           </div>
-          <div class="settingsOptionContainer" title="Displays ground service vehicles that emit ADS-B signal.">
-            <div class="settingsCheckbox" id="groundvehicle_filter"></div>
-            <div class="settingsText">Ground vehicles</div>
+
+
+        <div id="settingsLeft" class="settingsColumn">
+          <!-- Categoría DISPLAY -->
+          <div id="category-display" class="settings-category">
+            <div class="settings-category-title">DISPLAY</div>
+            <div id="category-display-container"></div>
           </div>
-          <div class="settingsOptionContainer"
-            title="Displays aircraft that do not have a standard ICAO code or whose airframe structure is unknown.">
-            <div class="settingsCheckbox" id="blockedmlat_filter"></div>
-            <div class="settingsText">Non-ICAO targets (radar track / airframe unknown) </div>
+
+          <!-- Categoría FILTERS -->
+          <div id="category-filters" class="settings-category">
+            <div class="settings-category-title">FILTERS</div>
+            <div id="category-filters-container">
+              <div class="settingsOptionContainer" title="Displays ground service vehicles that emit ADS-B signal.">
+                <div class="settingsCheckbox" id="groundvehicle_filter"></div>
+                <div class="settingsText">Ground vehicles</div>
+              </div>
+              <div class="settingsOptionContainer"
+                title="Displays aircraft that do not have a standard ICAO code or whose airframe structure is unknown.">
+                <div class="settingsCheckbox" id="blockedmlat_filter"></div>
+                <div class="settingsText">Non-ICAO targets (radar track / airframe unknown) </div>
+              </div>
+            </div>
           </div>
         </div>
         <div id="settingsRight" class="settingsColumn">
-          <div class="settingsOptionContainer">
-            <button class="formButton" onclick="resetSettings();">Reset all settings</button>
+
+          <!-- Categoría DATA -->
+          <div id="category-data" class="settings-category">
+            <div class="settings-category-title">DATA</div>
+            <div id="category-data-container"></div>
           </div>
+
+          <!-- Categoría SYSTEM -->
+          <div id="category-system" class="settings-category">
+            <div class="settings-category-title">SYSTEM</div>
+            <div id="category-system-container"></div>
+          </div>
+
+          <!-- Categoría INFORMATION -->
+          <div id="category-info" class="settings-category">
+            <div class="settings-category-title">INFORMATION</div>
+            <div id="category-info-container"></div>
+          </div>
+          <!-- <div class="settingsOptionContainer">
+            <button class="formButton" onclick="resetSettings();">Reset all settings</button>
+          </div> -->
         </div>
       </div>
       <!-- FIN MENÚ CONFIGURACIONES -->
