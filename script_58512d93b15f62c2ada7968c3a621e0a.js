@@ -8263,9 +8263,9 @@ function invertMap(evt) {
         }
         new Toggle({
             key: "altitudeChart",
-            display: "Altitude chart",
+            display: "Color-coded altitude chart",
             tooltip: "Displays an altitude profile chart, showing altitude with units and a color legend.",
-            container: "#settingsRight",
+            container: "#category-display-container",
             init: false,
             setState: altitudeChart.render
         });
