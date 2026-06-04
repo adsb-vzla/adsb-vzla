@@ -153,7 +153,7 @@ let ggHiddenState = new Map();
 let ggMissingSince = new Map();
 let ggRemoved = new Set();
 let ggPairMap = new Map();
-let ggPairOrder = [];  
+let ggPairOrder = [];
 // Indicador de zoom
 let zoomIndicatorBaseline = null;
 let loadStart = new Date().getTime();
@@ -2004,10 +2004,10 @@ function updateGroundToGroundOverlay() {
                 }
                 else if (groundToGroundModeType === 'nA_nB') {
                     const aKey = `${a[0].toFixed(6)},${a[1].toFixed(6)}|${b[0].toFixed(6)},${b[1].toFixed(6)}`;
-                    const stillUsed = ggPairs.some(p => p.key !== key && 
-                        p.a[0].toFixed(6) === a[0].toFixed(6) && 
+                    const stillUsed = ggPairs.some(p => p.key !== key &&
+                        p.a[0].toFixed(6) === a[0].toFixed(6) &&
                         p.a[1].toFixed(6) === a[1].toFixed(6));
-                    
+
                     // Remove point A only if no longer used by other pairs
                     if (!stillUsed && ggPointSource) {
                         const featuresToRemove = [];
@@ -2023,7 +2023,7 @@ function updateGroundToGroundOverlay() {
                         featuresToRemove.forEach(f => ggPointSource.removeFeature(f));
                         ggPointSource.changed();
                     }
-                    
+
                     // Remove point B
                     if (ggPointSource) {
                         const featuresToRemove = [];
@@ -2039,10 +2039,10 @@ function updateGroundToGroundOverlay() {
                         featuresToRemove.forEach(f => ggPointSource.removeFeature(f));
                         ggPointSource.changed();
                     }
-                    
+
                     // Remove the pair from array
                     ggPairs = ggPairs.filter(p => p.key !== key);
-                    
+
                     // Hide layer if no points left
                     if (ggPointSource && ggPointSource.getFeatures().length === 0 && ggPointLayer) {
                         ggPointLayer.setVisible(false);
@@ -2068,9 +2068,9 @@ function updateGroundToGroundOverlay() {
                         featuresToRemove.forEach(f => ggPointSource.removeFeature(f));
                         ggPointSource.changed();
                     }
-                    
+
                     // Remove from points B list
-                    ggPointsB = ggPointsB.filter(p => 
+                    ggPointsB = ggPointsB.filter(p =>
                         Math.abs(p[0] - b[0]) > 1e-8 || Math.abs(p[1] - b[1]) > 1e-8
                     );
                 }
@@ -3445,7 +3445,7 @@ function earlyInitPage() {
         refresh();
     });
 
-    
+
     new Toggle({
         key: "hideAircraftFunctions",
         display: "Hide aircraft functions",
@@ -3660,7 +3660,7 @@ function earlyInitPage() {
         }
     });
 
-    
+
 
     function setHideSettingsTooltips(state) {
         try {
@@ -3726,7 +3726,7 @@ function earlyInitPage() {
     });
     */
 
-    
+
 
     new Toggle({
         key: "autoselect",
@@ -3852,7 +3852,7 @@ function earlyInitPage() {
             remakeTrails();
         }
     });
-    
+
 
     new Toggle({
         key: "sidebar_visible",
@@ -4016,7 +4016,7 @@ function earlyInitPage() {
         (typeof hideById != 'undefined') && (hideById) && (hideById('tracking_leaderboard_container'));
     }
 
-    
+
 
 
 
@@ -7478,6 +7478,14 @@ function refreshFeatures() {
                         }
                     }
                 }
+            }
+
+            // ** AQUÍ DEBES COLOCAR EL CÓDIGO **
+            // Después de actualizar las celdas, pero antes de agregar la fila al DOM
+            if (starredAircraft && starredAircraft.has(plane.icao)) {
+                plane.tr.classList.add('starred-table-row');
+            } else {
+                plane.tr.classList.remove('starred-table-row');
             }
         }
         ctime && console.timeEnd("modTRs");
@@ -12637,3 +12645,239 @@ function DistanceBetweenPlanes() {
 
     new MutationObserver(ensurePhoto).observe(container, { childList: true, subtree: true });
 })();
+
+
+// ========== SISTEMA DE AVIONES DE INTERÉS (STARRED AIRCRAFT) ==========
+let starredAircraft = new Set(); // Almacena los hex de los aviones marcados
+let starredListCollapsed = false;
+
+// Función para alternar visibilidad de la lista
+function toggleStarredList() {
+    const container = document.getElementById('starred-list-container');
+    if (container) {
+        starredListCollapsed = !starredListCollapsed;
+        container.style.display = starredListCollapsed ? 'none' : 'block';
+    }
+}
+
+// Función para actualizar el contador y la lista visual
+function updateStarredUI() {
+    const countSpan = document.getElementById('starred-count');
+    const container = document.getElementById('starred-list-container');
+
+    if (countSpan) {
+        countSpan.textContent = starredAircraft.size;
+    }
+
+    if (!container) return;
+
+    if (starredAircraft.size === 0) {
+        container.innerHTML = '<div class="starred-empty">No marked planes</div>';
+        return;
+    }
+
+    let html = '';
+    for (const hex of starredAircraft) {
+        const plane = g.planes[hex];
+        if (!plane) {
+            // Si el avión ya no existe en g.planes, lo eliminamos de la lista
+            starredAircraft.delete(hex);
+            continue;
+        }
+
+        const callsign = plane.name || plane.flight || hex.toUpperCase();
+        const reg = plane.registration || 'N/A';
+        const type = plane.icaoType || 'N/A';
+
+        html += `
+            <div class="starred-item" onclick="selectPlaneByHex('${hex}', { follow: true })">
+                <div class="starred-item-info">
+                    <div class="starred-item-callsign">${escapeHtml(callsign)}</div>
+                    <div class="starred-item-detail">${reg} | ${type}</div>
+                </div>
+                <button class="starred-item-remove" onclick="event.stopPropagation(); toggleStarredPlane('${hex}')" title="Quitar de interés">✖</button>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+}
+
+// Función para escapar HTML (seguridad)
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function (m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// Función principal para marcar/desmarcar un avión como interés
+function toggleStarredPlane(hex) {
+    if (!hex) return;
+
+    if (starredAircraft.has(hex)) {
+        starredAircraft.delete(hex);
+        console.log(`Avión ${hex} removido de lista de interés`);
+    } else {
+        starredAircraft.add(hex);
+        console.log(`Avión ${hex} agregado a lista de interés`);
+    }
+
+    updateStarredUI();
+    updateStarredPlaneVisual(hex);
+    updateStarredButtonInInfoblock();
+    refreshFilter(); // Refrescar la tabla para aplicar estilo de fila
+}
+
+// Función para actualizar el aspecto visual del avión en el mapa
+function updateStarredPlaneVisual(hex) {
+    const plane = g.planes[hex];
+    if (!plane) return;
+
+    const isStarred = starredAircraft.has(hex);
+
+    // Actualizar el marcador del avión
+    if (plane.marker || plane.glMarker) {
+        plane.updateMarker(); // Esto forzará la recreación del marcador con el nuevo estilo
+    }
+
+    // Actualizar la fila en la tabla
+    if (plane.tr) {
+        if (isStarred) {
+            plane.tr.classList.add('starred-table-row');
+        } else {
+            plane.tr.classList.remove('starred-table-row');
+        }
+    }
+}
+
+// Función para actualizar el botón de estrella en el infoblock
+function updateStarredButtonInInfoblock() {
+    const selected = SelectedPlane;
+    if (!selected) return;
+
+    const isStarred = starredAircraft.has(selected.icao);
+
+    // Buscar o crear el contenedor del botón estrella en el título
+    let starBtnContainer = document.querySelector('.star-btn-container');
+    const titleDiv = document.querySelector('#selected_infoblock .highlightedTitle > div:first-child');
+
+    if (!titleDiv) return;
+
+    if (!starBtnContainer) {
+        starBtnContainer = document.createElement('div');
+        starBtnContainer.className = 'star-btn-container';
+        starBtnContainer.style.display = 'inline-block';
+        starBtnContainer.style.marginLeft = '10px';
+        titleDiv.appendChild(starBtnContainer);
+    }
+
+    starBtnContainer.innerHTML = `
+        <button class="star-btn ${isStarred ? 'star-btn-starred' : 'star-btn-unstarred'}" 
+                onclick="toggleStarredPlane('${selected.icao}')" 
+                title="${isStarred ? 'Quitar de interés' : 'Marcar como interés'}">
+            ${isStarred ? '⭐' : '☆'}
+        </button>
+    `;
+}
+
+// Función para verificar si un avión está marcado como interés (para usar en filtros/resaltados)
+function isPlaneStarred(plane) {
+    return plane && starredAircraft.has(plane.icao);
+}
+
+// Función para limpiar todos los aviones de interés
+function clearAllStarred() {
+    const hexes = [...starredAircraft];
+    starredAircraft.clear();
+
+    for (const hex of hexes) {
+        updateStarredPlaneVisual(hex);
+    }
+
+    updateStarredUI();
+    updateStarredButtonInInfoblock();
+    refreshFilter();
+    console.log('Lista de interés limpiada');
+}
+
+// Sobrescribir la función select existente para actualizar el botón de estrella
+const originalSelect = select;
+select = function (plane, options) {
+    originalSelect(plane, options);
+    if (plane && SelectedPlane === plane) {
+        updateStarredButtonInInfoblock();
+    }
+};
+
+// Sobrescribir la función deselect para limpiar el botón
+const originalDeselect = deselect;
+deselect = function (plane) {
+    originalDeselect(plane);
+    if (SelectedPlane === null) {
+        const starBtnContainer = document.querySelector('.star-btn-container');
+        if (starBtnContainer) starBtnContainer.innerHTML = '';
+    }
+};
+
+// Agregar funcionalidad al botón de estrella en el marcador de aviones
+// Modificar la función getPlaneStyle en PlaneObject para incluir resaltado
+// Esto debe ir dentro de la definición de PlaneObject
+function enhancePlaneObjectForStarred() {
+    if (typeof PlaneObject !== 'undefined' && PlaneObject.prototype) {
+        // Guardar método original si existe
+        const originalUpdateMarker = PlaneObject.prototype.updateMarker;
+        if (originalUpdateMarker) {
+            PlaneObject.prototype.updateMarker = function () {
+                originalUpdateMarker.apply(this, arguments);
+                if (starredAircraft.has(this.icao)) {
+                    // Aplicar clase de resaltado al elemento del marcador
+                    if (this.markerElement) {
+                        this.markerElement.classList.add('plane-starred-marker');
+                    }
+                }
+            };
+        }
+    }
+}
+
+// Inicializar la sección de aviones de interés cuando cargue la página
+function initStarredAircraft() {
+    // Cargar lista guardada de localStorage si existe
+    const saved = localStorage.getItem('tar1090_starred_aircraft');
+    if (saved) {
+        try {
+            const savedHexes = JSON.parse(saved);
+            if (Array.isArray(savedHexes)) {
+                starredAircraft = new Set(savedHexes);
+                updateStarredUI();
+            }
+        } catch (e) { console.error('Error loading starred aircraft:', e); }
+    }
+
+    enhancePlaneObjectForStarred();
+
+    // Guardar en localStorage cuando cambie la lista
+    const originalUpdateStarredUI = updateStarredUI;
+    window.updateStarredUI = function () {
+        originalUpdateStarredUI();
+        // Guardar en localStorage
+        localStorage.setItem('tar1090_starred_aircraft', JSON.stringify([...starredAircraft]));
+    };
+    updateStarredUI = window.updateStarredUI;
+}
+
+// Ejecutar inicialización cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStarredAircraft);
+} else {
+    initStarredAircraft();
+}
+
+// Función global para toggle desde el botón de estrella
+window.toggleStarredPlane = toggleStarredPlane;
+window.clearAllStarred = clearAllStarred;
+window.toggleStarredList = toggleStarredList;

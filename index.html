@@ -86,6 +86,7 @@
             <span class="identLarge"
               title="Typically the air traffic control callsign or the aircraft's registration, as entered into the transponder by the pilot."
               id="selected_callsign">n/a</span>
+            <div class="star-btn-container" style="display: inline-flex; align-items: center;"></div>
             <div id="infoblock_minimize" class="infoblockMinimizeBox" title="Minimizar infoblock">−</div>
             <div id="infoblock_close" class="infoblockCloseBox"></div>
           </div>
@@ -1414,6 +1415,18 @@
 
           <div id="legend" class="legend">
           </div>
+
+          <!-- INICIO SECCIÓN AVIONES DE INTERÉS -->
+          <div id="starred-section" class="starred-aircraft-section">
+            <div class="starred-header" onclick="toggleStarredList()">
+              <h4>⭐ Notable aircraft</h4>
+              <span class="starred-count" id="starred-count">0</span>
+            </div>
+            <div id="starred-list-container" class="starred-list">
+              <div class="starred-empty">No marked planes</div>
+            </div>
+          </div>
+          <!-- FIN SECCIÓN AVIONES DE INTERÉS -->
 
           <!-- BELOW_LEGEND_ANCHOR -->
         </div>
