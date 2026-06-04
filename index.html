@@ -86,6 +86,7 @@
             <span class="identLarge"
               title="Typically the air traffic control callsign or the aircraft's registration, as entered into the transponder by the pilot."
               id="selected_callsign">n/a</span>
+            <div id="infoblock_minimize" class="infoblockMinimizeBox" title="Minimizar infoblock">−</div>
             <div id="infoblock_close" class="infoblockCloseBox"></div>
           </div>
           <div id="selected_icao"
@@ -102,6 +103,20 @@
                 </td>
               </tr>
             </table>
+          </div>
+        </div>
+
+        <div id="selected_infoblock_summary" class="infoBlockSection infoblockSummary" style="display: none;">
+          <div class="summaryHeader">
+            <div class="summaryPhoto" id="selected_mini_photo"></div>
+            <div class="summaryDetails">
+              <div class="summaryRow"><span class="infoHeading">Reg.:</span><span class="infoData" id="selected_mini_registration">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading">Alt.:</span><span class="infoData" id="selected_mini_altitude">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading">Spd.:</span><span class="infoData" id="selected_mini_speed">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading">Route:</span><span class="infoData" id="selected_mini_route">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading">Código:</span><span class="infoData" id="selected_mini_typecode">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading">Fuente:</span><span class="infoData" id="selected_mini_source">n/a</span></div>
+            </div>
           </div>
         </div>
 

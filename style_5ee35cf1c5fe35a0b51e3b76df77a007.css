@@ -250,14 +250,14 @@ select {
 }
 
 #selected_infoblock {
-    position: absolute;
+    position: fixed;
     left: 0px;
-    bottom: 0px;
+    top: 0px;
     width: calc(180px * var(--SCALE));
-    height: 100%;
+    height: 100vh;
     overflow: auto;
     overflow-x: hidden;
-    z-index: 12;
+    z-index: 9999;
     overflow-y: auto;
     max-height: 100vh;
     background-color: #131313 !important;
@@ -1052,6 +1052,113 @@ table.infoSectionTable tr td {
     height: calc(20px * var(--SCALE));
     cursor: pointer;
     z-index: 99;
+}
+
+.infoblockMinimizeBox {
+    position: absolute;
+    right: calc(44px * var(--SCALE));
+    top: calc(8px * var(--SCALE));
+    width: calc(20px * var(--SCALE));
+    height: calc(20px * var(--SCALE));
+    cursor: pointer;
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--TXTCOLOR1);
+    font-weight: bold;
+    font-size: calc(16px * var(--SCALE));
+    background: rgba(255,255,255,0.05);
+    border-radius: calc(4px * var(--SCALE));
+}
+
+.infoblockMinimizeBox:hover {
+    background: rgba(255,255,255,0.18);
+}
+
+#selected_infoblock_summary {
+    display: none;
+}
+
+#selected_infoblock.infoblock-minimized .infoBlockSection:not(.highlightedTitle):not(.infoblockSummary) {
+    display: none !important;
+}
+
+#selected_infoblock.infoblock-minimized .sectionTitle {
+    display: none !important;
+}
+
+#selected_infoblock.infoblock-minimized .infoBlockSection:not(.highlightedTitle):not(.infoblockSummary) .infoSectionTable {
+    display: none !important;
+}
+
+#selected_infoblock.infoblock-minimized #selected_infoblock_summary {
+    display: block !important;
+}
+
+#selected_infoblock.infoblock-minimized {
+    height: auto !important;
+}
+
+/* Class to force replayBar left offset when infoblock is open */
+/* no-op: replay-left-200 removed */
+
+/* Floating window appearance when minimized */
+#selected_infoblock.infoblock-minimized {
+    position: fixed !important;
+    top: calc(10px * var(--SCALE));
+    left: calc(10px * var(--SCALE));
+    width: calc(220px * var(--SCALE)) !important;
+    max-height: calc(80vh) !important;
+    height: auto !important;
+    background-color: rgba(19,19,19,0.98) !important;
+    border-radius: calc(6px * var(--SCALE));
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    overflow: visible !important;
+    z-index: 10000 !important;
+}
+
+#selected_infoblock.infoblock-minimized .infoblockCloseBox,
+#selected_infoblock.infoblock-minimized .infoblockMinimizeBox {
+    top: calc(6px * var(--SCALE));
+}
+
+.infoblockSummary .summaryHeader {
+    display: flex;
+    flex-direction: column;
+    gap: calc(12px * var(--SCALE));
+    align-items: stretch;
+}
+
+.infoblockSummary .summaryPhoto {
+    width: 100%;
+    min-width: 0;
+}
+
+.infoblockSummary .summaryPhoto img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: calc(4px * var(--SCALE));
+}
+
+.infoblockSummary .summaryDetails {
+    width: 100%;
+}
+
+.infoblockSummary .summaryRow {
+    display: flex;
+    gap: calc(8px * var(--SCALE));
+    margin-bottom: calc(4px * var(--SCALE));
+    align-items: baseline;
+}
+
+.infoblockSummary .infoHeading {
+    font-weight: 700;
+}
+
+.infoblockSummary .infoData {
+    white-space: normal;
 }
 
 .settingsText {

@@ -5966,6 +5966,16 @@ function initMap() {
     //toggleLayer('#acpositions_checkbox', 'webglLayer');
     //});
 
+    let infoBlockMinimized = false;
+
+    function setInfoBlockMinimized(state) {
+        infoBlockMinimized = state;
+        jQuery('#selected_infoblock').toggleClass('infoblock-minimized', state);
+        jQuery('#infoblock_minimize').attr('title', state ? 'Restaurar infoblock' : 'Minimizar infoblock');
+        jQuery('#infoblock_minimize').text(state ? '+' : '−');
+        adjustInfoBlock();
+    }
+
     jQuery('#infoblock_close').on('click', function () {
         if (showTrace)
             toggleShowTrace();
@@ -5976,6 +5986,9 @@ function initMap() {
         refreshFilter();
     });
 
+    jQuery('#infoblock_minimize').on('click', function () {
+        setInfoBlockMinimized(!infoBlockMinimized);
+    });
 
 
     new Toggle({
@@ -6850,6 +6863,19 @@ function refreshSelected() {
     }
     jQuery('#selected_message_rate').updateText((selected.messageRate != null) ? (selected.messageRate.toFixed(1)) : "n/a");
     jQuery('#selected_photo_link').html(getPhotoLink(selected));
+
+    jQuery('#selected_mini_registration').updateText(selected.registration ? selected.registration : 'n/a');
+    jQuery('#selected_mini_altitude').updateText(format_altitude_long(adjust_baro_alt(selected.altitude), selected.vert_rate, DisplayUnits));
+    jQuery('#selected_mini_speed').updateText(format_speed_long(selected.gs, DisplayUnits));
+    if (selected.routeString) {
+        jQuery('#selected_mini_route').updateText(selected.routeString);
+    } else if (selected.pfRoute) {
+        jQuery('#selected_mini_route').updateText(selected.pfRoute);
+    } else {
+        jQuery('#selected_mini_route').updateText('n/a');
+    }
+    jQuery('#selected_mini_typecode').updateText(selected.icaoType ? selected.icaoType : 'n/a');
+    jQuery('#selected_mini_source').updateText(format_data_source(selected.dataSource));
 
     jQuery('#selected_altitude_geom1').updateText(format_altitude_long(adjust_geom_alt(selected.alt_geom, selected.position), selected.geom_rate, DisplayUnits));
     jQuery('#selected_altitude_geom2').updateText(format_altitude_long(adjust_geom_alt(selected.alt_geom, selected.position), selected.geom_rate, DisplayUnits));
@@ -7918,9 +7944,12 @@ function setPhotoHtml(source) {
     //console.log(source + ' ' + selectedPhotoCache);
     selectedPhotoCache = source;
     jQuery('#selected_photo').html(source);
+    let miniSource = source.replace(/id=['"][^'"]*['"]/g, 'id="airplanePhotoMini"');
+    jQuery('#selected_mini_photo').html(miniSource);
 }
 
 function adjustInfoBlock() {
+    
     if (wideInfoBlock) {
         infoBlockWidth = baseInfoBlockWidth + 40;
     } else {
@@ -7928,6 +7957,7 @@ function adjustInfoBlock() {
     }
     jQuery('#selected_infoblock').css("width", infoBlockWidth * globalScale + 'px');
 
+    // Mantiene su comportamiento inicial de posicionamiento
     jQuery('.ol-scale-line').css('left', (infoBlockWidth * globalScale + 8) + 'px');
     jQuery('#replayBar').css('left', (infoBlockWidth * globalScale) + 'px');
 
@@ -7935,8 +7965,7 @@ function adjustInfoBlock() {
 
         if (!mapIsVisible)
             jQuery("#sidebar_container").css('margin-left', '140pt');
-        //jQuery('#sidebar_canvas').css('margin-bottom', jQuery('#selected_infoblock').height() + 'px');
-        //
+
         if (mapIsVisible && document.getElementById('map_canvas').clientWidth < parseFloat(jQuery('#selected_infoblock').css('width')) * 3) {
             jQuery('#selected_infoblock').css('height', '290px');
             jQuery('#selected_typedesc').parent().parent().hide();
@@ -7952,7 +7981,6 @@ function adjustInfoBlock() {
     } else {
         if (!mapIsVisible)
             jQuery("#sidebar_container").css('margin-left', '0');
-        //jQuery('#sidebar_canvas').css('margin-bottom', 0);
 
         jQuery('.ol-scale-line').css('left', '8px');
         jQuery('#replayBar').css('left', '0px');
@@ -7976,6 +8004,15 @@ function adjustInfoBlock() {
         } else {
             jQuery('#photo_container').css('height', '40px');
         }
+    }
+
+    // =================================================================
+    // REGLA DE ORO AL FINAL: Si está minimizado, forzamos el left a 0px
+    // Al ponerlo aquí, pisamos cualquier "left: 200px" calculado previamente
+    // =================================================================
+    if (jQuery('#selected_infoblock').hasClass('infoblock-minimized')) {
+        jQuery('.ol-scale-line').css('left', '8px');
+        jQuery('#replayBar').css('left', '0px');
     }
 }
 
