@@ -10411,7 +10411,7 @@ function drawSiteCircle() {
     if (!SitePosition)
         return;
 
-    let circleColor = '#FD5404';
+    let circleColor = '#000000';
 
     for (let i = 0; i < SiteCirclesDistances.length; i++) {
         circleColor = i < SiteCirclesColors.length ? SiteCirclesColors[i] : circleColor;
@@ -10431,13 +10431,14 @@ function drawSiteCircle() {
         let circleStyle = new ol.style.Style({
             fill: null,
             stroke: new ol.style.Stroke({
-                color: '#FD5404',
+                color: '#000000',
                 lineDash: SiteCirclesLineDash,
                 width: globalScale,
             }),
             text: new ol.style.Text({
+                //Range rings letters
                 font: ((10 * globalScale) + 'px Helvetica Neue, Helvetica, Tahoma, Verdana, sans-serif'),
-                fill: new ol.style.Fill({ color: '#FD5404' }),
+                fill: new ol.style.Fill({ color: '#ffffff' }),
                 offsetY: -8,
                 text: format_distance_long(distance, DisplayUnits, 0),
             })
