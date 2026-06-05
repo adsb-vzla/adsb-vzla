@@ -3176,14 +3176,18 @@ function earlyInitPage() {
         userScale = loStore['userScale'];
     }
 
+    // avoid extreme minimum sizes that break readability
+    iconScale = Math.max(iconScale, 0.4);
+    userScale = Math.max(userScale, 0.75);
+
     const slideBase = 0.6;
     jQuery('#iconScaleSlider').slider({
         value: Math.pow(iconScale, 1 / slideBase),
         step: 0.02,
-        min: 0.1,
+        min: 0.4,
         max: 3,
         change: function (event, ui) {
-            iconScale = Math.pow(ui.value, slideBase);
+            iconScale = Math.max(Math.pow(ui.value, slideBase), 0.4);
             checkScale();
             mapRefresh();
             loStore['iconScale'] = iconScale;
@@ -3193,10 +3197,10 @@ function earlyInitPage() {
     jQuery('#userScaleSlider').slider({
         value: Math.pow(userScale, 1 / slideBase),
         step: 0.02,
-        min: 0.5,
+        min: 0.75,
         max: 3,
         change: function (event, ui) {
-            userScale = Math.pow(ui.value, slideBase);
+            userScale = Math.max(Math.pow(ui.value, slideBase), 0.75);
             checkScale();
             mapRefresh();
             loStore['userScale'] = userScale;
@@ -12245,7 +12249,6 @@ function createPlaneCard(plane) {
             <div class="plane-card-header">
                 <div class="plane-card-title">${callsign}</div>
                 <div class="plane-card-actions">
-                    <div class="infoblockMinimizeBox plane-card-minimize" title="Expandir/Contraer">−</div>
                     <div class="infoblockCloseBox plane-card-close" title="Quitar">×</div>
                 </div>
             </div>

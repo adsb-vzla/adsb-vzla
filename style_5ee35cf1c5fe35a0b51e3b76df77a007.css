@@ -954,7 +954,6 @@ table.infoSectionTable tr td {
 .infoData {
     margin-top: calc(2px * var(--SCALE));
     margin-bottom: calc(2px * var(--SCALE));
-    float: right;
     text-align: right;
     display: inline-block;
 }
@@ -1123,7 +1122,7 @@ table.infoSectionTable tr td {
     position: fixed;
     top: calc(10px * var(--SCALE));
     left: calc(10px * var(--SCALE));
-    z-index: 10010;
+    z-index: 9998;
     box-sizing: border-box;
     padding: calc(8px * var(--SCALE));
     gap: calc(10px * var(--SCALE));
@@ -1637,8 +1636,8 @@ html .ui-button.ui-state-disabled:active {
 @supports selector(:has(*)) {
     #selected_infoblock .infoSectionTable tr td:has(.infoHeading):has(.infoData) {
         display: grid;
-        grid-template-columns: minmax(9rem, max-content) 1fr;
-        column-gap: calc(8px * var(--SCALE));
+        grid-template-columns: minmax(min-content, max-content) 1fr;
+        column-gap: calc(4px * var(--SCALE));
         align-items: center;
     }
 
@@ -1649,8 +1648,9 @@ html .ui-button.ui-state-disabled:active {
 
     #selected_infoblock .infoSectionTable .infoData {
         min-width: 0;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        text-align: left;
+        overflow-wrap: normal;
+        word-break: normal;
         align-self: start;
     }
 }
@@ -1659,12 +1659,12 @@ html .ui-button.ui-state-disabled:active {
     #selected_infoblock .infoSectionTable tr td {
         display: flex;
         align-items: center;
-        gap: calc(8px * var(--SCALE));
+        gap: calc(4px * var(--SCALE));
         min-width: 0;
     }
 
     #selected_infoblock .infoSectionTable .infoHeading {
-        flex: 0 0 9rem;
+        flex: 0 0 auto;
         white-space: nowrap;
         align-self: center;
     }
@@ -1672,8 +1672,9 @@ html .ui-button.ui-state-disabled:active {
     #selected_infoblock .infoSectionTable .infoData {
         flex: 1 1 auto;
         min-width: 0;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        text-align: left;
+        overflow-wrap: normal;
+        word-break: normal;
         align-self: flex-start;
     }
 }
