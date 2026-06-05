@@ -115,13 +115,13 @@
               <div class="summaryRow"><span class="infoHeading">Alt.:</span><span class="infoData" id="selected_mini_altitude">n/a</span></div>
               <div class="summaryRow"><span class="infoHeading">Spd.:</span><span class="infoData" id="selected_mini_speed">n/a</span></div>
               <div class="summaryRow"><span class="infoHeading">Route:</span><span class="infoData" id="selected_mini_route">n/a</span></div>
-              <div class="summaryRow"><span class="infoHeading">Código:</span><span class="infoData" id="selected_mini_typecode">n/a</span></div>
-              <div class="summaryRow"><span class="infoHeading">Fuente:</span><span class="infoData" id="selected_mini_source">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading">Type:</span><span class="infoData" id="selected_mini_typecode">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading">Source:</span><span class="infoData" id="selected_mini_source">n/a</span></div>
             </div>
           </div>
         </div>
 
-        <!-- INICIO INFORMACIÓN FUENTE MLAT -->
+        <!-- START MLAT SOURCE INFO -->
         <div id=anon_mlat_info class="infoBlockSection hidden">
           <div>
             <div class="infoHeading">
@@ -148,9 +148,9 @@
             </div>
           </div>
         </div>
-        <!-- FIN INFORMACIÓN FUENTE MLAT -->
+        <!-- END MLAT SOURCE INFO -->
 
-        <!-- INICIO INFORMACIÓN FUENTE TIS-B -->
+        <!-- START TIS-B SOURCE INFO -->
         <div id=tisb_info class="infoBlockSection hidden">
           <div class="infoHeading">
             <span>Non-ICAO hex, info:</span>
@@ -180,9 +180,9 @@
                 rel="noreferrer">What is a hex ID?</a></span>
           </div>
         </div>
-        <!-- FIN INFORMACIÓN FUENTE TIS-B -->
+        <!-- END TIS-B SOURCE INFO -->
 
-        <!-- INICIO INFORMACIÓN DEL AVIÓN SELECCIONADO -->
+        <!-- START SELECTED AIRCRAFT INFO -->
         <!-- Información del avión seleccionado -->
         <div id=reg_info class="infoBlockSection">
           <table class="infoSectionTable">
@@ -281,7 +281,7 @@
             </tr>
           </table>
         </div>
-        <!-- FIN INFORMACIÓN DEL AVIÓN SELECCIONADO -->
+        <!-- END SELECTED AIRCRAFT INFO -->
 
         <!-- *** HISTORIAL (ADS-B VZLA LO TIENE OCULTO) *** -->
         <!-- <button id="show_trace" type="button" class="greyButton">History</button>
@@ -843,6 +843,7 @@
         </div>
       </div>
     </div>
+    <div id="infoblocks_container" class="infoblocks-container" style="display: none;"></div>
     <!-- FIN SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER CLIC AL AVIÓN) -->
 
     <!-- <div id="loader">

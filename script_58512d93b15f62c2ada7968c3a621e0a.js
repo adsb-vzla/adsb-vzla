@@ -54,9 +54,9 @@ let distanceLineLayer = null;
 let distanceLineFeature = null;
 let distanceOverlay = null;
 let distanceUpdateInterval = null;
-// Rastrear la visibilidad en el modo 1A1B
+// Track visibility in 1A1B mode
 let distance1A1BHidden = false;
-// Rastrear la visibilidad en el modo pares
+// Track visibility in pairs mode
 let pairHiddenState = new Map();
 // Plane-plane distance modes and storage for multiple pairs
 let planeDistanceModeType = '1A1B';
@@ -71,25 +71,25 @@ let pairBuffer = []; // temporary buffer for click pairing
 // Per-pair missing signal tracking for plane-plane mode
 let ppMissingSince = new Map();
 let ppRemoved = new Set();
-// Activa o desactiva el modo de medir distancia suelo‑avión
+// Enable/disable ground-to-air distance measurement mode
 let distanceToGroundMode = false;
-// Overlay que muestra la distancia entre el punto A y el avión
+// Overlay showing the distance between point A and the aircraft
 let distanceGroundOverlay = null;
-// Intervalo que refresca la medición suelo‑avión
+// Interval that refreshes the ground-to-air measurement
 let distanceGroundUpdateInterval = null;
-// Avión elegido como punto B para la medición
+// Aircraft chosen as point B for the measurement
 let selectedPlaneForGround = null;
-// Coordenadas del punto A marcado en el suelo
+// Coordinates of the marked ground point A
 let groundPointCoord = null;
-// Fuente vectorial que guarda el punto A en el mapa
+// Vector source that stores point A on the map
 let groundPointSource = null;
-// Capa que dibuja el punto A sobre el mapa
+// Layer that draws point A on the map
 let groundPointLayer = null;
-// Capa que dibuja la línea entre el punto A y el avión
+// Layer that draws the line between point A and the aircraft
 let groundToPlaneLineLayer = null;
-// Fuente vectorial de la línea A‑B
+// Vector source for the A-B line
 let groundToPlaneLineSource = null;
-// Feature actual de la línea A‑B renderizada
+// Current rendered feature of the A-B line
 let groundToPlaneLineFeature = null;
 // Modo de medición por defecto
 let distanceToGroundModeType = '1A1B';
@@ -135,11 +135,11 @@ let ggPointsB = [];
 // Soporte nA_nB
 let ggPairs = [];
 let ggPendingA = null;
-// Fuente vectorial de las líneas A‑B
+// Vector source for A-B lines
 let ggLineSource = null;
 // Capa que dibuja las líneas A‑B
 let ggLineLayer = null;
-// Fuente vectorial de los puntos A y B
+// Vector source for points A and B
 let ggPointSource = null;
 // Capa que dibuja los puntos A y B
 let ggPointLayer = null;
@@ -787,7 +787,7 @@ function setGroundPoint(lonlat) {
     // Guardar las coordenadas del punto A
     groundPointCoord = lonlat;
 
-    // Crear la fuente y capa del punto A si aún no existen
+    // Create the source and layer for point A if they don't exist
     if (!groundPointSource) {
         groundPointSource = new ol.source.Vector();
         groundPointLayer = new ol.layer.Vector({
@@ -908,13 +908,13 @@ function clearTAGroundDrawings(opts = {}) {
         groundPlaneHiddenState.clear();
     }
 
-    // Limpiar la fuente vectorial del punto A si existe
+    // Clear the vector source for point A if it exists
     try { groundPointSource && groundPointSource.clear() } catch (_) { }
 
     // Limpiar referencias indexadas a Features de puntos A
     try { groundPointFeaturesByCoord && groundPointFeaturesByCoord.clear() } catch (_) { }
 
-    // Vaciar la fuente de líneas A‑B 
+    // Empty the vector source for A-B lines
     try { groundToPlaneLineSource && groundToPlaneLineSource.clear() } catch (_) { }
 
     // Resetear referencia a la feature de la línea actual
@@ -1265,7 +1265,7 @@ function updateDistanceToGroundOverlay() {
                         // 2. Verificar si este punto A es usado por otros pares
                         const stillUsed = taPairs.some(p => p.key !== key && p.key.startsWith(gpKey + '|'));
 
-                        // 3. Eliminar el punto A de la fuente visual SOLO si ya no es usado
+                        // 3. Remove point A from the visual source ONLY if it's no longer used
                         if (!stillUsed && groundPointSource) {
                             // Buscar la feature por coordenada
                             const featA = groundPointFeaturesByCoord.get(gpKey);
@@ -1290,7 +1290,7 @@ function updateDistanceToGroundOverlay() {
                             });
                             featuresToRemove.forEach(feat => groundPointSource.removeFeature(feat));
 
-                            // Forzar actualización de la fuente
+                            // Force refresh of the source
                             groundPointSource.changed();
                         }
 
@@ -1410,7 +1410,7 @@ function updateDistanceToGroundOverlay() {
                     // 2. Verificar si este punto A es usado por otros pares
                     const stillUsed = taPairs.some(p => p.key !== key && p.key.startsWith(gpKey + '|'));
 
-                    // 3. Eliminar el punto A de la fuente visual SOLO si ya no es usado
+                    // 3. Remove point A from the visual source ONLY if it's no longer used
                     if (!stillUsed && groundPointSource) {
                         // Buscar la feature por coordenada
                         const featA = groundPointFeaturesByCoord.get(gpKey);
@@ -1435,7 +1435,7 @@ function updateDistanceToGroundOverlay() {
                         });
                         featuresToRemove.forEach(feat => groundPointSource.removeFeature(feat));
 
-                        // Forzar actualización de la fuente
+                        // Force refresh of the source
                         groundPointSource.changed();
                     }
 
@@ -1521,7 +1521,7 @@ function updateDistanceToGroundOverlay() {
         if (!feat) {
             // Definir la línea entre punto A y avión
             feat = new ol.Feature(new ol.geom.LineString([projGround, projPlane]));
-            // Añadir la línea a la fuente vectorial
+            // Add the line to the vector source
             groundToPlaneLineSource && groundToPlaneLineSource.addFeature(feat);
             // Guardar la feature en el mapa de líneas
             groundPlaneFeatures.set(key, feat);
@@ -1635,7 +1635,7 @@ function updateDistanceToGroundOverlay() {
                     // 2. Verificar si este punto A es usado por otros pares
                     const stillUsed = taPairs.some(p => p.key !== key && p.key.startsWith(gpKey + '|'));
 
-                    // 3. Eliminar el punto A de la fuente visual SOLO si ya no es usado
+                    // 3. Remove point A from the visual source ONLY if it's no longer used
                     if (!stillUsed && groundPointSource) {
                         // Buscar la feature por coordenada
                         const featA = groundPointFeaturesByCoord.get(gpKey);
@@ -1660,7 +1660,7 @@ function updateDistanceToGroundOverlay() {
                         });
                         featuresToRemove.forEach(feat => groundPointSource.removeFeature(feat));
 
-                        // Forzar actualización de la fuente
+                        // Force refresh of the source
                         groundPointSource.changed();
                     }
 
@@ -1736,7 +1736,7 @@ function updateDistanceToGroundOverlay() {
     for (const [k, feat] of groundPlaneFeatures) {
         // Si la línea no quedó activa en este ciclo
         if (!active.has(k)) {
-            // Se quita de la fuente del mapa
+            // It is removed from the map source
             groundToPlaneLineSource && groundToPlaneLineSource.removeFeature(feat);
             // Se elimina del registro de líneas
             groundPlaneFeatures.delete(k);
@@ -1819,7 +1819,7 @@ function updateDistanceToGroundOverlay() {
 //         if (!feat) {
 //             // Línea entre A y B
 //             feat = new ol.Feature(new ol.geom.LineString([projA, projB]));
-//             // Añadir la línea a la fuente vectorial
+//             // Add the line to the vector source
 //             ggLineSource && ggLineSource.addFeature(feat);
 //             // Guardar la línea en el registro
 //             ggLineFeatures.set(key, feat);
@@ -1858,7 +1858,7 @@ function updateDistanceToGroundOverlay() {
 //     for (const [k, feat] of ggLineFeatures) {
 //         // Si la línea no quedó activa en este ciclo
 //         if (!active.has(k)) {
-//             // Se quita de la fuente del mapa
+//             // It is removed from the map source
 //             ggLineSource && ggLineSource.removeFeature(feat);
 //             // Se elimina del registro de líneas
 //             ggLineFeatures.delete(k);
@@ -2192,14 +2192,14 @@ function DistanceToGround() {
         // Limpieza y reset al activar
         clearTAGroundDrawings();
 
-        // Asegurar fuente y capa de puntos A
+        // Ensure source and layer for points A
         if (!groundPointSource) groundPointSource = new ol.source.Vector();
         if (groundPointLayer) {
             groundPointLayer.setSource(groundPointSource);
             groundPointLayer.setVisible(true);
         }
 
-        // Asegurar fuente de línea
+        // Ensure line source
         if (!groundToPlaneLineSource) groundToPlaneLineSource = new ol.source.Vector();
         if (groundToPlaneLineLayer) {
             groundToPlaneLineLayer.setSource(groundToPlaneLineSource);
@@ -2243,21 +2243,21 @@ function DistanceGroundToGround() {
         // Limpiar puntos, líneas y overlays previos
         clearGroundToGround();
 
-        // Crear la fuente vectorial para los puntos (A/B) si no existe.
+        // Create the vector source for points (A/B) if it does not exist.
         if (!ggPointSource) ggPointSource = new ol.source.Vector();
-        // Si la capa de puntos está definida, configurar su fuente y visibilidad.
+        // If the points layer is defined, set its source and visibility.
         if (ggPointLayer) {
-            // Asignar la fuente recién creada a la capa de puntos.
+            // Assign the newly created source to the points layer.
             ggPointLayer.setSource(ggPointSource);
             // Asegurar que la capa de puntos sea visible.
             ggPointLayer.setVisible(true);
         }
 
-        // Crear la fuente vectorial para las líneas A‑B si no existe.
+        // Create the vector source for A-B lines if it does not exist.
         if (!ggLineSource) ggLineSource = new ol.source.Vector();
-        // Si la capa de líneas está definida, configurar su fuente y visibilidad.
+        // If the line layer is defined, set its source and visibility.
         if (ggLineLayer) {
-            // Asignar la fuente de líneas a la capa correspondiente.
+            // Assign the line source to the corresponding layer.
             ggLineLayer.setSource(ggLineSource);
             // Asegurar que la capa de líneas sea visible.
             ggLineLayer.setVisible(true);
@@ -5263,7 +5263,7 @@ function ol_map_init() {
                     groundPointCoord = lonlat;
                     // Asegurar visibilidad de capa
                     if (groundPointLayer) groundPointLayer.setVisible(true);
-                    // Si hay fuente, limpiar y dibujar A
+                    // If there is a source, clear and draw A
                     if (groundPointSource) {
                         groundPointSource.clear();
                         groundPointSource.addFeature(
@@ -5351,13 +5351,13 @@ function ol_map_init() {
                 // Guardar clic como único punto B
                 ggPointsB = [lonlat];
 
-                // Si existe la fuente de puntos tierra‑tierra                
+                // If the ground-to-ground points source exists
                 if (ggPointSource) {
                     // Vaciar todas las features actuales
                     ggPointSource.clear();
                     // Si hay un punto A registrado
                     if (ggPointA) {
-                        // Añadir la feature del punto A a la fuente y crear el punto en la proyección del mapa
+                        // Add the feature for point A to the source and create the point in map projection
                         ggPointSource.addFeature(
                             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(ggPointA)))
                         );
@@ -5990,6 +5990,17 @@ function initMap() {
         setInfoBlockMinimized(!infoBlockMinimized);
     });
 
+    jQuery(document).on('click', '#infoblocks_container .plane-card-minimize', function () {
+        jQuery(this).closest('.plane-card').toggleClass('expanded');
+    });
+
+    jQuery(document).on('click', '#infoblocks_container .plane-card-close', function () {
+        const hex = jQuery(this).closest('.plane-card').data('hex');
+        if (hex && g.planes && g.planes[hex]) {
+            deselect(g.planes[hex]);
+            refreshSelected();
+        }
+    });
 
     new Toggle({
         key: "darkerColors",
@@ -6549,6 +6560,16 @@ let somethingSelected = false;
 // Refresh the detail window about the plane
 function refreshSelected() {
     const selected = SelectedPlane;
+    jQuery('#infoblocks_container').hide();
+
+    if (multiSelect) {
+        renderMultiInfoblocks();
+        jQuery('#selected_infoblock').hide();
+        const planes = selectedPlanes();
+        somethingSelected = planes.length > 0;
+        buttonActive('#F', FollowSelected);
+        return;
+    }
 
     if (!selected || !selected.nav_qnh) {
         jQuery('#altimeter_set_selected').prop("disabled", true);
@@ -6875,7 +6896,8 @@ function refreshSelected() {
         jQuery('#selected_mini_route').updateText('n/a');
     }
     jQuery('#selected_mini_typecode').updateText(selected.icaoType ? selected.icaoType : 'n/a');
-    jQuery('#selected_mini_source').updateText(format_data_source(selected.dataSource));
+    // El mini-infoblock debe mostrar exactamente lo que muestra `#selected_source`
+    jQuery('#selected_mini_source').updateText(jQuery('#selected_source').text());
 
     jQuery('#selected_altitude_geom1').updateText(format_altitude_long(adjust_geom_alt(selected.alt_geom, selected.position), selected.geom_rate, DisplayUnits));
     jQuery('#selected_altitude_geom2').updateText(format_altitude_long(adjust_geom_alt(selected.alt_geom, selected.position), selected.geom_rate, DisplayUnits));
@@ -7480,7 +7502,7 @@ function refreshFeatures() {
                 }
             }
 
-            // ** AQUÍ DEBES COLOCAR EL CÓDIGO **
+            // ** PLACE YOUR CODE HERE **
             // Después de actualizar las celdas, pero antes de agregar la fila al DOM
             if (starredAircraft && starredAircraft.has(plane.icao)) {
                 plane.tr.classList.add('starred-table-row');
@@ -7967,7 +7989,6 @@ function adjustInfoBlock() {
 
     // Mantiene su comportamiento inicial de posicionamiento
     jQuery('.ol-scale-line').css('left', (infoBlockWidth * globalScale + 8) + 'px');
-    jQuery('#replayBar').css('left', (infoBlockWidth * globalScale) + 'px');
 
     if (SelectedPlane && toggles['enableInfoblock'].state) {
 
@@ -7991,7 +8012,6 @@ function adjustInfoBlock() {
             jQuery("#sidebar_container").css('margin-left', '0');
 
         jQuery('.ol-scale-line').css('left', '8px');
-        jQuery('#replayBar').css('left', '0px');
         jQuery('#credits').css('bottom', '');
         jQuery('#credits').css('left', '');
 
@@ -12094,6 +12114,173 @@ function selectedPlanes() {
         return 0;
     });
     return planes;
+}
+
+function getPlaneCardPhotoHtml(plane) {
+    if (plane.psAPIresponse) {
+        const photos = plane.psAPIresponse.photos || plane.psAPIresponse.images;
+        if (photos && photos.length) {
+            const photoToPull = (photos[0].thumbnail && (photos[0].thumbnail.src || photos[0].thumbnail)) || photos[0].thumbnail;
+            const linkToPicture = photos[0].link || photos[0].url || '#';
+            if (photoToPull) {
+                return `<a class="link" href="${linkToPicture}" target="_blank" rel="noopener noreferrer"><img src="${photoToPull}" alt="${plane.registration || plane.icao}"></a>`;
+            }
+        }
+        return '<div class="plane-card-photo-placeholder"></div>';
+    }
+
+    // not loaded yet -> start async fetch and return loading placeholder
+    fetchPlanePhoto(plane, function (html) {
+        // find the card and replace placeholder
+        try {
+            const card = document.querySelector(`.plane-card[data-hex="${plane.icao}"] .plane-card-photo`);
+            if (card) card.innerHTML = html;
+        } catch (e) {
+            // ignore
+        }
+    });
+    return '<div class="plane-card-photo-placeholder">Loading...</div>';
+}
+
+function fetchPlanePhoto(selected, cb) {
+    if (!selected) return;
+    if (selected.psAPIresponse) {
+        // already present
+        const photos = selected.psAPIresponse.photos || selected.psAPIresponse.images;
+        if (photos && photos.length) {
+            const photoToPull = (photos[0].thumbnail && (photos[0].thumbnail.src || photos[0].thumbnail)) || photos[0].thumbnail;
+            const linkToPicture = photos[0].link || photos[0].url || '#';
+            if (photoToPull) cb(`<a class="link" href="${linkToPicture}" target="_blank" rel="noopener noreferrer"><img src="${photoToPull}" alt="${selected.registration || selected.icao}"></a>`);
+            else cb('<div class="plane-card-photo-placeholder"></div>');
+            return;
+        }
+    }
+
+    // avoid hammering API: short-circuit if recent request
+    const ts = new Date().getTime();
+    if (selected.psAPIresponseTS && (ts - selected.psAPIresponseTS) < 5000) return;
+    selected.psAPIresponseTS = ts;
+
+    // build urlTail similar to refreshPhoto
+    let urlTail;
+    if (selected.registration != null) {
+        urlTail = '/hex/' + selected.icao.toUpperCase() + '?reg=' + selected.registration;
+        const type = selected.icaoType;
+        if (type) urlTail += '&icaoType=' + type;
+    } else {
+        urlTail = 'hex/' + selected.icao.toUpperCase();
+    }
+
+    if (planespottersAPI) {
+        jQuery.ajax({
+            url: planespottersAPIurl + urlTail,
+            dataType: 'json',
+            plane: selected
+        }).done(function (data) {
+            this.plane.psAPIresponse = data;
+            // build html
+            const photos = data.photos || data.images || [];
+            if (photos.length) {
+                const p = photos[0];
+                const photoToPull = (p.thumbnail && (p.thumbnail.src || p.thumbnail)) || p.thumbnail || p.src || p.url;
+                const linkToPicture = p.link || p.url || '#';
+                if (photoToPull) cb(`<a class="link" href="${linkToPicture}" target="_blank" rel="noopener noreferrer"><img src="${photoToPull}" alt="${selected.registration || selected.icao}"></a>`);
+                else cb('<div class="plane-card-photo-placeholder"></div>');
+            } else {
+                cb('<div class="plane-card-photo-placeholder"></div>');
+            }
+        }).fail(function () {
+            this.plane.psAPIresponse = { 'photos': [] };
+            cb('<div class="plane-card-photo-placeholder"></div>');
+        });
+    } else if (planespottingAPI) {
+        jQuery.ajax({
+            url: 'https://www.planespotting.be/api/objects/imagesRegistration.php?registration=' + selected.registration,
+            dataType: 'json',
+            plane: selected
+        }).done(function (data) {
+            this.plane.psAPIresponse = data;
+            const photos = data.photos || data.images || [];
+            if (photos.length) {
+                const p = photos[0];
+                const photoToPull = (p.thumbnail && (p.thumbnail.src || p.thumbnail)) || p.thumbnail || p.src || p.url;
+                const linkToPicture = p.link || p.url || '#';
+                if (photoToPull) cb(`<a class="link" href="${linkToPicture}" target="_blank" rel="noopener noreferrer"><img src="${photoToPull}" alt="${selected.registration || selected.icao}"></a>`);
+                else cb('<div class="plane-card-photo-placeholder"></div>');
+            } else {
+                cb('<div class="plane-card-photo-placeholder"></div>');
+            }
+        }).fail(function () {
+            this.plane.psAPIresponse = { 'photos': [] };
+            cb('<div class="plane-card-photo-placeholder"></div>');
+        });
+    } else {
+        // no API enabled
+        cb('<div class="plane-card-photo-placeholder"></div>');
+    }
+}
+
+function createPlaneCard(plane) {
+    const registration = plane.registration || plane.icao || 'n/a';
+    const altitude = plane.altitude != null ? (plane.altitude === 'ground' ? 'GND' : plane.altitude) : 'n/a';
+    const speed = plane.gs || plane.tas || 'n/a';
+    const route = plane.routeString || plane.route || 'n/a';
+    const typecode = plane.icaoType || 'n/a';
+    // Use the same formatting as the main infoblock: prefer dataSource/getDataSource
+    let ds = plane.dataSource;
+    if (typeof ds === 'undefined' && plane.getDataSource) {
+        try { ds = plane.getDataSource(); } catch (e) { ds = undefined; }
+    }
+    let source = 'n/a';
+    if (typeof format_data_source === 'function') {
+        source = format_data_source(ds);
+    } else if (plane.source) {
+        source = plane.source;
+    }
+    const callsign = plane.name ? plane.name.toUpperCase() : registration;
+    const photoHtml = getPlaneCardPhotoHtml(plane);
+
+    return `
+        <div class="plane-card minimized" data-hex="${plane.icao}">
+            <div class="plane-card-header">
+                <div class="plane-card-title">${callsign}</div>
+                <div class="plane-card-actions">
+                    <div class="infoblockMinimizeBox plane-card-minimize" title="Expandir/Contraer">−</div>
+                    <div class="infoblockCloseBox plane-card-close" title="Quitar">×</div>
+                </div>
+            </div>
+            <div class="plane-card-summary">
+                <div class="plane-card-photo">${photoHtml}</div>
+                <div class="plane-card-details">
+                    <div class="summaryRow"><span class="infoHeading">Reg.:</span><span class="infoData">${registration}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">Alt.:</span><span class="infoData">${altitude}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">Spd.:</span><span class="infoData">${speed}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">Route:</span><span class="infoData">${route}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">Type:</span><span class="infoData">${typecode}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">Source:</span><span class="infoData">${source}</span></div>
+                </div>
+            </div>
+        </div>`;
+}
+
+function renderMultiInfoblocks() {
+    const planes = selectedPlanes();
+    const container = jQuery('#infoblocks_container');
+    container.empty();
+    if (!planes.length || !toggles['enableInfoblock'].state) {
+        container.hide();
+        return;
+    }
+
+    const limit = typeof multiInfoBlockLimit !== 'undefined' ? multiInfoBlockLimit : 2;
+    const visiblePlanes = planes.slice(0, limit);
+    visiblePlanes.forEach((plane) => container.append(createPlaneCard(plane)));
+
+    if (planes.length > limit) {
+        container.append(`<div class="infoblock-limit-note">+${planes.length - limit} more selected aircraft</div>`);
+    }
+
+    container.show();
 }
 
 // Exports currently selected aircraft as KML.

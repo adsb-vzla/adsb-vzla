@@ -1118,6 +1118,154 @@ table.infoSectionTable tr td {
     z-index: 10000 !important;
 }
 
+#infoblocks_container {
+    display: none;
+    position: fixed;
+    top: calc(10px * var(--SCALE));
+    left: calc(10px * var(--SCALE));
+    z-index: 10010;
+    box-sizing: border-box;
+    padding: calc(8px * var(--SCALE));
+    gap: calc(10px * var(--SCALE));
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    pointer-events: auto;
+    max-width: calc(280px * var(--SCALE));
+}
+
+.plane-card {
+    display: flex;
+    flex-direction: column;
+    width: calc(260px * var(--SCALE));
+    background: rgba(18, 18, 18, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: calc(8px * var(--SCALE));
+    overflow: visible;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+}
+
+.plane-card.minimized {
+    min-height: auto;
+}
+
+.plane-card.expanded {
+    width: calc(320px * var(--SCALE));
+}
+
+.plane-card.expanded .plane-card-summary {
+    flex-direction: column;
+}
+
+.plane-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: calc(10px * var(--SCALE));
+    gap: calc(8px * var(--SCALE));
+}
+
+.plane-card-title {
+    font-size: calc(1rem * var(--SCALE));
+    font-weight: bold;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.plane-card-actions {
+    display: flex;
+    gap: calc(6px * var(--SCALE));
+}
+
+.plane-card-actions .infoblockMinimizeBox,
+.plane-card-actions .infoblockCloseBox {
+    position: static;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(1.8rem * var(--SCALE));
+    height: calc(1.8rem * var(--SCALE));
+    padding: 0;
+    background: rgba(255,255,255,0.08);
+    border-radius: calc(4px * var(--SCALE));
+    color: var(--TXTCOLOR1);
+    cursor: pointer;
+}
+
+.plane-card-actions .infoblockCloseBox {
+    background-image: url('images/close-settings.png');
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: transparent;
+}
+
+.plane-card-actions .infoblockMinimizeBox {
+    background-image: none;
+    font-weight: bold;
+    font-size: calc(1rem * var(--SCALE));
+}
+
+.plane-card-summary {
+    display: flex;
+    gap: calc(10px * var(--SCALE));
+    padding: calc(10px * var(--SCALE));
+    align-items: flex-start;
+}
+
+.plane-card-photo {
+    flex: 0 0 100px;
+    width: 100px;
+    height: 75px;
+    min-width: 100px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: calc(6px * var(--SCALE));
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.plane-card-photo a {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.plane-card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.plane-card-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: calc(6px * var(--SCALE));
+}
+
+.plane-card-details {
+    display: grid;
+    gap: calc(6px * var(--SCALE));
+    width: 100%;
+}
+
+.plane-card-details .summaryRow {
+    display: flex;
+    justify-content: space-between;
+    gap: calc(8px * var(--SCALE));
+}
+
+.infoblock-limit-note {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: calc(0.9rem * var(--SCALE));
+    padding: calc(6px * var(--SCALE));
+}
+
 #selected_infoblock.infoblock-minimized .infoblockCloseBox,
 #selected_infoblock.infoblock-minimized .infoblockMinimizeBox {
     top: calc(6px * var(--SCALE));
@@ -1574,17 +1722,18 @@ html .ui-button.ui-state-disabled:active {
 }
 
 #replayBar {
-    position: absolute;
+    position: fixed !important;
     display: none;
-    left: 0;
-    right: 0;
+    left: 0 !important;
+    right: 0 !important;
     bottom: 0;
+    width: 100% !important;
     gap: calc(6px * var(--SCALE));
     align-items: center;
     padding: calc(6px * var(--SCALE)) calc(10px * var(--SCALE));
     max-width: 100%;
     overflow: visible;
-    z-index: 20;
+    z-index: 10020 !important;
     box-sizing: border-box;
     /* padding: 12px 18px 14px; */
     color: #e9edf7;
