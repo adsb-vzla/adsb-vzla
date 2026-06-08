@@ -155,6 +155,7 @@ let ggPairMap = new Map();
 let ggPairOrder = [];
 // Indicador de zoom
 let zoomIndicatorBaseline = null;
+let ZOOM_BASELINE_KEY = 'zoomIndicatorBaseline_v2';
 // Almacenar el marcador temporal del aeropuerto cuando se busca con el buscador
 let airportMarkerFeature = null;
 let airportMarkerLayer = null;
@@ -2292,9 +2293,25 @@ function updateZoomIndicator() {
     const view = OLMap.getView();
     const z = Number(view.getZoom()) || 0;
 
+    // Cargar baseline guardado solo al inicio
     if (zoomIndicatorBaseline === null) {
-        zoomIndicatorBaseline = z;
+        try {
+            const saved = localStorage.getItem(ZOOM_BASELINE_KEY);
+            if (saved !== null) {
+                zoomIndicatorBaseline = parseFloat(saved);
+            } else {
+                // Primera vez que se carga la página: guardar zoom inicial como baseline
+                zoomIndicatorBaseline = z;
+                localStorage.setItem(ZOOM_BASELINE_KEY, zoomIndicatorBaseline);
+            }
+        } catch (e) {
+            zoomIndicatorBaseline = z;
+        }
     }
+
+    // if (zoomIndicatorBaseline === null) {
+    //     zoomIndicatorBaseline = z;
+    // }
 
     const factor = Math.pow(2, z - zoomIndicatorBaseline);
     const pct = Math.round(100 * factor);
@@ -8700,11 +8717,19 @@ function showAirportMarker(lonlat) {
     }, 3000);
 }
 
-
+function resetZoomBaselineToCurrent() {
+    if (!OLMap || !OLMap.getView) return;
+    const z = Number(OLMap.getView().getZoom()) || 0;
+    zoomIndicatorBaseline = z;
+    try {
+        localStorage.setItem(ZOOM_BASELINE_KEY, zoomIndicatorBaseline);
+    } catch (e) {}
+    updateZoomIndicator();
+}
 
 // 4. Funciones de apoyo (executeJump y searchAirport se quedan como las tienes)
 // Sobrescribir executeJump para incluir marcador y zoom
-const originalExecuteJump = executeJump;
+// const originalExecuteJump = executeJump;
 function executeJump(coords) {
 
     // Mostrar marcador en la ubicación
