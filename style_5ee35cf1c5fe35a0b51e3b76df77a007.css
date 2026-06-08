@@ -380,9 +380,11 @@ select {
     display: block;
     position: absolute;
     z-index: 99;
-    top: calc(5px * var(--SCALE));
+    /* top: calc(5px * var(--SCALE)); */
+    top: 0;
+    right: -15px;
     left: calc(0px * var(--SCALE));
-    float: right;
+    /* float: right; */
     width: calc(30px * var(--SCALE));
     height: calc(30px * var(--SCALE));
     background-size: calc(30px * var(--SCALE)) calc(30px * var(--SCALE));
@@ -979,6 +981,7 @@ table.infoSectionTable tr td {
 
 .infoBlockTitleText {
     font-weight: bold;
+    padding-top: 1rem;
 }
 
 
