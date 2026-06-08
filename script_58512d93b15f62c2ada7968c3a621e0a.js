@@ -7941,6 +7941,7 @@ function resetMap() {
 function updateMapSize() {
     if (OLMap)
         OLMap.updateSize();
+    updateReplayBarPosition();
 }
 
 function expandSidebar(e) {
@@ -8039,13 +8040,54 @@ function adjustInfoBlock() {
     }
 
     // =================================================================
-    // REGLA DE ORO AL FINAL: Si está minimizado, forzamos el left a 0px
-    // Al ponerlo aquí, pisamos cualquier "left: 200px" calculado previamente
+    // REGLA DE ORO AL FINAL: Si está minimizado, la escala debe desplazarse
+    // El posicionamiento del replayBar lo gestiona updateReplayBarPosition()
     // =================================================================
     if (jQuery('#selected_infoblock').hasClass('infoblock-minimized')) {
         jQuery('.ol-scale-line').css('left', '8px');
-        jQuery('#replayBar').css('left', '0px');
     }
+
+    updateReplayBarPosition();
+}
+
+function updateReplayBarPosition() {
+    const replayBar = jQuery('#replayBar');
+    if (!replayBar.length) {
+        return;
+    }
+
+    const pageWidth = jQuery(window).width();
+    let leftOffset = 0;
+    let rightOffset = 0;
+
+    const sidebar = jQuery('#sidebar_container');
+    if (sidebar.is(':visible') && mapIsVisible) {
+        const rect = sidebar[0].getBoundingClientRect();
+        if (rect.width > 0) {
+            if (rect.left + rect.width / 2 <= pageWidth / 2) {
+                leftOffset = Math.max(leftOffset, rect.width);
+            } else {
+                rightOffset = Math.max(rightOffset, rect.width);
+            }
+        }
+    }
+
+    const selectedInfo = jQuery('#selected_infoblock');
+    if (selectedInfo.is(':visible') && !selectedInfo.hasClass('infoblock-minimized')) {
+        const rect = selectedInfo[0].getBoundingClientRect();
+        if (rect.width > 0) {
+            if (rect.left + rect.width / 2 <= pageWidth / 2) {
+                leftOffset = Math.max(leftOffset, rect.width);
+            } else {
+                rightOffset = Math.max(rightOffset, rect.width);
+            }
+        }
+    }
+
+    const bar = replayBar[0];
+    bar.style.setProperty('left', leftOffset > 0 ? leftOffset + 'px' : '0px', 'important');
+    bar.style.setProperty('right', rightOffset > 0 ? rightOffset + 'px' : '0px', 'important');
+    bar.style.setProperty('width', `calc(100% - ${leftOffset + rightOffset}px)`, 'important');
 }
 
 function initializeUnitsSelector() {
@@ -11630,6 +11672,7 @@ function showReplayBar() {
         jQuery('#replayBar').height('100px');
         jQuery('#map_canvas').height('calc(100% - 100px)');
         jQuery('#sidebar_canvas').height('calc(100% - 110px)');
+        updateReplayBarPosition();
         if (!replay) {
             replay = replayDefaults(new Date());
             replay.playing = false;
