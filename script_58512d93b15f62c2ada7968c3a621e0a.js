@@ -1,7 +1,6 @@
 // Some global variables are defined in early_2fb3798b27b8a81aea55bad8e31f020b.js
 // early_2fb3798b27b8a81aea55bad8e31f020b.js takes care of getting some history files while the html page and
 // some javascript libraries are still loading, hopefully speeding up loading
-// Hola
 
 "use strict";
 
@@ -156,6 +155,11 @@ let ggPairMap = new Map();
 let ggPairOrder = [];
 // Indicador de zoom
 let zoomIndicatorBaseline = null;
+// Almacenar el marcador temporal del aeropuerto cuando se busca con el buscador
+let airportMarkerFeature = null;
+let airportMarkerLayer = null;
+let airportMarkerTimeout = null;
+let airportFadeInterval = null;
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -2296,7 +2300,9 @@ function updateZoomIndicator() {
     const pct = Math.round(100 * factor);
 
     el.textContent = pct + '%';
-    el.title = `Zoom: ${z.toFixed(2)} (base ${zoomIndicatorBaseline.toFixed(2)})`;
+    // el.title = `Zoom: ${z.toFixed(2)} (base ${zoomIndicatorBaseline.toFixed(2)})`;
+    // Tooltip en inglés consistente con el resto de la interfaz
+    el.title = `Current zoom level: ${z.toFixed(2)} (${pct}% relative to base zoom ${zoomIndicatorBaseline.toFixed(2)})`;
 }
 
 // Zoom In - Zoom Out
@@ -8616,14 +8622,112 @@ jQuery(document).ready(function () {
     });
 });
 
+// Función para inicializar la capa del marcador de aeropuerto si no existe
+function initAirportMarkerLayer() {
+    if (!airportMarkerLayer && OLMap) {
+        const source = new ol.source.Vector();
+        airportMarkerLayer = new ol.layer.Vector({
+            name: 'airportMarker',
+            type: 'overlay',
+            title: 'Airport marker',
+            source: source,
+            zIndex: 300,
+            style: new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 6,
+                    fill: new ol.style.Fill({ color: 'rgba(40, 187, 255, 0.85)' }),
+                    stroke: new ol.style.Stroke({ color: '#ffffff', width: 2 })
+                })
+            })
+        });
+        OLMap.addLayer(airportMarkerLayer);
+    }
+}
+
+// Función para mostrar marcador en coordenadas específicas
+function showAirportMarker(lonlat) {
+    initAirportMarkerLayer();
+    
+    // Limpiar marcador anterior si existe
+    if (airportMarkerFeature) {
+        airportMarkerLayer.getSource().removeFeature(airportMarkerFeature);
+    }
+    if (airportMarkerTimeout) {
+        clearTimeout(airportMarkerTimeout);
+    }
+    
+    // Crear nuevo marcador
+    const projCoords = ol.proj.fromLonLat([lonlat[1], lonlat[0]]);
+    airportMarkerFeature = new ol.Feature(new ol.geom.Point(projCoords));
+    airportMarkerLayer.getSource().addFeature(airportMarkerFeature);
+    
+    // Auto-eliminar después de 8 segundos
+    airportMarkerTimeout = setTimeout(() => {
+        if (airportMarkerFeature && airportMarkerLayer) {
+            const startTime = performance.now();
+            const duration = 1000;
+            // airportMarkerLayer.getSource().removeFeature(airportMarkerFeature);
+            // airportMarkerFeature = null;
+            function animateFade(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currentOpacity = 1 - progress;
+                
+                const fadeStyle = new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 6,
+                        fill: new ol.style.Fill({ color: `rgba(40, 187, 255, ${currentOpacity})` }),
+                        stroke: new ol.style.Stroke({ color: `rgba(255, 255, 255, ${currentOpacity})`, width: 2 })
+                    })
+                });
+
+                airportMarkerFeature.setStyle(fadeStyle);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateFade);
+                } else {
+                    // Eliminar el marcador al finalizar el fade
+                    if (airportMarkerLayer && airportMarkerLayer.getSource()) {
+                        airportMarkerLayer.getSource().removeFeature(airportMarkerFeature);
+                    }
+                    airportMarkerFeature = null;
+                }
+            }
+            
+            requestAnimationFrame(animateFade);
+        }
+        airportMarkerTimeout = null;
+    }, 3000);
+}
+
+
+
 // 4. Funciones de apoyo (executeJump y searchAirport se quedan como las tienes)
+// Sobrescribir executeJump para incluir marcador y zoom
+const originalExecuteJump = executeJump;
 function executeJump(coords) {
+
+    // Mostrar marcador en la ubicación
+    if (coords && coords.length >= 2) {
+        showAirportMarker(coords);
+    }
+    
     OLMap.getView().setCenter(ol.proj.fromLonLat([coords[1], coords[0]]));
+
+    // Hacer zoom a nivel apropiado para visualizar el aeropuerto (zoom 12)
+    const currentZoom = OLMap.getView().getZoom();
+    if (currentZoom < 10) {
+        OLMap.getView().setZoom(12);
+    }
+
     if (g.zoomLvl >= 7) fetchData({ force: true });
     refreshFilter();
     hideSearchWarning();
+    
 }
 
+// También actualizar searchAirport para usar la misma lógica
+const originalSearchAirport = searchAirport;
 function searchAirport(airport) {
     if (!g.airport_cache) {
         jQuery.getJSON(databaseFolder + "/airport-coords.js").done(function (data) {
@@ -8634,7 +8738,7 @@ function searchAirport(airport) {
     }
     const coords = g.airport_cache[airport];
     if (coords) executeJump(coords);
-    else showSearchWarning('No se encontró: ' + airport);
+    else showSearchWarning('Airport not found: ' + airport);
 }
 
 function onSearchClear(e) {
