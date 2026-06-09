@@ -2202,128 +2202,82 @@ function zoomOutMap() {
     if (FollowSelected) toggleFollow(true);
 }
 
-// Restaurar ancho base sidebar derecho
+// Función para restaurar el ancho del sidebar
 function resetSidebarWidth() {
     const sidebar = document.getElementById('sidebar_container');
-    const splitter = document.getElementById('splitter');
-
     if (!sidebar) return;
-
-    // Ancho base por defecto (25% del ancho de la ventana, con un mínimo y máximo)
+    
+    // Ancho base por defecto (25% del ancho de la ventana, con límites)
     const windowWidth = window.innerWidth;
     let baseWidth = windowWidth * 0.25;
-
+    
     // Limitar el ancho mínimo y máximo
     const minWidth = 200;
     const maxWidth = windowWidth * 0.6;
     baseWidth = Math.min(maxWidth, Math.max(minWidth, baseWidth));
-
+    
     // Aplicar el nuevo ancho
     sidebar.style.width = baseWidth + 'px';
-
+    
     // Guardar en localStorage
     localStorage.setItem('sidebar_width', baseWidth);
-
+    
+    // Ajustar padding del canvas si existe
+    // const canvas = document.getElementById('sidebar_canvas');
+    // if (canvas) {
+    //     canvas.style.paddingRight = baseWidth < 220 ? '15px' : '25px';
+    // }
+    
     // Actualizar el tamaño del mapa
     if (typeof updateMapSize === 'function') {
         updateMapSize();
     }
-
-    // Forzar redibujado de la tabla si es necesario
+    
+    // Forzar redibujado de la tabla
     if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
         TAR.planeMan.redraw();
     }
-
-    // Animación
+    
+    // Pequeña animación de feedback visual
     sidebar.style.transition = 'width 0.2s ease';
     setTimeout(() => {
         sidebar.style.transition = '';
     }, 200);
-
+    
     console.log('Sidebar width reset to:', baseWidth + 'px');
 }
 
-// Crear botón para restaurar ancho
-function createSidebarResetButton() {
-    const splitter = document.getElementById('splitter');
-    if (!splitter) return;
-
-    // Asegurar que el splitter sea el punto de referencia para posicionamiento
-    splitter.style.position = 'relative';
-
-    // Verificar si el contenedor ya existe para no duplicar
-    if (document.querySelector('.sidebar-resize-container')) return;
-
-    // Crear contenedor para los botones
-    const container = document.createElement('div');
-    container.className = 'sidebar-resize-container';
-
-    // Crear botón de reset
-    const resetBtn = document.createElement('button');
-    resetBtn.className = 'sidebar-reset-btn formButton';
-    resetBtn.innerHTML = 'Restore';
-    resetBtn.title = 'Restore sidebar to default width';
-
-    // Tooltip
-    resetBtn.setAttribute('title', 'Restore sidebar to default width');
-
-    // Evento click
-    resetBtn.addEventListener('click', function (e) {
+// Inicializar el botón en los tabs
+function initSidebarResetTab() {
+    const resetTab = document.getElementById('reset-sidebar-tab');
+    const resetLink = document.getElementById('reset-sidebar-link');
+    
+    if (!resetTab || !resetLink) return;
+    
+    // Forzar que jQuery UI tabs no lo trate como pestaña
+    if (typeof jQuery !== 'undefined' && jQuery.ui && jQuery.ui.tabs) {
+        // Marcar este elemento como no seleccionable por tabs
+        resetTab.setAttribute('aria-controls', '');
+        resetTab.setAttribute('aria-labelledby', '');
+    }
+    
+    // Prevenir que jQuery UI tabs lo maneje como pestaña
+    resetLink.addEventListener('click', function(e) {
+        e.preventDefault();
         e.stopPropagation();
         resetSidebarWidth();
+        
     });
-
-    // Agregar botón al contenedor
-    container.appendChild(resetBtn);
-
-    // Agregar contenedor después del splitter
-    splitter.insertAdjacentElement('afterend', container);
 }
 
-// Cargar el botón cuando esté listo el DOM
-function initSidebarResetButton() {
-    // Esperar a que el splitter esté disponible
-    const checkInterval = setInterval(() => {
-        const splitter = document.getElementById('splitter');
-        if (splitter && splitter.style.display !== 'none') {
-            clearInterval(checkInterval);
-            createSidebarResetButton();
-        }
-    }, 100);
-
-    // Timeout por si acaso (10 segundos máximo)
-    setTimeout(() => {
-        clearInterval(checkInterval);
-        if (!document.querySelector('.sidebar-resize-container')) {
-            createSidebarResetButton();
-        }
-    }, 10000);
-}
-
-// Ejecutar cuando el DOM esté listo
+// Ejecutar después de que jQuery UI tabs se haya inicializado
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSidebarResetButton);
-} else {
-    initSidebarResetButton();
-}
-
-// Observar cambios en la visibilidad del splitter (por si se oculta/muestra)
-if (typeof MutationObserver !== 'undefined') {
-    const observer = new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                const splitter = document.getElementById('splitter');
-                if (splitter && splitter.style.display !== 'none') {
-                    createSidebarResetButton();
-                }
-            }
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pequeño retraso para asegurar que jQuery UI tabs ya está listo
+        setTimeout(initSidebarResetTab, 100);
     });
-
-    const splitter = document.getElementById('splitter');
-    if (splitter) {
-        observer.observe(splitter, { attributes: true });
-    }
+} else {
+    setTimeout(initSidebarResetTab, 100);
 }
 
 function processAircraft(ac, init, uat) {

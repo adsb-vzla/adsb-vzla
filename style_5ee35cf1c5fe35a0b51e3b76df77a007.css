@@ -2398,3 +2398,36 @@ div.ui-slider .ui-slider-handle {
     flex-wrap: wrap;
     gap: 8px;
 }
+
+#reset-sidebar-tab {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+#reset-sidebar-tab a {
+    color: var(--TXTCOLOR2) !important;
+    text-decoration: none !important;
+    display: block;
+    padding: 0.5em 1em;
+}
+
+/* Evitar que jQuery UI tabs intente activar este elemento como pestaña */
+.ui-tabs .ui-tabs-nav li.reset-sidebar-tab-item {
+    float: left;
+    list-style: none;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+}
+
+/* Desactivar la clase activa para este elemento */
+.ui-tabs .ui-tabs-nav li.reset-sidebar-tab-item.ui-tabs-active {
+    background: none;
+    border: none;
+}
+
+/* Desactivar el borde inferior que indica pestaña activa */
+.ui-tabs .ui-tabs-nav li.reset-sidebar-tab-item.ui-tabs-active a {
+    border: none;
+}
