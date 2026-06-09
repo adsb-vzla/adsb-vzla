@@ -1444,7 +1444,7 @@ table.infoSectionTable tr td {
 }
 
 .ui-tabs .ui-tabs-panel {
-    padding: 1em 0.5em;
+    padding: 1em 0.5em 0em 0em;
 }
 
 .ui-tabs .ui-tabs-nav {
@@ -2433,7 +2433,7 @@ div.ui-slider .ui-slider-handle {
 }
 
 
-/* Estilos para los buscadores unificados */
+Estilos para los buscadores unificados
 .filter-group-title {
     font-weight: bold;
     font-size: calc(13px * var(--SCALE));
@@ -2513,15 +2513,15 @@ div.ui-slider .ui-slider-handle {
     margin-bottom: calc(8px * var(--SCALE));
 }
 
-.filter-group-selectable .buttonFilter {
+/* .filter-group-selectable .buttonFilter {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin: 0;
     padding: 0;
     list-style: none;
-}
-
+} */
+/* 
 .filter-group-selectable .buttonFilter li {
     float: none;
     width: auto;
@@ -2543,4 +2543,134 @@ div.ui-slider .ui-slider-handle {
 
 .filter-group-selectable .buttonFilter li:hover {
     opacity: 0.8;
+} */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===== ESTILOS PARA ACORDEÓN DE FILTROS ===== */
+
+/* Estilos base del acordeón */
+.filter-group {
+    margin-bottom: calc(8px * var(--SCALE));
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--BGCOLOR2);
+}
+
+.filter-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(5px * var(--SCALE)) calc(12px * var(--SCALE));
+    background: var(--BASE-COLOR);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.filter-group-header .filter-group-title {
+    font-weight: bold;
+    font-size: calc(13px * var(--SCALE));
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: white;
+}
+
+.filter-group-header .accordion-icon {
+    font-size: calc(12px * var(--SCALE));
+    transition: transform 0.2s ease;
+    color: white;
+}
+
+.filter-group-content {
+    overflow: hidden;
+    transition: height 0.25s ease-out, padding 0.2s ease;
+    height: 0;
+    padding: 0 calc(12px * var(--SCALE));
+    background: var(--BGCOLOR1);
+}
+
+.filter-group-content-inner {
+    padding: calc(12px * var(--SCALE)) 0;
+}
+
+/* Ajustes para elementos dentro del contenido */
+.filter-group-content .filter-group-search,
+.filter-group-content .filter-group-selectable,
+.filter-group-content .filter-group-fields {
+    margin-bottom: 0;
+}
+
+.filter-group-content .filter-buttons {
+    margin-top: calc(12px * var(--SCALE));
+    padding-bottom: calc(4px * var(--SCALE));
+}
+
+/* Asegurar que los inputs ocupen todo el ancho */
+.filter-group-content .filterSearchInput,
+.filter-group-content .filterInput {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ajustes para los selectables (Source y DB Flags) */
+.filter-group-content .buttonFilter {
+    /* display: flex;
+    flex-wrap: wrap;
+    gap: calc(8px * var(--SCALE));
+    margin: 0;
+    padding: 0; */
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.filter-group-content .buttonFilter li {
+    float: none;
+    width: auto;
+    min-width: calc(70px * var(--SCALE));
+    padding: calc(6px * var(--SCALE)) calc(12px * var(--SCALE));
+    margin: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    background: var(--BGCOLOR2);
+    border: 1px solid var(--BASE-COLOR);
+}
+
+.filter-group-content .buttonFilter li.ui-selected {
+    background: var(--BASE-COLOR);
+    color: white;
+}
+
+/* Contenedor principal de filtros */
+.filters-accordion {
+    width: 100%;
+}
+
+/* Ajuste para que la tabla contenedora no tenga padding extra */
+#filterTable td {
+    padding: 0 !important;
 }

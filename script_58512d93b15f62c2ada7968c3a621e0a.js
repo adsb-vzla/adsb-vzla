@@ -162,6 +162,8 @@ let airportMarkerLayer = null;
 let airportMarkerTimeout = null;
 let airportFadeInterval = null;
 let columns = [];
+let starredAircraft = new Set();
+let starredListCollapsed = false;
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -399,22 +401,6 @@ function updateDistanceLine() {
 
             let secondsMissing = (Date.now() - ppMissingSince.get(key)) / 1000;
 
-            // Durante la espera, podemos avisar en el cartel
-            // if (!distanceOverlay) {
-            //     let element = document.createElement('div');
-            //     element.id = 'distance-label-tag';
-            //     element.style.background = 'rgba(255, 255, 255, 0.8)';
-            //     element.style.border = '1px solid black';
-            //     element.style.padding = '5px';
-            //     element.style.fontSize = '12px';
-            //     element.style.color = 'black';
-            //     element.style.pointerEvents = 'none';
-
-            //     distanceOverlay = new ol.Overlay({ element: element, positioning: 'bottom-center', offset: [0, -10] });
-            //     OLMap.addOverlay(distanceOverlay);
-            // }
-            // distanceOverlay.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${Math.ceil(15 - secondsMissing)}s`;
-
             // Actualizar solo el contenedor de texto, respetando los botones
             let textContainer = document.getElementById('dist-text-content');
             if (textContainer) {
@@ -482,27 +468,6 @@ function updateDistanceLine() {
         let midPoint = [(coords1[0] + coords2[0]) / 2, (coords1[1] + coords2[1]) / 2];
         let midPointProj = ol.proj.fromLonLat(midPoint);
 
-        // if (!distanceOverlay) {
-        //     let element = document.createElement('div');
-        //     element.id = 'distance-label-tag'; // ID para limpieza forzada
-        //     element.style.background = 'rgba(255, 255, 255, 0.8)';
-        //     element.style.border = '1px solid black';
-        //     element.style.padding = '5px';
-        //     element.style.fontSize = '12px';
-        //     element.style.color = 'black';
-        //     element.style.pointerEvents = 'none';
-
-        //     distanceOverlay = new ol.Overlay({
-        //         element: element,
-        //         positioning: 'bottom-center',
-        //         offset: [0, -10]
-        //     });
-        //     OLMap.addOverlay(distanceOverlay);
-        // }
-
-        // // Actualizamos el texto solo si tenemos números válidos
-        // distanceOverlay.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
-
         // Actualizamos solo el contenedor de texto
         let textContainer = document.getElementById('dist-text-content');
         if (textContainer) {
@@ -543,13 +508,6 @@ function updateDistanceLine() {
                 const remaining = Math.max(0, Math.ceil(15 - secondsMissing));
 
                 let ov = distanceOverlaysMap.get(key);
-                // if (!ov) {
-                //     const el = document.createElement('div');
-                //     Object.assign(el.style, { background: 'rgba(255,255,255,0.85)', border: '1px solid #000', padding: '6px', fontSize: '12px', color: '#000', pointerEvents: 'none' });
-                //     ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
-                //     OLMap && OLMap.addOverlay(ov);
-                //     distanceOverlaysMap.set(key, ov);
-                // }
                 if (!ov) {
                     const el = document.createElement('div');
                     el.id = `distance-label-${key.replace(/\|/g, '_')}`;
@@ -636,11 +594,6 @@ function updateDistanceLine() {
 
                 const isHidden = pairHiddenState.get(key) || false;
                 if (isHidden && textContainer) textContainer.style.display = 'none';
-
-                // ov.getElement().innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
-                // ov.setOffset(stableOverlayOffset(key));
-                // // position overlay at available point if any, else skip
-                // if (planeA && planeA.position) ov.setPosition(ol.proj.fromLonLat(planeA.position));
 
                 if (secondsMissing >= 15) {
                     ppMissingSince.delete(key);
@@ -2221,12 +2174,6 @@ function resetSidebarWidth() {
     
     // Guardar en localStorage
     localStorage.setItem('sidebar_width', baseWidth);
-    
-    // Ajustar padding del canvas si existe
-    // const canvas = document.getElementById('sidebar_canvas');
-    // if (canvas) {
-    //     canvas.style.paddingRight = baseWidth < 220 ? '15px' : '25px';
-    // }
     
     // Actualizar el tamaño del mapa
     if (typeof updateMapSize === 'function') {
@@ -7703,9 +7650,6 @@ function refreshFeatures() {
             }
         };
 
-        // ============================================
-        // 3. DETERMINAR QUÉ COLUMNAS ESTÁN CHECKED (visibles)
-        // ============================================
         const checkedColumnIds = [];
         const uncheckedColumnIds = [];
 
@@ -9130,96 +9074,6 @@ Filter.prototype.init = function () {
     jQuery(this.sid + '_reset').click((e) => { return this.reset(e); });
 }
 
-// function initFilters() {
-//     initSourceFilter(tableColors.unselected);
-//     initFlagFilter(tableColors.unselected);
-//     new Filter({
-//         key: 'callsign',
-//         field: 'name',
-//         name: 'callsign',
-//         table: "filterTable",
-//     });
-//     new Filter({
-//         key: 'squawk',
-//         field: 'squawk',
-//         name: 'squawk',
-//         table: "filterTable",
-//     });
-//     new Filter({
-//         key: 'type',
-//         field: 'icaoType',
-//         name: 'type code',
-//         table: "filterTable",
-//     });
-//     new Filter({
-//         key: 'description',
-//         field: 'typeDescription',
-//         name: 'type description',
-//         table: "filterTable",
-//     });
-//     new Filter({
-//         key: 'icao',
-//         field: 'icao',
-//         name: 'ICAO hex id',
-//         table: "filterTable",
-//     });
-
-
-//     new Filter({
-//         key: 'registration',
-//         field: 'registration',
-//         name: 'registration',
-//         table: 'filterTable3'
-//     });
-//     if (routeApiUrl) {
-//         new Filter({
-//             key: 'route',
-//             field: 'routeString',
-//             name: 'route',
-//             table: 'filterTable3'
-//         });
-//     }
-//     new Filter({
-//         key: 'country',
-//         field: 'country',
-//         name: 'country of registration',
-//         table: 'filterTable3'
-//     });
-//     new Filter({
-//         key: 'category',
-//         field: 'category',
-//         name: 'category (A3,B0,..)',
-//         table: 'filterTable3'
-//     });
-
-//     if (PlaneFilter) {
-//         if (PlaneFilter.minAltitude && PlaneFilter.minAltitude > -1000000) {
-//             jQuery('#altitude_filter_min').val(PlaneFilter.minAltitude);
-//         }
-//         if (PlaneFilter.maxAltitude && PlaneFilter.maxAltitude < 1000000) {
-//             jQuery('#altitude_filter_max').val(PlaneFilter.maxAltitude);
-//         }
-
-//         for (const filter of filter_list) {
-//             if (usp.has(`filter${filter.key}`)) {
-//                 filter.set(usp.get(`filter${filter.key}`));
-//             }
-//         }
-
-//         if (PlaneFilter.sources) {
-//             sourcesFilter = PlaneFilter.sources
-//             sourcesFilter.map((f) => jQuery('#source-filter-' + f).addClass('ui-selected'))
-//         }
-
-//         if (PlaneFilter.flagFilter) {
-//             flagFilter = PlaneFilter.flagFilter
-//             flagFilter.map((f) => jQuery('#flag-filter-' + f).addClass('ui-selected'))
-//         }
-//     }
-// }
-
-// Reemplazar la función initFilters() completa
-// Reemplazar la función initFilters() completa
 function initFilters() {
     initSourceFilter(tableColors.unselected);
     initFlagFilter(tableColors.unselected);
@@ -9233,14 +9087,19 @@ function initFilters() {
     if (filterTable2) filterTable2.innerHTML = '';
     if (filterTable3) filterTable3.innerHTML = '';
     
-    // ============================================
-    // BUSCADOR 1: VUELO (callsign, squawk, ICAO hex)
-    // ============================================
-    const group1Row = document.createElement('tbody');
-    group1Row.innerHTML = `
-        <tr>
-            <td>
-                <div class="filter-group-title">✈️ Flight</div>
+    // Contenedor para todos los grupos
+    const container = document.createElement('div');
+    container.className = 'filters-accordion';
+    
+    const group1 = document.createElement('div');
+    group1.className = 'filter-group';
+    group1.innerHTML = `
+        <div class="filter-group-header" data-group="flight">
+            <span class="filter-group-title">Flight</span>
+            <span class="accordion-icon">▶</span>
+        </div>
+        <div class="filter-group-content">
+            <div class="filter-group-content-inner">
                 <div class="filter-group-search">
                     <input type="text" id="filter_flight_search" class="filterSearchInput" 
                            placeholder="Search by callsign, squawk or ICAO hex..." autocomplete="off">
@@ -9248,19 +9107,20 @@ function initFilters() {
                 <div class="filter-buttons">
                     <button class="formButton filter-clear-btn" data-group="flight">Clear</button>
                 </div>
-            </td>
-        </tr>
+            </div>
+        </div>
     `;
-    if (filterTable) filterTable.appendChild(group1Row);
-    
-    // ============================================
-    // BUSCADOR 2: TIPO (type code, type description, category)
-    // ============================================
-    const group2Row = document.createElement('tbody');
-    group2Row.innerHTML = `
-        <tr>
-            <td>
-                <div class="filter-group-title">🛩️ Aircraft type</div>
+    container.appendChild(group1);
+
+    const group2 = document.createElement('div');
+    group2.className = 'filter-group';
+    group2.innerHTML = `
+        <div class="filter-group-header" data-group="type">
+            <span class="filter-group-title">Aircraft type</span>
+            <span class="accordion-icon">▶</span>
+        </div>
+        <div class="filter-group-content">
+            <div class="filter-group-content-inner">
                 <div class="filter-group-search">
                     <input type="text" id="filter_type_search" class="filterSearchInput" 
                            placeholder="Search by type code, description or category..." autocomplete="off">
@@ -9268,19 +9128,20 @@ function initFilters() {
                 <div class="filter-buttons">
                     <button class="formButton filter-clear-btn" data-group="type">Clear</button>
                 </div>
-            </td>
-        </tr>
+            </div>
+        </div>
     `;
-    if (filterTable2) filterTable2.appendChild(group2Row);
-    
-    // ============================================
-    // BUSCADOR 3: REGISTRO (registration, route, country)
-    // ============================================
-    const group3Row = document.createElement('tbody');
-    group3Row.innerHTML = `
-        <tr>
-            <td>
-                <div class="filter-group-title">📋 Registration & route</div>
+    container.appendChild(group2);
+
+    const group3 = document.createElement('div');
+    group3.className = 'filter-group';
+    group3.innerHTML = `
+        <div class="filter-group-header" data-group="reg">
+            <span class="filter-group-title">Registration & route</span>
+            <span class="accordion-icon">▶</span>
+        </div>
+        <div class="filter-group-content">
+            <div class="filter-group-content-inner">
                 <div class="filter-group-search">
                     <input type="text" id="filter_reg_search" class="filterSearchInput" 
                            placeholder="Search by registration, route or country..." autocomplete="off">
@@ -9288,64 +9149,63 @@ function initFilters() {
                 <div class="filter-buttons">
                     <button class="formButton filter-clear-btn" data-group="reg">Clear</button>
                 </div>
-            </td>
-        </tr>
+            </div>
+        </div>
     `;
-    if (filterTable3) filterTable3.appendChild(group3Row);
-    
-    // ============================================
-    // FILTRO POR FUENTE (Source)
-    // ============================================
-    const sourceRow = document.createElement('tbody');
-    sourceRow.innerHTML = `
-        <tr>
-            <td>
-                <div class="filter-group-title">📡 Source</div>
-                <div class="filter-group-selectable">
-                    <form id="source_filter_form">
-                        <ol id="sourceFilter" class="buttonFilter"></ol>
-                        <div class="filter-buttons" style="margin-top: 10px;">
-                            <button class="formButton" type="submit">Apply</button>
-                            <button class="formButton" id="source_filter_reset_button">Reset</button>
-                        </div>
-                    </form>
-                </div>
-            </td>
-        </tr>
+    container.appendChild(group3);
+
+    const group4 = document.createElement('div');
+    group4.className = 'filter-group';
+    group4.innerHTML = `
+        <div class="filter-group-header" data-group="source">
+            <span class="filter-group-title">Source</span>
+            <span class="accordion-icon">▶</span>
+        </div>
+        <div class="filter-group-content">
+            <div class="filter-group-content-inner">
+                <form id="source_filter_form">
+                    <ol id="sourceFilter" class="buttonFilter"></ol>
+                    <div class="filter-buttons">
+                        <button class="formButton" type="submit">Apply</button>
+                        <button class="formButton" id="source_filter_reset_button">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     `;
-    if (filterTable2) filterTable2.appendChild(sourceRow);
-    
-    // ============================================
-    // FILTRO POR BANDERAS (DB Flags)
-    // ============================================
-    const flagRow = document.createElement('tbody');
-    flagRow.innerHTML = `
-        <tr>
-            <td>
-                <div class="filter-group-title">🚩 DB Flags</div>
-                <div class="filter-group-selectable">
-                    <form id="flag_filter_form">
-                        <ol id="flagFilter" class="buttonFilter"></ol>
-                        <div class="filter-buttons" style="margin-top: 10px;">
-                            <button class="formButton" type="submit">Apply</button>
-                            <button class="formButton" id="flag_filter_reset_button">Reset</button>
-                        </div>
-                    </form>
-                </div>
-            </td>
-        </tr>
+    container.appendChild(group4);
+
+    const group5 = document.createElement('div');
+    group5.className = 'filter-group';
+    group5.innerHTML = `
+        <div class="filter-group-header" data-group="flags">
+            <span class="filter-group-title">DB Flags</span>
+            <span class="accordion-icon">▶</span>
+        </div>
+        <div class="filter-group-content">
+            <div class="filter-group-content-inner">
+                <form id="flag_filter_form">
+                    <ol id="flagFilter" class="buttonFilter"></ol>
+                    <div class="filter-buttons">
+                        <button class="formButton" type="submit">Apply</button>
+                        <button class="formButton" id="flag_filter_reset_button">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     `;
-    if (filterTable2) filterTable2.appendChild(flagRow);
-    
-    // ============================================
-    // FILTRO DE ALTITUD
-    // ============================================
-    const altitudeRow = document.createElement('tbody');
-    altitudeRow.innerHTML = `
-        <tr>
-            <td>
-                <div class="filter-group-title">📊 Altitude</div>
-                <div class="filter-group-fields" style="grid-template-columns: 1fr auto 1fr;">
+    container.appendChild(group5);
+
+    const group6 = document.createElement('div');
+    group6.className = 'filter-group';
+    group6.innerHTML = `
+        <div class="filter-group-header" data-group="altitude">
+            <span class="filter-group-title">Altitude</span>
+            <span class="accordion-icon">▶</span>
+        </div>
+        <div class="filter-group-content">
+            <div class="filter-group-content-inner">
+                <div class="filter-group-fields" style="display: grid; grid-template-columns: 1fr auto 1fr; gap: calc(8px * var(--SCALE));">
                     <input id="altitude_filter_min" name="minAltitude" type="text" class="filterInput" placeholder="Min ft" maxlength="6">
                     <span style="text-align: center; color: var(--TXTCOLOR3);">to</span>
                     <input id="altitude_filter_max" name="maxAltitude" type="text" class="filterInput" placeholder="Max ft" maxlength="6">
@@ -9354,14 +9214,73 @@ function initFilters() {
                     <button class="formButton" id="altitude_filter_apply">Apply</button>
                     <button class="formButton" id="altitude_filter_reset_button">Reset</button>
                 </div>
-            </td>
-        </tr>
+            </div>
+        </div>
     `;
-    if (filterTable2) filterTable2.appendChild(altitudeRow);
+    container.appendChild(group6);
     
-    // ============================================
-    // INICIALIZAR CONTROLADORES
-    // ============================================
+    // Insertar el contenedor en filterTable
+    if (filterTable) {
+        // Limpiar filterTable y agregar el contenedor
+        filterTable.innerHTML = '';
+        const tbody = document.createElement('tbody');
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 2;
+        td.appendChild(container);
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        filterTable.appendChild(tbody);
+    }
+    
+    if (filterTable2) filterTable2.innerHTML = '';
+    if (filterTable3) filterTable3.innerHTML = '';
+
+    function initAccordion() {
+        const groups = document.querySelectorAll('.filter-group');
+        
+        groups.forEach((group, index) => {
+            const header = group.querySelector('.filter-group-header');
+            const content = group.querySelector('.filter-group-content');
+            const icon = header.querySelector('.accordion-icon');
+            
+            // Estado inicial: todos cerrados
+            let isExpanded = false;
+            content.style.height = '0px';
+            icon.textContent = '▶';
+            header.setAttribute('aria-expanded', 'false');
+            
+            header.addEventListener('click', () => {
+                isExpanded = !isExpanded;
+                
+                if (isExpanded) {
+                    // Expandir
+                    const targetHeight = content.scrollHeight;
+                    content.style.height = targetHeight + 'px';
+                    icon.textContent = '▼';
+                    header.setAttribute('aria-expanded', 'true');
+                    
+                    // Después de la transición, permitir que el height sea auto
+                    const onTransitionEnd = () => {
+                        content.style.height = 'auto';
+                        content.removeEventListener('transitionend', onTransitionEnd);
+                    };
+                    content.addEventListener('transitionend', onTransitionEnd);
+                } else {
+                    // Colapsar
+                    const currentHeight = content.scrollHeight;
+                    content.style.height = currentHeight + 'px';
+                    
+                    // Forzar reflow
+                    content.offsetHeight;
+                    
+                    content.style.height = '0px';
+                    icon.textContent = '▶';
+                    header.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+    }
     
     // Valores activos de cada buscador
     let flightSearchPattern = '';
@@ -9370,13 +9289,12 @@ function initFilters() {
     
     // Función para actualizar los filtros activos
     function updateFilters() {
-        // Limpiar lista de filtros activos
         filters_active.length = 0;
         
-        // Buscador de vuelo: busca en callsign, squawk, ICAO hex
+        // Buscador de vuelo
         if (flightSearchPattern) {
             const pattern = flightSearchPattern.toUpperCase();
-            const multiFilter = {
+            filters_active.push({
                 field: 'multi_flight',
                 pattern: pattern,
                 PATTERN: pattern,
@@ -9386,14 +9304,13 @@ function initFilters() {
                     const icao = (plane.icao || '').toUpperCase();
                     return callsign.includes(pattern) || squawk.includes(pattern) || icao.includes(pattern);
                 }
-            };
-            filters_active.push(multiFilter);
+            });
         }
         
-        // Buscador de tipo: busca en ICAO type, type description, category
+        // Buscador de tipo
         if (typeSearchPattern) {
             const pattern = typeSearchPattern.toUpperCase();
-            const multiFilter = {
+            filters_active.push({
                 field: 'multi_type',
                 pattern: pattern,
                 PATTERN: pattern,
@@ -9403,14 +9320,13 @@ function initFilters() {
                     const category = (plane.category || '').toUpperCase();
                     return typeCode.includes(pattern) || typeDesc.includes(pattern) || category.includes(pattern);
                 }
-            };
-            filters_active.push(multiFilter);
+            });
         }
         
-        // Buscador de registro: busca en registration, route, country
+        // Buscador de registro
         if (regSearchPattern) {
             const pattern = regSearchPattern.toUpperCase();
-            const multiFilter = {
+            filters_active.push({
                 field: 'multi_reg',
                 pattern: pattern,
                 PATTERN: pattern,
@@ -9420,14 +9336,13 @@ function initFilters() {
                     const country = (plane.country || '').toUpperCase();
                     return registration.includes(pattern) || route.includes(pattern) || country.includes(pattern);
                 }
-            };
-            filters_active.push(multiFilter);
+            });
         }
         
         refreshFilter();
     }
     
-    // Configurar buscador de vuelo
+    // Configurar buscadores
     const flightInput = document.getElementById('filter_flight_search');
     if (flightInput) {
         flightInput.addEventListener('input', (e) => {
@@ -9441,7 +9356,6 @@ function initFilters() {
         }
     }
     
-    // Configurar buscador de tipo
     const typeInput = document.getElementById('filter_type_search');
     if (typeInput) {
         typeInput.addEventListener('input', (e) => {
@@ -9455,7 +9369,6 @@ function initFilters() {
         }
     }
     
-    // Configurar buscador de registro
     const regInput = document.getElementById('filter_reg_search');
     if (regInput) {
         regInput.addEventListener('input', (e) => {
@@ -9469,31 +9382,27 @@ function initFilters() {
         }
     }
     
-    // Botones de limpiar para los buscadores
+    // Botones Clear
     document.querySelectorAll('.filter-clear-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const group = btn.dataset.group;
             if (group === 'flight') {
-                flightInput.value = '';
+                if (flightInput) flightInput.value = '';
                 flightSearchPattern = '';
             } else if (group === 'type') {
-                typeInput.value = '';
+                if (typeInput) typeInput.value = '';
                 typeSearchPattern = '';
             } else if (group === 'reg') {
-                regInput.value = '';
+                if (regInput) regInput.value = '';
                 regSearchPattern = '';
             }
             updateFilters();
         });
     });
     
-    // ============================================
-    // INICIALIZAR FILTROS DE FUENTE (Source)
-    // ============================================
-    // Re-inicializar sourceFilter con los colores correctos
+    // Re-inicializar sourceFilter
     initSourceFilter(tableColors.unselected);
     
-    // Configurar eventos para source filter
     const sourceForm = document.getElementById('source_filter_form');
     if (sourceForm) {
         sourceForm.onsubmit = function(e) {
@@ -9512,13 +9421,9 @@ function initFilters() {
         };
     }
     
-    // ============================================
-    // INICIALIZAR FILTROS DE BANDERAS (DB Flags)
-    // ============================================
-    // Re-inicializar flagFilter con los colores correctos
+    // Re-inicializar flagFilter
     initFlagFilter(tableColors.unselected);
     
-    // Configurar eventos para flag filter
     const flagForm = document.getElementById('flag_filter_form');
     if (flagForm) {
         flagForm.onsubmit = function(e) {
@@ -9537,9 +9442,7 @@ function initFilters() {
         };
     }
     
-    // ============================================
-    // FILTRO DE ALTITUD
-    // ============================================
+    // Filtro de altitud
     const altitudeApply = document.getElementById('altitude_filter_apply');
     if (altitudeApply) {
         altitudeApply.addEventListener('click', (e) => {
@@ -9562,7 +9465,7 @@ function initFilters() {
         });
     }
     
-    // Restaurar valores de altitud
+    // Restaurar valores guardados
     if (PlaneFilter) {
         if (PlaneFilter.minAltitude && PlaneFilter.minAltitude > -1000000) {
             jQuery('#altitude_filter_min').val(PlaneFilter.minAltitude);
@@ -9572,7 +9475,6 @@ function initFilters() {
         }
     }
     
-    // Restaurar filtros de origen y flag si existen
     if (PlaneFilter.sources) {
         sourcesFilter = PlaneFilter.sources;
         sourcesFilter.map((f) => jQuery('#source-filter-' + f).addClass('ui-selected'));
@@ -9582,6 +9484,9 @@ function initFilters() {
         flagFilter = PlaneFilter.flagFilter;
         flagFilter.map((f) => jQuery('#flag-filter-' + f).addClass('ui-selected'));
     }
+    
+    // Inicializar acordeón
+    initAccordion();
 }
 
 
@@ -13572,22 +13477,7 @@ function DistanceBetweenPlanes() {
     new MutationObserver(ensurePhoto).observe(container, { childList: true, subtree: true });
 })();
 
-
-// ========== SISTEMA DE AVIONES DE INTERÉS (STARRED AIRCRAFT) ==========
-let starredAircraft = new Set(); // Almacena los hex de los aviones marcados
-let starredListCollapsed = false;
-
-// Función para alternar visibilidad de la lista
-// function toggleStarredList() {
-//     const container = document.getElementById('starred-list-container');
-//     if (container) {
-//         starredListCollapsed = !starredListCollapsed;
-//         container.style.display = starredListCollapsed ? 'none' : 'block';
-//     }
-// }
-
 // Función para actualizar el contador y la lista visual
-// Función para actualizar el contador y la lista visual (sin toggle)
 function updateStarredUI() {
     // Verificar si la función está habilitada
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
@@ -13653,24 +13543,6 @@ function escapeHtml(str) {
 }
 
 // Función principal para marcar/desmarcar un avión como interés
-// function toggleStarredPlane(hex) {
-//     if (!hex) return;
-
-//     if (starredAircraft.has(hex)) {
-//         starredAircraft.delete(hex);
-//         console.log(`Avión ${hex} removido de lista de interés`);
-//     } else {
-//         starredAircraft.add(hex);
-//         console.log(`Avión ${hex} agregado a lista de interés`);
-//     }
-
-//     updateStarredUI();
-//     updateStarredPlaneVisual(hex);
-//     updateStarredButtonInInfoblock();
-//     refreshFilter(); // Refrescar la tabla para aplicar estilo de fila
-// }
-
-// Función principal para marcar/desmarcar un avión como interés
 function toggleStarredPlane(hex) {
     // Verificar si la función está habilitada
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
@@ -13717,36 +13589,6 @@ function updateStarredPlaneVisual(hex) {
         }
     }
 }
-
-// Función para actualizar el botón de estrella en el infoblock
-// function updateStarredButtonInInfoblock() {
-//     const selected = SelectedPlane;
-//     if (!selected) return;
-
-//     const isStarred = starredAircraft.has(selected.icao);
-
-//     // Buscar o crear el contenedor del botón estrella en el título
-//     let starBtnContainer = document.querySelector('.star-btn-container');
-//     const titleDiv = document.querySelector('#selected_infoblock .highlightedTitle > div:first-child');
-
-//     if (!titleDiv) return;
-
-//     if (!starBtnContainer) {
-//         starBtnContainer = document.createElement('div');
-//         starBtnContainer.className = 'star-btn-container';
-//         starBtnContainer.style.display = 'inline-block';
-//         starBtnContainer.style.marginLeft = '10px';
-//         titleDiv.appendChild(starBtnContainer);
-//     }
-
-//     starBtnContainer.innerHTML = `
-//         <button class="star-btn ${isStarred ? 'star-btn-starred' : 'star-btn-unstarred'}" 
-//                 onclick="toggleStarredPlane('${selected.icao}')" 
-//                 title="${isStarred ? 'Quitar de interés' : 'Marcar como interés'}">
-//             ${isStarred ? '⭐' : '☆'}
-//         </button>
-//     `;
-// }
 
 // Función para actualizar el botón de estrella en el infoblock
 function updateStarredButtonInInfoblock() {
@@ -13838,8 +13680,6 @@ deselect = function (plane) {
 };
 
 // Agregar funcionalidad al botón de estrella en el marcador de aviones
-// Modificar la función getPlaneStyle en PlaneObject para incluir resaltado
-// Esto debe ir dentro de la definición de PlaneObject
 function enhancePlaneObjectForStarred() {
     if (typeof PlaneObject !== 'undefined' && PlaneObject.prototype) {
         // Guardar método original si existe
@@ -13857,32 +13697,6 @@ function enhancePlaneObjectForStarred() {
         }
     }
 }
-
-// Inicializar la sección de aviones de interés cuando cargue la página
-// function initStarredAircraft() {
-//     // Cargar lista guardada de localStorage si existe
-//     const saved = localStorage.getItem('tar1090_starred_aircraft');
-//     if (saved) {
-//         try {
-//             const savedHexes = JSON.parse(saved);
-//             if (Array.isArray(savedHexes)) {
-//                 starredAircraft = new Set(savedHexes);
-//                 updateStarredUI();
-//             }
-//         } catch (e) { console.error('Error loading starred aircraft:', e); }
-//     }
-
-//     enhancePlaneObjectForStarred();
-
-//     // Guardar en localStorage cuando cambie la lista
-//     const originalUpdateStarredUI = updateStarredUI;
-//     window.updateStarredUI = function () {
-//         originalUpdateStarredUI();
-//         // Guardar en localStorage
-//         localStorage.setItem('tar1090_starred_aircraft', JSON.stringify([...starredAircraft]));
-//     };
-//     updateStarredUI = window.updateStarredUI;
-// }
 
 // Inicializar la sección de aviones de interés cuando cargue la página
 function initStarredAircraft() {
