@@ -2227,6 +2227,153 @@ if (document.readyState === 'loading') {
     setTimeout(initSidebarResetTab, 100);
 }
 
+// ============================================
+// RESET ALL SETTINGS CON CONFIRMACIÓN
+// ============================================
+(function() {
+    // Esperar a que el DOM esté listo
+    const initResetButton = function() {
+        const resetBtn = document.getElementById('reset-all-settings-btn');
+        if (!resetBtn) return;
+        
+        resetBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Crear overlay de confirmación
+            const overlay = document.createElement('div');
+            overlay.id = 'reset-confirm-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 20000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(3px);
+            `;
+            
+            // Crear modal de confirmación
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                background: var(--BGCOLOR1, #fff);
+                border-radius: 12px;
+                padding: 24px 28px;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                text-align: center;
+                border: 1px solid var(--LIGHTER-BASE-COLOR, #ccc);
+            `;
+            
+            modal.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: bold;">Reset all settings</h3>
+                <p style="margin: 0 0 8px 0; line-height: 1.5;">
+                    This will restore all settings to their default values.
+                </p>
+                <p style="margin: 0 0 20px 0; color: #e74c3c; font-weight: bold;">
+                    The page will reload to apply the changes.
+                </p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="reset-confirm-cancel" style="
+                        padding: 10px 24px;
+                        border: 1px solid var(--LIGHTER-BASE-COLOR, #ccc);
+                        background: transparent;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: bold;
+                        color: var(--TXTCOLOR2, #333);
+                    ">Cancel</button>
+                    <button id="reset-confirm-ok" style="
+                        padding: 10px 24px;
+                        border: none;
+                        background: #e74c3c;
+                        color: white;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: bold;
+                    ">Reset & Reload</button>
+                </div>
+            `;
+            
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            
+            // Función para cerrar el modal
+            const closeModal = function() {
+                if (overlay && overlay.parentNode) {
+                    overlay.parentNode.removeChild(overlay);
+                }
+            };
+            
+            // Botón Cancelar
+            const cancelBtn = document.getElementById('reset-confirm-cancel');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', closeModal);
+            }
+            
+            // Clic fuera del modal
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeModal();
+            });
+            
+            // Botón Confirmar
+            const confirmBtn = document.getElementById('reset-confirm-ok');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    // Mostrar mensaje de "Resetting..."
+                    const loadingMsg = document.createElement('div');
+                    loadingMsg.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: rgba(0, 0, 0, 0.85);
+                        color: white;
+                        padding: 16px 32px;
+                        border-radius: 8px;
+                        z-index: 20001;
+                        font-size: 16px;
+                        font-weight: bold;
+                        text-align: center;
+                    `;
+                    loadingMsg.innerHTML = '🔄 Resetting settings...<br><span style="font-size: 12px;">Page will reload</span>';
+                    document.body.appendChild(loadingMsg);
+                    
+                    // Llamar a resetSettings() existente
+                    if (typeof resetSettings === 'function') {
+                        resetSettings();
+                    } else {
+                        // Fallback: limpiar localStorage
+                        try {
+                            localStorage.clear();
+                        } catch(e) {}
+                    }
+                    
+                    // Recargar la página después de un breve momento
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 300);
+                });
+            }
+        });
+    };
+    
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initResetButton);
+    } else {
+        initResetButton();
+    }
+})();
+
+
 function processAircraft(ac, init, uat) {
     const isArray = Array.isArray(ac);
     let hex = isArray ? ac[0] : ac.hex;
