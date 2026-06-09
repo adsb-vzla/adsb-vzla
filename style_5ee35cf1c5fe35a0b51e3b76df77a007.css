@@ -416,6 +416,18 @@ select {
     border-bottom-style: solid;
 }
 
+.sidebar-resize-container {
+    position: absolute;
+    left: 3rem;
+    top: 0.2rem;
+    z-index: 100;
+}
+
+.sidebar-reset-btn {
+    /* Solo posición, sin estilos personalizados que cambien apariencia */
+    cursor: pointer;
+}
+
 /* remove the blue highlighting around the map buttons */
 .ol-control button {
     outline: none;

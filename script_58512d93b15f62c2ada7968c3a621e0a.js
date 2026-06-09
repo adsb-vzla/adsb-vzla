@@ -2178,16 +2178,10 @@ function updateZoomIndicator() {
         }
     }
 
-    // if (zoomIndicatorBaseline === null) {
-    //     zoomIndicatorBaseline = z;
-    // }
-
     const factor = Math.pow(2, z - zoomIndicatorBaseline);
     const pct = Math.round(100 * factor);
 
     el.textContent = pct + '%';
-    // el.title = `Zoom: ${z.toFixed(2)} (base ${zoomIndicatorBaseline.toFixed(2)})`;
-    // Tooltip en inglés consistente con el resto de la interfaz
     el.title = `Current zoom level: ${z.toFixed(2)} (${pct}% relative to base zoom ${zoomIndicatorBaseline.toFixed(2)})`;
 }
 
@@ -2208,7 +2202,129 @@ function zoomOutMap() {
     if (FollowSelected) toggleFollow(true);
 }
 
+// Restaurar ancho base sidebar derecho
+function resetSidebarWidth() {
+    const sidebar = document.getElementById('sidebar_container');
+    const splitter = document.getElementById('splitter');
+    
+    if (!sidebar) return;
+    
+    // Ancho base por defecto (25% del ancho de la ventana, con un mínimo y máximo)
+    const windowWidth = window.innerWidth;
+    let baseWidth = windowWidth * 0.25;
+    
+    // Limitar el ancho mínimo y máximo
+    const minWidth = 200;
+    const maxWidth = windowWidth * 0.6;
+    baseWidth = Math.min(maxWidth, Math.max(minWidth, baseWidth));
+    
+    // Aplicar el nuevo ancho
+    sidebar.style.width = baseWidth + 'px';
+    
+    // Guardar en localStorage
+    localStorage.setItem('sidebar_width', baseWidth);
+    
+    // Actualizar el tamaño del mapa
+    if (typeof updateMapSize === 'function') {
+        updateMapSize();
+    }
+    
+    // Forzar redibujado de la tabla si es necesario
+    if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
+        TAR.planeMan.redraw();
+    }
+    
+    // Animación
+    sidebar.style.transition = 'width 0.2s ease';
+    setTimeout(() => {
+        sidebar.style.transition = '';
+    }, 200);
+    
+    console.log('Sidebar width reset to:', baseWidth + 'px');
+}
 
+// Crear botón para restaurar ancho
+function createSidebarResetButton() {
+    const splitter = document.getElementById('splitter');
+    if (!splitter) return;
+
+    // Asegurar que el splitter sea el punto de referencia para posicionamiento
+    splitter.style.position = 'relative';
+    
+    // Verificar si el contenedor ya existe para no duplicar
+    if (document.querySelector('.sidebar-resize-container')) return;
+    
+    // Crear contenedor para los botones
+    const container = document.createElement('div');
+    container.className = 'sidebar-resize-container';
+    
+    // Crear botón de reset
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'sidebar-reset-btn formButton';
+    resetBtn.innerHTML = 'Restore';
+    resetBtn.title = 'Restore sidebar to default width';
+    
+    // Tooltip
+    resetBtn.setAttribute('title', 'Restore sidebar to default width');
+    
+    // Evento click
+    resetBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        resetSidebarWidth();
+    });
+    
+    // Agregar botón al contenedor
+    container.appendChild(resetBtn);
+    
+    // Agregar contenedor después del splitter
+    splitter.insertAdjacentElement('afterend', container);
+}
+
+// Cargar el botón cuando esté listo el DOM
+function initSidebarResetButton() {
+    // Esperar a que el splitter esté disponible
+    const checkInterval = setInterval(() => {
+        const splitter = document.getElementById('splitter');
+        if (splitter && splitter.style.display !== 'none') {
+            clearInterval(checkInterval);
+            createSidebarResetButton();
+        }
+    }, 100);
+    
+    // Timeout por si acaso (10 segundos máximo)
+    setTimeout(() => {
+        clearInterval(checkInterval);
+        if (!document.querySelector('.sidebar-resize-container')) {
+            createSidebarResetButton();
+        }
+    }, 10000);
+}
+
+// Ejecutar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebarResetButton);
+} else {
+    initSidebarResetButton();
+}
+
+// Observar cambios en la visibilidad del splitter (por si se oculta/muestra)
+if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                const splitter = document.getElementById('splitter');
+                if (splitter && splitter.style.display !== 'none') {
+                    createSidebarResetButton();
+                }
+            }
+        });
+    });
+    
+    const splitter = document.getElementById('splitter');
+    if (splitter) {
+        observer.observe(splitter, { attributes: true });
+    }
+}
 
 function processAircraft(ac, init, uat) {
     const isArray = Array.isArray(ac);
