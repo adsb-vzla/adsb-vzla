@@ -868,14 +868,22 @@
       </div>
       <!-- INICIO MENÚ CONFIGURACIONES -->
       <div id="settings_infoblock">
-        <div class="panel-title" style="display: flex; flex-direction: row; justify-content: space-between;">
+        <!-- <div class="panel-title" style="display: flex; flex-direction: row; justify-content: space-between;">
           Settings
           <div class="settingsOptionContainer">
-            <!-- <button class="formButton" onclick="resetSettings();">Reset all settings</button> -->
             <button class="formButton" id="reset-all-settings-btn">Reset all settings</button>
           </div>
         </div>
-        <div id="settings_close" class="settingsCloseBox"></div>
+        <div id="settings_close" class="settingsCloseBox"></div> -->
+        <div id="settings_window_header" style="cursor: move;">
+          <div class="panel-title" style="display: flex; flex-direction: row; justify-content: space-between;">
+            Settings
+            <div class="settingsOptionContainer">
+              <button class="formButton" id="reset-all-settings-btn">Reset all settings</button>
+            </div>
+          </div>
+          <div id="settings_close" class="settingsCloseBox"></div>
+        </div>
         <div class="settingsOptionContainer">
           <div class="settingsText">Text and icon size:</div>
         </div>
@@ -912,7 +920,8 @@
             <div class="settings-category-title">DISPLAY</div>
             <div id="category-display-container"></div>
             <br>
-            <button class="formButton category-reset-btn" data-category="display" title="Reset to default">Reset to default</button>
+            <button class="formButton category-reset-btn" data-category="display" title="Reset to default">Reset to
+              default</button>
           </div>
 
           <!-- Categoría FILTERS -->
@@ -930,7 +939,8 @@
               </div>
             </div>
             <br>
-            <button class="formButton category-reset-btn" data-category="filters" title="Reset to default">Reset to default</button>
+            <button class="formButton category-reset-btn" data-category="filters" title="Reset to default">Reset to
+              default</button>
           </div>
         </div>
         <div id="settingsRight" class="settingsColumn">
@@ -940,7 +950,8 @@
             <div class="settings-category-title">DATA</div>
             <div id="category-data-container"></div>
             <br>
-            <button class="formButton category-reset-btn" data-category="data" title="Reset to default">Reset to default</button>
+            <button class="formButton category-reset-btn" data-category="data" title="Reset to default">Reset to
+              default</button>
           </div>
 
           <!-- Categoría SYSTEM -->
@@ -948,7 +959,8 @@
             <div class="settings-category-title">SYSTEM</div>
             <div id="category-system-container"></div>
             <br>
-            <button class="formButton category-reset-btn" data-category="system" title="Reset to default">Reset to default</button>
+            <button class="formButton category-reset-btn" data-category="system" title="Reset to default">Reset to
+              default</button>
           </div>
 
           <!-- Categoría INFORMATION -->
@@ -956,7 +968,8 @@
             <div class="settings-category-title">INFORMATION</div>
             <div id="category-info-container"></div>
             <br>
-            <button class="formButton category-reset-btn" data-category="info" title="Reset to default">Reset to default</button>
+            <button class="formButton category-reset-btn" data-category="info" title="Reset to default">Reset to
+              default</button>
           </div>
         </div>
       </div>

@@ -14035,4 +14035,128 @@ if (document.readyState === 'loading') {
 // Función global para toggle desde el botón de estrella
 window.toggleStarredPlane = toggleStarredPlane;
 window.clearAllStarred = clearAllStarred;
-window.toggleStarredList = toggleStarredList;
+// window.toggleStarredList = toggleStarredList;
+
+// Definir toggleStarredList si no existe
+if (typeof toggleStarredList === 'undefined') {
+  window.toggleStarredList = function() {
+    console.log('toggleStarredList called but not implemented');
+  };
+} else {
+  window.toggleStarredList = toggleStarredList;
+}
+
+// ============================================
+// HACER MOVIBLE LA VENTANA DE CONFIGURACIÓN
+// ============================================
+(function() {
+  console.log('=== INICIANDO SCRIPT DE VENTANA MOVIBLE ===');
+  
+  let settingsWindow = null;
+  let isDragging = false;
+  let dragStartX, dragStartY;
+  let startLeft, startTop;
+  
+  function initDraggable() {
+    settingsWindow = document.getElementById('settings_infoblock');
+    const dragHandle = document.getElementById('settings_window_header');
+    
+    if (!settingsWindow) {
+      console.error('ERROR: No se encontró #settings_infoblock');
+      return false;
+    }
+    
+    if (!dragHandle) {
+      console.error('ERROR: No se encontró #settings_window_header');
+      return false;
+    }
+    
+    console.log('Elementos encontrados correctamente');
+    
+    // FORZAR estilos iniciales usando setAttribute para mayor prioridad
+    settingsWindow.setAttribute('style', 
+      'position: fixed !important; ' +
+      'top: 80px !important; ' +
+      'left: 20px !important; ' +
+      'right: auto !important; ' +
+      'bottom: auto !important; ' +
+      'margin: 0 !important;'
+    );
+    
+    dragHandle.style.cursor = 'move';
+    
+    dragHandle.addEventListener('mousedown', onMouseDown);
+    
+    console.log('Event listener agregado a dragHandle');
+    return true;
+  }
+  
+  function onMouseDown(e) {
+    // No arrastrar si se hace clic en botones
+    if (e.target.closest('.formButton')) {
+      return;
+    }
+    if (e.target.closest('#settings_close')) {
+      return;
+    }
+    
+    console.log('mousedown - iniciando arrastre');
+    
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    
+    // Obtener posición actual del elemento
+    const rect = settingsWindow.getBoundingClientRect();
+    startLeft = rect.left;
+    startTop = rect.top;
+    
+    console.log('Posición inicial:', startLeft, startTop);
+    
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'move';
+    e.preventDefault();
+  }
+  
+  function onMouseMove(e) {
+    if (!isDragging) {
+      return;
+    }
+    
+    let newLeft = startLeft + (e.clientX - dragStartX);
+    let newTop = startTop + (e.clientY - dragStartY);
+    
+    // Limitar dentro de la ventana
+    const maxLeft = window.innerWidth - settingsWindow.offsetWidth;
+    const maxTop = window.innerHeight - settingsWindow.offsetHeight;
+    
+    newLeft = Math.min(Math.max(0, newLeft), maxLeft);
+    newTop = Math.min(Math.max(0, newTop), maxTop);
+    
+    // Aplicar estilos directamente con !important
+    settingsWindow.style.setProperty('left', newLeft + 'px', 'important');
+    settingsWindow.style.setProperty('top', newTop + 'px', 'important');
+    
+    console.log('Nueva posición:', newLeft, newTop);
+  }
+  
+  function onMouseUp(e) {
+    if (isDragging) {
+      console.log('mouseup - finalizando arrastre');
+      isDragging = false;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    }
+  }
+  
+  // Registrar event handlers globales (una sola vez)
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+  
+  // Iniciar cuando el DOM esté listo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDraggable);
+  } else {
+    setTimeout(initDraggable, 100);
+  }
+})();

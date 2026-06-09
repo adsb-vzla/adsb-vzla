@@ -2683,3 +2683,17 @@ Estilos para los buscadores unificados
 #filterTable td {
     padding: 0 !important;
 }
+
+/* Hacer que settings_infoblock sea movible */
+#settings_infoblock {
+  position: fixed !important;
+  top: 80px !important;
+  left: 20px !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+#settings_window_header {
+  cursor: move;
+  user-select: none;
+}
