@@ -1032,6 +1032,7 @@ table.infoSectionTable tr td {
     padding-right: calc(3px * var(--SCALE));
     padding-left: calc(3px * var(--SCALE));
     margin: calc(2px * var(--SCALE));
+    border-radius: 0.3rem;
 }
 
 #settings_infoblock {
@@ -1467,7 +1468,6 @@ table.infoSectionTable tr td {
     list-style-type: none;
     margin: 0;
     padding: 0;
-    width: calc(240px * var(--SCALE));
     cursor: pointer;
 }
 
@@ -2430,4 +2430,117 @@ div.ui-slider .ui-slider-handle {
 /* Desactivar el borde inferior que indica pestaña activa */
 .ui-tabs .ui-tabs-nav li.reset-sidebar-tab-item.ui-tabs-active a {
     border: none;
+}
+
+
+/* Estilos para los buscadores unificados */
+.filter-group-title {
+    font-weight: bold;
+    font-size: calc(13px * var(--SCALE));
+    padding: calc(4px * var(--SCALE)) 0;
+    border-bottom: 1px solid var(--LIGHTER-BASE-COLOR);
+    margin-bottom: calc(8px * var(--SCALE));
+}
+
+.filter-group-search {
+    margin-bottom: calc(8px * var(--SCALE));
+}
+
+.filterSearchInput {
+    width: 100%;
+    min-width: 300px !important;
+    padding: calc(8px * var(--SCALE));
+    font-size: calc(13px * var(--SCALE));
+    border: 1px solid var(--BGCOLOR2);
+    border-radius: 6px;
+    background: var(--BGCOLOR2);
+    color: var(--TXTCOLOR2);
+    box-sizing: border-box;
+}
+
+.filterSearchInput:focus {
+    outline: none;
+    border-color: var(--BASE-COLOR);
+    box-shadow: 0 0 0 2px rgba(var(--BASE-COLOR-rgb), 0.2);
+}
+
+.filter-search-hint {
+    font-size: calc(10px * var(--SCALE));
+    color: var(--TXTCOLOR3);
+    margin-top: calc(4px * var(--SCALE));
+    font-style: italic;
+}
+
+.filter-group-fields {
+    display: grid;
+    gap: calc(8px * var(--SCALE));
+    margin-bottom: calc(10px * var(--SCALE));
+}
+
+.filterInput {
+    width: 100%;
+    padding: calc(6px * var(--SCALE));
+    font-size: calc(12px * var(--SCALE));
+    border: 1px solid var(--BGCOLOR2);
+    border-radius: 4px;
+    background: var(--BGCOLOR2);
+    color: var(--TXTCOLOR2);
+    box-sizing: border-box;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: calc(8px * var(--SCALE));
+    justify-content: flex-end;
+    margin-top: calc(4px * var(--SCALE));
+}
+
+.filter-buttons .formButton {
+    padding: calc(4px * var(--SCALE)) calc(12px * var(--SCALE));
+    font-size: calc(11px * var(--SCALE));
+}
+
+/* Ajustar tablas */
+#filterTable tbody tr td,
+#filterTable2 tbody tr td,
+#filterTable3 tbody tr td {
+    padding: calc(8px * var(--SCALE));
+    vertical-align: top;
+}
+
+/* Estilos para grupos de filtros selectables (Source y DB Flags) */
+.filter-group-selectable {
+    margin-bottom: calc(8px * var(--SCALE));
+}
+
+.filter-group-selectable .buttonFilter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.filter-group-selectable .buttonFilter li {
+    float: none;
+    width: auto;
+    min-width: calc(70px * var(--SCALE));
+    padding: calc(4px * var(--SCALE)) calc(8px * var(--SCALE));
+    margin: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.filter-group-selectable .buttonFilter li.ui-selected {
+    border-color: var(--BASE-COLOR);
+    background-color: var(--BASE-COLOR);
+    color: white;
+    opacity: 0.9;
+}
+
+.filter-group-selectable .buttonFilter li:hover {
+    opacity: 0.8;
 }

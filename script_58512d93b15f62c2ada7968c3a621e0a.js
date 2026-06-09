@@ -9057,6 +9057,14 @@ function Filter(arg) {
     this.key = arg.key;
     this.field = arg.field;
     this.name = arg.name;
+
+    // Si se solicita saltar la creación de UI, solo almacenar
+    if (arg.skipUICreation) {
+        this.pattern = '';
+        this.PATTERN = '';
+        return;
+    }
+
     this.tbody = document.getElementById(arg.table).getElementsByTagName('tbody')[0];
 
     this.id = 'filters_' + this.key;
@@ -9122,68 +9130,439 @@ Filter.prototype.init = function () {
     jQuery(this.sid + '_reset').click((e) => { return this.reset(e); });
 }
 
+// function initFilters() {
+//     initSourceFilter(tableColors.unselected);
+//     initFlagFilter(tableColors.unselected);
+//     new Filter({
+//         key: 'callsign',
+//         field: 'name',
+//         name: 'callsign',
+//         table: "filterTable",
+//     });
+//     new Filter({
+//         key: 'squawk',
+//         field: 'squawk',
+//         name: 'squawk',
+//         table: "filterTable",
+//     });
+//     new Filter({
+//         key: 'type',
+//         field: 'icaoType',
+//         name: 'type code',
+//         table: "filterTable",
+//     });
+//     new Filter({
+//         key: 'description',
+//         field: 'typeDescription',
+//         name: 'type description',
+//         table: "filterTable",
+//     });
+//     new Filter({
+//         key: 'icao',
+//         field: 'icao',
+//         name: 'ICAO hex id',
+//         table: "filterTable",
+//     });
+
+
+//     new Filter({
+//         key: 'registration',
+//         field: 'registration',
+//         name: 'registration',
+//         table: 'filterTable3'
+//     });
+//     if (routeApiUrl) {
+//         new Filter({
+//             key: 'route',
+//             field: 'routeString',
+//             name: 'route',
+//             table: 'filterTable3'
+//         });
+//     }
+//     new Filter({
+//         key: 'country',
+//         field: 'country',
+//         name: 'country of registration',
+//         table: 'filterTable3'
+//     });
+//     new Filter({
+//         key: 'category',
+//         field: 'category',
+//         name: 'category (A3,B0,..)',
+//         table: 'filterTable3'
+//     });
+
+//     if (PlaneFilter) {
+//         if (PlaneFilter.minAltitude && PlaneFilter.minAltitude > -1000000) {
+//             jQuery('#altitude_filter_min').val(PlaneFilter.minAltitude);
+//         }
+//         if (PlaneFilter.maxAltitude && PlaneFilter.maxAltitude < 1000000) {
+//             jQuery('#altitude_filter_max').val(PlaneFilter.maxAltitude);
+//         }
+
+//         for (const filter of filter_list) {
+//             if (usp.has(`filter${filter.key}`)) {
+//                 filter.set(usp.get(`filter${filter.key}`));
+//             }
+//         }
+
+//         if (PlaneFilter.sources) {
+//             sourcesFilter = PlaneFilter.sources
+//             sourcesFilter.map((f) => jQuery('#source-filter-' + f).addClass('ui-selected'))
+//         }
+
+//         if (PlaneFilter.flagFilter) {
+//             flagFilter = PlaneFilter.flagFilter
+//             flagFilter.map((f) => jQuery('#flag-filter-' + f).addClass('ui-selected'))
+//         }
+//     }
+// }
+
+// Reemplazar la función initFilters() completa
+// Reemplazar la función initFilters() completa
 function initFilters() {
     initSourceFilter(tableColors.unselected);
     initFlagFilter(tableColors.unselected);
-    new Filter({
-        key: 'callsign',
-        field: 'name',
-        name: 'callsign',
-        table: "filterTable",
+    
+    // Limpiar las tablas existentes
+    const filterTable = document.getElementById('filterTable');
+    const filterTable2 = document.getElementById('filterTable2');
+    const filterTable3 = document.getElementById('filterTable3');
+    
+    if (filterTable) filterTable.innerHTML = '';
+    if (filterTable2) filterTable2.innerHTML = '';
+    if (filterTable3) filterTable3.innerHTML = '';
+    
+    // ============================================
+    // BUSCADOR 1: VUELO (callsign, squawk, ICAO hex)
+    // ============================================
+    const group1Row = document.createElement('tbody');
+    group1Row.innerHTML = `
+        <tr>
+            <td>
+                <div class="filter-group-title">✈️ Flight</div>
+                <div class="filter-group-search">
+                    <input type="text" id="filter_flight_search" class="filterSearchInput" 
+                           placeholder="Search by callsign, squawk or ICAO hex..." autocomplete="off">
+                </div>
+                <div class="filter-buttons">
+                    <button class="formButton filter-clear-btn" data-group="flight">Clear</button>
+                </div>
+            </td>
+        </tr>
+    `;
+    if (filterTable) filterTable.appendChild(group1Row);
+    
+    // ============================================
+    // BUSCADOR 2: TIPO (type code, type description, category)
+    // ============================================
+    const group2Row = document.createElement('tbody');
+    group2Row.innerHTML = `
+        <tr>
+            <td>
+                <div class="filter-group-title">🛩️ Aircraft type</div>
+                <div class="filter-group-search">
+                    <input type="text" id="filter_type_search" class="filterSearchInput" 
+                           placeholder="Search by type code, description or category..." autocomplete="off">
+                </div>
+                <div class="filter-buttons">
+                    <button class="formButton filter-clear-btn" data-group="type">Clear</button>
+                </div>
+            </td>
+        </tr>
+    `;
+    if (filterTable2) filterTable2.appendChild(group2Row);
+    
+    // ============================================
+    // BUSCADOR 3: REGISTRO (registration, route, country)
+    // ============================================
+    const group3Row = document.createElement('tbody');
+    group3Row.innerHTML = `
+        <tr>
+            <td>
+                <div class="filter-group-title">📋 Registration & route</div>
+                <div class="filter-group-search">
+                    <input type="text" id="filter_reg_search" class="filterSearchInput" 
+                           placeholder="Search by registration, route or country..." autocomplete="off">
+                </div>
+                <div class="filter-buttons">
+                    <button class="formButton filter-clear-btn" data-group="reg">Clear</button>
+                </div>
+            </td>
+        </tr>
+    `;
+    if (filterTable3) filterTable3.appendChild(group3Row);
+    
+    // ============================================
+    // FILTRO POR FUENTE (Source)
+    // ============================================
+    const sourceRow = document.createElement('tbody');
+    sourceRow.innerHTML = `
+        <tr>
+            <td>
+                <div class="filter-group-title">📡 Source</div>
+                <div class="filter-group-selectable">
+                    <form id="source_filter_form">
+                        <ol id="sourceFilter" class="buttonFilter"></ol>
+                        <div class="filter-buttons" style="margin-top: 10px;">
+                            <button class="formButton" type="submit">Apply</button>
+                            <button class="formButton" id="source_filter_reset_button">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    `;
+    if (filterTable2) filterTable2.appendChild(sourceRow);
+    
+    // ============================================
+    // FILTRO POR BANDERAS (DB Flags)
+    // ============================================
+    const flagRow = document.createElement('tbody');
+    flagRow.innerHTML = `
+        <tr>
+            <td>
+                <div class="filter-group-title">🚩 DB Flags</div>
+                <div class="filter-group-selectable">
+                    <form id="flag_filter_form">
+                        <ol id="flagFilter" class="buttonFilter"></ol>
+                        <div class="filter-buttons" style="margin-top: 10px;">
+                            <button class="formButton" type="submit">Apply</button>
+                            <button class="formButton" id="flag_filter_reset_button">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    `;
+    if (filterTable2) filterTable2.appendChild(flagRow);
+    
+    // ============================================
+    // FILTRO DE ALTITUD
+    // ============================================
+    const altitudeRow = document.createElement('tbody');
+    altitudeRow.innerHTML = `
+        <tr>
+            <td>
+                <div class="filter-group-title">📊 Altitude</div>
+                <div class="filter-group-fields" style="grid-template-columns: 1fr auto 1fr;">
+                    <input id="altitude_filter_min" name="minAltitude" type="text" class="filterInput" placeholder="Min ft" maxlength="6">
+                    <span style="text-align: center; color: var(--TXTCOLOR3);">to</span>
+                    <input id="altitude_filter_max" name="maxAltitude" type="text" class="filterInput" placeholder="Max ft" maxlength="6">
+                </div>
+                <div class="filter-buttons">
+                    <button class="formButton" id="altitude_filter_apply">Apply</button>
+                    <button class="formButton" id="altitude_filter_reset_button">Reset</button>
+                </div>
+            </td>
+        </tr>
+    `;
+    if (filterTable2) filterTable2.appendChild(altitudeRow);
+    
+    // ============================================
+    // INICIALIZAR CONTROLADORES
+    // ============================================
+    
+    // Valores activos de cada buscador
+    let flightSearchPattern = '';
+    let typeSearchPattern = '';
+    let regSearchPattern = '';
+    
+    // Función para actualizar los filtros activos
+    function updateFilters() {
+        // Limpiar lista de filtros activos
+        filters_active.length = 0;
+        
+        // Buscador de vuelo: busca en callsign, squawk, ICAO hex
+        if (flightSearchPattern) {
+            const pattern = flightSearchPattern.toUpperCase();
+            const multiFilter = {
+                field: 'multi_flight',
+                pattern: pattern,
+                PATTERN: pattern,
+                matches: function(plane) {
+                    const callsign = (plane.name || '').toUpperCase();
+                    const squawk = (plane.squawk || '').toUpperCase();
+                    const icao = (plane.icao || '').toUpperCase();
+                    return callsign.includes(pattern) || squawk.includes(pattern) || icao.includes(pattern);
+                }
+            };
+            filters_active.push(multiFilter);
+        }
+        
+        // Buscador de tipo: busca en ICAO type, type description, category
+        if (typeSearchPattern) {
+            const pattern = typeSearchPattern.toUpperCase();
+            const multiFilter = {
+                field: 'multi_type',
+                pattern: pattern,
+                PATTERN: pattern,
+                matches: function(plane) {
+                    const typeCode = (plane.icaoType || '').toUpperCase();
+                    const typeDesc = (plane.typeDescription || '').toUpperCase();
+                    const category = (plane.category || '').toUpperCase();
+                    return typeCode.includes(pattern) || typeDesc.includes(pattern) || category.includes(pattern);
+                }
+            };
+            filters_active.push(multiFilter);
+        }
+        
+        // Buscador de registro: busca en registration, route, country
+        if (regSearchPattern) {
+            const pattern = regSearchPattern.toUpperCase();
+            const multiFilter = {
+                field: 'multi_reg',
+                pattern: pattern,
+                PATTERN: pattern,
+                matches: function(plane) {
+                    const registration = (plane.registration || '').toUpperCase();
+                    const route = (plane.routeString || '').toUpperCase();
+                    const country = (plane.country || '').toUpperCase();
+                    return registration.includes(pattern) || route.includes(pattern) || country.includes(pattern);
+                }
+            };
+            filters_active.push(multiFilter);
+        }
+        
+        refreshFilter();
+    }
+    
+    // Configurar buscador de vuelo
+    const flightInput = document.getElementById('filter_flight_search');
+    if (flightInput) {
+        flightInput.addEventListener('input', (e) => {
+            flightSearchPattern = e.target.value;
+            updateFilters();
+        });
+        if (usp.has('filterFlight')) {
+            flightSearchPattern = usp.get('filterFlight');
+            flightInput.value = flightSearchPattern;
+            updateFilters();
+        }
+    }
+    
+    // Configurar buscador de tipo
+    const typeInput = document.getElementById('filter_type_search');
+    if (typeInput) {
+        typeInput.addEventListener('input', (e) => {
+            typeSearchPattern = e.target.value;
+            updateFilters();
+        });
+        if (usp.has('filterType')) {
+            typeSearchPattern = usp.get('filterType');
+            typeInput.value = typeSearchPattern;
+            updateFilters();
+        }
+    }
+    
+    // Configurar buscador de registro
+    const regInput = document.getElementById('filter_reg_search');
+    if (regInput) {
+        regInput.addEventListener('input', (e) => {
+            regSearchPattern = e.target.value;
+            updateFilters();
+        });
+        if (usp.has('filterReg')) {
+            regSearchPattern = usp.get('filterReg');
+            regInput.value = regSearchPattern;
+            updateFilters();
+        }
+    }
+    
+    // Botones de limpiar para los buscadores
+    document.querySelectorAll('.filter-clear-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const group = btn.dataset.group;
+            if (group === 'flight') {
+                flightInput.value = '';
+                flightSearchPattern = '';
+            } else if (group === 'type') {
+                typeInput.value = '';
+                typeSearchPattern = '';
+            } else if (group === 'reg') {
+                regInput.value = '';
+                regSearchPattern = '';
+            }
+            updateFilters();
+        });
     });
-    new Filter({
-        key: 'squawk',
-        field: 'squawk',
-        name: 'squawk',
-        table: "filterTable",
-    });
-    new Filter({
-        key: 'type',
-        field: 'icaoType',
-        name: 'type code',
-        table: "filterTable",
-    });
-    new Filter({
-        key: 'description',
-        field: 'typeDescription',
-        name: 'type description',
-        table: "filterTable",
-    });
-    new Filter({
-        key: 'icao',
-        field: 'icao',
-        name: 'ICAO hex id',
-        table: "filterTable",
-    });
-
-
-    new Filter({
-        key: 'registration',
-        field: 'registration',
-        name: 'registration',
-        table: 'filterTable3'
-    });
-    if (routeApiUrl) {
-        new Filter({
-            key: 'route',
-            field: 'routeString',
-            name: 'route',
-            table: 'filterTable3'
+    
+    // ============================================
+    // INICIALIZAR FILTROS DE FUENTE (Source)
+    // ============================================
+    // Re-inicializar sourceFilter con los colores correctos
+    initSourceFilter(tableColors.unselected);
+    
+    // Configurar eventos para source filter
+    const sourceForm = document.getElementById('source_filter_form');
+    if (sourceForm) {
+        sourceForm.onsubmit = function(e) {
+            if (e) e.preventDefault();
+            updateSourceFilter(e);
+        };
+    }
+    
+    const sourceResetBtn = document.getElementById('source_filter_reset_button');
+    if (sourceResetBtn) {
+        sourceResetBtn.onclick = function(e) {
+            if (e) e.preventDefault();
+            jQuery('#sourceFilter .ui-selected').removeClass('ui-selected');
+            sourcesFilter = null;
+            updateSourceFilter(e);
+        };
+    }
+    
+    // ============================================
+    // INICIALIZAR FILTROS DE BANDERAS (DB Flags)
+    // ============================================
+    // Re-inicializar flagFilter con los colores correctos
+    initFlagFilter(tableColors.unselected);
+    
+    // Configurar eventos para flag filter
+    const flagForm = document.getElementById('flag_filter_form');
+    if (flagForm) {
+        flagForm.onsubmit = function(e) {
+            if (e) e.preventDefault();
+            updateFlagFilter(e);
+        };
+    }
+    
+    const flagResetBtn = document.getElementById('flag_filter_reset_button');
+    if (flagResetBtn) {
+        flagResetBtn.onclick = function(e) {
+            if (e) e.preventDefault();
+            jQuery('#flagFilter .ui-selected').removeClass('ui-selected');
+            flagFilter = null;
+            updateFlagFilter(e);
+        };
+    }
+    
+    // ============================================
+    // FILTRO DE ALTITUD
+    // ============================================
+    const altitudeApply = document.getElementById('altitude_filter_apply');
+    if (altitudeApply) {
+        altitudeApply.addEventListener('click', (e) => {
+            e.preventDefault();
+            jQuery("#altitude_filter_min").blur();
+            jQuery("#altitude_filter_max").blur();
+            updateAltFilter();
+            refreshFilter();
         });
     }
-    new Filter({
-        key: 'country',
-        field: 'country',
-        name: 'country of registration',
-        table: 'filterTable3'
-    });
-    new Filter({
-        key: 'category',
-        field: 'category',
-        name: 'category (A3,B0,..)',
-        table: 'filterTable3'
-    });
-
+    
+    const altitudeReset = document.getElementById('altitude_filter_reset_button');
+    if (altitudeReset) {
+        altitudeReset.addEventListener('click', (e) => {
+            e.preventDefault();
+            jQuery("#altitude_filter_min").val("");
+            jQuery("#altitude_filter_max").val("");
+            updateAltFilter();
+            refreshFilter();
+        });
+    }
+    
+    // Restaurar valores de altitud
     if (PlaneFilter) {
         if (PlaneFilter.minAltitude && PlaneFilter.minAltitude > -1000000) {
             jQuery('#altitude_filter_min').val(PlaneFilter.minAltitude);
@@ -9191,22 +9570,17 @@ function initFilters() {
         if (PlaneFilter.maxAltitude && PlaneFilter.maxAltitude < 1000000) {
             jQuery('#altitude_filter_max').val(PlaneFilter.maxAltitude);
         }
-
-        for (const filter of filter_list) {
-            if (usp.has(`filter${filter.key}`)) {
-                filter.set(usp.get(`filter${filter.key}`));
-            }
-        }
-
-        if (PlaneFilter.sources) {
-            sourcesFilter = PlaneFilter.sources
-            sourcesFilter.map((f) => jQuery('#source-filter-' + f).addClass('ui-selected'))
-        }
-
-        if (PlaneFilter.flagFilter) {
-            flagFilter = PlaneFilter.flagFilter
-            flagFilter.map((f) => jQuery('#flag-filter-' + f).addClass('ui-selected'))
-        }
+    }
+    
+    // Restaurar filtros de origen y flag si existen
+    if (PlaneFilter.sources) {
+        sourcesFilter = PlaneFilter.sources;
+        sourcesFilter.map((f) => jQuery('#source-filter-' + f).addClass('ui-selected'));
+    }
+    
+    if (PlaneFilter.flagFilter) {
+        flagFilter = PlaneFilter.flagFilter;
+        flagFilter.map((f) => jQuery('#flag-filter-' + f).addClass('ui-selected'));
     }
 }
 

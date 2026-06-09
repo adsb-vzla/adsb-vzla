@@ -247,6 +247,22 @@ PlaneObject.prototype.isFiltered = function() {
     if (this.selected)
         return false;
 
+    // Nuevos filtros múltiples (buscadores unificados)
+    for (const filter of filters_active) {
+        // Si el filtro tiene un método matches personalizado
+        if (filter.matches) {
+            if (!filter.matches(this)) {
+                return true;
+            }
+        }
+        // Filtros normales (campo único)
+        else if (filter.field && !filter.field.startsWith('multi_')) {
+            if (!this[filter.field] || !this[filter.field].toUpperCase().match(filter.PATTERN)) {
+                return true;
+            }
+        }
+    }
+
     if (noRegOnly && (
         (this.registration || this.icao.startsWith('~'))
         || (this.category && this.category.startsWith('C'))
@@ -258,12 +274,12 @@ PlaneObject.prototype.isFiltered = function() {
         return true;
     }
 
-    for (const filter of filters_active) {
-        if (!this[filter.field] || !this[filter.field].toUpperCase().match(filter.PATTERN)) {
-            //this[filter.field] && console.log(this[filter.field].toUpperCase() + ' ' + filter.PATTERN);
-            return true;
-        }
-    }
+    // for (const filter of filters_active) {
+    //     if (!this[filter.field] || !this[filter.field].toUpperCase().match(filter.PATTERN)) {
+    //         //this[filter.field] && console.log(this[filter.field].toUpperCase() + ' ' + filter.PATTERN);
+    //         return true;
+    //     }
+    // }
 
     if (g.icao_nt_only && this.addrtype != 'adsb_icao_nt') {
         return true;
