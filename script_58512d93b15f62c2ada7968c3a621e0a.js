@@ -161,6 +161,7 @@ let airportMarkerFeature = null;
 let airportMarkerLayer = null;
 let airportMarkerTimeout = null;
 let airportFadeInterval = null;
+let columns = [];
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -758,17 +759,6 @@ function updateDistanceLine() {
             const midPoint = [(coordsA[0] + coordsB[0]) / 2, (coordsA[1] + coordsB[1]) / 2];
             ov.setPosition(ol.proj.fromLonLat(midPoint));
         }
-        // if (!ov) {
-        //     const el = document.createElement('div');
-        //     Object.assign(el.style, { background: 'rgba(255,255,255,0.85)', border: '1px solid #000', padding: '6px', fontSize: '12px', color: '#000', pointerEvents: 'none' });
-        //     ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10] });
-        //     OLMap && OLMap.addOverlay(ov);
-        //     distanceOverlaysMap.set(key, ov);
-        // }
-        // const midPoint = [(coordsA[0] + coordsB[0]) / 2, (coordsA[1] + coordsB[1]) / 2];
-        // ov.getElement().innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
-        // ov.setPosition(ol.proj.fromLonLat(midPoint));
-        // }
 
         // cleanup features/overlays for keys not active
         for (const [k, feat] of distanceLineFeaturesMap) {
@@ -1761,127 +1751,6 @@ function updateDistanceToGroundOverlay() {
     return;
 
 }
-
-
-
-// Función para actualizar la medición tierra-tierra
-// function updateGroundToGroundOverlay() {
-//     // Si la capa de líneas existe pero el usuario la ocultó, respetar su elección y no volver a crear/añadir nada.
-//     if (ggLineLayer && !ggLineLayer.getVisible()) return;
-
-//     // Lista de pares A‑B que se van a mostrar
-//     const pairs = [];
-//     // Modo 1A1B: un punto en tierra a otro punto en tierra
-//     if (groundToGroundModeType === '1A1B') {
-//         // Solo si existe el punto A y un único punto B
-//         if (ggPointA && ggPointsB.length === 1) {
-//             // Guardar el par A‑B con clave fija
-//             pairs.push({ key: '0', a: ggPointA, b: ggPointsB[0] });
-//         }
-//         // Modo 1AnB: un punto en tierra a otros puntos en tierra
-//     } else if (groundToGroundModeType === '1A_nB') {
-//         // Solo si existe el punto A y al menos un punto B
-//         if (ggPointA && ggPointsB.length) {
-//             // Guardar los pares A‑B con claves basadas en el índice
-//             ggPointsB.forEach((pt, idx) => pairs.push({ key: `${idx}`, a: ggPointA, b: pt }));
-//         }
-//     } else if (groundToGroundModeType === 'nA_nB') {
-//         // Modo nA_nB: usar los pares acumulados (ggPairs)
-//         if (ggPairs && ggPairs.length) {
-//             for (const p of ggPairs) {
-//                 pairs.push({ key: p.key, a: p.a, b: p.b });
-//             }
-//         }
-//     }
-
-//     // Si no hay pares, no se dibuja nada
-//     if (!pairs.length) return;
-//     // Asegurar que la capa de líneas esté visible
-//     // if (ggLineLayer) ggLineLayer.setVisible(true);
-//     // Conjunto de pares que siguen activos
-//     const active = new Set();
-
-//     // Recorrer cada par tierra‑tierra activo
-//     for (const { key, a, b } of pairs) {
-//         // Calcular distancia en millas náuticas
-//         const distNm = haversineDistance(a[1], a[0], b[1], b[0]);
-//         // Convertir distancia a metros
-//         const distM = distNm * 1852;
-//         // Formatear la distancia
-//         const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
-
-//         // Proyectar el punto A al mapa
-//         const projA = ol.proj.fromLonLat(a);
-//         // Proyectar el punto B al mapa
-//         const projB = ol.proj.fromLonLat(b);
-
-//         // Marcar el par como activo en el ciclo
-//         active.add(key);
-
-//         // Buscar la línea A‑B ya dibujada
-//         let feat = ggLineFeatures.get(key);
-//         // Si no existe, crearla
-//         if (!feat) {
-//             // Línea entre A y B
-//             feat = new ol.Feature(new ol.geom.LineString([projA, projB]));
-//             // Add the line to the vector source
-//             ggLineSource && ggLineSource.addFeature(feat);
-//             // Guardar la línea en el registro
-//             ggLineFeatures.set(key, feat);
-//         } else {
-//             // Actualizar coordenadas de la línea existente
-//             feat.getGeometry().setCoordinates([projA, projB]);
-//         }
-
-//         // Calcular el punto medio A‑B
-//         const mid = feat.getGeometry().getCoordinateAt(0.5);
-
-//         // Buscar overlay de distancia para el par
-//         let ov = ggOverlays.get(key);
-//         // Si no existe, crearlo
-//         if (!ov) {
-//             const el = document.createElement('div');
-//             Object.assign(el.style, {
-//                 background: 'rgba(255,255,255,0.85)',
-//                 border: '1px solid #000',
-//                 padding: '6px',
-//                 fontSize: '12px',
-//                 color: '#000',
-//                 pointerEvents: 'none',
-//             });
-//             ov = new ol.Overlay({ element: el, positioning: 'center-center', offset: [0, -10] });
-//             OLMap && OLMap.addOverlay(ov);
-//             ggOverlays.set(key, ov);
-//         }
-//         // Mostrar la distancia formateada
-//         ov.getElement().innerHTML = `Distance: ${distText}`;
-//         // Posicionar el overlay en el punto medio A‑B
-//         ov.setPosition(mid);
-//     }
-
-//     // Recorrer todas las líneas tierra‑tierra dibujadas
-//     for (const [k, feat] of ggLineFeatures) {
-//         // Si la línea no quedó activa en este ciclo
-//         if (!active.has(k)) {
-//             // It is removed from the map source
-//             ggLineSource && ggLineSource.removeFeature(feat);
-//             // Se elimina del registro de líneas
-//             ggLineFeatures.delete(k);
-//         }
-//     }
-//     // Recorrer todos los overlays de distancia
-//     for (const [k, ov] of ggOverlays) {
-//         // Si el overlay no quedó activo en este ciclo
-//         if (!active.has(k)) {
-//             // Se retira del mapa
-//             OLMap && OLMap.removeOverlay(ov);
-//             // Se elimina del registro de overlays
-//             ggOverlays.delete(k);
-//         }
-//     }
-// }
-
-
 
 function updateGroundToGroundOverlay() {
     // If line layer is hidden by user, don't create/add overlays
@@ -5121,14 +4990,6 @@ function ol_map_init() {
 
                 // Modo nA_nB
                 if (distanceToGroundModeType === 'nA_nB') {
-                    // Si ya se alcanzó el máximo de pares
-                    // if (taPairs.length >= TA_MAX_nA_nB) {
-                    //     // Avisar límite alcanzado
-                    //     showDistanceGuide(`Maximum ${TA_MAX_nA_nB} pairs.`);
-                    //     // Detener propagación del evento
-                    //     evt.stopPropagation();
-                    //     return;
-                    // }
                     // Si había un punto A pendiente
                     if (taPendingGround) {
                         // Tomar el punto A pendiente
@@ -5164,11 +5025,6 @@ function ol_map_init() {
                     if (planesForGround.includes(planeHex)) {
                         // Refrescar guía
                         showDistanceGuide(taStep2Message());
-                        // Si supera el máximo de B
-                        // } else if (planesForGround.length >= TA_MAX_1A_nB) {
-                        //     // Avisar el límite
-                        //     showDistanceGuide(`Maximum ${TA_MAX_1A_nB} B points.`);
-                        //     // Si aún se puede agregar este avión B
                     } else {
                         // Añadir el avión B
                         planesForGround.push(planeHex);
@@ -5215,14 +5071,6 @@ function ol_map_init() {
                     }
                     // Si hay avión pendiente de un punto A
                     if (taPendingPlaneHex) {
-                        // Revisar límite de pares
-                        // if (taPairs.length >= TA_MAX_nA_nB) {
-                        //     // Aviso de límite
-                        //     showDistanceGuide(`Maximum ${TA_MAX_nA_nB} pairs.`);
-                        //     // Detener propagación
-                        //     evt.stopPropagation();
-                        //     return;
-                        // }
                         // Recuperar avión pendiente
                         const hex = taPendingPlaneHex;
                         // Limpiar pendiente
@@ -5242,13 +5090,6 @@ function ol_map_init() {
                         hideDistanceGuide();
                         // Si no hay avión pendiente
                     } else {
-                        // Verificar límite de pares
-                        // if (taPairs.length >= TA_MAX_nA_nB) {
-                        //     showDistanceGuide(`Maximum ${TA_MAX_nA_nB} pairs.`);
-                        //     // Detener propagación
-                        //     evt.stopPropagation();
-                        //     return;
-                        // }
                         // Guardar el punto A pendiente
                         taPendingGround = lonlat;
                         // Asegurar visibilidad
@@ -5265,12 +5106,6 @@ function ol_map_init() {
                     }
                     // Modo nA_1B
                 } else if (distanceToGroundModeType === 'nA_1B') {
-                    // Si alcanza el máximo de puntos A
-                    // if (groundPoints.length >= TA_MAX_nA_1B) {
-                    //     // Aviso de límite
-                    //     showDistanceGuide(`Maximum ${TA_MAX_nA_1B} A points.`);
-                    //     // Si aún puede agregar punto A
-                    // } else {
                     // Mostrar capa de puntos
                     if (groundPointLayer) groundPointLayer.setVisible(true);
                     // Añadir nuevo punto A
@@ -5399,12 +5234,6 @@ function ol_map_init() {
                 hideDistanceGuide();
                 // 1A_nB
             } else {
-                // Si ya alcanzó el máximo de puntos B
-                // if (ggPointsB.length >= GG_MAX_1A_nB) {
-                //     // Avisar el límite
-                //     showDistanceGuide(`Maximum ${GG_MAX_1A_nB} B points.`);
-                //     // Si aún se pueden agregar más puntos B
-                // } else {
                 // Añadir este clic a la lista de B
                 ggPointsB.push(lonlat);
                 // Dibujar el nuevo punto B
@@ -5458,11 +5287,6 @@ function ol_map_init() {
                         showDistanceGuide('Anchor disabled.');
                         return;
                     }
-
-                    // if (pairMap.size >= PP_MAX_PAIRS) {
-                    //     showDistanceGuide(`Maximum ${PP_MAX_PAIRS} pairs reached.`);
-                    //     return;
-                    // }
                     const key = `${selectedPlaneA}|${planeHex}`;
                     if (pairMap.has(key)) {
                         showDistanceGuide('Pair already exists.');
@@ -5492,12 +5316,6 @@ function ol_map_init() {
                         return;
                     }
 
-                    // Create independent pair first|planeHex
-                    // if (pairMap.size >= PP_MAX_PAIRS) {
-                    //     showDistanceGuide(`Maximum ${PP_MAX_PAIRS} pairs reached.`);
-                    //     pairBuffer = [];
-                    //     return;
-                    // }
                     const newKey = `${first}|${planeHex}`;
                     if (pairMap.has(newKey)) {
                         showDistanceGuide('Pair already exists.');
@@ -7331,6 +7149,16 @@ function refreshFeatures() {
         header: function () { return 'Wind' + NBSP + '(' + get_unit_label("speed", DisplayUnits) + ')'; },
     };
 
+    let originalColumnsOrder = [];
+
+    function saveOriginalColumnsOrder() {
+        originalColumnsOrder = [...Object.values(cols)];
+        console.log('Original columns order saved:', originalColumnsOrder.map(c => c.id));
+    }
+
+    // Llamar inmediatamente después de definir todas las columnas
+    saveOriginalColumnsOrder();
+
     const colsEntries = Object.entries(cols);
     for (let i in colsEntries) {
         let key = colsEntries[i][0];
@@ -7357,12 +7185,22 @@ function refreshFeatures() {
         htmlTable = document.getElementById('planesTable');
         for (let i in columns) {
             let col = columns[i];
-            col.visible = true;
+            // col.visible = true;
             col.toggleKey = 'column_' + col.id;
 
-            if (HideCols.includes('#' + col.id)) {
-                planeMan.setColumnVis(col.id, false);
+            // Cargar estado guardado de localStorage
+            const savedState = localStorage.getItem(col.toggleKey);
+            if (savedState !== null) {
+                col.visible = savedState === 'true';
+            } else if (HideCols.includes('#' + col.id)) {
+                col.visible = false;
+            } else {
+                col.visible = true;
             }
+
+            // if (HideCols.includes('#' + col.id)) {
+            //     planeMan.setColumnVis(col.id, false);
+            // }
         }
 
         createColumnToggles();
@@ -7679,56 +7517,299 @@ function refreshFeatures() {
         planeMan.refresh();
     }
 
-    //
-    // ---- table sorting end ----
-    //
-
     function createColumnToggles() {
         const prefix = 'dd_';
-        const sortableColumns = jQuery('#sortableColumns').sortable({
-            update: function (event, ui) {
-                const order = [];
-                jQuery('#sortableColumns li').each(function (e) {
-                    order.push(jQuery(this).attr('id').replace(prefix, ''));
-                });
+        const container = jQuery('#sortableColumns');
 
-                loStore['columnOrder'] = JSON.stringify(order);
-                columns = createOrderedColumns();
+        // Limpiar container
+        container.empty();
 
-                planeMan.redraw();
+        const DEFAULT_COLUMNS = [
+            'icao',      // hex id
+            'country',   // flag
+            'flight',    // callsign
+            'route',     // route
+            'type',      // type
+            'squawk',    // squawk
+            'altitude',  // altitude
+            'speed',     // speed
+            'sitedist',  // distance
+            'rssi'       // rssi
+        ];
+
+        window.resetColumnsToDefault = function () {
+            // Restaurar visibilidad de cada columna según DEFAULT_COLUMNS
+            for (const col of Object.values(cols)) {
+                const shouldBeVisible = DEFAULT_COLUMNS.includes(col.id);
+                col.visible = shouldBeVisible;
+                localStorage.setItem(col.toggleKey, shouldBeVisible ? 'true' : 'false');
             }
+
+            // Restaurar el orden original de las columnas
+            if (originalColumnsOrder && originalColumnsOrder.length > 0) {
+                const originalOrder = [];
+                for (const col of originalColumnsOrder) {
+                    originalOrder.push(col.id);
+                }
+                localStorage.setItem('columnOrder', JSON.stringify(originalOrder));
+
+                // Reconstruir columns global con el orden original
+                const restoredColumns = [];
+                for (const colId of originalOrder) {
+                    const column = cols[colId];
+                    if (column !== undefined) {
+                        restoredColumns.push(column);
+                    }
+                }
+                window.columns = restoredColumns;
+            } else {
+                // Fallback: orden por defecto basado en DEFAULT_COLUMNS
+                const defaultOrder = [...DEFAULT_COLUMNS];
+                for (const col of Object.values(cols)) {
+                    if (!defaultOrder.includes(col.id)) {
+                        defaultOrder.push(col.id);
+                    }
+                }
+                localStorage.setItem('columnOrder', JSON.stringify(defaultOrder));
+
+                const restoredColumns = [];
+                for (const colId of defaultOrder) {
+                    const column = cols[colId];
+                    if (column !== undefined) {
+                        restoredColumns.push(column);
+                    }
+                }
+                window.columns = restoredColumns;
+            }
+
+            // Recrear el UI de columnas
+            createColumnToggles();
+
+            // Redibujar la tabla
+            if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
+                TAR.planeMan.redraw();
+            }
+        };
+
+        // ============================================
+        // 3. DETERMINAR QUÉ COLUMNAS ESTÁN CHECKED (visibles)
+        // ============================================
+        const checkedColumnIds = [];
+        const uncheckedColumnIds = [];
+
+        for (const col of Object.values(cols)) {
+            if (col.visible === true) {
+                checkedColumnIds.push(col.id);
+            } else {
+                uncheckedColumnIds.push(col.id);
+            }
+        }
+
+        // Mantener el orden original de las columnas CHECKED (según el orden de la tabla)
+        const orderedCheckedIds = [];
+        for (const col of columns) {
+            if (checkedColumnIds.includes(col.id)) {
+                orderedCheckedIds.push(col.id);
+            }
+        }
+        // Añadir cualquier checked que falte (por si acaso)
+        for (const id of checkedColumnIds) {
+            if (!orderedCheckedIds.includes(id) && cols[id]) {
+                orderedCheckedIds.push(id);
+            }
+        }
+
+        // Ordenar UNCHECKED alfabéticamente por su texto de visualización
+        const orderedUncheckedIds = [...uncheckedColumnIds];
+        orderedUncheckedIds.sort((a, b) => {
+            const textA = cols[a].text || a;
+            const textB = cols[b].text || b;
+            return textA.localeCompare(textB);
         });
 
-        for (let col of columns) {
-            sortableColumns.append(`<li class="ui-state-default" id="${prefix + col.id}"></li>`);
+        container.append(`
+        <div style="margin-bottom: 15px;">
+            <button class="formButton" id="reset-columns-btn" title="Restore default column configuration">
+                Restore default columns
+            </button>
+        </div>
+        <div class="column-category" id="column-category-checked">
+            <div class="column-category-title"> Active columns (${orderedCheckedIds.length})</div>
+            <div class="columns-grid" id="checked-columns-grid"></div>
+        </div>
+        <div class="column-category" id="column-category-unchecked">
+            <div class="column-category-title"> Inactive columns (${orderedUncheckedIds.length})</div>
+            <div class="columns-grid" id="unchecked-columns-grid"></div>
+        </div>
+    `);
 
-            new Toggle({
-                key: col.toggleKey,
-                display: col.text,
-                container: jQuery(`#${prefix + col.id}`),
-                init: col.visible,
-                setState: function (state) {
-                    planeMan.setColumnVis(col.id, state);
+        // Evento del botón de restaurar
+        jQuery('#reset-columns-btn').off('click').on('click', function (e) {
+            e.preventDefault();
+            window.resetColumnsToDefault();
+        });
+
+        const checkedGrid = jQuery('#checked-columns-grid');
+        const uncheckedGrid = jQuery('#unchecked-columns-grid');
+
+        // Función para crear el HTML de un ítem de columna
+        function createColumnItem(col, isChecked) {
+            return `
+            <li class="ui-state-default" id="${prefix + col.id}" data-column-id="${col.id}">
+                <div class="settingsCheckbox ${isChecked ? 'settingsCheckboxChecked' : ''}" 
+                     style="display: inline-block; cursor: pointer;"></div>
+                <span class="settingsText" style="cursor: pointer;">${col.text}</span>
+            </li>
+        `;
+        }
+
+        // Añadir columnas CHECKED en el orden de la tabla
+        for (const colId of orderedCheckedIds) {
+            const col = cols[colId];
+            if (col) {
+                checkedGrid.append(createColumnItem(col, true));
+            }
+        }
+
+        // Añadir columnas UNCHECKED en orden alfabético
+        for (const colId of orderedUncheckedIds) {
+            const col = cols[colId];
+            if (col) {
+                uncheckedGrid.append(createColumnItem(col, false));
+            }
+        }
+
+        for (const col of Object.values(cols)) {
+            const $li = jQuery(`#${prefix + col.id}`);
+            const $checkbox = $li.find('.settingsCheckbox');
+            const $text = $li.find('.settingsText');
+
+            // Función para alternar el estado
+            function toggleColumnState() {
+                const newState = !col.visible;
+                col.visible = newState;
+
+                // Mover el elemento entre categorías visualmente
+                const $element = jQuery(`#${prefix + col.id}`);
+                if (newState) {
+                    // Mover a checked (al final, manteniendo orden de tabla)
+                    $element.detach();
+                    checkedGrid.append($element);
+                    $checkbox.addClass('settingsCheckboxChecked');
+                    updateCategoryCounts();
+                } else {
+                    // Mover a unchecked (manteniendo orden alfabético)
+                    $element.detach();
+                    // Insertar en orden alfabético
+                    let inserted = false;
+                    const newText = col.text;
+                    uncheckedGrid.children('li').each(function () {
+                        const existingText = jQuery(this).find('.settingsText').text();
+                        if (newText.localeCompare(existingText) < 0) {
+                            jQuery(this).before($element);
+                            inserted = true;
+                            return false;
+                        }
+                    });
+                    if (!inserted) {
+                        uncheckedGrid.append($element);
+                    }
+                    $checkbox.removeClass('settingsCheckboxChecked');
+                    updateCategoryCounts();
                 }
+
+                // Guardar en localStorage
+                localStorage.setItem(col.toggleKey, newState ? 'true' : 'false');
+
+                // Actualizar el orden global de columnas
+                updateColumnsOrderFromDOM();
+
+                // Redibujar la tabla
+                if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
+                    TAR.planeMan.redraw();
+                }
+            }
+
+            // Evento click en el checkbox
+            $checkbox.off('click').on('click', function (e) {
+                e.stopPropagation();
+                toggleColumnState();
+            });
+
+            // Evento click en el texto
+            $text.off('click').on('click', function (e) {
+                e.stopPropagation();
+                toggleColumnState();
             });
         }
+
+        // Función para actualizar los contadores de cada categoría
+        function updateCategoryCounts() {
+            const checkedCount = checkedGrid.children('li').length;
+            const uncheckedCount = uncheckedGrid.children('li').length;
+            jQuery('#column-category-checked .column-category-title').html(` Active columns (${checkedCount})`);
+            jQuery('#column-category-unchecked .column-category-title').html(` Inactive columns (${uncheckedCount})`);
+        }
+
+        // Función para actualizar el orden global de columnas basado en el DOM
+        function updateColumnsOrderFromDOM() {
+            const newOrder = [];
+            checkedGrid.children('li').each(function () {
+                const colId = jQuery(this).attr('id').replace(prefix, '');
+                newOrder.push(colId);
+            });
+            uncheckedGrid.children('li').each(function () {
+                const colId = jQuery(this).attr('id').replace(prefix, '');
+                newOrder.push(colId);
+            });
+
+            // Reconstruir columns en el nuevo orden
+            const newColumns = [];
+            for (const colId of newOrder) {
+                const column = cols[colId];
+                if (column !== undefined) {
+                    newColumns.push(column);
+                }
+            }
+            // Añadir cualquier columna que falte (por si acaso)
+            for (const col of Object.values(cols)) {
+                if (!newColumns.includes(col)) {
+                    newColumns.push(col);
+                }
+            }
+
+            // Actualizar la variable global columns
+            window.columns = newColumns;
+
+            // Guardar en localStorage
+            localStorage.setItem('columnOrder', JSON.stringify(newOrder));
+        }
+
+        // Inicializar contadores
+        updateCategoryCounts();
     }
 
     function createOrderedColumns() {
+        if (window.columns && window.columns.length > 0) {
+            return window.columns;
+        }
+
         const order = loStore['columnOrder'];
         if (order !== undefined) {
-            const columns = [];
-            for (let col of JSON.parse(order)) {
-                const column = cols[col];
+            const orderedColumns = [];
+            for (let colId of JSON.parse(order)) {
+                const column = cols[colId];
                 if (column !== undefined) {
-                    columns.push(column);
+                    orderedColumns.push(column);
                 }
             }
-            if (columns.length > 0) {
-                return columns;
+            if (orderedColumns.length > 0) {
+                window.columns = orderedColumns;
+                return orderedColumns;
             }
         }
-        return Object.values(cols);
+        window.columns = Object.values(cols);
+        return window.columns;
     }
 
     return TAR;
@@ -8007,7 +8088,7 @@ function setPhotoHtml(source) {
 }
 
 function adjustInfoBlock() {
-    
+
     if (wideInfoBlock) {
         infoBlockWidth = baseInfoBlockWidth + 40;
     } else {
@@ -8062,10 +8143,6 @@ function adjustInfoBlock() {
         }
     }
 
-    // =================================================================
-    // REGLA DE ORO AL FINAL: Si está minimizado, la escala debe desplazarse
-    // El posicionamiento del replayBar lo gestiona updateReplayBarPosition()
-    // =================================================================
     if (jQuery('#selected_infoblock').hasClass('infoblock-minimized')) {
         jQuery('.ol-scale-line').css('left', '8px');
     }
@@ -8664,7 +8741,7 @@ function initAirportMarkerLayer() {
 // Función para mostrar marcador en coordenadas específicas
 function showAirportMarker(lonlat) {
     initAirportMarkerLayer();
-    
+
     // Limpiar marcador anterior si existe
     if (airportMarkerFeature) {
         airportMarkerLayer.getSource().removeFeature(airportMarkerFeature);
@@ -8672,12 +8749,12 @@ function showAirportMarker(lonlat) {
     if (airportMarkerTimeout) {
         clearTimeout(airportMarkerTimeout);
     }
-    
+
     // Crear nuevo marcador
     const projCoords = ol.proj.fromLonLat([lonlat[1], lonlat[0]]);
     airportMarkerFeature = new ol.Feature(new ol.geom.Point(projCoords));
     airportMarkerLayer.getSource().addFeature(airportMarkerFeature);
-    
+
     // Auto-eliminar después de 8 segundos
     airportMarkerTimeout = setTimeout(() => {
         if (airportMarkerFeature && airportMarkerLayer) {
@@ -8689,7 +8766,7 @@ function showAirportMarker(lonlat) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const currentOpacity = 1 - progress;
-                
+
                 const fadeStyle = new ol.style.Style({
                     image: new ol.style.Circle({
                         radius: 6,
@@ -8699,7 +8776,7 @@ function showAirportMarker(lonlat) {
                 });
 
                 airportMarkerFeature.setStyle(fadeStyle);
-                
+
                 if (progress < 1) {
                     requestAnimationFrame(animateFade);
                 } else {
@@ -8710,7 +8787,7 @@ function showAirportMarker(lonlat) {
                     airportMarkerFeature = null;
                 }
             }
-            
+
             requestAnimationFrame(animateFade);
         }
         airportMarkerTimeout = null;
@@ -8723,7 +8800,7 @@ function resetZoomBaselineToCurrent() {
     zoomIndicatorBaseline = z;
     try {
         localStorage.setItem(ZOOM_BASELINE_KEY, zoomIndicatorBaseline);
-    } catch (e) {}
+    } catch (e) { }
     updateZoomIndicator();
 }
 
@@ -8736,7 +8813,7 @@ function executeJump(coords) {
     if (coords && coords.length >= 2) {
         showAirportMarker(coords);
     }
-    
+
     OLMap.getView().setCenter(ol.proj.fromLonLat([coords[1], coords[0]]));
 
     // Hacer zoom a nivel apropiado para visualizar el aeropuerto (zoom 12)
@@ -8748,7 +8825,7 @@ function executeJump(coords) {
     if (g.zoomLvl >= 7) fetchData({ force: true });
     refreshFilter();
     hideSearchWarning();
-    
+
 }
 
 // También actualizar searchAirport para usar la misma lógica

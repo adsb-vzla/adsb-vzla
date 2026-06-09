@@ -2283,3 +2283,74 @@ div.ui-slider .ui-slider-handle {
     flex-wrap: wrap !important;
     gap: 6px !important;
 }
+
+/* ===== MEJORAS PARA EL MENÚ DE COLUMNAS ===== */
+
+/* Contenedor principal de las columnas - layout en grid responsivo */
+#sortableColumns {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+/* Cada ítem de columna - ocupa espacio proporcional */
+#sortableColumns li {
+    margin: 0;
+    padding: 6px 10px;
+    width: calc(33.33% - 8px);
+    min-width: 120px;
+    flex: 1 0 auto;
+    background: var(--BGCOLOR2);
+    border: 1px solid var(--BASE-COLOR);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* El checkbox dentro de cada ítem */
+#sortableColumns .settingsCheckbox {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+#sortableColumns .settingsText {
+    display: inline-block;
+    font-size: calc(12px * var(--SCALE));
+    line-height: normal;
+    flex: 1;
+    cursor: pointer;
+}
+
+/* Categorías de columnas */
+.column-category {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.column-category-title {
+    font-weight: bold;
+    font-size: 13px;
+    padding: 6px 10px;
+    margin: 0 0 10px 0;
+    background: var(--BASE-COLOR);
+    color: white;
+    border-radius: 4px;
+    display: block;
+}
+
+.columns-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
