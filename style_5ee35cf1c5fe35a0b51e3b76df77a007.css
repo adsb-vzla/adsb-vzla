@@ -244,6 +244,35 @@ select {
     cursor: default;
 }
 
+/* ===== MEJORAS PARA LA TABLA DE AVIONES ===== */
+
+/* Título de la tabla */
+.planes-table-title {
+    font-size: calc(14px * var(--SCALE));
+    font-weight: bold;
+    text-align: center;
+    padding: calc(8px * var(--SCALE));
+    margin: 0;
+    color: white;
+}
+
+/* Centrar encabezados de la tabla */
+#planesTable thead tr td {
+    text-align: center !important;
+    vertical-align: middle;
+}
+
+/* Asegurar que las celdas del cuerpo mantengan su alineación original */
+#planesTable tbody tr td {
+    text-align: left;
+}
+
+/* Para columnas que específicamente deben estar a la derecha (como números) */
+#planesTable tbody tr td[style*="text-align: right"],
+#planesTable tbody tr td[align="right"] {
+    text-align: right !important;
+}
+
 #layout_container {
     display: flex;
     height: 100%;
