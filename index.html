@@ -879,11 +879,19 @@
         <div class="settingsOptionContainer">
           <div class="settingsText">Text and icon size:</div>
         </div>
-        <div style="display: block; width: 100%;" id="userScaleSlider"></div>
+        <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
+          <div style="display: block; width: 100%;" id="userScaleSlider"></div>
+          <button id="resetUserScaleBtn" class="formButton" style="padding: 4px 8px; font-size: 11px;"
+            title="Reset to default size">Reset</button>
+        </div>
         <div class="settingsOptionContainer">
           <div class="settingsText">Icon size multiplier:</div>
         </div>
-        <div style="display: block; width: 100%;" id="iconScaleSlider"></div>
+        <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
+          <div style="display: block; width: 100%;" id="iconScaleSlider"></div>
+          <button id="resetIconScaleBtn" class="formButton" style="padding: 4px 8px; font-size: 11px;"
+            title="Reset to default multiplier">Reset</button>
+        </div>
 
         <div id="settingsLeft" class="settingsColumn">
           <!-- Categoría UNITS -->

@@ -2159,38 +2159,38 @@ function zoomOutMap() {
 function resetSidebarWidth() {
     const sidebar = document.getElementById('sidebar_container');
     if (!sidebar) return;
-    
+
     // Ancho base por defecto (25% del ancho de la ventana, con límites)
     const windowWidth = window.innerWidth;
     let baseWidth = windowWidth * 0.25;
-    
+
     // Limitar el ancho mínimo y máximo
     const minWidth = 200;
     const maxWidth = windowWidth * 0.6;
     baseWidth = Math.min(maxWidth, Math.max(minWidth, baseWidth));
-    
+
     // Aplicar el nuevo ancho
     sidebar.style.width = baseWidth + 'px';
-    
+
     // Guardar en localStorage
     localStorage.setItem('sidebar_width', baseWidth);
-    
+
     // Actualizar el tamaño del mapa
     if (typeof updateMapSize === 'function') {
         updateMapSize();
     }
-    
+
     // Forzar redibujado de la tabla
     if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
         TAR.planeMan.redraw();
     }
-    
+
     // Pequeña animación de feedback visual
     sidebar.style.transition = 'width 0.2s ease';
     setTimeout(() => {
         sidebar.style.transition = '';
     }, 200);
-    
+
     console.log('Sidebar width reset to:', baseWidth + 'px');
 }
 
@@ -2198,28 +2198,28 @@ function resetSidebarWidth() {
 function initSidebarResetTab() {
     const resetTab = document.getElementById('reset-sidebar-tab');
     const resetLink = document.getElementById('reset-sidebar-link');
-    
+
     if (!resetTab || !resetLink) return;
-    
+
     // Forzar que jQuery UI tabs no lo trate como pestaña
     if (typeof jQuery !== 'undefined' && jQuery.ui && jQuery.ui.tabs) {
         // Marcar este elemento como no seleccionable por tabs
         resetTab.setAttribute('aria-controls', '');
         resetTab.setAttribute('aria-labelledby', '');
     }
-    
+
     // Prevenir que jQuery UI tabs lo maneje como pestaña
-    resetLink.addEventListener('click', function(e) {
+    resetLink.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
         resetSidebarWidth();
-        
+
     });
 }
 
 // Ejecutar después de que jQuery UI tabs se haya inicializado
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Pequeño retraso para asegurar que jQuery UI tabs ya está listo
         setTimeout(initSidebarResetTab, 100);
     });
@@ -2230,15 +2230,15 @@ if (document.readyState === 'loading') {
 // ============================================
 // RESET ALL SETTINGS CON CONFIRMACIÓN
 // ============================================
-(function() {
+(function () {
     // Esperar a que el DOM esté listo
-    const initResetButton = function() {
+    const initResetButton = function () {
         const resetBtn = document.getElementById('reset-all-settings-btn');
         if (!resetBtn) return;
-        
-        resetBtn.addEventListener('click', function(e) {
+
+        resetBtn.addEventListener('click', function (e) {
             e.preventDefault();
-            
+
             // Crear overlay de confirmación
             const overlay = document.createElement('div');
             overlay.id = 'reset-confirm-overlay';
@@ -2255,7 +2255,7 @@ if (document.readyState === 'loading') {
                 justify-content: center;
                 backdrop-filter: blur(3px);
             `;
-            
+
             // Crear modal de confirmación
             const modal = document.createElement('div');
             modal.style.cssText = `
@@ -2268,7 +2268,7 @@ if (document.readyState === 'loading') {
                 text-align: center;
                 border: 1px solid var(--LIGHTER-BASE-COLOR, #ccc);
             `;
-            
+
             modal.innerHTML = `
                 <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
                 <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: bold;">Reset all settings</h3>
@@ -2301,32 +2301,32 @@ if (document.readyState === 'loading') {
                     ">Reset & Reload</button>
                 </div>
             `;
-            
+
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
-            
+
             // Función para cerrar el modal
-            const closeModal = function() {
+            const closeModal = function () {
                 if (overlay && overlay.parentNode) {
                     overlay.parentNode.removeChild(overlay);
                 }
             };
-            
+
             // Botón Cancelar
             const cancelBtn = document.getElementById('reset-confirm-cancel');
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', closeModal);
             }
-            
+
             // Clic fuera del modal
-            overlay.addEventListener('click', function(e) {
+            overlay.addEventListener('click', function (e) {
                 if (e.target === overlay) closeModal();
             });
-            
+
             // Botón Confirmar
             const confirmBtn = document.getElementById('reset-confirm-ok');
             if (confirmBtn) {
-                confirmBtn.addEventListener('click', function() {
+                confirmBtn.addEventListener('click', function () {
                     // Mostrar mensaje de "Resetting..."
                     const loadingMsg = document.createElement('div');
                     loadingMsg.style.cssText = `
@@ -2345,7 +2345,7 @@ if (document.readyState === 'loading') {
                     `;
                     loadingMsg.innerHTML = '🔄 Resetting settings...<br><span style="font-size: 12px;">Page will reload</span>';
                     document.body.appendChild(loadingMsg);
-                    
+
                     // Llamar a resetSettings() existente
                     if (typeof resetSettings === 'function') {
                         resetSettings();
@@ -2353,18 +2353,18 @@ if (document.readyState === 'loading') {
                         // Fallback: limpiar localStorage
                         try {
                             localStorage.clear();
-                        } catch(e) {}
+                        } catch (e) { }
                     }
-                    
+
                     // Recargar la página después de un breve momento
-                    setTimeout(function() {
+                    setTimeout(function () {
                         window.location.reload();
                     }, 300);
                 });
             }
         });
     };
-    
+
     // Ejecutar cuando el DOM esté listo
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initResetButton);
@@ -3264,6 +3264,36 @@ function earlyInitPage() {
             setGlobalScale(userScale);
         },
     });
+    // Botón reset para Text and icon size (userScale)
+    const resetUserScaleBtn = document.getElementById('resetUserScaleBtn');
+    if (resetUserScaleBtn) {
+        resetUserScaleBtn.addEventListener('click', function () {
+            const defaultValue = 1.0; // Valor base por defecto
+            userScale = defaultValue;
+            checkScale();
+            mapRefresh();
+            loStore['userScale'] = userScale;
+            setGlobalScale(userScale);
+            // Actualizar el slider visualmente
+            const slideBase = 0.6;
+            jQuery('#userScaleSlider').slider('value', Math.pow(userScale, 1 / slideBase));
+        });
+    }
+    // Botón reset para Icon size multiplier (iconScale)
+    const resetIconScaleBtn = document.getElementById('resetIconScaleBtn');
+    if (resetIconScaleBtn) {
+        resetIconScaleBtn.addEventListener('click', function () {
+            const defaultValue = 1.0; // Valor base por defecto
+            iconScale = defaultValue;
+            checkScale();
+            mapRefresh();
+            loStore['iconScale'] = iconScale;
+            // Actualizar el slider visualmente
+            const slideBase = 0.6;
+            jQuery('#iconScaleSlider').slider('value', Math.pow(iconScale, 1 / slideBase));
+        });
+    }
+
     setGlobalScale(userScale, "init");
 
     if (usp.has('hideButtons'))
@@ -9224,20 +9254,20 @@ Filter.prototype.init = function () {
 function initFilters() {
     initSourceFilter(tableColors.unselected);
     initFlagFilter(tableColors.unselected);
-    
+
     // Limpiar las tablas existentes
     const filterTable = document.getElementById('filterTable');
     const filterTable2 = document.getElementById('filterTable2');
     const filterTable3 = document.getElementById('filterTable3');
-    
+
     if (filterTable) filterTable.innerHTML = '';
     if (filterTable2) filterTable2.innerHTML = '';
     if (filterTable3) filterTable3.innerHTML = '';
-    
+
     // Contenedor para todos los grupos
     const container = document.createElement('div');
     container.className = 'filters-accordion';
-    
+
     const group1 = document.createElement('div');
     group1.className = 'filter-group';
     group1.innerHTML = `
@@ -9365,7 +9395,7 @@ function initFilters() {
         </div>
     `;
     container.appendChild(group6);
-    
+
     // Insertar el contenedor en filterTable
     if (filterTable) {
         // Limpiar filterTable y agregar el contenedor
@@ -9379,34 +9409,34 @@ function initFilters() {
         tbody.appendChild(tr);
         filterTable.appendChild(tbody);
     }
-    
+
     if (filterTable2) filterTable2.innerHTML = '';
     if (filterTable3) filterTable3.innerHTML = '';
 
     function initAccordion() {
         const groups = document.querySelectorAll('.filter-group');
-        
+
         groups.forEach((group, index) => {
             const header = group.querySelector('.filter-group-header');
             const content = group.querySelector('.filter-group-content');
             const icon = header.querySelector('.accordion-icon');
-            
+
             // Estado inicial: todos cerrados
             let isExpanded = false;
             content.style.height = '0px';
             icon.textContent = '▶';
             header.setAttribute('aria-expanded', 'false');
-            
+
             header.addEventListener('click', () => {
                 isExpanded = !isExpanded;
-                
+
                 if (isExpanded) {
                     // Expandir
                     const targetHeight = content.scrollHeight;
                     content.style.height = targetHeight + 'px';
                     icon.textContent = '▼';
                     header.setAttribute('aria-expanded', 'true');
-                    
+
                     // Después de la transición, permitir que el height sea auto
                     const onTransitionEnd = () => {
                         content.style.height = 'auto';
@@ -9417,10 +9447,10 @@ function initFilters() {
                     // Colapsar
                     const currentHeight = content.scrollHeight;
                     content.style.height = currentHeight + 'px';
-                    
+
                     // Forzar reflow
                     content.offsetHeight;
-                    
+
                     content.style.height = '0px';
                     icon.textContent = '▶';
                     header.setAttribute('aria-expanded', 'false');
@@ -9428,16 +9458,16 @@ function initFilters() {
             });
         });
     }
-    
+
     // Valores activos de cada buscador
     let flightSearchPattern = '';
     let typeSearchPattern = '';
     let regSearchPattern = '';
-    
+
     // Función para actualizar los filtros activos
     function updateFilters() {
         filters_active.length = 0;
-        
+
         // Buscador de vuelo
         if (flightSearchPattern) {
             const pattern = flightSearchPattern.toUpperCase();
@@ -9445,7 +9475,7 @@ function initFilters() {
                 field: 'multi_flight',
                 pattern: pattern,
                 PATTERN: pattern,
-                matches: function(plane) {
+                matches: function (plane) {
                     const callsign = (plane.name || '').toUpperCase();
                     const squawk = (plane.squawk || '').toUpperCase();
                     const icao = (plane.icao || '').toUpperCase();
@@ -9453,7 +9483,7 @@ function initFilters() {
                 }
             });
         }
-        
+
         // Buscador de tipo
         if (typeSearchPattern) {
             const pattern = typeSearchPattern.toUpperCase();
@@ -9461,7 +9491,7 @@ function initFilters() {
                 field: 'multi_type',
                 pattern: pattern,
                 PATTERN: pattern,
-                matches: function(plane) {
+                matches: function (plane) {
                     const typeCode = (plane.icaoType || '').toUpperCase();
                     const typeDesc = (plane.typeDescription || '').toUpperCase();
                     const category = (plane.category || '').toUpperCase();
@@ -9469,7 +9499,7 @@ function initFilters() {
                 }
             });
         }
-        
+
         // Buscador de registro
         if (regSearchPattern) {
             const pattern = regSearchPattern.toUpperCase();
@@ -9477,7 +9507,7 @@ function initFilters() {
                 field: 'multi_reg',
                 pattern: pattern,
                 PATTERN: pattern,
-                matches: function(plane) {
+                matches: function (plane) {
                     const registration = (plane.registration || '').toUpperCase();
                     const route = (plane.routeString || '').toUpperCase();
                     const country = (plane.country || '').toUpperCase();
@@ -9485,10 +9515,10 @@ function initFilters() {
                 }
             });
         }
-        
+
         refreshFilter();
     }
-    
+
     // Configurar buscadores
     const flightInput = document.getElementById('filter_flight_search');
     if (flightInput) {
@@ -9502,7 +9532,7 @@ function initFilters() {
             updateFilters();
         }
     }
-    
+
     const typeInput = document.getElementById('filter_type_search');
     if (typeInput) {
         typeInput.addEventListener('input', (e) => {
@@ -9515,7 +9545,7 @@ function initFilters() {
             updateFilters();
         }
     }
-    
+
     const regInput = document.getElementById('filter_reg_search');
     if (regInput) {
         regInput.addEventListener('input', (e) => {
@@ -9528,7 +9558,7 @@ function initFilters() {
             updateFilters();
         }
     }
-    
+
     // Botones Clear
     document.querySelectorAll('.filter-clear-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -9546,49 +9576,49 @@ function initFilters() {
             updateFilters();
         });
     });
-    
+
     // Re-inicializar sourceFilter
     initSourceFilter(tableColors.unselected);
-    
+
     const sourceForm = document.getElementById('source_filter_form');
     if (sourceForm) {
-        sourceForm.onsubmit = function(e) {
+        sourceForm.onsubmit = function (e) {
             if (e) e.preventDefault();
             updateSourceFilter(e);
         };
     }
-    
+
     const sourceResetBtn = document.getElementById('source_filter_reset_button');
     if (sourceResetBtn) {
-        sourceResetBtn.onclick = function(e) {
+        sourceResetBtn.onclick = function (e) {
             if (e) e.preventDefault();
             jQuery('#sourceFilter .ui-selected').removeClass('ui-selected');
             sourcesFilter = null;
             updateSourceFilter(e);
         };
     }
-    
+
     // Re-inicializar flagFilter
     initFlagFilter(tableColors.unselected);
-    
+
     const flagForm = document.getElementById('flag_filter_form');
     if (flagForm) {
-        flagForm.onsubmit = function(e) {
+        flagForm.onsubmit = function (e) {
             if (e) e.preventDefault();
             updateFlagFilter(e);
         };
     }
-    
+
     const flagResetBtn = document.getElementById('flag_filter_reset_button');
     if (flagResetBtn) {
-        flagResetBtn.onclick = function(e) {
+        flagResetBtn.onclick = function (e) {
             if (e) e.preventDefault();
             jQuery('#flagFilter .ui-selected').removeClass('ui-selected');
             flagFilter = null;
             updateFlagFilter(e);
         };
     }
-    
+
     // Filtro de altitud
     const altitudeApply = document.getElementById('altitude_filter_apply');
     if (altitudeApply) {
@@ -9600,7 +9630,7 @@ function initFilters() {
             refreshFilter();
         });
     }
-    
+
     const altitudeReset = document.getElementById('altitude_filter_reset_button');
     if (altitudeReset) {
         altitudeReset.addEventListener('click', (e) => {
@@ -9611,7 +9641,7 @@ function initFilters() {
             refreshFilter();
         });
     }
-    
+
     // Restaurar valores guardados
     if (PlaneFilter) {
         if (PlaneFilter.minAltitude && PlaneFilter.minAltitude > -1000000) {
@@ -9621,17 +9651,17 @@ function initFilters() {
             jQuery('#altitude_filter_max').val(PlaneFilter.maxAltitude);
         }
     }
-    
+
     if (PlaneFilter.sources) {
         sourcesFilter = PlaneFilter.sources;
         sourcesFilter.map((f) => jQuery('#source-filter-' + f).addClass('ui-selected'));
     }
-    
+
     if (PlaneFilter.flagFilter) {
         flagFilter = PlaneFilter.flagFilter;
         flagFilter.map((f) => jQuery('#flag-filter-' + f).addClass('ui-selected'));
     }
-    
+
     // Inicializar acordeón
     initAccordion();
 }
@@ -13628,7 +13658,7 @@ function DistanceBetweenPlanes() {
 function updateStarredUI() {
     // Verificar si la función está habilitada
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
-    
+
     const countSpan = document.getElementById('starred-count');
     const container = document.getElementById('starred-list-container');
 
@@ -13693,12 +13723,12 @@ function escapeHtml(str) {
 function toggleStarredPlane(hex) {
     // Verificar si la función está habilitada
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
-    
+
     if (!isEnabled) {
         console.log('Notable Aircraft feature is disabled. Enable it in settings first.');
         return;
     }
-    
+
     if (!hex) return;
 
     if (starredAircraft.has(hex)) {
@@ -13741,9 +13771,9 @@ function updateStarredPlaneVisual(hex) {
 function updateStarredButtonInInfoblock() {
     // Verificar si la función está habilitada
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
-    
+
     const selected = SelectedPlane;
-    
+
     // Buscar o crear el contenedor del botón estrella en el título
     let starBtnContainer = document.querySelector('.star-btn-container');
     const titleDiv = document.querySelector('#selected_infoblock .highlightedTitle > div:first-child');
@@ -13773,7 +13803,7 @@ function updateStarredButtonInInfoblock() {
         starBtnContainer.style.marginLeft = '10px';
         titleDiv.appendChild(starBtnContainer);
     }
-    
+
     starBtnContainer.style.display = 'inline-flex';
 
     const isStarred = starredAircraft.has(selected.icao);
@@ -13853,7 +13883,7 @@ function initStarredAircraft() {
         // Por defecto, ocultar por CSS (la clase hidden-by-setting)
         starredSection.classList.add('hidden-by-setting');
     }
-    
+
     // Asegurar que la lista no tenga el toggle de ocultar/mostrar
     const starredHeader = document.querySelector('.starred-header');
     if (starredHeader) {
@@ -13863,13 +13893,13 @@ function initStarredAircraft() {
         const toggleIcon = starredHeader.querySelector('.toggle-icon');
         if (toggleIcon) toggleIcon.remove();
     }
-    
+
     // Asegurar que el contenedor de la lista sea visible
     const starredContainer = document.getElementById('starred-list-container');
     if (starredContainer) {
         starredContainer.style.display = 'block';
     }
-    
+
     // Cargar lista guardada de localStorage si existe
     const saved = localStorage.getItem('tar1090_starred_aircraft');
     if (saved) {
