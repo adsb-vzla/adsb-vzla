@@ -2147,7 +2147,7 @@ div.ui-slider .ui-slider-handle {
 }
 
 
-/* ===== STARED AIRCRAFT (AVIONES DE INTERÉS) ===== */
+/* Aviones de interés */
 .starred-aircraft-section {
     margin-top: 20px;
     border-top: 2px solid var(--LIGHTER-BASE-COLOR);
@@ -2163,8 +2163,11 @@ div.ui-slider .ui-slider-handle {
     border-radius: 6px;
     border: 1px solid var(--LIGHTER-BASE-COLOR);
     color: white;
-    cursor: pointer;
     margin-bottom: 8px;
+}
+
+.starred-aircraft-section.hidden-by-setting {
+    display: none !important;
 }
 
 .starred-header h4 {

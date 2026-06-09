@@ -2206,40 +2206,40 @@ function zoomOutMap() {
 function resetSidebarWidth() {
     const sidebar = document.getElementById('sidebar_container');
     const splitter = document.getElementById('splitter');
-    
+
     if (!sidebar) return;
-    
+
     // Ancho base por defecto (25% del ancho de la ventana, con un mínimo y máximo)
     const windowWidth = window.innerWidth;
     let baseWidth = windowWidth * 0.25;
-    
+
     // Limitar el ancho mínimo y máximo
     const minWidth = 200;
     const maxWidth = windowWidth * 0.6;
     baseWidth = Math.min(maxWidth, Math.max(minWidth, baseWidth));
-    
+
     // Aplicar el nuevo ancho
     sidebar.style.width = baseWidth + 'px';
-    
+
     // Guardar en localStorage
     localStorage.setItem('sidebar_width', baseWidth);
-    
+
     // Actualizar el tamaño del mapa
     if (typeof updateMapSize === 'function') {
         updateMapSize();
     }
-    
+
     // Forzar redibujado de la tabla si es necesario
     if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
         TAR.planeMan.redraw();
     }
-    
+
     // Animación
     sidebar.style.transition = 'width 0.2s ease';
     setTimeout(() => {
         sidebar.style.transition = '';
     }, 200);
-    
+
     console.log('Sidebar width reset to:', baseWidth + 'px');
 }
 
@@ -2250,32 +2250,32 @@ function createSidebarResetButton() {
 
     // Asegurar que el splitter sea el punto de referencia para posicionamiento
     splitter.style.position = 'relative';
-    
+
     // Verificar si el contenedor ya existe para no duplicar
     if (document.querySelector('.sidebar-resize-container')) return;
-    
+
     // Crear contenedor para los botones
     const container = document.createElement('div');
     container.className = 'sidebar-resize-container';
-    
+
     // Crear botón de reset
     const resetBtn = document.createElement('button');
     resetBtn.className = 'sidebar-reset-btn formButton';
     resetBtn.innerHTML = 'Restore';
     resetBtn.title = 'Restore sidebar to default width';
-    
+
     // Tooltip
     resetBtn.setAttribute('title', 'Restore sidebar to default width');
-    
+
     // Evento click
-    resetBtn.addEventListener('click', function(e) {
+    resetBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         resetSidebarWidth();
     });
-    
+
     // Agregar botón al contenedor
     container.appendChild(resetBtn);
-    
+
     // Agregar contenedor después del splitter
     splitter.insertAdjacentElement('afterend', container);
 }
@@ -2290,7 +2290,7 @@ function initSidebarResetButton() {
             createSidebarResetButton();
         }
     }, 100);
-    
+
     // Timeout por si acaso (10 segundos máximo)
     setTimeout(() => {
         clearInterval(checkInterval);
@@ -2309,8 +2309,8 @@ if (document.readyState === 'loading') {
 
 // Observar cambios en la visibilidad del splitter (por si se oculta/muestra)
 if (typeof MutationObserver !== 'undefined') {
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                 const splitter = document.getElementById('splitter');
                 if (splitter && splitter.style.display !== 'none') {
@@ -2319,7 +2319,7 @@ if (typeof MutationObserver !== 'undefined') {
             }
         });
     });
-    
+
     const splitter = document.getElementById('splitter');
     if (splitter) {
         observer.observe(splitter, { attributes: true });
@@ -3669,6 +3669,48 @@ function earlyInitPage() {
             utcTimesLive = state;
             remakeTrails();
             refreshSelected();
+        }
+    });
+
+    new Toggle({
+        key: "enableStarredAircraft",
+        display: "Notable Aircraft",
+        tooltip: "Enable/disable the starred aircraft feature. Allows marking aircraft as notable and displays them in the sidebar.",
+        container: "#category-data-container",
+        init: false,
+        setState: function (state) {
+            const starredSection = document.getElementById('starred-aircraft-section');
+            const starBtnContainer = document.querySelector('.star-btn-container');
+
+            if (state) {
+                // Habilitar: mostrar la sección y la estrella
+                if (starredSection) {
+                    starredSection.classList.remove('hidden-by-setting');
+                }
+                // Asegurar que la lista sea visible (no oculta por el toggle)
+                const starredContainer = document.getElementById('starred-list-container');
+                if (starredContainer) {
+                    starredContainer.style.display = 'block';
+                }
+                // Mostrar botón de estrella en el infoblock si hay un avión seleccionado
+                if (SelectedPlane) {
+                    updateStarredButtonInInfoblock();
+                }
+            } else {
+                // Deshabilitar: ocultar la sección y la estrella
+                if (starredSection) {
+                    starredSection.classList.add('hidden-by-setting');
+                }
+                // Ocultar/remover botón de estrella del infoblock
+                if (starBtnContainer) {
+                    starBtnContainer.innerHTML = '';
+                    starBtnContainer.style.display = 'none';
+                } else {
+                    // Buscar y eliminar si existe de otra forma
+                    const existingBtn = document.querySelector('.star-btn-container');
+                    if (existingBtn) existingBtn.style.display = 'none';
+                }
+            }
         }
     });
 
@@ -13208,16 +13250,20 @@ let starredAircraft = new Set(); // Almacena los hex de los aviones marcados
 let starredListCollapsed = false;
 
 // Función para alternar visibilidad de la lista
-function toggleStarredList() {
-    const container = document.getElementById('starred-list-container');
-    if (container) {
-        starredListCollapsed = !starredListCollapsed;
-        container.style.display = starredListCollapsed ? 'none' : 'block';
-    }
-}
+// function toggleStarredList() {
+//     const container = document.getElementById('starred-list-container');
+//     if (container) {
+//         starredListCollapsed = !starredListCollapsed;
+//         container.style.display = starredListCollapsed ? 'none' : 'block';
+//     }
+// }
 
 // Función para actualizar el contador y la lista visual
+// Función para actualizar el contador y la lista visual (sin toggle)
 function updateStarredUI() {
+    // Verificar si la función está habilitada
+    const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
+    
     const countSpan = document.getElementById('starred-count');
     const container = document.getElementById('starred-list-container');
 
@@ -13226,6 +13272,12 @@ function updateStarredUI() {
     }
 
     if (!container) return;
+
+    // Si la función no está habilitada, no mostramos nada
+    if (!isEnabled) {
+        container.innerHTML = '';
+        return;
+    }
 
     if (starredAircraft.size === 0) {
         container.innerHTML = '<div class="starred-empty">No marked planes</div>';
@@ -13251,12 +13303,14 @@ function updateStarredUI() {
                     <div class="starred-item-callsign">${escapeHtml(callsign)}</div>
                     <div class="starred-item-detail">${reg} | ${type}</div>
                 </div>
-                <button class="starred-item-remove" onclick="event.stopPropagation(); toggleStarredPlane('${hex}')" title="Quitar de interés">✖</button>
+                <button class="starred-item-remove" onclick="event.stopPropagation(); toggleStarredPlane('${hex}')" title="Remove from notable">✖</button>
             </div>
         `;
     }
 
     container.innerHTML = html;
+    // Asegurar que el contenedor sea visible
+    container.style.display = 'block';
 }
 
 // Función para escapar HTML (seguridad)
@@ -13271,15 +13325,41 @@ function escapeHtml(str) {
 }
 
 // Función principal para marcar/desmarcar un avión como interés
+// function toggleStarredPlane(hex) {
+//     if (!hex) return;
+
+//     if (starredAircraft.has(hex)) {
+//         starredAircraft.delete(hex);
+//         console.log(`Avión ${hex} removido de lista de interés`);
+//     } else {
+//         starredAircraft.add(hex);
+//         console.log(`Avión ${hex} agregado a lista de interés`);
+//     }
+
+//     updateStarredUI();
+//     updateStarredPlaneVisual(hex);
+//     updateStarredButtonInInfoblock();
+//     refreshFilter(); // Refrescar la tabla para aplicar estilo de fila
+// }
+
+// Función principal para marcar/desmarcar un avión como interés
 function toggleStarredPlane(hex) {
+    // Verificar si la función está habilitada
+    const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
+    
+    if (!isEnabled) {
+        console.log('Notable Aircraft feature is disabled. Enable it in settings first.');
+        return;
+    }
+    
     if (!hex) return;
 
     if (starredAircraft.has(hex)) {
         starredAircraft.delete(hex);
-        console.log(`Avión ${hex} removido de lista de interés`);
+        console.log(`Aircraft ${hex} removed from notable list`);
     } else {
         starredAircraft.add(hex);
-        console.log(`Avión ${hex} agregado a lista de interés`);
+        console.log(`Aircraft ${hex} added to notable list`);
     }
 
     updateStarredUI();
@@ -13311,30 +13391,80 @@ function updateStarredPlaneVisual(hex) {
 }
 
 // Función para actualizar el botón de estrella en el infoblock
+// function updateStarredButtonInInfoblock() {
+//     const selected = SelectedPlane;
+//     if (!selected) return;
+
+//     const isStarred = starredAircraft.has(selected.icao);
+
+//     // Buscar o crear el contenedor del botón estrella en el título
+//     let starBtnContainer = document.querySelector('.star-btn-container');
+//     const titleDiv = document.querySelector('#selected_infoblock .highlightedTitle > div:first-child');
+
+//     if (!titleDiv) return;
+
+//     if (!starBtnContainer) {
+//         starBtnContainer = document.createElement('div');
+//         starBtnContainer.className = 'star-btn-container';
+//         starBtnContainer.style.display = 'inline-block';
+//         starBtnContainer.style.marginLeft = '10px';
+//         titleDiv.appendChild(starBtnContainer);
+//     }
+
+//     starBtnContainer.innerHTML = `
+//         <button class="star-btn ${isStarred ? 'star-btn-starred' : 'star-btn-unstarred'}" 
+//                 onclick="toggleStarredPlane('${selected.icao}')" 
+//                 title="${isStarred ? 'Quitar de interés' : 'Marcar como interés'}">
+//             ${isStarred ? '⭐' : '☆'}
+//         </button>
+//     `;
+// }
+
+// Función para actualizar el botón de estrella en el infoblock
 function updateStarredButtonInInfoblock() {
+    // Verificar si la función está habilitada
+    const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
+    
     const selected = SelectedPlane;
-    if (!selected) return;
-
-    const isStarred = starredAircraft.has(selected.icao);
-
+    
     // Buscar o crear el contenedor del botón estrella en el título
     let starBtnContainer = document.querySelector('.star-btn-container');
     const titleDiv = document.querySelector('#selected_infoblock .highlightedTitle > div:first-child');
 
     if (!titleDiv) return;
 
+    // Si la función no está habilitada, ocultar/eliminar el botón
+    if (!isEnabled) {
+        if (starBtnContainer) {
+            starBtnContainer.style.display = 'none';
+        }
+        return;
+    }
+
+    if (!selected) {
+        if (starBtnContainer) {
+            starBtnContainer.style.display = 'none';
+        }
+        return;
+    }
+
     if (!starBtnContainer) {
         starBtnContainer = document.createElement('div');
         starBtnContainer.className = 'star-btn-container';
-        starBtnContainer.style.display = 'inline-block';
+        starBtnContainer.style.display = 'inline-flex';
+        starBtnContainer.style.alignItems = 'center';
         starBtnContainer.style.marginLeft = '10px';
         titleDiv.appendChild(starBtnContainer);
     }
+    
+    starBtnContainer.style.display = 'inline-flex';
+
+    const isStarred = starredAircraft.has(selected.icao);
 
     starBtnContainer.innerHTML = `
         <button class="star-btn ${isStarred ? 'star-btn-starred' : 'star-btn-unstarred'}" 
                 onclick="toggleStarredPlane('${selected.icao}')" 
-                title="${isStarred ? 'Quitar de interés' : 'Marcar como interés'}">
+                title="${isStarred ? 'Remove from notable' : 'Mark as notable'}">
             ${isStarred ? '⭐' : '☆'}
         </button>
     `;
@@ -13401,7 +13531,56 @@ function enhancePlaneObjectForStarred() {
 }
 
 // Inicializar la sección de aviones de interés cuando cargue la página
+// function initStarredAircraft() {
+//     // Cargar lista guardada de localStorage si existe
+//     const saved = localStorage.getItem('tar1090_starred_aircraft');
+//     if (saved) {
+//         try {
+//             const savedHexes = JSON.parse(saved);
+//             if (Array.isArray(savedHexes)) {
+//                 starredAircraft = new Set(savedHexes);
+//                 updateStarredUI();
+//             }
+//         } catch (e) { console.error('Error loading starred aircraft:', e); }
+//     }
+
+//     enhancePlaneObjectForStarred();
+
+//     // Guardar en localStorage cuando cambie la lista
+//     const originalUpdateStarredUI = updateStarredUI;
+//     window.updateStarredUI = function () {
+//         originalUpdateStarredUI();
+//         // Guardar en localStorage
+//         localStorage.setItem('tar1090_starred_aircraft', JSON.stringify([...starredAircraft]));
+//     };
+//     updateStarredUI = window.updateStarredUI;
+// }
+
+// Inicializar la sección de aviones de interés cuando cargue la página
 function initStarredAircraft() {
+    // Crear la sección en el DOM si no existe (se añade al HTML pero oculta por CSS)
+    const starredSection = document.getElementById('starred-aircraft-section');
+    if (starredSection) {
+        // Por defecto, ocultar por CSS (la clase hidden-by-setting)
+        starredSection.classList.add('hidden-by-setting');
+    }
+    
+    // Asegurar que la lista no tenga el toggle de ocultar/mostrar
+    const starredHeader = document.querySelector('.starred-header');
+    if (starredHeader) {
+        // Remover el onclick que tenía
+        starredHeader.removeAttribute('onclick');
+        // Opcional: remover cualquier ícono de toggle si existe
+        const toggleIcon = starredHeader.querySelector('.toggle-icon');
+        if (toggleIcon) toggleIcon.remove();
+    }
+    
+    // Asegurar que el contenedor de la lista sea visible
+    const starredContainer = document.getElementById('starred-list-container');
+    if (starredContainer) {
+        starredContainer.style.display = 'block';
+    }
+    
     // Cargar lista guardada de localStorage si existe
     const saved = localStorage.getItem('tar1090_starred_aircraft');
     if (saved) {
@@ -13420,8 +13599,10 @@ function initStarredAircraft() {
     const originalUpdateStarredUI = updateStarredUI;
     window.updateStarredUI = function () {
         originalUpdateStarredUI();
-        // Guardar en localStorage
-        localStorage.setItem('tar1090_starred_aircraft', JSON.stringify([...starredAircraft]));
+        // Solo guardar si la función está habilitada
+        if (toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state) {
+            localStorage.setItem('tar1090_starred_aircraft', JSON.stringify([...starredAircraft]));
+        }
     };
     updateStarredUI = window.updateStarredUI;
 }
