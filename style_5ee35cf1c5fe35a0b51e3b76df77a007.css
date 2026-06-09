@@ -2114,6 +2114,15 @@ div.ui-slider .ui-slider-handle {
     color: var(--TXTCOLOR1, #333);
 }
 
+.settings-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--TXTCOLOR2, #ccc);
+}
+
 .units-select {
     background: var(--BGCOLOR2);
     color: var(--TXTCOLOR1);

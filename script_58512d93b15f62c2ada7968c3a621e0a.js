@@ -4046,7 +4046,7 @@ function earlyInitPage() {
         key: "enableInfoblock",
         display: "Enable infoblock",
         tooltip: "Show the infoblock with detailed information about the selected aircraft.",
-        container: "#settingsRight",
+        container: "#category-info-container",
         init: true,
         setState: function (state) {
             adjustInfoBlock();
@@ -4057,7 +4057,7 @@ function earlyInitPage() {
         key: "enableMouseover",
         display: "Enable mouse-over block",
         tooltip: "Show detailed information about the selected aircraft when hovering over it.",
-        container: "#settingsRight",
+        container: "#category-info-container",
         init: enableMouseover,
         setState: function (state) {
             enableMouseover = state;
@@ -4076,7 +4076,7 @@ function earlyInitPage() {
             key: "useRouteAPI",
             display: "Lookup route",
             tooltip: "Look up the route of the aircraft (origin and destination airports) using an online API (if available).",
-            container: "#settingsRight",
+            container: "#category-info-container",
             init: useRouteAPI,
             setState: function (state) {
                 useRouteAPI = state;
@@ -4104,7 +4104,7 @@ function earlyInitPage() {
         key: "planespottingAPI",
         display: "Pictures planespotting.be",
         tooltip: "Display pictures from planespotting.be (if available).",
-        container: "#settingsRight",
+        container: "#category-info-container",
         init: planespottingAPI,
         setState: function (state) {
             planespottingAPI = state;
@@ -4119,7 +4119,7 @@ function earlyInitPage() {
         key: "planespottersAPI",
         display: "Pictures planespotters.net",
         tooltip: "Display pictures from planespotters.net (if available).",
-        container: "#settingsRight",
+        container: "#category-info-container",
         init: planespottersAPI,
         setState: function (state) {
             planespottersAPI = state;
@@ -4135,7 +4135,7 @@ function earlyInitPage() {
         key: "wideInfoblock",
         display: "Wide infoblock",
         tooltip: "Use a wider layout for the infoblock, allowing more information to be displayed in a single line.",
-        container: "#settingsRight",
+        container: "#category-info-container",
         init: wideInfoBlock,
         setState: function (state) {
             wideInfoBlock = state;
@@ -4200,6 +4200,105 @@ function earlyInitPage() {
         showHideButtons();
         runAfterLoad(showHideButtons);
     }
+
+    initCategoryResetButtons();
+}
+
+// Función para resetear una categoría a sus valores por defecto
+function resetCategory(category) {
+    console.log(`Resetting category: ${category}`);
+    
+    switch(category) {
+        case 'units':
+            // Resetear unidades a Aeronautical (nautical)
+            DisplayUnits = 'nautical';
+            loStore['displayUnits'] = DisplayUnits;
+            jQuery('#units_selector').val(DisplayUnits).trigger('change');
+            break;
+            
+        case 'display':
+            // Resetear opciones de display
+            if (toggles['ColoredPlanes']) toggles['ColoredPlanes'].toggle(true);
+            if (toggles['ColoredTrails']) toggles['ColoredTrails'].toggle(true);
+            if (toggles['altitudeChart']) toggles['altitudeChart'].toggle(false);
+            if (toggles['webgl']) toggles['webgl'].toggle(true);
+            if (toggles['darkerColors']) toggles['darkerColors'].toggle(false);
+            if (toggles['darkMode']) toggles['darkMode'].toggle(darkModeDefault);
+            if (toggles['MapDim']) toggles['MapDim'].toggle(true);
+            if (toggles['showLabelUnits']) toggles['showLabelUnits'].toggle(true);
+            if (toggles['windLabelsSlim']) toggles['windLabelsSlim'].toggle(false);
+            
+            
+            break;
+            
+        case 'filters':
+            // Resetear filtros
+            if (toggles['hideAircraftFunctions']) toggles['hideAircraftFunctions'].toggle(true);
+            if (toggles['hideDistanceFunctions']) toggles['hideDistanceFunctions'].toggle(true);
+            if (toggles['hideLabelFunctions']) toggles['hideLabelFunctions'].toggle(true);
+            if (toggles['hideLayerFunctions']) toggles['hideLayerFunctions'].toggle(true);
+            if (toggles['hideRecenterFunction']) toggles['hideRecenterFunction'].toggle(true);
+            if (toggles['hideReplayFunction']) toggles['hideReplayFunction'].toggle(true);
+            if (toggles['hideTrackFunctions']) toggles['hideTrackFunctions'].toggle(true);
+            if (toggles['hideZoomFunctions']) toggles['hideZoomFunctions'].toggle(true);
+            if (toggles['lastLeg']) toggles['lastLeg'].toggle(true);
+            break;
+            
+        case 'data':
+            // Resetear opciones de datos
+            if (toggles['baroUseQNH']) toggles['baroUseQNH'].toggle(false);
+            if (toggles['geomUseEGM']) toggles['geomUseEGM'].toggle(false);
+            if (toggles['utcTimesHistoric']) toggles['utcTimesHistoric'].toggle(true);
+            if (toggles['labelsGeom']) toggles['labelsGeom'].toggle(false);
+            if (toggles['utcTimesLive']) toggles['utcTimesLive'].toggle(false);
+            if (toggles['enableStarredAircraft']) toggles['enableStarredAircraft'].toggle(false);
+            
+            break;
+            
+        case 'system':
+            // Resetear opciones del sistema
+            if (toggles['autoselect']) toggles['autoselect'].toggle(false);
+            if (toggles['debugAll']) toggles['debugAll'].toggle(false);
+            if (toggles['debugTracks']) toggles['debugTracks'].toggle(false);
+            if (toggles['hideAllTooltips']) toggles['hideAllTooltips'].toggle(false);
+            if (toggles['hideSettingsTooltips']) toggles['hideSettingsTooltips'].toggle(false);
+            if (toggles['shareFilters']) toggles['shareFilters'].toggle(false);
+            if (toggles['updateLocation']) toggles['updateLocation'].toggle(false);
+            break;
+            
+        case 'info':
+            // Resetear opciones de información
+            if (toggles['enableInfoblock']) toggles['enableInfoblock'].toggle(true);
+            if (toggles['enableMouseover']) toggles['enableMouseover'].toggle(true);
+            if (toggles['useRouteAPI']) toggles['useRouteAPI'].toggle(true);
+            if (toggles['planespottingAPI']) toggles['planespottingAPI'].toggle(false);
+            if (toggles['planespottersAPI']) toggles['planespottersAPI'].toggle(true);
+            if (toggles['wideInfoblock']) toggles['wideInfoblock'].toggle(false);
+            break;
+            
+        default:
+            console.log(`Unknown category: ${category}`);
+    }
+    
+    // Refrescar la interfaz después de resetear
+    if (typeof refreshFilter === 'function') refreshFilter();
+    if (typeof adjustInfoBlock === 'function') adjustInfoBlock();
+    if (typeof refreshSelected === 'function') refreshSelected();
+}
+
+// Inicializar botones de reset por categoría
+function initCategoryResetButtons() {
+    const resetBtns = document.querySelectorAll('.category-reset-btn');
+    
+    resetBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const category = btn.dataset.category;
+            if (category) {
+                resetCategory(category);
+            }
+        });
+    });
 }
 
 function initLegend(colors) {
