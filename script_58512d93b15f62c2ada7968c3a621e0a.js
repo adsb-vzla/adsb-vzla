@@ -4092,9 +4092,11 @@ function earlyInitPage() {
                 useRouteAPI = state;
                 if (useRouteAPI) {
                     jQuery('#routeRow').show();
+                    jQuery('#routeRowHighlight').show();
                     jQuery('#routeRowHighlighted').show();
                 } else {
                     jQuery('#routeRow').hide();
+                    jQuery('#routeRowHighlight').hide();
                     jQuery('#routeRowHighlighted').hide();
                 }
             }
