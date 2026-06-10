@@ -241,7 +241,7 @@ let halloween = false;
 let noRegOnly = false;
 let triggerRefresh = 0;
 let firstDraw = true;
-// let darkerColors = false;
+let darkerColors = false;
 let autoselect = false;
 let nogpsOnly = false;
 let spritesDataURL = null;
@@ -3196,9 +3196,9 @@ function earlyInitPage() {
         squareMania = true;
     }
 
-    // if (usp.has('darkerColors')) {
-    //     darkerColors = true;
-    // }
+    if (usp.has('darkerColors')) {
+        darkerColors = true;
+    }
 
     if (usp.has('mapDim')) {
         let dim = parseFloat(usp.get('mapDim'));
@@ -6288,21 +6288,21 @@ function initMap() {
         }
     });
 
-    // new Toggle({
-    //     key: "darkerColors",
-    //     display: "Darker colors",
-    //     // container: "#settingsRight",
-    //     container: "#category-display-container",
-    //     tooltip: "Darkens map and UI elements and increases contrast to improve visibility and reduce glare.",
-    //     init: darkerColors,
-    //     setState: function (state) {
-    //         darkerColors = state;
-    //         if (loadFinished) {
-    //             refreshFeatures();
-    //             remakeTrails();
-    //         }
-    //     }
-    // });
+    new Toggle({
+        key: "darkerColors",
+        display: "Darker colors",
+        // container: "#settingsRight",
+        container: "#category-display-container",
+        tooltip: "Darkens map and UI elements and increases contrast to improve visibility and reduce glare.",
+        init: darkerColors,
+        setState: function (state) {
+            darkerColors = state;
+            if (loadFinished) {
+                refreshFeatures();
+                remakeTrails();
+            }
+        }
+    });
 
     tableColorsLight = tableColors;
     tableColorsDark = JSON.parse(JSON.stringify(tableColors));
@@ -6318,75 +6318,51 @@ function initMap() {
             obj[key] = hslToRgb(hsl);
         }
     }
-    // new Toggle({
-    //     key: "darkMode",
-    //     display: "Dark mode",
-    //     // container: "#settingsRight",
-    //     container: "#category-display-container",
-    //     tooltip: "Switches the interface to a dark color scheme, lowering brightness and improving readability in low-light conditions.",
-    //     init: darkModeDefault,
-    //     setState: function (state) {
-    //         let root = document.documentElement;
-    //         jQuery(".layer-switcher .panel").css("background", "var(--BGCOLOR1)");
-    //         jQuery(".layer-switcher .panel").css("border", "4px solid var(--BGCOLOR1)");
-    //         if (state) {
-    //             root.style.setProperty("--BGCOLOR1", '#313131');
-    //             root.style.setProperty("--BGCOLOR2", '#242424');
-    //             root.style.setProperty("--TXTCOLOR1", "#BFBFBF");
-    //             root.style.setProperty("--TXTCOLOR2", "#D8D8D8");
-    //             root.style.setProperty("--TXTCOLOR3", "#a8a8a8");
-    //             //invert the "x" images
-    //             jQuery(".infoblockCloseBox").css('filter', 'invert(100%)');
-    //             jQuery(".infoblockCloseBox").css(' -webkit-filter', 'invert(100%)');
-    //             jQuery(".settingsCloseBox").css('filter', 'invert(100%)');
-    //             jQuery(".settingsCloseBox").css(' -webkit-filter', 'invert(100%)');
-    //             tableColors = tableColorsDark;
-    //         } else {
-    //             root.style.setProperty("--BGCOLOR1", '#F8F8F8');
-    //             root.style.setProperty("--BGCOLOR2", '#CCCCCC');
-    //             root.style.setProperty("--TXTCOLOR1", "#003f4b");
-    //             root.style.setProperty("--TXTCOLOR2", "#050505");
-    //             root.style.setProperty("--TXTCOLOR3", "#003f4b");
-    //             jQuery(".infoblockCloseBox").css('filter', 'invert(0%)');
-    //             jQuery(".infoblockCloseBox").css(' -webkit-filter', 'invert(0%)');
-    //             jQuery(".settingsCloseBox").css('filter', 'invert(0%)');
-    //             jQuery(".settingsCloseBox").css(' -webkit-filter', 'invert(0%)');
+    new Toggle({
+        key: "darkMode",
+        display: "Dark mode",
+        // container: "#settingsRight",
+        container: "#category-display-container",
+        tooltip: "Switches the interface to a dark color scheme, lowering brightness and improving readability in low-light conditions.",
+        init: darkModeDefault,
+        setState: function (state) {
+            let root = document.documentElement;
+            jQuery(".layer-switcher .panel").css("background", "var(--BGCOLOR1)");
+            jQuery(".layer-switcher .panel").css("border", "4px solid var(--BGCOLOR1)");
+            if (state) {
+                root.style.setProperty("--BGCOLOR1", '#313131');
+                root.style.setProperty("--BGCOLOR2", '#242424');
+                root.style.setProperty("--TXTCOLOR1", "#BFBFBF");
+                root.style.setProperty("--TXTCOLOR2", "#D8D8D8");
+                root.style.setProperty("--TXTCOLOR3", "#a8a8a8");
+                //invert the "x" images
+                jQuery(".infoblockCloseBox").css('filter', 'invert(100%)');
+                jQuery(".infoblockCloseBox").css(' -webkit-filter', 'invert(100%)');
+                jQuery(".settingsCloseBox").css('filter', 'invert(100%)');
+                jQuery(".settingsCloseBox").css(' -webkit-filter', 'invert(100%)');
+                tableColors = tableColorsDark;
+            } else {
+                root.style.setProperty("--BGCOLOR1", '#F8F8F8');
+                root.style.setProperty("--BGCOLOR2", '#CCCCCC');
+                root.style.setProperty("--TXTCOLOR1", "#003f4b");
+                root.style.setProperty("--TXTCOLOR2", "#050505");
+                root.style.setProperty("--TXTCOLOR3", "#003f4b");
+                jQuery(".infoblockCloseBox").css('filter', 'invert(0%)');
+                jQuery(".infoblockCloseBox").css(' -webkit-filter', 'invert(0%)');
+                jQuery(".settingsCloseBox").css('filter', 'invert(0%)');
+                jQuery(".settingsCloseBox").css(' -webkit-filter', 'invert(0%)');
 
-    //             tableColors = tableColorsLight;
-    //         }
-    //         if (loadFinished) {
-    //             TAR.planeMan.redraw();
-    //             refreshFilter();
-    //             initLegend(tableColors.unselected);
-    //             initSourceFilter(tableColors.unselected);
-    //             initFlagFilter(tableColors.unselected);
-    //         }
-    //     }
-    // });
-
-    // DESPUÉS (forzar oscuro siempre, sin toggle)
-    // Aplicar modo oscuro inmediatamente al iniciar
-    (function applyDarkModePermanently() {
-        let root = document.documentElement;
-        jQuery(".layer-switcher .panel").css("background", "var(--BGCOLOR1)");
-        jQuery(".layer-switcher .panel").css("border", "4px solid var(--BGCOLOR1)");
-
-        // Forzar colores oscuros
-        root.style.setProperty("--BGCOLOR1", '#313131');
-        root.style.setProperty("--BGCOLOR2", '#242424');
-        root.style.setProperty("--TXTCOLOR1", "#BFBFBF");
-        root.style.setProperty("--TXTCOLOR2", "#D8D8D8");
-        root.style.setProperty("--TXTCOLOR3", "#a8a8a8");
-
-        // Invertir iconos de cierre
-        jQuery(".infoblockCloseBox").css('filter', 'invert(100%)');
-        jQuery(".infoblockCloseBox").css('-webkit-filter', 'invert(100%)');
-        jQuery(".settingsCloseBox").css('filter', 'invert(100%)');
-        jQuery(".settingsCloseBox").css('-webkit-filter', 'invert(100%)');
-
-        // Usar colores oscuros para la tabla
-        tableColors = tableColorsDark;
-    })();
+                tableColors = tableColorsLight;
+            }
+            if (loadFinished) {
+                TAR.planeMan.redraw();
+                refreshFilter();
+                initLegend(tableColors.unselected);
+                initSourceFilter(tableColors.unselected);
+                initFlagFilter(tableColors.unselected);
+            }
+        }
+    });
 
     initLegend(tableColors.unselected);
 
@@ -8850,10 +8826,8 @@ function dim(evt) {
             currentContrastPercentage /= 4;
         }
 
-        // const dim = currentDimPercentage * (1 + 0.25 * toggles['darkerColors'].state);
-        // const contrast = currentContrastPercentage * (1 + 0.1 * toggles['darkerColors'].state);
-        const dim = currentDimPercentage;  // Sin multiplicador extra
-        const contrast = currentContrastPercentage;
+        const dim = currentDimPercentage * (1 + 0.25 * toggles['darkerColors'].state);
+        const contrast = currentContrastPercentage * (1 + 0.1 * toggles['darkerColors'].state);
         if (dim > 0.0001) {
             evt.context.globalCompositeOperation = 'multiply';
             evt.context.fillStyle = 'rgba(0,0,0,' + dim + ')';
