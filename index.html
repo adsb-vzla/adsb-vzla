@@ -875,14 +875,18 @@
           </div>
         </div>
         <div id="settings_close" class="settingsCloseBox"></div> -->
-        <div id="settings_window_header" style="cursor: move;">
-          <div class="panel-title" style="display: flex; flex-direction: row; justify-content: space-between;">
-            Settings
-            <div class="settingsOptionContainer">
+        <div id="settings_window_header">
+          <div class="panel-title"
+            style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+            <span>Settings</span>
+            <div class="settingsOptionContainer" style="display: flex; gap: 8px;">
               <button class="formButton" id="reset-all-settings-btn">Reset all settings</button>
             </div>
           </div>
-          <div id="settings_close" class="settingsCloseBox"></div>
+          <div class="window-controls" style="position: absolute; right: 8px; top: 8px; display: flex; gap: 8px;">
+            <button id="settings_reset_size_btn" class="formButton" title="Restore default size">↺</button>
+            <button id="settings_close" class="formButton" title="Close">X</button>
+          </div>
         </div>
         <div class="settingsOptionContainer">
           <div class="settingsText">Text and icon size:</div>

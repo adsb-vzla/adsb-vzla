@@ -164,6 +164,16 @@ let airportFadeInterval = null;
 let columns = [];
 let starredAircraft = new Set();
 let starredListCollapsed = false;
+// Estado de la ventana de configuración
+let settingsWindowState = {
+    isMaximized: false,
+    isMinimized: false,
+    savedLeft: null,
+    savedTop: null,
+    savedWidth: null,
+    savedHeight: null
+};
+let settingsResizeHandle = null;
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -4202,20 +4212,116 @@ function earlyInitPage() {
     }
 
     initCategoryResetButtons();
+
+    // ============================================
+    // FUNCIONALIDADES DE LA VENTANA DE CONFIGURACIÓN (Solo redimensionar)
+    // ============================================
+    (function () {
+        const settingsWindow = document.getElementById('settings_infoblock');
+        const dragHandle = document.getElementById('settings_window_header');
+        const resetSizeBtn = document.getElementById('settings_reset_size_btn');
+
+        if (!settingsWindow || !dragHandle) return;
+
+        // Ancho base capturado del CSS original
+        const DEFAULT_WIDTH = '453px';
+        const DEFAULT_HEIGHT = 'auto';
+
+        // Crear handle de redimensionamiento si no existe
+        if (!document.getElementById('settings_resize_handle')) {
+            const handle = document.createElement('div');
+            handle.id = 'settings_resize_handle';
+            handle.style.cssText = 'position: absolute; bottom: 0; right: 0; width: 16px; height: 16px; cursor: nw-resize; background: linear-gradient(135deg, transparent 50%, #888 50%); border-radius: 0 0 8px 0; z-index: 10002;';
+            settingsWindow.appendChild(handle);
+        }
+
+        // Aplicar estilos iniciales
+        settingsWindow.style.position = 'fixed';
+        settingsWindow.style.top = '80px';
+        settingsWindow.style.left = '20px';
+        settingsWindow.style.resize = 'both';
+        settingsWindow.style.overflow = 'auto';
+        settingsWindow.style.minWidth = '400px';
+        settingsWindow.style.minHeight = '300px';
+
+        // Restaurar último tamaño guardado por el usuario, o usar el base
+        const savedWidth = localStorage.getItem('settings_window_width');
+        const savedHeight = localStorage.getItem('settings_window_height');
+
+        if (savedWidth && savedHeight) {
+            settingsWindow.style.width = savedWidth;
+            settingsWindow.style.height = savedHeight;
+        } else {
+            settingsWindow.style.width = DEFAULT_WIDTH;
+            settingsWindow.style.height = DEFAULT_HEIGHT;
+        }
+
+        // Botón para restaurar tamaño base (453px)
+        if (resetSizeBtn) {
+            resetSizeBtn.onclick = function (e) {
+                e.stopPropagation();
+                settingsWindow.style.width = DEFAULT_WIDTH;
+                settingsWindow.style.height = DEFAULT_HEIGHT;
+                // Limpiar tamaño guardado por el usuario
+                localStorage.removeItem('settings_window_width');
+                localStorage.removeItem('settings_window_height');
+            };
+        }
+
+        // Redimensionamiento
+        const resizeHandle = document.getElementById('settings_resize_handle');
+        if (resizeHandle) {
+            let isResizing = false;
+            let startX, startY, startWidth, startHeight;
+
+            resizeHandle.onmousedown = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = settingsWindow.offsetWidth;
+                startHeight = settingsWindow.offsetHeight;
+                document.body.style.userSelect = 'none';
+                document.body.style.cursor = 'nw-resize';
+            };
+
+            document.onmousemove = function (e) {
+                if (!isResizing) return;
+                let newWidth = startWidth + (e.clientX - startX);
+                let newHeight = startHeight + (e.clientY - startY);
+                newWidth = Math.min(Math.max(400, newWidth), window.innerWidth - 40);
+                newHeight = Math.min(Math.max(300, newHeight), window.innerHeight - 40);
+                settingsWindow.style.width = newWidth + 'px';
+                settingsWindow.style.height = newHeight + 'px';
+            };
+
+            document.onmouseup = function () {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.style.userSelect = '';
+                    document.body.style.cursor = '';
+                    // Guardar tamaño actual del usuario
+                    localStorage.setItem('settings_window_width', settingsWindow.style.width);
+                    localStorage.setItem('settings_window_height', settingsWindow.style.height);
+                }
+            };
+        }
+    })();
 }
 
 // Función para resetear una categoría a sus valores por defecto
 function resetCategory(category) {
     console.log(`Resetting category: ${category}`);
-    
-    switch(category) {
+
+    switch (category) {
         case 'units':
             // Resetear unidades a Aeronautical (nautical)
             DisplayUnits = 'nautical';
             loStore['displayUnits'] = DisplayUnits;
             jQuery('#units_selector').val(DisplayUnits).trigger('change');
             break;
-            
+
         case 'display':
             // Resetear opciones de display
             if (toggles['ColoredPlanes']) toggles['ColoredPlanes'].toggle(true);
@@ -4227,10 +4333,10 @@ function resetCategory(category) {
             if (toggles['MapDim']) toggles['MapDim'].toggle(true);
             if (toggles['showLabelUnits']) toggles['showLabelUnits'].toggle(true);
             if (toggles['windLabelsSlim']) toggles['windLabelsSlim'].toggle(false);
-            
-            
+
+
             break;
-            
+
         case 'filters':
             // Resetear filtros
             if (toggles['hideAircraftFunctions']) toggles['hideAircraftFunctions'].toggle(true);
@@ -4243,7 +4349,7 @@ function resetCategory(category) {
             if (toggles['hideZoomFunctions']) toggles['hideZoomFunctions'].toggle(true);
             if (toggles['lastLeg']) toggles['lastLeg'].toggle(true);
             break;
-            
+
         case 'data':
             // Resetear opciones de datos
             if (toggles['baroUseQNH']) toggles['baroUseQNH'].toggle(false);
@@ -4252,9 +4358,9 @@ function resetCategory(category) {
             if (toggles['labelsGeom']) toggles['labelsGeom'].toggle(false);
             if (toggles['utcTimesLive']) toggles['utcTimesLive'].toggle(false);
             if (toggles['enableStarredAircraft']) toggles['enableStarredAircraft'].toggle(false);
-            
+
             break;
-            
+
         case 'system':
             // Resetear opciones del sistema
             if (toggles['autoselect']) toggles['autoselect'].toggle(false);
@@ -4265,7 +4371,7 @@ function resetCategory(category) {
             if (toggles['shareFilters']) toggles['shareFilters'].toggle(false);
             if (toggles['updateLocation']) toggles['updateLocation'].toggle(false);
             break;
-            
+
         case 'info':
             // Resetear opciones de información
             if (toggles['enableInfoblock']) toggles['enableInfoblock'].toggle(true);
@@ -4275,11 +4381,11 @@ function resetCategory(category) {
             if (toggles['planespottersAPI']) toggles['planespottersAPI'].toggle(true);
             if (toggles['wideInfoblock']) toggles['wideInfoblock'].toggle(false);
             break;
-            
+
         default:
             console.log(`Unknown category: ${category}`);
     }
-    
+
     // Refrescar la interfaz después de resetear
     if (typeof refreshFilter === 'function') refreshFilter();
     if (typeof adjustInfoBlock === 'function') adjustInfoBlock();
@@ -4289,7 +4395,7 @@ function resetCategory(category) {
 // Inicializar botones de reset por categoría
 function initCategoryResetButtons() {
     const resetBtns = document.querySelectorAll('.category-reset-btn');
-    
+
     resetBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -14039,124 +14145,124 @@ window.clearAllStarred = clearAllStarred;
 
 // Definir toggleStarredList si no existe
 if (typeof toggleStarredList === 'undefined') {
-  window.toggleStarredList = function() {
-    console.log('toggleStarredList called but not implemented');
-  };
+    window.toggleStarredList = function () {
+        console.log('toggleStarredList called but not implemented');
+    };
 } else {
-  window.toggleStarredList = toggleStarredList;
+    window.toggleStarredList = toggleStarredList;
 }
 
 // ============================================
 // HACER MOVIBLE LA VENTANA DE CONFIGURACIÓN
 // ============================================
-(function() {
-  console.log('=== INICIANDO SCRIPT DE VENTANA MOVIBLE ===');
-  
-  let settingsWindow = null;
-  let isDragging = false;
-  let dragStartX, dragStartY;
-  let startLeft, startTop;
-  
-  function initDraggable() {
-    settingsWindow = document.getElementById('settings_infoblock');
-    const dragHandle = document.getElementById('settings_window_header');
-    
-    if (!settingsWindow) {
-      console.error('ERROR: No se encontró #settings_infoblock');
-      return false;
+(function () {
+    console.log('=== INICIANDO SCRIPT DE VENTANA MOVIBLE ===');
+
+    let settingsWindow = null;
+    let isDragging = false;
+    let dragStartX, dragStartY;
+    let startLeft, startTop;
+
+    function initDraggable() {
+        settingsWindow = document.getElementById('settings_infoblock');
+        const dragHandle = document.getElementById('settings_window_header');
+
+        if (!settingsWindow) {
+            console.error('ERROR: No se encontró #settings_infoblock');
+            return false;
+        }
+
+        if (!dragHandle) {
+            console.error('ERROR: No se encontró #settings_window_header');
+            return false;
+        }
+
+        console.log('Elementos encontrados correctamente');
+
+        // FORZAR estilos iniciales usando setAttribute para mayor prioridad
+        settingsWindow.setAttribute('style',
+            'position: fixed !important; ' +
+            'top: 80px !important; ' +
+            'left: 20px !important; ' +
+            'right: auto !important; ' +
+            'bottom: auto !important; ' +
+            'margin: 0 !important;'
+        );
+
+        dragHandle.style.cursor = 'move';
+
+        dragHandle.addEventListener('mousedown', onMouseDown);
+
+        console.log('Event listener agregado a dragHandle');
+        return true;
     }
-    
-    if (!dragHandle) {
-      console.error('ERROR: No se encontró #settings_window_header');
-      return false;
+
+    function onMouseDown(e) {
+        // No arrastrar si se hace clic en botones
+        if (e.target.closest('.formButton')) {
+            return;
+        }
+        if (e.target.closest('#settings_close')) {
+            return;
+        }
+
+        console.log('mousedown - iniciando arrastre');
+
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+
+        // Obtener posición actual del elemento
+        const rect = settingsWindow.getBoundingClientRect();
+        startLeft = rect.left;
+        startTop = rect.top;
+
+        console.log('Posición inicial:', startLeft, startTop);
+
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'move';
+        e.preventDefault();
     }
-    
-    console.log('Elementos encontrados correctamente');
-    
-    // FORZAR estilos iniciales usando setAttribute para mayor prioridad
-    settingsWindow.setAttribute('style', 
-      'position: fixed !important; ' +
-      'top: 80px !important; ' +
-      'left: 20px !important; ' +
-      'right: auto !important; ' +
-      'bottom: auto !important; ' +
-      'margin: 0 !important;'
-    );
-    
-    dragHandle.style.cursor = 'move';
-    
-    dragHandle.addEventListener('mousedown', onMouseDown);
-    
-    console.log('Event listener agregado a dragHandle');
-    return true;
-  }
-  
-  function onMouseDown(e) {
-    // No arrastrar si se hace clic en botones
-    if (e.target.closest('.formButton')) {
-      return;
+
+    function onMouseMove(e) {
+        if (!isDragging) {
+            return;
+        }
+
+        let newLeft = startLeft + (e.clientX - dragStartX);
+        let newTop = startTop + (e.clientY - dragStartY);
+
+        // Limitar dentro de la ventana
+        const maxLeft = window.innerWidth - settingsWindow.offsetWidth;
+        const maxTop = window.innerHeight - settingsWindow.offsetHeight;
+
+        newLeft = Math.min(Math.max(0, newLeft), maxLeft);
+        newTop = Math.min(Math.max(0, newTop), maxTop);
+
+        // Aplicar estilos directamente con !important
+        settingsWindow.style.setProperty('left', newLeft + 'px', 'important');
+        settingsWindow.style.setProperty('top', newTop + 'px', 'important');
+
+        console.log('Nueva posición:', newLeft, newTop);
     }
-    if (e.target.closest('#settings_close')) {
-      return;
+
+    function onMouseUp(e) {
+        if (isDragging) {
+            console.log('mouseup - finalizando arrastre');
+            isDragging = false;
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+        }
     }
-    
-    console.log('mousedown - iniciando arrastre');
-    
-    isDragging = true;
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-    
-    // Obtener posición actual del elemento
-    const rect = settingsWindow.getBoundingClientRect();
-    startLeft = rect.left;
-    startTop = rect.top;
-    
-    console.log('Posición inicial:', startLeft, startTop);
-    
-    document.body.style.userSelect = 'none';
-    document.body.style.cursor = 'move';
-    e.preventDefault();
-  }
-  
-  function onMouseMove(e) {
-    if (!isDragging) {
-      return;
+
+    // Registrar event handlers globales (una sola vez)
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+
+    // Iniciar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDraggable);
+    } else {
+        setTimeout(initDraggable, 100);
     }
-    
-    let newLeft = startLeft + (e.clientX - dragStartX);
-    let newTop = startTop + (e.clientY - dragStartY);
-    
-    // Limitar dentro de la ventana
-    const maxLeft = window.innerWidth - settingsWindow.offsetWidth;
-    const maxTop = window.innerHeight - settingsWindow.offsetHeight;
-    
-    newLeft = Math.min(Math.max(0, newLeft), maxLeft);
-    newTop = Math.min(Math.max(0, newTop), maxTop);
-    
-    // Aplicar estilos directamente con !important
-    settingsWindow.style.setProperty('left', newLeft + 'px', 'important');
-    settingsWindow.style.setProperty('top', newTop + 'px', 'important');
-    
-    console.log('Nueva posición:', newLeft, newTop);
-  }
-  
-  function onMouseUp(e) {
-    if (isDragging) {
-      console.log('mouseup - finalizando arrastre');
-      isDragging = false;
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
-    }
-  }
-  
-  // Registrar event handlers globales (una sola vez)
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', onMouseUp);
-  
-  // Iniciar cuando el DOM esté listo
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initDraggable);
-  } else {
-    setTimeout(initDraggable, 100);
-  }
 })();

@@ -2082,7 +2082,7 @@ div.ui-slider .ui-slider-handle {
 #settings_infoblock .panel-title {
     font-size: 1.5rem;
     font-weight: 800;
-    padding: 0.5rem 0.75rem 0.75rem;
+    padding: 1.5rem 0.75rem 0.75rem;
 }
 
 .layer-switcher .layer-panel-title {
@@ -2696,4 +2696,39 @@ Estilos para los buscadores unificados
 #settings_window_header {
   cursor: move;
   user-select: none;
+}
+
+/* Handle para redimensionar (esquina inferior derecha) - fijo */
+#settings_resize_handle {
+  position: sticky !important;
+  bottom: 0;
+  float: right;
+  width: 16px;
+  height: 16px;
+  cursor: nw-resize;
+  background: linear-gradient(135deg, transparent 50%, var(--TXTCOLOR3, #888) 50%);
+  border-radius: 0 0 8px 0;
+  pointer-events: auto;
+  z-index: 10002;
+  margin-left: auto;
+  margin-top: -16px;
+  clear: both;
+}
+
+#settings_infoblock .floating-window-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Wrapper para el contenido que permite el scroll */
+#settings_infoblock .settings-scroll-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.window-controls .formButton {
+    width: 2.5rem;
+    padding: 0.3rem;
 }
