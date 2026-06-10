@@ -3897,7 +3897,7 @@ function earlyInitPage() {
     new Toggle({
         key: "autoselect",
         display: "Auto-select plane",
-        tooltip: "It automatically selects an aircraft if it is the only one on screen or based on specific criteria.",
+        tooltip: "Automatically selects the aircraft closest to the map center every 5 seconds. Only considers aircraft with a recent position (seen in last 20 seconds).",
         // container: "#settingsRight",
         container: "#category-system-container",
         init: autoselect,
