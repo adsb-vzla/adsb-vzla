@@ -333,6 +333,11 @@ PlaneObject.prototype.isFiltered = function() {
             return true;
     }
 
+    // Agregar filtro de ground vehicles
+    if (PlaneFilter.groundVehicles === 'filtered' && this.altitude === "ground") {
+        return true;
+    }
+
     if (this.sitedist && this.sitedist > filterMaxRange)
         return true;
 
@@ -384,6 +389,15 @@ PlaneObject.prototype.updateTrackPrev = function() {
 // Appends data to the running track so we can get a visual tail on the plane
 // Only useful for a long running browser session.
 PlaneObject.prototype.updateTrack = function(now, last, serverTrack, stale) {
+    if (debugTracks && (this.selected || SelectedAllPlanes)) {
+        console.log(`[DEBUG TRACK] ${this.icao} - updateTrack called`, {
+            position: this.position,
+            altitude: this.altitude,
+            prev_position: this.prev_position,
+            track_linesegs_length: this.track_linesegs.length,
+            timestamp: new Date().toISOString()
+        });
+    }
     if (this.position == null)
         return false;
     if (this.prev_position && this.position[0] == this.prev_position[0] && this.position[1] == this.prev_position[1]
@@ -1808,6 +1822,34 @@ PlaneObject.prototype.updateMarker = function(moved) {
 
 // return the styling of the lines based on altitude
 function altitudeLines (segment) {
+    if (debugTracks) {
+        if (segment.estimated) {
+            // Las líneas estimadas se ven en naranja más oscuro
+            return new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: '#FF6600',  // Naranja para segmentos estimados
+                    width: 3,
+                    lineDash: [8, 8]
+                })
+            });
+        } else if (segment.dataSource === 'mlat') {
+            // MLAT en naranja
+            return new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: '#FFA500',
+                    width: 2.5
+                })
+            });
+            } else if (segment.dataSource === 'modeS') {
+            // Mode-S en rojo
+            return new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: '#FF0000',
+                    width: 2
+                })
+            });
+        }
+    }
     let colorArr = altitudeColor(segment.altitude);
     if (segment.estimated)
         colorArr = [colorArr[0], colorArr[1], colorArr[2] * 0.8];
@@ -1908,6 +1950,14 @@ function altitudeLines (segment) {
 
 // Update our planes tail line,
 PlaneObject.prototype.updateLines = function() {
+    if (debugTracks && (this.selected || SelectedAllPlanes)) {
+        console.log(`[DEBUG TRACK] ${this.icao} - updateLines`, {
+            track_linesegs: this.track_linesegs.length,
+            visible: this.visible,
+            selected: this.selected,
+            position: this.position
+        });
+    }
     this.drawLine = false;
     if (!this.visible || this.position == null || (!this.selected && !SelectedAllPlanes)) {
         if (this.linesDrawn) {
@@ -3134,3 +3184,17 @@ function normalizeTraceStamps(data) {
     data.timestamp = 0;
     return data;
 }
+
+PlaneObject.prototype.applyLastLegFilter = function() {
+    // Si lastLeg está desactivado o no hay suficientes segmentos, no hacer nada
+    if (!lastLeg || this.track_linesegs.length < 2) return;
+    
+    // Guardar solo el último segmento
+    const lastSegment = this.track_linesegs[this.track_linesegs.length - 1];
+    this.track_linesegs = [lastSegment];
+    this.history_size = 1;
+    
+    // Forzar redibujado
+    this.removeTrail();
+    this.updateLines();
+};

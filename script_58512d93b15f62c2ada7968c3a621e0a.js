@@ -2200,8 +2200,6 @@ function resetSidebarWidth() {
     setTimeout(() => {
         sidebar.style.transition = '';
     }, 200);
-
-    console.log('Sidebar width reset to:', baseWidth + 'px');
 }
 
 // Inicializar el botón en los tabs
@@ -2388,6 +2386,17 @@ function processAircraft(ac, init, uat) {
     const isArray = Array.isArray(ac);
     let hex = isArray ? ac[0] : ac.hex;
 
+    if (debugAll) {
+        console.log(`[DEBUG ALL] Processing aircraft: ${hex}`, {
+            lat: isArray ? ac[4] : ac.lat,
+            lon: isArray ? ac[5] : ac.lon,
+            alt: isArray ? ac[1] : ac.alt_baro,
+            type: isArray ? ac[7] : ac.type,
+            init: init,
+            timestamp: new Date().toISOString()
+        });
+    }
+
     if (icaoFilter && !icaoFilter.includes(hex))
         return;
 
@@ -2478,6 +2487,16 @@ function processAircraft(ac, init, uat) {
                 plane.updateData(uat_now, uat_last, ac, init);
             }
         }
+    }
+
+    if (debugAll) {
+        console.log(`[DEBUG ALL] Processing aircraft: ${hex}`, {
+            lat: ac.lat,
+            lon: ac.lon,
+            alt: ac.alt_baro,
+            type: ac.type,
+            init: init
+        });
     }
 }
 
@@ -2731,6 +2750,11 @@ let fetchCalls = 0;
 let fetchDoneCount = 0;
 function fetchData(options) {
     options = options || {};
+
+    if (debugAll) {
+        console.log(`[DEBUG ALL] Fetching data at ${new Date().toISOString()}, pendingFetches: ${pendingFetches}`);
+    }
+    
     if (!timersActive) {
         //console.log(localTime(new Date()) + " fetchData inhibited by !timersActive");
         return;
@@ -3635,22 +3659,22 @@ function earlyInitPage() {
             jQuery("#ZI, #ZO").toggle(!state);
         }
     });
-    new Toggle({
-        key: "lastLeg",
-        display: "Last leg only",
-        tooltip: "Only shows the last leg of the plane's trajectory, preventing the map from being filled with long flight lines.",
-        // container: "#settingsLeft",
-        container: "#category-filters-container",
-        init: true,
-        setState: function (state) {
-            lastLeg = state;
-            if (loadFinished && !showTrace) {
-                for (let i in SelPlanes) {
-                    SelPlanes[i].processTrace();
-                }
-            }
-        }
-    });
+    // new Toggle({
+    //     key: "lastLeg",
+    //     display: "Last leg only",
+    //     tooltip: "When enabled with Track Tools > All Tracks, shows only the final segment of each aircraft's trajectory instead of the complete flight path.",
+    //     // container: "#settingsLeft",
+    //     container: "#category-filters-container",
+    //     init: true,
+    //     setState: function (state) {
+    //         lastLeg = state;
+    //         if (loadFinished && !showTrace) {
+    //             for (let i in SelPlanes) {
+    //                 SelPlanes[i].processTrace();
+    //             }
+    //         }
+    //     }
+    // });
 
     new Toggle({
         key: "baroUseQNH",
@@ -3711,7 +3735,7 @@ function earlyInitPage() {
     new Toggle({
         key: "utcTimesHistoric",
         display: "Historic track labels: UTC",
-        tooltip: "Displays timestamps on historic paths using Universal Time (UTC).",
+        tooltip: "When enabled with Track Tools > Track Labels, displays timestamps in UTC instead of local time.",
         // container: "#settingsLeft",
         container: "#category-data-container",
         init: utcTimesHistoric,
@@ -3904,7 +3928,7 @@ function earlyInitPage() {
     new Toggle({
         key: "debugTracks",
         display: "Debug tracks",
-        tooltip: "Developer options for viewing errors in received data.",
+        tooltip: "When enabled with Track Tools > All Tracks, displays detailed track information in the console",
         // container: "#settingsRight",
         container: "#category-system-container",
         init: false,
@@ -4314,7 +4338,6 @@ function earlyInitPage() {
 
 // Función para resetear una categoría a sus valores por defecto
 function resetCategory(category) {
-    console.log(`Resetting category: ${category}`);
 
     switch (category) {
         case 'units':
@@ -4349,7 +4372,7 @@ function resetCategory(category) {
             if (toggles['hideReplayFunction']) toggles['hideReplayFunction'].toggle(true);
             if (toggles['hideTrackFunctions']) toggles['hideTrackFunctions'].toggle(true);
             if (toggles['hideZoomFunctions']) toggles['hideZoomFunctions'].toggle(true);
-            if (toggles['lastLeg']) toggles['lastLeg'].toggle(true);
+            // if (toggles['lastLeg']) toggles['lastLeg'].toggle(true);
             break;
 
         case 'data':
@@ -4383,9 +4406,6 @@ function resetCategory(category) {
             if (toggles['planespottersAPI']) toggles['planespottersAPI'].toggle(true);
             if (toggles['wideInfoblock']) toggles['wideInfoblock'].toggle(false);
             break;
-
-        default:
-            console.log(`Unknown category: ${category}`);
     }
 
     // Refrescar la interfaz después de resetear
@@ -6425,22 +6445,22 @@ function initMap() {
         }
     });
 
-    new Toggle({
-        key: "windLabelsSlim",
-        display: "Smaller wind labels",
-        tooltip: "Reduce the size of the wind indicators (if the aircraft transmits that data).",
-        // container: "#settingsRight",
-        container: "#category-display-container",
-        init: windLabelsSlim,
-        setState: function (state) {
-            windLabelsSlim = state;
-            if (!loadFinished)
-                return;
-            for (let key in g.planesOrdered) {
-                g.planesOrdered[key].updateMarker();
-            }
-        }
-    });
+    // new Toggle({
+    //     key: "windLabelsSlim",
+    //     display: "Smaller wind labels",
+    //     tooltip: "Reduce the size of the wind indicators (if the aircraft transmits that data).",
+    //     // container: "#settingsRight",
+    //     container: "#category-display-container",
+    //     init: windLabelsSlim,
+    //     setState: function (state) {
+    //         windLabelsSlim = state;
+    //         if (!loadFinished)
+    //             return;
+    //         for (let key in g.planesOrdered) {
+    //             g.planesOrdered[key].updateMarker();
+    //         }
+    //     }
+    // });
 
     window.addEventListener('keydown', function (e) {
         active();
@@ -6571,9 +6591,9 @@ function initMap() {
                 toggleTrackLabels();
                 break;
             // debug stuff
-            case "L":
-                toggles['lastLeg'].toggle();
-                break;
+            // case "L":
+            //     toggles['lastLeg'].toggle();
+            //     break;
             case "D":
                 debug = !debug;
                 loStore['debug'] = debug;
@@ -10114,6 +10134,12 @@ function checkMovement() {
 
     if (!g.firstFetchDone) {
         return;
+    }
+
+    if (debugAll) {
+        const zoom = OLMap.getView().getZoom();
+        const center = ol.proj.toLonLat(OLMap.getView().getCenter());
+        console.log(`[DEBUG ALL] Movement - Zoom: ${zoom.toFixed(2)}, Center: [${center[0].toFixed(4)}, ${center[1].toFixed(4)}], Time: ${new Date().toISOString()}`);
     }
 
     let currentTime = Date.now() / 1000;
@@ -13931,19 +13957,12 @@ function toggleStarredPlane(hex) {
     // Verificar si la función está habilitada
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
 
-    if (!isEnabled) {
-        console.log('Notable Aircraft feature is disabled. Enable it in settings first.');
-        return;
-    }
-
     if (!hex) return;
 
     if (starredAircraft.has(hex)) {
         starredAircraft.delete(hex);
-        console.log(`Aircraft ${hex} removed from notable list`);
     } else {
         starredAircraft.add(hex);
-        console.log(`Aircraft ${hex} added to notable list`);
     }
 
     updateStarredUI();
@@ -14041,7 +14060,6 @@ function clearAllStarred() {
     updateStarredUI();
     updateStarredButtonInInfoblock();
     refreshFilter();
-    console.log('Lista de interés limpiada');
 }
 
 // Sobrescribir la función select existente para actualizar el botón de estrella
@@ -14154,11 +14172,7 @@ if (typeof toggleStarredList === 'undefined') {
     window.toggleStarredList = toggleStarredList;
 }
 
-// ============================================
-// HACER MOVIBLE LA VENTANA DE CONFIGURACIÓN
-// ============================================
 (function () {
-    console.log('=== INICIANDO SCRIPT DE VENTANA MOVIBLE ===');
 
     let settingsWindow = null;
     let isDragging = false;
@@ -14168,18 +14182,6 @@ if (typeof toggleStarredList === 'undefined') {
     function initDraggable() {
         settingsWindow = document.getElementById('settings_infoblock');
         const dragHandle = document.getElementById('settings_window_header');
-
-        if (!settingsWindow) {
-            console.error('ERROR: No se encontró #settings_infoblock');
-            return false;
-        }
-
-        if (!dragHandle) {
-            console.error('ERROR: No se encontró #settings_window_header');
-            return false;
-        }
-
-        console.log('Elementos encontrados correctamente');
 
         // FORZAR estilos iniciales usando setAttribute para mayor prioridad
         settingsWindow.setAttribute('style',
@@ -14195,7 +14197,6 @@ if (typeof toggleStarredList === 'undefined') {
 
         dragHandle.addEventListener('mousedown', onMouseDown);
 
-        console.log('Event listener agregado a dragHandle');
         return true;
     }
 
@@ -14208,8 +14209,6 @@ if (typeof toggleStarredList === 'undefined') {
             return;
         }
 
-        console.log('mousedown - iniciando arrastre');
-
         isDragging = true;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
@@ -14218,8 +14217,6 @@ if (typeof toggleStarredList === 'undefined') {
         const rect = settingsWindow.getBoundingClientRect();
         startLeft = rect.left;
         startTop = rect.top;
-
-        console.log('Posición inicial:', startLeft, startTop);
 
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'move';
@@ -14245,12 +14242,10 @@ if (typeof toggleStarredList === 'undefined') {
         settingsWindow.style.setProperty('left', newLeft + 'px', 'important');
         settingsWindow.style.setProperty('top', newTop + 'px', 'important');
 
-        console.log('Nueva posición:', newLeft, newTop);
     }
 
     function onMouseUp(e) {
         if (isDragging) {
-            console.log('mouseup - finalizando arrastre');
             isDragging = false;
             document.body.style.userSelect = '';
             document.body.style.cursor = '';
