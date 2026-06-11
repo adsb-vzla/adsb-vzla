@@ -2754,7 +2754,7 @@ function fetchData(options) {
     if (debugAll) {
         console.log(`[DEBUG ALL] Fetching data at ${new Date().toISOString()}, pendingFetches: ${pendingFetches}`);
     }
-    
+
     if (!timersActive) {
         //console.log(localTime(new Date()) + " fetchData inhibited by !timersActive");
         return;
@@ -5960,16 +5960,16 @@ function initMap() {
 
     // layers.push(trailLayers);
 
-    // iconLayer = new ol.layer.Vector({
-    //     name: 'iconLayer',
-    //     type: 'overlay',
-    //     title: 'Aircraft positions',
-    //     source: PlaneIconFeatures,
-    //     declutter: false,
-    //     zIndex: 200,
-    //     renderBuffer: renderBuffer,
-    // });
-    // layers.push(iconLayer);
+    iconLayer = new ol.layer.Vector({
+        name: 'iconLayer',
+        type: 'overlay',
+        title: 'Aircraft label',
+        source: PlaneIconFeatures,
+        declutter: false,
+        zIndex: 200,
+        renderBuffer: renderBuffer,
+    });
+    layers.push(iconLayer);
 
     distanceLineLayer = new ol.layer.Vector({
         source: new ol.source.Vector(),
@@ -6249,7 +6249,28 @@ function initMap() {
                 layers: new ol.Collection([gGG, gGA, gAA])
             });
 
-            layers.push(distanceRoot);
+            // layers.push(distanceRoot);
+
+            let vfrIndex = -1;
+            let siteCircleIndex = -1;
+
+            layers.forEach((layer, index) => {
+                if (layer.get('title') === 'VFR') {
+                    vfrIndex = index;
+                }
+                if (layer.get('name') === 'siteCircles') {
+                    siteCircleIndex = index;
+                }
+            });
+
+            if (vfrIndex !== -1 && siteCircleIndex !== -1 && siteCircleIndex > vfrIndex) {
+                layers.insertAt(vfrIndex + 1, distanceRoot);
+            } else if (vfrIndex !== -1) {
+                layers.insertAt(vfrIndex + 1, distanceRoot);
+            } else {
+                layers.push(distanceRoot);
+            }
+
         } catch (e) {
             console.error('Error agrupando capas de distancia:', e);
         }
@@ -8408,6 +8429,10 @@ function selectAllPlanes() {
     HighlightedPlane = null;
     // if all planes are already selected, deselect them all
     if (SelectedAllPlanes) {
+        // Cuando se desactiva All Tracks, también desactivar Track Labels
+        if (trackLabels) {
+            toggleTrackLabels();
+        }
         deselectAllPlanes();
         return;
     }
@@ -9007,6 +9032,16 @@ function toggleTableInView(arg) {
 function toggleLabels() {
     g.enableLabels = !g.enableLabels;
     loStore['enableLabels'] = g.enableLabels;
+
+    // Cuando se desactivan las etiquetas principales, también desactivar Label Details
+    if (!g.enableLabels && g.extendedLabels > 0) {
+        // Forzar que extendedLabels se ponga a 0
+        g.extendedLabels = 0;
+        loStore['extendedLabels'] = g.extendedLabels;
+        // Actualizar el estado visual del botón
+        buttonActive('#O', g.extendedLabels);
+    }
+    
     for (let key in g.planesOrdered) {
         g.planesOrdered[key].updateMarker();
     }
@@ -9166,7 +9201,7 @@ function ensureWarningElement() {
 function showSearchWarning(message) {
     const searchWarning = ensureWarningElement();
     if (!searchWarning.length) return;
-    
+
     searchWarning.html(message);
     searchWarning.css('display', 'block');
     searchWarning.css('background-color', 'var(--BGCOLOR2)');
@@ -9186,7 +9221,7 @@ function showSearchWarning(message) {
 function hideSearchWarning() {
     const searchWarning = jQuery('#search_warning');
     if (!searchWarning.length) return;
-    
+
     searchWarning.css('display', 'none');
     searchWarning.css('background-color', '');
     searchWarning.css('border', '');
@@ -9204,7 +9239,7 @@ function hideSearchWarning() {
 function showSuccessMessage(message) {
     const searchWarning = ensureWarningElement();
     if (!searchWarning.length) return;
-    
+
     searchWarning.html(message);
     searchWarning.css('display', 'block');
     searchWarning.css('background-color', 'var(--BGCOLOR2)');
@@ -9460,20 +9495,20 @@ function updateAltFilter() {
     if (hasMinValid && hasMaxValid && minAltitude > maxAltitude) {
         // Mostrar mensaje de error ROJO
         showSearchWarning('ERROR: Minimum altitude (' + minAltitude + ') cannot be greater than maximum altitude (' + maxAltitude + '). Please correct the values.');
-        
+
         // Marcar los inputs como inválidos visualmente
         jQuery("#altitude_filter_min").addClass('input-error').removeClass('filter-active');
         jQuery("#altitude_filter_max").addClass('input-error').removeClass('filter-active');
-        
+
         // IMPORTANTE: Deshabilitar el filtro y limpiar valores anteriores
         PlaneFilter.enabled = false;
         PlaneFilter.minAltitude = undefined;
         PlaneFilter.maxAltitude = undefined;
-        
+
         // No continuar con la aplicación del filtro
         return;
 
-        } else {
+    } else {
         // Limpiar mensaje de error y clases de error si los valores son correctos
         hideSearchWarning();
         jQuery("#altitude_filter_min").removeClass('input-error');
@@ -9485,7 +9520,7 @@ function updateAltFilter() {
         minAltitude = -1e6;
     else
         enabled = true;
-        
+
     if (maxAltitude < -1e6 || maxAltitude > 1e6 || isNaN(maxAltitude))
         maxAltitude = 1e6;
     else
@@ -14182,34 +14217,34 @@ function updateStarredPlaneVisual(hex) {
 function updateStarredButtonInInfoblock() {
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
     const selected = SelectedPlane;
-    
+
     // Buscar el botón de estrella en la nueva ubicación
     let starBtn = document.getElementById('infoblock_star');
-    
+
     if (!starBtn) return;
-    
+
     // Si la función no está habilitada o no hay avión seleccionado, ocultar el botón
     if (!isEnabled || !selected) {
         starBtn.style.display = 'none';
         return;
     }
-    
+
     starBtn.style.display = 'unset';
-    
+
     const isStarred = starredAircraft.has(selected.icao);
-    
+
     // Actualizar contenido y clase del botón
     starBtn.textContent = isStarred ? '★' : '✰';
     starBtn.title = isStarred ? 'Remove from notable' : 'Mark as notable';
-    
+
     if (isStarred) {
         starBtn.classList.add('starred');
     } else {
         starBtn.classList.remove('starred');
     }
-    
+
     // Actualizar evento click
-    starBtn.onclick = function(e) {
+    starBtn.onclick = function (e) {
         e.stopPropagation();
         toggleStarredPlane(selected.icao);
     };
@@ -14225,22 +14260,22 @@ function isPlaneStarred(plane) {
 function clearAllStarred() {
     // Verificar si hay elementos para limpiar
     if (starredAircraft.size === 0) return;
-    
+
     // Crear copia de los hexes antes de limpiar
     const hexes = [...starredAircraft];
-    
+
     // Limpiar el Set
     starredAircraft.clear();
-    
+
     // Actualizar visualmente cada avión que estaba marcado
     for (const hex of hexes) {
         updateStarredPlaneVisual(hex);
     }
-    
+
     // Actualizar UI
     updateStarredUI();
     updateStarredButtonInInfoblock();
-    
+
     // Refrescar la tabla para quitar el estilo de las filas
     refreshFilter();
 }
