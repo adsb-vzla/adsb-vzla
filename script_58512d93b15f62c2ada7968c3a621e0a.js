@@ -3757,7 +3757,7 @@ function earlyInitPage() {
     new Toggle({
         key: "labelsGeom",
         display: "Labels: geom. alt. (WGS84)",
-        tooltip: "It displays geometric altitude (GPS) instead of standard barometric altitude.",
+        tooltip: "When enabled with Label Tools > Track Labels, displays geometric altitude (GPS) instead of standard barometric altitude.",
         // container: "#settingsLeft",
         container: "#category-data-container",
         init: labelsGeom,
@@ -3773,7 +3773,7 @@ function earlyInitPage() {
     new Toggle({
         key: "utcTimesLive",
         display: "Live track labels: UTC",
-        tooltip: "Displays timestamps on live paths using Universal Time (UTC).",
+        tooltip: "When enabled with Track Tools > Track Labels, displays timestamps on live paths using Universal Time (UTC).",
         // container: "#settingsLeft",
         container: "#category-data-container",
         init: utcTimesLive,
@@ -4170,7 +4170,7 @@ function earlyInitPage() {
         display: "Wide infoblock",
         tooltip: "Use a wider layout for the infoblock, allowing more information to be displayed in a single line.",
         container: "#category-info-container",
-        init: wideInfoBlock,
+        init: true,
         setState: function (state) {
             wideInfoBlock = state;
             adjustInfoBlock();
@@ -4402,7 +4402,7 @@ function resetCategory(category) {
             if (toggles['useRouteAPI']) toggles['useRouteAPI'].toggle(true);
             if (toggles['planespottingAPI']) toggles['planespottingAPI'].toggle(false);
             if (toggles['planespottersAPI']) toggles['planespottersAPI'].toggle(true);
-            if (toggles['wideInfoblock']) toggles['wideInfoblock'].toggle(false);
+            if (toggles['wideInfoblock']) toggles['wideInfoblock'].toggle(true);
             break;
     }
 
@@ -5957,32 +5957,32 @@ function initMap() {
 
     trailGroup.push(dummyLayer);
 
-    trailLayers = new ol.layer.Group({
-        name: 'ac_trail',
-        title: 'Aircraft trails',
-        type: 'overlay',
-        layers: trailGroup,
-        zIndex: 150,
-    });
+    // trailLayers = new ol.layer.Group({
+    //     name: 'ac_trail',
+    //     title: 'Aircraft trails',
+    //     type: 'overlay',
+    //     layers: trailGroup,
+    //     zIndex: 150,
+    // });
 
-    layers.push(trailLayers);
+    // layers.push(trailLayers);
 
-    iconLayer = new ol.layer.Vector({
-        name: 'iconLayer',
-        type: 'overlay',
-        title: 'Aircraft positions',
-        source: PlaneIconFeatures,
-        declutter: false,
-        zIndex: 200,
-        renderBuffer: renderBuffer,
-    });
-    layers.push(iconLayer);
+    // iconLayer = new ol.layer.Vector({
+    //     name: 'iconLayer',
+    //     type: 'overlay',
+    //     title: 'Aircraft positions',
+    //     source: PlaneIconFeatures,
+    //     declutter: false,
+    //     zIndex: 200,
+    //     renderBuffer: renderBuffer,
+    // });
+    // layers.push(iconLayer);
 
     distanceLineLayer = new ol.layer.Vector({
         source: new ol.source.Vector(),
         style: new ol.style.Style({
             stroke: new ol.style.Stroke({
-                color: 'red',
+                color: 'blue',
                 width: 2
             })
         }),
@@ -6101,7 +6101,7 @@ function initMap() {
         source: groundToPlaneLineSource,
         zIndex: 260,
         style: new ol.style.Style({
-            stroke: new ol.style.Stroke({ color: 'red', width: 2 })
+            stroke: new ol.style.Stroke({ color: 'blue', width: 2 })
         })
     });
     layers.push(groundToPlaneLineLayer);
@@ -6149,7 +6149,7 @@ function initMap() {
         source: new ol.source.Vector(),
         style: new ol.style.Style({
             stroke: new ol.style.Stroke({
-                color: 'red',
+                color: 'blue',
                 width: 2
             })
         }),
