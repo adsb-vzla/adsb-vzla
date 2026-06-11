@@ -3792,7 +3792,7 @@ function earlyInitPage() {
         init: false,
         setState: function (state) {
             const starredSection = document.getElementById('starred-aircraft-section');
-            const starBtnContainer = document.querySelector('.star-btn-container');
+            // const starBtnContainer = document.querySelector('.star-btn-container');
 
             if (state) {
                 // Habilitar: mostrar la sección y la estrella
@@ -3813,16 +3813,9 @@ function earlyInitPage() {
                 if (starredSection) {
                     starredSection.classList.add('hidden-by-setting');
                 }
-                // Ocultar/remover botón de estrella del infoblock
-                if (starBtnContainer) {
-                    starBtnContainer.innerHTML = '';
-                    starBtnContainer.style.display = 'none';
-                } else {
-                    // Buscar y eliminar si existe de otra forma
-                    const existingBtn = document.querySelector('.star-btn-container');
-                    if (existingBtn) existingBtn.style.display = 'none';
-                }
             }
+
+            updateStarredButtonInInfoblock();
         }
     });
 
@@ -6277,7 +6270,7 @@ function initMap() {
     function setInfoBlockMinimized(state) {
         infoBlockMinimized = state;
         jQuery('#selected_infoblock').toggleClass('infoblock-minimized', state);
-        jQuery('#infoblock_minimize').attr('title', state ? 'Restaurar infoblock' : 'Minimizar infoblock');
+        jQuery('#infoblock_minimize').attr('title', state ? 'Restore infoblock' : 'Minimize infoblock');
         jQuery('#infoblock_minimize').text(state ? '+' : '−');
         adjustInfoBlock();
     }
@@ -14015,54 +14008,41 @@ function updateStarredPlaneVisual(hex) {
     }
 }
 
-// Función para actualizar el botón de estrella en el infoblock
+// Función para actualizar el botón de estrella en el infoblock (versión unificada)
 function updateStarredButtonInInfoblock() {
-    // Verificar si la función está habilitada
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
-
     const selected = SelectedPlane;
-
-    // Buscar o crear el contenedor del botón estrella en el título
-    let starBtnContainer = document.querySelector('.star-btn-container');
-    const titleDiv = document.querySelector('#selected_infoblock .highlightedTitle > div:first-child');
-
-    if (!titleDiv) return;
-
-    // Si la función no está habilitada, ocultar/eliminar el botón
-    if (!isEnabled) {
-        if (starBtnContainer) {
-            starBtnContainer.style.display = 'none';
-        }
+    
+    // Buscar el botón de estrella en la nueva ubicación
+    let starBtn = document.getElementById('infoblock_star');
+    
+    if (!starBtn) return;
+    
+    // Si la función no está habilitada o no hay avión seleccionado, ocultar el botón
+    if (!isEnabled || !selected) {
+        starBtn.style.display = 'none';
         return;
     }
-
-    if (!selected) {
-        if (starBtnContainer) {
-            starBtnContainer.style.display = 'none';
-        }
-        return;
-    }
-
-    if (!starBtnContainer) {
-        starBtnContainer = document.createElement('div');
-        starBtnContainer.className = 'star-btn-container';
-        starBtnContainer.style.display = 'inline-flex';
-        starBtnContainer.style.alignItems = 'center';
-        starBtnContainer.style.marginLeft = '10px';
-        titleDiv.appendChild(starBtnContainer);
-    }
-
-    starBtnContainer.style.display = 'inline-flex';
-
+    
+    starBtn.style.display = 'unset';
+    
     const isStarred = starredAircraft.has(selected.icao);
-
-    starBtnContainer.innerHTML = `
-        <button class="star-btn ${isStarred ? 'star-btn-starred' : 'star-btn-unstarred'}" 
-                onclick="toggleStarredPlane('${selected.icao}')" 
-                title="${isStarred ? 'Remove from notable' : 'Mark as notable'}">
-            ${isStarred ? '⭐' : '☆'}
-        </button>
-    `;
+    
+    // Actualizar contenido y clase del botón
+    starBtn.textContent = isStarred ? '★' : '✰';
+    starBtn.title = isStarred ? 'Remove from notable' : 'Mark as notable';
+    
+    if (isStarred) {
+        starBtn.classList.add('starred');
+    } else {
+        starBtn.classList.remove('starred');
+    }
+    
+    // Actualizar evento click
+    starBtn.onclick = function(e) {
+        e.stopPropagation();
+        toggleStarredPlane(selected.icao);
+    };
 }
 
 // Función para verificar si un avión está marcado como interés (para usar en filtros/resaltados)

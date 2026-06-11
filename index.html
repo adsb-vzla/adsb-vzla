@@ -85,10 +85,13 @@
           <div>
             <span class="identLarge"
               title="Typically the air traffic control callsign or the aircraft's registration, as entered into the transponder by the pilot."
-              id="selected_callsign">n/a</span>
-            <div class="star-btn-container" style="display: inline-flex; align-items: center;"></div>
-            <div id="infoblock_minimize" class="infoblockMinimizeBox" title="Minimizar infoblock">−</div>
-            <div id="infoblock_close" class="infoblockCloseBox"></div>
+              id="selected_callsign">n/a
+            </span>
+            <div class="window-controls" style="display: flex; gap: 8px;">
+              <button id="infoblock_star" class="formButton" style="display: none;" title="Mark as notable">✰</button>
+              <button id="infoblock_minimize" class="formButton" title="Minimize infoblock">−</button>
+              <button id="infoblock_close" class="formButton" title="Close">✕</button>
+            </div>
           </div>
           <div id="selected_icao"
             title="The aircraft's unique ICAO identification number shown in hexadecimal format as set in the aircrafts transponder (can be wrong, we will still display the data with the wrong hex).">

@@ -949,7 +949,7 @@ input.error {
 }
 
 .identLarge {
-    font-size: calc(22px * var(--SCALE));
+    font-size: calc(20px * var(--SCALE));
     line-height: calc(24px * var(--SCALE));
     font-weight: bold;
 }
@@ -1004,8 +1004,8 @@ table.infoSectionTable tr td {
 .infoBlockSection {
     padding-top: calc(7px * var(--SCALE));
     padding-bottom: calc(7px * var(--SCALE));
-    padding-left: calc(7px * var(--SCALE));
-    padding-right: calc(7px * var(--SCALE));
+    padding-left: calc(5px * var(--SCALE));
+    padding-right: calc(5px * var(--SCALE));
 }
 
 .largeText a {
@@ -2298,7 +2298,7 @@ div.ui-slider .ui-slider-handle {
 }
 
 /* Botón de estrella en infoblock */
-.star-btn {
+/* .star-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -2319,22 +2319,23 @@ div.ui-slider .ui-slider-handle {
 .star-btn-unstarred {
     color: #888;
     opacity: 0.6;
-}
+} */
 
 /* Botón de estrella en infoblock - posicionamiento correcto */
-.star-btn-container {
+/* .star-btn-container {
     display: inline-flex;
     align-items: center;
     margin: 0;
     order: 1;
-}
+} */
 
 /* Ajuste del contenedor del título para que todo esté en línea */
 #selected_infoblock .highlightedTitle > div:first-child {
     display: flex !important;
     align-items: center !important;
+    justify-content: space-between !important;
     flex-wrap: wrap !important;
-    gap: 6px !important;
+    /* gap: 6px !important; */
 }
 
 /* ===== MEJORAS PARA EL MENÚ DE COLUMNAS ===== */
@@ -2732,3 +2733,49 @@ Estilos para los buscadores unificados
     width: 2.5rem;
     padding: 0.3rem;
 }
+
+
+/* Estilos unificados para la tira de botones */
+/* #selected_infoblock .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+} */
+
+/* #selected_infoblock .window-controls {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    display: flex !important;
+    gap: 8px !important;
+} */
+
+#selected_infoblock .window-controls {
+    gap: 4px !important;
+}
+
+#selected_infoblock .window-controls .formButton {
+    width: 2rem;
+}
+
+#infoblock_star {
+    font-size: 1.2rem;
+}
+
+/* Botón estrella específico */
+/* .star-btn-window {
+    font-size: 18px !important;
+} */
+
+/* .star-btn-window.starred {
+    color: gold;
+    text-shadow: 0 0 2px orange;
+} */
+
+/* Ocultar elementos antiguos que ya no se usan */
+/* #selected_infoblock .star-btn-container,
+#selected_infoblock .infoblockMinimizeBox,
+#selected_infoblock .infoblockCloseBox {
+    display: none !important;
+} */
