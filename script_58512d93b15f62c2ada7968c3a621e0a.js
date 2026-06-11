@@ -14051,18 +14051,30 @@ function isPlaneStarred(plane) {
 }
 
 // Función para limpiar todos los aviones de interés
+// Función para limpiar todos los aviones de interés
 function clearAllStarred() {
+    // Verificar si hay elementos para limpiar
+    if (starredAircraft.size === 0) return;
+    
+    // Crear copia de los hexes antes de limpiar
     const hexes = [...starredAircraft];
+    
+    // Limpiar el Set
     starredAircraft.clear();
-
+    
+    // Actualizar visualmente cada avión que estaba marcado
     for (const hex of hexes) {
         updateStarredPlaneVisual(hex);
     }
-
+    
+    // Actualizar UI
     updateStarredUI();
     updateStarredButtonInInfoblock();
+    
+    // Refrescar la tabla para quitar el estilo de las filas
     refreshFilter();
 }
+
 
 // Sobrescribir la función select existente para actualizar el botón de estrella
 const originalSelect = select;
@@ -14151,6 +14163,22 @@ function initStarredAircraft() {
         }
     };
     updateStarredUI = window.updateStarredUI;
+
+    const clearAllBtn = document.getElementById('clear-all-starred-btn');
+    if (clearAllBtn) {
+        // Eliminar event listener anterior si existe
+        clearAllBtn.removeEventListener('click', clearAllStarredHandler);
+        // Añadir nuevo event listener
+        clearAllBtn.addEventListener('click', clearAllStarredHandler);
+    }
+}
+
+// Manejador del botón Clear All
+function clearAllStarredHandler(e) {
+    e.stopPropagation();
+    if (starredAircraft.size > 0) {
+        clearAllStarred();
+    }
 }
 
 // Ejecutar inicialización cuando el DOM esté listo

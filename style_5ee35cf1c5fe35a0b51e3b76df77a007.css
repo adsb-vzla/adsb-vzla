@@ -1780,7 +1780,6 @@ html .ui-button.ui-state-disabled:active {
     overflow: visible;
     z-index: 10020 !important;
     box-sizing: border-box;
-    /* padding: 12px 18px 14px; */
     color: #e9edf7;
     background: linear-gradient(180deg, rgba(45, 45, 45, 0.82) 0%, rgba(18, 18, 18, 0.94) 100%);
     box-shadow:
@@ -1792,7 +1791,6 @@ html .ui-button.ui-state-disabled:active {
     grid-template-columns:
         minmax(150px, 150px) minmax(200px, 200px) minmax(150px, auto) minmax(150px, auto) minmax(170px, auto);
     grid-template-rows: auto 64px;
-    /* gap: 10px 36px; */
     grid-template-areas:
         "dateLocal timeHint hoursHint minutesHint speedHint"
         "play datepicker hourSlider minuteSlider speedSlider";
@@ -1870,14 +1868,9 @@ html .ui-button.ui-state-disabled:active {
     grid-area: play;
     padding: 0.5rem;
     font-weight: bold;
-    /* border-radius: 28px; */
     border-radius: 0.5rem;
     color: #fff;
     font-size: 16px;
-    /* background: linear-gradient(180deg, #355692 0%, #1f335e 100%);
-  border: 1px solid rgba(130,160,255,0.32); */
-    /* background: rgba(8,12,22,0.7);
-  border: 1px solid rgba(120,160,255,0.18); */
     background: var(--LIGHTER-BASE-COLOR);
     border: 1px solid var(--DARKER-BASE-COLOR);
     box-shadow:
@@ -1895,7 +1888,6 @@ html .ui-button.ui-state-disabled:active {
     grid-area: datepicker;
     padding: 0.5rem;
     font-weight: bold;
-    /* border-radius: 20px; */
     border-radius: 0.5rem;
     background: rgba(8, 12, 22, 0.7);
     border: 1px solid rgba(120, 160, 255, 0.18);
@@ -2015,16 +2007,12 @@ html .ui-button.ui-state-disabled:active {
 div.ui-slider::before {
     content: "";
     position: absolute;
-    /* left: calc(var(--replay-handle-half) + var(--replay-handle-gap));
-    right: calc(var(--replay-handle-half) + var(--replay-handle-gap)); */
     left: 0 !important;
     right: 0 !important;
     top: 50%;
     transform: translateY(-50%);
     height: 8px;
     border-radius: 999px;
-    /* background: linear-gradient(180deg,#2f4d8b 0%,#1a2f61 100%);
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.06), inset 0 -1px 2px rgba(0,0,0,0.4); */
     background: rgba(8, 12, 22, 0.7);
     border: 1px solid rgba(120, 160, 255, 0.18);
     box-shadow:
@@ -2216,7 +2204,7 @@ div.ui-slider .ui-slider-handle {
 .starred-count {
     background: var(--LIGHTER-BASE-COLOR);
     padding: 2px 8px;
-    border-radius: 12px;
+    border-radius: 5px;
     font-size: 11px;
 }
 
@@ -2297,50 +2285,15 @@ div.ui-slider .ui-slider-handle {
     font-weight: bold;
 }
 
-/* Botón de estrella en infoblock */
-/* .star-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    padding: 0 5px;
-    transition: transform 0.2s;
-}
-
-.star-btn:hover {
-    transform: scale(1.1);
-}
-
-.star-btn-starred {
-    color: gold;
-    text-shadow: 0 0 2px orange;
-}
-
-.star-btn-unstarred {
-    color: #888;
-    opacity: 0.6;
-} */
-
-/* Botón de estrella en infoblock - posicionamiento correcto */
-/* .star-btn-container {
-    display: inline-flex;
-    align-items: center;
-    margin: 0;
-    order: 1;
-} */
-
 /* Ajuste del contenedor del título para que todo esté en línea */
 #selected_infoblock .highlightedTitle > div:first-child {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
     flex-wrap: wrap !important;
-    /* gap: 6px !important; */
 }
 
-/* ===== MEJORAS PARA EL MENÚ DE COLUMNAS ===== */
-
-/* Contenedor principal de las columnas - layout en grid responsivo */
+/* Contenedor principal de las columnas */
 #sortableColumns {
     list-style-type: none;
     margin: 0;
@@ -2523,58 +2476,9 @@ Estilos para los buscadores unificados
     margin-bottom: calc(8px * var(--SCALE));
 }
 
-/* .filter-group-selectable .buttonFilter {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-} */
-/* 
-.filter-group-selectable .buttonFilter li {
-    float: none;
-    width: auto;
-    min-width: calc(70px * var(--SCALE));
-    padding: calc(4px * var(--SCALE)) calc(8px * var(--SCALE));
-    margin: 0;
-    border-radius: 4px;
+#clear-all-starred-btn{
     cursor: pointer;
-    text-align: center;
-    transition: all 0.2s ease;
 }
-
-.filter-group-selectable .buttonFilter li.ui-selected {
-    border-color: var(--BASE-COLOR);
-    background-color: var(--BASE-COLOR);
-    color: white;
-    opacity: 0.9;
-}
-
-.filter-group-selectable .buttonFilter li:hover {
-    opacity: 0.8;
-} */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ===== ESTILOS PARA ACORDEÓN DE FILTROS ===== */
 
 /* Estilos base del acordeón */
 .filter-group {
@@ -2643,11 +2547,6 @@ Estilos para los buscadores unificados
 
 /* Ajustes para los selectables (Source y DB Flags) */
 .filter-group-content .buttonFilter {
-    /* display: flex;
-    flex-wrap: wrap;
-    gap: calc(8px * var(--SCALE));
-    margin: 0;
-    padding: 0; */
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -2734,23 +2633,6 @@ Estilos para los buscadores unificados
     padding: 0.3rem;
 }
 
-
-/* Estilos unificados para la tira de botones */
-/* #selected_infoblock .title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-} */
-
-/* #selected_infoblock .window-controls {
-    position: relative !important;
-    right: auto !important;
-    top: auto !important;
-    display: flex !important;
-    gap: 8px !important;
-} */
-
 #selected_infoblock .window-controls {
     gap: 4px !important;
 }
@@ -2762,20 +2644,3 @@ Estilos para los buscadores unificados
 #infoblock_star {
     font-size: 1.2rem;
 }
-
-/* Botón estrella específico */
-/* .star-btn-window {
-    font-size: 18px !important;
-} */
-
-/* .star-btn-window.starred {
-    color: gold;
-    text-shadow: 0 0 2px orange;
-} */
-
-/* Ocultar elementos antiguos que ya no se usan */
-/* #selected_infoblock .star-btn-container,
-#selected_infoblock .infoblockMinimizeBox,
-#selected_infoblock .infoblockCloseBox {
-    display: none !important;
-} */
