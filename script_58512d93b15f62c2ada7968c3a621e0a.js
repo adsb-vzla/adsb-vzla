@@ -14164,6 +14164,23 @@ function initStarredAircraft() {
     };
     updateStarredUI = window.updateStarredUI;
 
+    const toggle = toggles['enableStarredAircraft'];
+    if (toggle && toggle.state === true) {
+        // Si el toggle está activado, mostrar la sección
+        if (starredSection) {
+            starredSection.classList.remove('hidden-by-setting');
+        }
+        // Actualizar el botón de estrella en el infoblock si hay avión seleccionado
+        if (SelectedPlane) {
+            updateStarredButtonInInfoblock();
+        }
+    } else {
+        // Si el toggle está desactivado, asegurar que la sección esté oculta
+        if (starredSection) {
+            starredSection.classList.add('hidden-by-setting');
+        }
+    }
+
     const clearAllBtn = document.getElementById('clear-all-starred-btn');
     if (clearAllBtn) {
         // Eliminar event listener anterior si existe
