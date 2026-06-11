@@ -845,7 +845,7 @@ input.error {
 
 .link,
 .link a {
-    color: var(--BASE-COLOR);
+    color: #527fff;
     text-decoration: underline;
 }
 
