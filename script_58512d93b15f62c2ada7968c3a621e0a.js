@@ -8530,6 +8530,9 @@ function expandSidebar(e) {
     jQuery("#splitter").hide();
     jQuery("#shrink_sidebar_button").show();
     jQuery("#sidebar_container").width("100%");
+
+    jQuery('.header_sidebar').css('display', 'none');
+
     TAR.planeMan.redraw();
     updateMapSize();
     adjustInfoBlock();
@@ -8543,6 +8546,9 @@ function showMap() {
     jQuery("#toggle_sidebar_control").show();
     jQuery("#splitter").show();
     jQuery("#shrink_sidebar_button").hide();
+
+    jQuery('.header_sidebar').css('display', 'unset');
+
     TAR.planeMan.redraw();
     updateMapSize();
 }

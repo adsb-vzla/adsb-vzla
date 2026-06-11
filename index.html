@@ -1236,7 +1236,21 @@
     </div>
 
     <div id="sidebar_container" style="display: none; height: 100%; position: relative;">
-      <div id="sidebar_close_button_container" style="position: absolute; top: 8px; right: 8px; z-index: 1200;">
+      <div class="header_sidebar">
+        <div id="sidebar_close_button_container" style="position: absolute; right: 8px; top: -3px; z-index: 1200;">
+          <button id="toggle_sidebar_button" class="show_sidebar sidebar_button" title="Toggle Sidebar"
+            style="background: none; border: none; padding: 6px; cursor: pointer;">
+            <svg id="hamburger-menu" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="34" height="34"
+              viewBox="0 0 50 50">
+              <path
+                d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z">
+              </path>
+            </svg>
+          </button>
+        </div>
+        <!-- <div id="splitter" class="ui-resizable-handle ui-resizable-w" style="display: none;"></div> -->
+      </div>
+      <!-- <div id="sidebar_close_button_container" style="position: absolute; top: 8px; right: 8px; z-index: 1200;">
         <button id="toggle_sidebar_button" class="show_sidebar sidebar_button" title="Toggle Sidebar"
           style="background: none; border: none; padding: 6px; cursor: pointer;">
           <svg id="hamburger-menu" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="34" height="34"
@@ -1246,7 +1260,7 @@
             </path>
           </svg>
         </button>
-      </div>
+      </div> -->
       <div id="splitter" class="ui-resizable-handle ui-resizable-w" style="display: none;"></div>
       <div id="sidebar_canvas">
 
