@@ -9120,25 +9120,123 @@ function onSearch(e) {
 }
 */
 
-function hideSearchWarning() {
-    const searchWarning = jQuery('#search_warning');
-    if (searchWarning.css('display') !== 'none') {
-        searchWarning.hide('slow');
+// function hideSearchWarning() {
+//     const searchWarning = jQuery('#search_warning');
+//     if (searchWarning.css('display') !== 'none') {
+//         searchWarning.hide('slow');
+//     }
+// }
+
+// function showSearchWarning(message) {
+//     const searchWarning = jQuery('#search_warning');
+//     searchWarning.text(message)
+//     if (searchWarning.css('display') === 'none') {
+//         searchWarning.show();
+//     }
+
+//     //auto hide after 15 seconds
+//     setTimeout(() => hideSearchWarning(), 15000);
+// }
+
+function ensureWarningElement() {
+    let searchWarning = document.getElementById('search_warning');
+    if (!searchWarning) {
+        searchWarning = document.createElement('div');
+        searchWarning.id = 'search_warning';
+        searchWarning.className = 'warning';
+        searchWarning.style.display = 'none';
+        // Buscar un contenedor adecuado (el contenedor de filtros o el body)
+        const filterTable = document.getElementById('filterTable');
+        if (filterTable) {
+            filterTable.parentNode.insertBefore(searchWarning, filterTable.nextSibling);
+        } else {
+            document.body.appendChild(searchWarning);
+        }
     }
+    return jQuery(searchWarning);
 }
+
 
 function showSearchWarning(message) {
-    const searchWarning = jQuery('#search_warning');
-    searchWarning.text(message)
-    if (searchWarning.css('display') === 'none') {
-        searchWarning.show();
-    }
+    const searchWarning = ensureWarningElement();
+    if (!searchWarning.length) return;
+    
+    searchWarning.html(message);
+    searchWarning.css('display', 'block');
+    searchWarning.css('background-color', 'var(--BGCOLOR2)');
+    searchWarning.css('border', '2px solid #cc0000');
+    searchWarning.css('color', 'var(--TXTCOLOR2)');
+    searchWarning.css('padding', '8px');
+    searchWarning.css('margin', '10px 0');
+    searchWarning.css('border-radius', '4px');
+    searchWarning.css('z-index', '1000');
 
-    //auto hide after 15 seconds
-    setTimeout(() => hideSearchWarning(), 15000);
+    if (window.searchWarningTimeout) {
+        clearTimeout(window.searchWarningTimeout);
+    }
+    window.searchWarningTimeout = setTimeout(() => hideSearchWarning(), 8000);
 }
 
+function hideSearchWarning() {
+    const searchWarning = jQuery('#search_warning');
+    if (!searchWarning.length) return;
+    
+    searchWarning.css('display', 'none');
+    searchWarning.css('background-color', '');
+    searchWarning.css('border', '');
+    searchWarning.css('color', '');
+    searchWarning.css('font-weight', '');
+    searchWarning.css('padding', '');
+    searchWarning.css('margin', '');
+    searchWarning.css('border-radius', '');
+    if (window.searchWarningTimeout) {
+        clearTimeout(window.searchWarningTimeout);
+        window.searchWarningTimeout = null;
+    }
+}
 
+function showSuccessMessage(message) {
+    const searchWarning = ensureWarningElement();
+    if (!searchWarning.length) return;
+    
+    searchWarning.html(message);
+    searchWarning.css('display', 'block');
+    searchWarning.css('background-color', 'var(--BGCOLOR2)');
+    searchWarning.css('border', '2px solid #006600');
+    searchWarning.css('color', 'var(--TXTCOLOR2)');
+    // searchWarning.css('background-color', '#ccffcc');
+    // searchWarning.css('border', '2px solid #00cc00');
+    // searchWarning.css('color', '#006600');
+    // searchWarning.css('font-weight', 'bold');
+    searchWarning.css('padding', '8px');
+    searchWarning.css('margin', '10px 0');
+    searchWarning.css('border-radius', '4px');
+    searchWarning.css('z-index', '1000');
+
+    if (window.searchWarningTimeout) {
+        clearTimeout(window.searchWarningTimeout);
+    }
+    window.searchWarningTimeout = setTimeout(() => hideSearchWarning(), 3000);
+}
+
+function updateAltitudeFilterIndicators(minAlt, maxAlt, enabled) {
+    const minInput = jQuery("#altitude_filter_min");
+    const maxInput = jQuery("#altitude_filter_max");
+
+    if (enabled) {
+        minInput.addClass('filter-active').removeClass('input-error');
+        maxInput.addClass('filter-active').removeClass('input-error');
+
+        const unit = get_unit_label("altitude", DisplayUnits);
+        minInput.attr('title', `Minimum altitude: ${minAlt !== -1e6 ? Math.round(minAlt) : 'no limit'} ${unit}`);
+        maxInput.attr('title', `Maximum altitude: ${maxAlt !== 1e6 ? Math.round(maxAlt) : 'no limit'} ${unit}`);
+    } else {
+        minInput.removeClass('filter-active');
+        maxInput.removeClass('filter-active');
+        minInput.attr('title', 'Set minimum altitude');
+        maxInput.attr('title', 'Set maximum altitude');
+    }
+}
 
 // 1. La función principal (Definida fuera para que sea global)
 function unifiedSearch(e) {
@@ -9341,30 +9439,96 @@ function updateAltFilter() {
     let maxAltitude = parseFloat(jQuery("#altitude_filter_max").val().trim());
     let enabled = false;
 
+    // Validar que los valores sean números válidos
+    if (isNaN(minAltitude)) {
+        minAltitude = -1e6;
+    }
+    if (isNaN(maxAltitude)) {
+        maxAltitude = 1e6;
+    }
+
+    // Validar que el valor mínimo no sea mayor que el máximo
+    const hasMinValid = minAltitude !== -1e6;
+    const hasMaxValid = maxAltitude !== 1e6;
+
+    if (hasMinValid && hasMaxValid && minAltitude > maxAltitude) {
+        // Mostrar mensaje de error ROJO
+        showSearchWarning('ERROR: Minimum altitude (' + minAltitude + ') cannot be greater than maximum altitude (' + maxAltitude + '). Please correct the values.');
+        
+        // Marcar los inputs como inválidos visualmente
+        jQuery("#altitude_filter_min").addClass('input-error').removeClass('filter-active');
+        jQuery("#altitude_filter_max").addClass('input-error').removeClass('filter-active');
+        
+        // IMPORTANTE: Deshabilitar el filtro y limpiar valores anteriores
+        PlaneFilter.enabled = false;
+        PlaneFilter.minAltitude = undefined;
+        PlaneFilter.maxAltitude = undefined;
+        
+        // No continuar con la aplicación del filtro
+        return;
+
+        } else {
+        // Limpiar mensaje de error y clases de error si los valores son correctos
+        hideSearchWarning();
+        jQuery("#altitude_filter_min").removeClass('input-error');
+        jQuery("#altitude_filter_max").removeClass('input-error');
+    }
+
+    // Validar límites razonables
     if (minAltitude < -1e6 || minAltitude > 1e6 || isNaN(minAltitude))
         minAltitude = -1e6;
     else
         enabled = true;
+        
     if (maxAltitude < -1e6 || maxAltitude > 1e6 || isNaN(maxAltitude))
         maxAltitude = 1e6;
     else
         enabled = true;
 
+    // Si solo hay un valor válido (solo min o solo max), habilitar el filtro
+    const hasMinValidFinal = minAltitude !== -1e6;
+    const hasMaxValidFinal = maxAltitude !== 1e6;
+
+    if (!hasMinValidFinal && !hasMaxValidFinal) {
+        enabled = false;
+        hideSearchWarning();
+        jQuery("#altitude_filter_min").removeClass('filter-active');
+        jQuery("#altitude_filter_max").removeClass('filter-active');
+    }
+
     if (!enabled) {
         PlaneFilter.enabled = false;
         PlaneFilter.minAltitude = undefined;
         PlaneFilter.maxAltitude = undefined;
+        return;
     }
 
-    PlaneFilter.enabled = enabled;
+    // Si llegamos aquí, el filtro es válido - mostrar mensaje VERDE
+    const minDisplay = minAltitude !== -1e6 ? minAltitude : 'no limit';
+    const maxDisplay = maxAltitude !== 1e6 ? maxAltitude : 'no limit';
+    const unit = DisplayUnits === "metric" ? "m" : "ft";
+    showSuccessMessage('✓ Altitude filter active: ' + minDisplay + ' to ' + maxDisplay + ' ' + unit);
 
-    if (DisplayUnits == "metric") {
-        PlaneFilter.minAltitude = minAltitude * 3.2808;
-        PlaneFilter.maxAltitude = maxAltitude * 3.2808;
-    } else {
-        PlaneFilter.minAltitude = minAltitude;
-        PlaneFilter.maxAltitude = maxAltitude;
+    // Marcar los inputs como válidos visualmente (VERDE)
+    jQuery("#altitude_filter_min").addClass('filter-active').removeClass('input-error');
+    jQuery("#altitude_filter_max").addClass('filter-active').removeClass('input-error');
+
+    PlaneFilter.enabled = true;
+
+    // Convertir a pies si es necesario
+    let minAltFeet = minAltitude;
+    let maxAltFeet = maxAltitude;
+
+    if (DisplayUnits === "metric") {
+        minAltFeet = minAltitude !== -1e6 ? minAltitude * 3.28084 : -1e6;
+        maxAltFeet = maxAltitude !== 1e6 ? maxAltitude * 3.28084 : 1e6;
     }
+
+    PlaneFilter.minAltitude = minAltFeet;
+    PlaneFilter.maxAltitude = maxAltFeet;
+
+    // Actualizar indicadores visuales
+    updateAltitudeFilterIndicators(minAltFeet, maxAltFeet, enabled);
 }
 
 function getFlightAwareIdentLink(ident, linkText) {
