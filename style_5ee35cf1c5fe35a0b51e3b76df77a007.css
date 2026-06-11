@@ -1489,13 +1489,6 @@ table.infoSectionTable tr td {
     text-align: center;
 }
 
-#sortableColumns {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    max-width: calc(2 * 130px * var(--SCALE));
-}
-
 #sortableColumns li {
     margin: 3px 3px 3px 3px;
     padding: calc(0px * var(--SCALE));
@@ -2302,6 +2295,7 @@ div.ui-slider .ui-slider-handle {
     flex-wrap: wrap;
     gap: 8px;
     justify-content: flex-start;
+    width: 100% !important;
 }
 
 /* Cada ítem de columna - ocupa espacio proporcional */
@@ -2657,4 +2651,8 @@ Estilos para los buscadores unificados
     /* border: 2px solid #4CAF50 !important;
     background-color: rgba(76, 175, 80, 0.15) !important; */
     transition: all 0.2s ease;
+}
+
+#filterTable {
+    width: 100% !important;
 }
