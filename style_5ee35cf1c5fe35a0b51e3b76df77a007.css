@@ -2042,6 +2042,7 @@ div.ui-slider .ui-slider-handle {
 
 .layer-switcher.shown.layer-switcher-activation-mode-click>button {
     color: #eee !important;
+    left: -4px !important;
 }
 
 .dropdown-menu-title,
@@ -2076,10 +2077,7 @@ div.ui-slider .ui-slider-handle {
     position: sticky;
     top: 0;
     z-index: 5;
-}
-
-.layer-switcher .panel {
-    padding-top: 0.25rem;
+    background-color: var(--BASE-COLOR);
 }
 
 .settings-category {
