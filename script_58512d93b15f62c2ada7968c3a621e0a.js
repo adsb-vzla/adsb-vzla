@@ -6942,7 +6942,8 @@ function refreshSelected() {
             const lon = selected.position[0];
 
             // Creamos el hipervínculo que ejecuta el salto usando executeJump([lat, lon])
-            const callsignLink = `<a class="link" href="#" style="text-decoration: none; color: inherit;" onclick="executeJump([${lat}, ${lon}]); return false;">${selected.name.toUpperCase()}</a>`;
+            // const callsignLink = `<a class="link" href="#" style="text-decoration: none; color: inherit;" onclick="executeJump([${lat}, ${lon}]); return false;">${selected.name.toUpperCase()}</a>`;
+            const callsignLink = `<a class="link" href="#" style="text-decoration: none; color: inherit;" onclick="executeJump([${lat}, ${lon}], false); return false;">${selected.name.toUpperCase()}</a>`;
             jQuery('#selected_callsign').html(callsignLink);
         } else {
             // Si no tiene posición en el mapa, se muestra como texto plano normal
@@ -9041,7 +9042,7 @@ function toggleLabels() {
         // Actualizar el estado visual del botón
         buttonActive('#O', g.extendedLabels);
     }
-    
+
     for (let key in g.planesOrdered) {
         g.planesOrdered[key].updateMarker();
     }
@@ -9418,13 +9419,10 @@ function resetZoomBaselineToCurrent() {
     updateZoomIndicator();
 }
 
-// 4. Funciones de apoyo (executeJump y searchAirport se quedan como las tienes)
-// Sobrescribir executeJump para incluir marcador y zoom
-// const originalExecuteJump = executeJump;
-function executeJump(coords) {
+function executeJump(coords, showMarker = true) {
 
     // Mostrar marcador en la ubicación
-    if (coords && coords.length >= 2) {
+    if (coords && coords.length >= 2 && showMarker) {
         showAirportMarker(coords);
     }
 
