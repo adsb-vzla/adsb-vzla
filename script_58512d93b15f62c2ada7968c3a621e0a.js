@@ -5950,15 +5950,15 @@ function initMap() {
 
     trailGroup.push(dummyLayer);
 
-    // trailLayers = new ol.layer.Group({
-    //     name: 'ac_trail',
-    //     title: 'Aircraft trails',
-    //     type: 'overlay',
-    //     layers: trailGroup,
-    //     zIndex: 150,
-    // });
+    trailLayers = new ol.layer.Group({
+        name: 'ac_trail',
+        // title: 'Aircraft trails',
+        type: 'overlay',
+        layers: trailGroup,
+        zIndex: 150,
+    });
 
-    // layers.push(trailLayers);
+    layers.push(trailLayers);
 
     iconLayer = new ol.layer.Vector({
         name: 'iconLayer',
