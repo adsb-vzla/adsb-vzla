@@ -8664,6 +8664,15 @@ function updateReplayBarPosition() {
     const pageWidth = jQuery(window).width();
     let leftOffset = 0;
     let rightOffset = 0;
+    let bottomOffset = 0;
+
+    // Verificar si la barra de replay está visible
+    const replayVisible = replayBar.is(':visible');
+    
+    if (replayVisible) {
+        const replayHeight = replayBar.outerHeight();
+        bottomOffset = replayHeight;
+    }
 
     const sidebar = jQuery('#sidebar_container');
     if (sidebar.is(':visible') && mapIsVisible) {
@@ -8693,6 +8702,25 @@ function updateReplayBarPosition() {
     bar.style.setProperty('left', leftOffset > 0 ? leftOffset + 'px' : '0px', 'important');
     bar.style.setProperty('right', rightOffset > 0 ? rightOffset + 'px' : '0px', 'important');
     bar.style.setProperty('width', `calc(100% - ${leftOffset + rightOffset}px)`, 'important');
+
+    const altitudeChart = jQuery('#altitude_chart');
+    if (altitudeChart.length) {
+        if (replayVisible) {
+            // Si el replay está visible, la tabla de altitudes sube
+            // Usamos el mismo bottom que la escala (o un poco más)
+            altitudeChart.css('bottom', (bottomOffset + 5) + 'px');
+        } else {
+            // Restaurar posición original
+            altitudeChart.css('bottom', '35px');
+        }
+    }
+}
+
+function restoreAltitudeChartPosition() {
+    const altitudeChart = jQuery('#altitude_chart');
+    if (altitudeChart.length) {
+        altitudeChart.css('bottom', '35px');
+    }
 }
 
 function initializeUnitsSelector() {
@@ -12891,6 +12919,7 @@ function showReplayBar() {
         jQuery('#map_canvas').height('100%');
         jQuery('#sidebar_canvas').height('100%');
         jQuery("#selected_showTrace_hide").show();
+        restoreAltitudeChartPosition();
     } else {
         jQuery("#replayBar").show();
         jQuery("#replayBar").css('display', 'grid');

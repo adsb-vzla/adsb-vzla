@@ -1358,7 +1358,7 @@ table.infoSectionTable tr td {
     display: table-cell;
 }
 
-#altitude_chart {
+/* #altitude_chart {
     float: right;
     width: calc(100% - calc( 5px * var(--SCALE)));
     max-width:  calc(800px * var(--SCALE));
@@ -1374,6 +1374,25 @@ table.infoSectionTable tr td {
     height: 0;
     padding: 0;
     padding-bottom: calc(100% * 56 / 1815);
+} */
+
+#altitude_chart {
+    /* float: right; */
+    /* width: calc(70% - calc( 5px * var(--SCALE))); */
+    /* max-width:  calc(800px * var(--SCALE));
+    right: calc( 85px * var(--SCALE)); */
+    bottom: calc( 35px * var(--SCALE));
+    left: 0;
+    right: 0;
+    background-color: transparent !important;
+}
+
+#altitude_chart_image {
+    display: block;
+    width: 100%;
+    height: 6rem;
+    max-width: 100%;
+    background-color: transparent;
 }
 
 
