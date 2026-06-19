@@ -732,10 +732,20 @@ function Toggle(arg) {
     this.state = (arg.init ? true : false);
     this.setState = arg.setState;
     this.checkbox = (arg.checkbox == undefined) ? ('#' + this.key + '_cb') : null;
-    this.display = arg.display;
-    this.tooltip = arg.tooltip;
+
+    // **** Guardar los textos originales y las claves de traducción para la función de cambio de idioma ****
+    this._displayKey = arg.displayKey || null;
+    this._tooltipKey = arg.tooltipKey || null;
+    this._originalDisplay = arg.display;
+    this._originalTooltip = arg.tooltip;
+    this._currentDisplay = arg.display;
+    this._currentTooltip = arg.tooltip;
+    // this.display = arg.display;
+    // this.tooltip = arg.tooltip;
     this.container = arg.container;
     this.button = arg.button || this.checkbox;
+    // **** Obtener el elemento DOM que se va a traducir ****
+    this._element = null;
 
     toggles[this.key] = this;
 
@@ -744,12 +754,23 @@ function Toggle(arg) {
 
 Toggle.prototype.init = function() {
     if (this.container) {
-        let titleAttr = this.tooltip ? ' title="' + this.tooltip + '"' : '';
-        jQuery(this.container).append((
+        // let titleAttr = this.tooltip ? ' title="' + this.tooltip + '"' : '';
+        // **** Generar el elemento HTML con las claves definidas arriba ****
+        let titleAttr = this._currentTooltip ? ' title="' + this._currentTooltip + '"' : '';
+        const containerEl = jQuery(this.container);
+        const html = (
             '<div class="settingsOptionContainer"' + titleAttr + '>'
             + '<div class="settingsCheckbox" id="' + this.key + '_cb' + '"></div>'
-            + '<div class="settingsText">' + this.display + '</div>'
-            + '</div>'));
+            + '<div class="settingsText">' + this._currentDisplay + '</div>'
+            + '</div>'
+        );
+        containerEl.append(html);
+        this._element = containerEl.children().last();
+        // jQuery(this.container).append((
+        //     '<div class="settingsOptionContainer"' + titleAttr + '>'
+        //     + '<div class="settingsCheckbox" id="' + this.key + '_cb' + '"></div>'
+        //     + '<div class="settingsText">' + this.display + '</div>'
+        //     + '</div>'));
     }
 
     if (this.button) {
@@ -763,6 +784,58 @@ Toggle.prototype.init = function() {
 
     this.toggle(this.state, true);
 }
+
+// *****************************************
+// **** INICIO ACTUALIZAR IDIOMA TOGGLE ****
+// *****************************************
+Toggle.prototype.updateLanguage = function(translations) {
+    let newDisplay = this._originalDisplay;
+    let newTooltip = this._originalTooltip;
+
+    if (this._displayKey && typeof window.getTranslatedText === 'function') {
+        newDisplay = window.getTranslatedText(this._displayKey, this._originalDisplay);
+    } else if (this._displayKey && translations && translations[this._displayKey]) {
+        newDisplay = translations[this._displayKey];
+    }
+
+    if (this._tooltipKey && typeof window.getTranslatedText === 'function') {
+        newTooltip = window.getTranslatedText(this._tooltipKey, this._originalTooltip);
+    } else if (this._tooltipKey && translations && translations[this._tooltipKey]) {
+        newTooltip = translations[this._tooltipKey];
+    }
+
+    if (newDisplay !== this._currentDisplay || newTooltip !== this._currentTooltip) {
+        this._currentDisplay = newDisplay;
+        this._currentTooltip = newTooltip;
+
+        if (this._element) {
+            const textEl = this._element.find('.settingsText');
+            if (textEl.length) {
+                textEl.text(newDisplay);
+            }
+
+            if (newTooltip) {
+                this._element.attr('title', newTooltip);
+            } else {
+                this._element.removeAttr('title');
+            }
+        }
+
+        if (this.checkbox) {
+            const checkboxEl = jQuery(this.checkbox);
+            const parent = checkboxEl.parent();
+            if (parent.length) {
+                const label = parent.find('label');
+                if (label.length) {
+                    label.text(newDisplay);
+                }
+            }
+        }
+    }
+}
+// *****************************************
+// ***** FIN ACTUALIZAR IDIOMA TOGGLE ******
+// *****************************************
 
 Toggle.prototype.toggle = function(override, init) {
     if (override == true)
@@ -800,6 +873,49 @@ Toggle.prototype.hideCheckbox = function () {
     if (this.checkbox)
         jQuery(this.checkbox).parent().hide();
 }
+
+// *****************************************
+// **** INICIO FUNCIÓN ACTUALIZAR IDIOMA ***
+// *****************************************
+
+// **** Actualizar los toggles existentes ****
+window.updateAllToggles = function(translations) {
+    let updatedCount = 0;
+    for (const key in toggles) {
+        if (toggles.hasOwnProperty(key) && typeof toggles[key].updateLanguage === 'function') {
+            toggles[key].updateLanguage(translations || {});
+            updatedCount++;
+        }
+    }
+    // if (updatedCount > 0) {
+    //     console.log(`Updated ${updatedCount} toggles with new language`);
+    // }
+    return updatedCount;
+};
+
+// **** Escuchar evento de cambio de idioma ****
+document.addEventListener('languageChanged', function(event) {
+    // Si el evento tiene datos de traducción, pasarlos
+    const translations = event.detail || {};
+    if (typeof window.updateAllToggles === 'function') {
+        window.updateAllToggles(translations);
+    }
+});
+
+// **** Actualizar cuando se abre el panel de configuración ****
+document.addEventListener('click', function(e) {
+    if (e.target.closest('#settingsCog') || e.target.closest('#settings_infoblock')) {
+        setTimeout(() => {
+            if (typeof window.updateAllToggles === 'function') {
+                window.updateAllToggles();
+            }
+        }, 50);
+    }
+});
+
+// *****************************************
+// ***** FIN FUNCIÓN ACTUALIZAR IDIOMA *****
+// *****************************************
 
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
 if (!Object.keys) {

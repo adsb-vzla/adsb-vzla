@@ -2117,7 +2117,9 @@ function DistanceGroundToGround() {
     }
 }
 
-// Indicador de Zoom
+// *****************************************
+// ******* INICIO INDICADOR DE ZOOM ********
+// *****************************************
 function updateZoomIndicator() {
     const el = document.getElementById('zoom_indicator');
     if (!el || !OLMap || !OLMap.getView) return;
@@ -2125,14 +2127,12 @@ function updateZoomIndicator() {
     const view = OLMap.getView();
     const z = Number(view.getZoom()) || 0;
 
-    // Cargar baseline guardado solo al inicio
     if (zoomIndicatorBaseline === null) {
         try {
             const saved = localStorage.getItem(ZOOM_BASELINE_KEY);
             if (saved !== null) {
                 zoomIndicatorBaseline = parseFloat(saved);
             } else {
-                // Primera vez que se carga la página: guardar zoom inicial como baseline
                 zoomIndicatorBaseline = z;
                 localStorage.setItem(ZOOM_BASELINE_KEY, zoomIndicatorBaseline);
             }
@@ -2145,8 +2145,27 @@ function updateZoomIndicator() {
     const pct = Math.round(100 * factor);
 
     el.textContent = pct + '%';
-    el.title = `Current zoom level: ${z.toFixed(2)} (${pct}% relative to base zoom ${zoomIndicatorBaseline.toFixed(2)})`;
+
+    let tooltipText = 'Current zoom level: {zoom} ({pct}% relative to base zoom {baseline})';
+
+    if (typeof window.translate !== 'undefined' && window.translate.t) {
+        tooltipText = window.translate.t('zoom_tooltip_text') || tooltipText;
+    } else if (typeof window.t === 'function') {
+        tooltipText = window.t('zoom_tooltip_text') || tooltipText;
+    }
+
+    tooltipText = tooltipText
+        .replace(/\{zoom\}/g, z.toFixed(2))
+        .replace(/\{pct\}/g, pct)
+        .replace(/\{baseline\}/g, zoomIndicatorBaseline.toFixed(2));
+
+    el.title = tooltipText;
+
+    // el.title = `Current zoom level: ${z.toFixed(2)} (${pct}% relative to base zoom ${zoomIndicatorBaseline.toFixed(2)})`;
 }
+// *****************************************
+// ******** FIN INDICADOR DE ZOOM **********
+// *****************************************
 
 // Zoom In - Zoom Out
 function zoomInMap() {
@@ -3023,6 +3042,52 @@ function replaySpeedChange(arg) {
     legShift(0);
 };
 
+// *****************************************
+// ***** INICIO OBTENER TEXTO TRADUCIDO ****
+// *****************************************
+function getTranslatedText(key, fallback) {
+    if (typeof window.translate !== 'undefined' && window.translate.t) {
+        const translated = window.translate.t(key);
+        if (translated !== key) return translated;
+    } else if (typeof window.t === 'function') {
+        const translated = window.t(key);
+        if (translated !== key) return translated;
+    }
+    return fallback || key;
+}
+// *****************************************
+// ****** FIN OBTENER TEXTO TRADUCIDO ******
+// *****************************************
+
+// ****************************************************
+// ** INICIO CREAR TOGGLES CON SOPORTE DE TRADUCCIÓN **
+// ****************************************************
+function createToggle(options) {
+    if (!options.displayKey && options.display) {
+        if (options.display.includes('_') || options.display !== options.display.toLowerCase()) {
+            options.displayKey = options.display;
+        }
+    }
+
+    if (!options.tooltipKey && options.tooltip) {
+        if (options.tooltip.includes('_') || options.tooltip !== options.tooltip.toLowerCase()) {
+            options.tooltipKey = options.tooltip;
+        }
+    }
+
+    if (options.displayKey && typeof window.getTranslatedText === 'function') {
+        options.display = window.getTranslatedText(options.displayKey, options.display);
+    }
+    if (options.tooltipKey && typeof window.getTranslatedText === 'function') {
+        options.tooltip = window.getTranslatedText(options.tooltipKey, options.tooltip);
+    }
+
+    return new Toggle(options);
+}
+// ****************************************************
+// *** FIN CREAR TOGGLES CON SOPORTE DE TRADUCCIÓN ****
+// ****************************************************
+
 function initPage() {
 
     if (globeIndex) {
@@ -3091,6 +3156,32 @@ function initPage() {
         CenterLat = DefaultCenterLat;
         CenterLon = DefaultCenterLon;
     }
+
+    // Escuchar cambios de idioma para actualizar los textos de los toggles
+    document.addEventListener('languageChanged', function () {
+        // Actualizar los display y tooltip de los toggles existentes
+        // Nota: Esto requiere acceso a los objetos Toggle. Si no tienes acceso directo,
+        // puedes recrear los toggles o actualizar su DOM manualmente.
+
+        // Opción simple: Recargar la interfaz de configuración
+        // Esto es un enfoque rápido, pero idealmente deberías actualizar cada toggle
+        jQuery('#settings_infoblock .settingsText').each(function () {
+            // Intenta traducir el texto si tiene un data-i18n
+            const key = $(this).data('i18n');
+            if (key) {
+                const text = getTranslatedText(key, $(this).text());
+                $(this).text(text);
+            }
+        });
+
+        jQuery('#settings_infoblock [data-i18n-title]').each(function () {
+            const key = $(this).data('i18n-title');
+            if (key) {
+                const text = getTranslatedText(key, $(this).attr('title'));
+                $(this).attr('title', text);
+            }
+        });
+    });
 
 }
 
@@ -3570,22 +3661,37 @@ function earlyInitPage() {
     });
 
 
-    new Toggle({
+    // *****************************************
+    // ****** INICIO CATEGORÍA FILTERS *********
+    // *****************************************
+    // new Toggle({
+    createToggle({
         key: "hideAircraftFunctions",
-        display: "Hide aircraft functions",
-        tooltip: "Hides the aircraft action dropdown and disables aircraft-specific controls (selection, follow, infoblock, and related functions).",
+        // display: getTranslatedText('hide_aircraft_functions', 'Hide aircraft functions'),
+        // tooltip: getTranslatedText('hide_aircraft_functions_tooltip', 'Hides the aircraft action dropdown and disables aircraft-specific controls (selection, follow, infoblock, and related functions).'),
+        // display: "Hide aircraft functions",
+        // tooltip: "Hides the aircraft action dropdown and disables aircraft-specific controls (selection, follow, infoblock, and related functions).",
         // container: "#settingsLeft",
+        display: 'hide_aircraft_functions',
+        displayKey: 'hide_aircraft_functions',
+        tooltip: 'hide_aircraft_functions_tooltip',
+        tooltipKey: 'hide_aircraft_functions_tooltip',
         container: "#category-filters-container",
         init: true,
         setState: function (state) {
             jQuery("#aircraft_dropdown").toggle(!state);
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "hideDistanceFunctions",
-        display: "Hide distance functions",
-        tooltip: "Hides the measurement dropdown and disables all distance tools (aircraft-aircraft, ground-aircraft, ground-ground).",
+        // display: "Hide distance functions",
+        // tooltip: "Hides the measurement dropdown and disables all distance tools (aircraft-aircraft, ground-aircraft, ground-ground).",
         // container: "#settingsLeft",
+        display: 'hide_distance_functions',
+        displayKey: 'hide_distance_functions',
+        tooltip: 'hide_distance_functions_tooltip',
+        tooltipKey: 'hide_distance_functions_tooltip',
         container: "#category-filters-container",
         init: true,
         setState: function (state) {
@@ -3593,72 +3699,107 @@ function earlyInitPage() {
             // jQuery("#D, #TA, #TT").toggle(!state);
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "hideLabelFunctions",
-        display: "Hide label functions",
-        tooltip: "Hides label controls and disables aircraft labels and related label settings (live/historic labels, units, and formatting).",
+        // display: "Hide label functions",
+        // tooltip: "Hides label controls and disables aircraft labels and related label settings (live/historic labels, units, and formatting).",
         // container: "#settingsLeft",
+        display: 'hide_label_functions',
+        displayKey: 'hide_label_functions',
+        tooltip: 'hide_label_functions_tooltip',
+        tooltipKey: 'hide_label_functions_tooltip',
         container: "#category-filters-container",
         init: true,
         setState: function (state) {
             jQuery("#label_dropdown").toggle(!state);
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "hideLayerFunctions",
-        display: "Hide layer functions",
-        tooltip: "Hides layer controls and prevents changing or interacting with map layers and overlay settings (base layers, overlays, and layer switcher).",
+        // display: "Hide layer functions",
+        // tooltip: "Hides layer controls and prevents changing or interacting with map layers and overlay settings (base layers, overlays, and layer switcher).",
         // container: "#settingsLeft",
+        display: 'hide_layer_functions',
+        displayKey: 'hide_layer_functions',
+        tooltip: 'hide_layer_functions_tooltip',
+        tooltipKey: 'hide_layer_functions_tooltip',
         container: "#category-filters-container",
         init: true,
         setState: function (state) {
             jQuery("#layer-select").toggle(!state);
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "hideRecenterFunction",
-        display: "Hide recenter function",
-        tooltip: "Hides the recenter control and disables manual re-centering of the map to the site.",
+        // display: "Hide recenter function",
+        // tooltip: "Hides the recenter control and disables manual re-centering of the map to the site.",
         // container: "#settingsLeft",
+        display: 'hide_recenter_function',
+        displayKey: 'hide_recenter_function',
+        tooltip: 'hide_recenter_function_tooltip',
+        tooltipKey: 'hide_recenter_function_tooltip',
         container: "#category-filters-container",
         init: true,
         setState: function (state) {
             jQuery("#H").toggle(!state);
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "hideReplayFunction",
-        display: "Hide replay function",
-        tooltip: "Hides the replay controls and disables timeline playback and related replay controls (play, pause).",
+        // display: "Hide replay function",
+        // tooltip: "Hides the replay controls and disables timeline playback and related replay controls (play, pause).",
         // container: "#settingsLeft",
+        display: 'hide_replay_function',
+        displayKey: 'hide_replay_function',
+        tooltip: 'hide_replay_function_tooltip',
+        tooltipKey: 'hide_replay_function_tooltip',
         container: "#category-filters-container",
         init: true,
         setState: function (state) {
             jQuery("#RP").toggle(!state);
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "hideTrackFunctions",
-        display: "Hide track functions",
-        tooltip: "Hides track controls and prevents drawing or interacting with aircraft trails and track-related features.",
+        // display: "Hide track functions",
+        // tooltip: "Hides track controls and prevents drawing or interacting with aircraft trails and track-related features.",
         // container: "#settingsLeft",
+        display: 'hide_track_functions',
+        displayKey: 'hide_track_functions',
+        tooltip: 'hide_track_functions_tooltip',
+        tooltipKey: 'hide_track_functions_tooltip',
         container: "#category-filters-container",
         init: true,
         setState: function (state) {
             jQuery("#track_dropdown").toggle(!state);
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "hideZoomFunctions",
-        display: "Hide zoom functions",
-        tooltip: "Hides zoom controls and disables map zooming.",
+        // display: "Hide zoom functions",
+        // tooltip: "Hides zoom controls and disables map zooming.",
         // container: "#settingsLeft",
+        display: 'hide_zoom_functions',
+        displayKey: 'hide_zoom_functions',
+        tooltip: 'hide_zoom_functions_tooltip',
+        tooltipKey: 'hide_zoom_functions_tooltip',
         container: "#category-filters-container",
         init: true,
         setState: function (state) {
             jQuery("#ZI, #ZO").toggle(!state);
         }
     });
+    // *****************************************
+    // ******** FIN CATEGORÍA FILTERS **********
+    // *****************************************
+
+
     // new Toggle({
     //     key: "lastLeg",
     //     display: "Last leg only",
@@ -3676,11 +3817,19 @@ function earlyInitPage() {
     //     }
     // });
 
-    new Toggle({
+    // *****************************************
+    // ******* INICIO CATEGORÍA DATA ***********
+    // *****************************************
+    // new Toggle({
+    createToggle({
         key: "baroUseQNH",
-        display: "Baro. alt.: correct for QNH",
-        tooltip: "Adjusts pressure altitude according to local atmospheric pressure (QNH) to display the actual altitude above sea level.",
+        // display: "Baro. alt.: correct for QNH",
+        // tooltip: "Adjusts pressure altitude according to local atmospheric pressure (QNH) to display the actual altitude above sea level.",
         // container: "#settingsLeft",
+        display: 'baro_alt_correct_qnh',
+        displayKey: 'baro_alt_correct_qnh',
+        tooltip: 'baro_alt_correct_qnh_tooltip',
+        tooltipKey: 'baro_alt_correct_qnh_tooltip',
         container: "#category-data-container",
         init: baroUseQNH,
         setState: function (state) {
@@ -3700,11 +3849,16 @@ function earlyInitPage() {
             }
         }
     });
-    new Toggle({
+    createToggle({
+        // new Toggle({
         key: "geomUseEGM",
-        display: "Geom. alt.: WGS84 -> EGM conversion (long load)",
-        tooltip: "It applies a mathematical correction to make the GPS altitude more accurate relative to sea level (it takes longer to load).",
+        // display: "Geom. alt.: WGS84 -> EGM conversion (long load)",
+        // tooltip: "It applies a mathematical correction to make the GPS altitude more accurate relative to sea level (it takes longer to load).",
         // container: "#settingsLeft",
+        display: 'geom_alt_wgs84_egm',
+        displayKey: 'geom_alt_wgs84_egm',
+        tooltip: 'geom_alt_wgs84_egm_tooltip',
+        tooltipKey: 'geom_alt_wgs84_egm_tooltip',
         container: "#category-data-container",
         init: geomUseEGM,
         setState: function (state) {
@@ -3732,11 +3886,16 @@ function earlyInitPage() {
         }
     });
 
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "utcTimesHistoric",
-        display: "Historic track labels: UTC",
-        tooltip: "When enabled with Track Tools > Track Labels, displays timestamps in UTC instead of local time.",
+        // display: "Historic track labels: UTC",
+        // tooltip: "When enabled with Track Tools > Track Labels, displays timestamps in UTC instead of local time.",
         // container: "#settingsLeft",
+        display: 'historic_track_labels_utc',
+        displayKey: 'historic_track_labels_utc',
+        tooltip: 'historic_track_labels_utc_tooltip',
+        tooltipKey: 'historic_track_labels_utc_tooltip',
         container: "#category-data-container",
         init: utcTimesHistoric,
         setState: function (state) {
@@ -3754,11 +3913,16 @@ function earlyInitPage() {
         toggles['geomUseEGM'].toggle(true, 'init');
     }
 
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "labelsGeom",
-        display: "Labels: geom. alt. (WGS84)",
-        tooltip: "When enabled with Label Tools > Track Labels, displays geometric altitude (GPS) instead of standard barometric altitude.",
+        // display: "Labels: geom. alt. (WGS84)",
+        // tooltip: "When enabled with Label Tools > Track Labels, displays geometric altitude (GPS) instead of standard barometric altitude.",
         // container: "#settingsLeft",
+        display: 'labels_geom_alt',
+        displayKey: 'labels_geom_alt',
+        tooltip: 'labels_geom_alt_tooltip',
+        tooltipKey: 'labels_geom_alt_tooltip',
         container: "#category-data-container",
         init: labelsGeom,
         setState: function (state) {
@@ -3770,11 +3934,16 @@ function earlyInitPage() {
         }
     });
 
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "utcTimesLive",
-        display: "Live track labels: UTC",
-        tooltip: "When enabled with Track Tools > Track Labels, displays timestamps on live paths using Universal Time (UTC).",
+        // display: "Live track labels: UTC",
+        // tooltip: "When enabled with Track Tools > Track Labels, displays timestamps on live paths using Universal Time (UTC).",
         // container: "#settingsLeft",
+        display: 'live_track_labels_utc',
+        displayKey: 'live_track_labels_utc',
+        tooltip: 'live_track_labels_utc_tooltip',
+        tooltipKey: 'live_track_labels_utc_tooltip',
         container: "#category-data-container",
         init: utcTimesLive,
         setState: function (state) {
@@ -3784,10 +3953,15 @@ function earlyInitPage() {
         }
     });
 
-    new Toggle({
+    createToggle({
+        // new Toggle({
         key: "enableStarredAircraft",
-        display: "Notable Aircraft",
-        tooltip: "Enable/disable the starred aircraft feature. Allows marking aircraft as notable and displays them in the sidebar.",
+        // display: "Notable Aircraft",
+        // tooltip: "Enable/disable the starred aircraft feature. Allows marking aircraft as notable and displays them in the sidebar.",
+        display: 'notable_aircraft',
+        displayKey: 'notable_aircraft',
+        tooltip: 'notable_aircraft_tooltip',
+        tooltipKey: 'notable_aircraft_tooltip',
         container: "#category-data-container",
         init: false,
         setState: function (state) {
@@ -3818,6 +3992,9 @@ function earlyInitPage() {
             updateStarredButtonInInfoblock();
         }
     });
+    // *****************************************
+    // ********* FIN CATEGORÍA DATA ************
+    // *****************************************
 
 
 
@@ -3885,11 +4062,19 @@ function earlyInitPage() {
     });
     */
 
-    new Toggle({
+    // *****************************************
+    // ****** INICIO CATEGORÍA SYSTEM **********
+    // *****************************************
+    // new Toggle({
+    createToggle({
         key: "autoselect",
-        display: "Auto-select plane",
-        tooltip: "Automatically selects the aircraft closest to the map center every 5 seconds. Only considers aircraft with a recent position (seen in last 20 seconds).",
+        // display: "Auto-select plane",
+        // tooltip: "Automatically selects the aircraft closest to the map center every 5 seconds. Only considers aircraft with a recent position (seen in last 20 seconds).",
         // container: "#settingsRight",
+        display: 'auto_select_plane',
+        displayKey: 'auto_select_plane',
+        tooltip: 'auto_select_plane_tooltip',
+        tooltipKey: 'auto_select_plane_tooltip',
         container: "#category-system-container",
         init: autoselect,
         setState: function (state) {
@@ -3902,11 +4087,16 @@ function earlyInitPage() {
         setAutoselect();
     }
 
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "debugAll",
-        display: "Debug show all",
-        tooltip: "Show all debug information.",
+        // display: "Debug show all",
+        // tooltip: "Show all debug information.",
         // container: "#settingsRight",
+        display: 'debug_show_all',
+        displayKey: 'debug_show_all',
+        tooltip: 'debug_show_all_tooltip',
+        tooltipKey: 'debug_show_all_tooltip',
         container: "#category-system-container",
         init: false,
         setState: function (state) {
@@ -3916,11 +4106,16 @@ function earlyInitPage() {
                 debugAll = false;
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "debugTracks",
-        display: "Debug tracks",
-        tooltip: "When enabled with Track Tools > All Tracks, displays detailed track information in the console",
+        // display: "Debug tracks",
+        // tooltip: "When enabled with Track Tools > All Tracks, displays detailed track information in the console",
         // container: "#settingsRight",
+        display: 'debug_tracks',
+        displayKey: 'debug_tracks',
+        tooltip: 'debug_tracks_tooltip',
+        tooltipKey: 'debug_tracks_tooltip',
         container: "#category-system-container",
         init: false,
         setState: function (state) {
@@ -3928,22 +4123,32 @@ function earlyInitPage() {
             remakeTrails();
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "hideAllTooltips",
-        display: "Hide all tooltips",
-        tooltip: "Hides all element tooltips across the entire page (removes/restores title attributes).",
+        // display: "Hide all tooltips",
+        // tooltip: "Hides all element tooltips across the entire page (removes/restores title attributes).",
         // container: "#settingsLeft",
+        display: 'hide_all_tooltips',
+        displayKey: 'hide_all_tooltips',
+        tooltip: 'hide_all_tooltips_tooltip',
+        tooltipKey: 'hide_all_tooltips_tooltip',
         container: "#category-system-container",
         init: false,
         setState: function (state) {
             setHideAllTooltips(state);
         }
     });
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "hideSettingsTooltips",
-        display: "Hide settings tooltips",
-        tooltip: "Hides tooltips for controls inside the settings menu.",
+        // display: "Hide settings tooltips",
+        // tooltip: "Hides tooltips for controls inside the settings menu.",
         // container: "#settingsLeft",
+        display: 'hide_settings_tooltips',
+        displayKey: 'hide_settings_tooltips',
+        tooltip: 'hide_settings_tooltips_tooltip',
+        tooltipKey: 'hide_settings_tooltips_tooltip',
         container: "#category-system-container",
         init: false,
         setState: function (state) {
@@ -3951,11 +4156,16 @@ function earlyInitPage() {
         }
     });
 
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "shareFilters",
-        display: "Include filters in URLs",
-        tooltip: "Include the current filter settings in the URL.",
+        // display: "Include filters in URLs",
+        // tooltip: "Include the current filter settings in the URL.",
         // container: "#settingsRight",
+        display: 'include_filters_in_urls',
+        displayKey: 'include_filters_in_urls',
+        tooltip: 'include_filters_in_urls_tooltip',
+        tooltipKey: 'include_filters_in_urls_tooltip',
         container: "#category-system-container",
         init: false,
         setState: function (state) {
@@ -3963,24 +4173,41 @@ function earlyInitPage() {
         }
     });
 
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "updateLocation",
-        display: "Update GPS location",
+        // display: "Update GPS location",
         // container: "#settingsRight",
+        display: 'update_gps_location',
+        displayKey: 'update_gps_location',
+        tooltip: 'update_gps_location_tooltip',
+        tooltipKey: 'update_gps_location_tooltip',
         container: "#category-system-container",
-        tooltip: "Updates the browser/device GPS location and enables periodic tracking to center the map; requires browser permission.",
+        // tooltip: "Updates the browser/device GPS location and enables periodic tracking to center the map; requires browser permission.",
         init: updateLocation,
         setState: function (state) {
             updateLocation = state;
             runAfterLoad(watchPosition);
         }
     });
+    // *****************************************
+    // ******** FIN CATEGORÍA SYSTEM ***********
+    // *****************************************
 
-    new Toggle({
+
+    // *****************************************
+    // ******* INICIO CATEGORÍA DISPLAY ********
+    // *****************************************
+    // new Toggle({
+    createToggle({
         key: "ColoredPlanes",
-        display: "Colored planes",
-        tooltip: "Display aircraft markers in color instead of grayscale.",
+        // display: "Colored planes",
+        // tooltip: "Display aircraft markers in color instead of grayscale.",
         // container: "#settingsRight",
+        display: 'colored_planes',
+        displayKey: 'colored_planes',
+        tooltip: 'colored_planes_tooltip',
+        tooltipKey: 'colored_planes_tooltip',
         container: "#category-display-container",
         init: true,
         setState: function (state) {
@@ -3993,11 +4220,16 @@ function earlyInitPage() {
         }
     });
 
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "ColoredTrails",
-        display: "Colored trails",
-        tooltip: "Display aircraft trails in color instead of grayscale.",
+        // display: "Colored trails",
+        // tooltip: "Display aircraft trails in color instead of grayscale.",
         // container: "#settingsRight",
+        display: 'colored_trails',
+        displayKey: 'colored_trails',
+        tooltip: 'colored_trails_tooltip',
+        tooltipKey: 'colored_trails_tooltip',
         container: "#category-display-container",
         init: true,
         setState: function (state) {
@@ -4009,6 +4241,9 @@ function earlyInitPage() {
             remakeTrails();
         }
     });
+    // *****************************************
+    // ******** FIN CATEGORÍA DISPLAY **********
+    // *****************************************
 
 
     new Toggle({
@@ -4067,10 +4302,18 @@ function earlyInitPage() {
         planespottersAPI = false;
     }
 
-    new Toggle({
+    // *****************************************
+    // ***** INICIO CATEGORÍA INFORMATION ******
+    // *****************************************
+    // new Toggle({
+    createToggle({
         key: "enableInfoblock",
-        display: "Enable infoblock",
-        tooltip: "Show the infoblock with detailed information about the selected aircraft.",
+        // display: "Enable infoblock",
+        // tooltip: "Show the infoblock with detailed information about the selected aircraft.",
+        display: 'enable_infoblock',
+        displayKey: 'enable_infoblock',
+        tooltip: 'enable_infoblock_tooltip',
+        tooltipKey: 'enable_infoblock_tooltip',
         container: "#category-info-container",
         init: true,
         setState: function (state) {
@@ -4078,10 +4321,15 @@ function earlyInitPage() {
         }
     });
 
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "enableMouseover",
-        display: "Enable mouse-over block",
-        tooltip: "Show detailed information about the selected aircraft when hovering over it.",
+        display: 'enable_mouseover_block',
+        displayKey: 'enable_mouseover_block',
+        tooltip: 'enable_mouseover_block_tooltip',
+        tooltipKey: 'enable_mouseover_block_tooltip',
+        // display: "Enable mouse-over block",
+        // tooltip: "Show detailed information about the selected aircraft when hovering over it.",
         container: "#category-info-container",
         init: enableMouseover,
         setState: function (state) {
@@ -4097,10 +4345,15 @@ function earlyInitPage() {
             // adsb.im API provider kindly asks that tar1090 uses http for the route API if possible
             routeApiUrl = "https://adsb.im/api/0/routeset";
         }
-        new Toggle({
+        // new Toggle({
+        createToggle({
             key: "useRouteAPI",
-            display: "Lookup route",
-            tooltip: "Look up the route of the aircraft (origin and destination airports) using an online API (if available).",
+            // display: "Lookup route",
+            // tooltip: "Look up the route of the aircraft (origin and destination airports) using an online API (if available).",
+            display: 'lookup_route',
+            displayKey: 'lookup_route',
+            tooltip: 'lookup_route_tooltip',
+            tooltipKey: 'lookup_route_tooltip',
             container: "#category-info-container",
             init: useRouteAPI,
             setState: function (state) {
@@ -4127,10 +4380,15 @@ function earlyInitPage() {
         useRouteAPI = false;
     }
 
-    new Toggle({
+    createToggle({
+        // new Toggle({
         key: "planespottingAPI",
-        display: "Pictures planespotting.be",
-        tooltip: "Display pictures from planespotting.be (if available).",
+        // display: "Pictures planespotting.be",
+        // tooltip: "Display pictures from planespotting.be (if available).",
+        display: 'pictures_planespotting_be',
+        displayKey: 'pictures_planespotting_be',
+        tooltip: 'pictures_planespotting_be_tooltip',
+        tooltipKey: 'pictures_planespotting_be_tooltip',
         container: "#category-info-container",
         init: planespottingAPI,
         setState: function (state) {
@@ -4142,10 +4400,15 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
-    new Toggle({
+    createToggle({
+        // new Toggle({
         key: "planespottersAPI",
-        display: "Pictures planespotters.net",
-        tooltip: "Display pictures from planespotters.net (if available).",
+        display: 'pictures_planespotters_net',
+        displayKey: 'pictures_planespotters_net',
+        tooltip: 'pictures_planespotters_net_tooltip',
+        tooltipKey: 'pictures_planespotters_net_tooltip',
+        // display: "Pictures planespotters.net",
+        // tooltip: "Display pictures from planespotters.net (if available).",
         container: "#category-info-container",
         init: planespottersAPI,
         setState: function (state) {
@@ -4157,11 +4420,15 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
-
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "wideInfoblock",
-        display: "Wide infoblock",
-        tooltip: "Use a wider layout for the infoblock, allowing more information to be displayed in a single line.",
+        // display: "Wide infoblock",
+        // tooltip: "Use a wider layout for the infoblock, allowing more information to be displayed in a single line.",
+        display: 'wide_infoblock',
+        displayKey: 'wide_infoblock',
+        tooltip: 'wide_infoblock_tooltip',
+        tooltipKey: 'wide_infoblock_tooltip',
         container: "#category-info-container",
         init: true,
         setState: function (state) {
@@ -4169,6 +4436,10 @@ function earlyInitPage() {
             adjustInfoBlock();
         }
     });
+
+    // *****************************************
+    // ****** FIN CATEGORÍA INFORMATION ********
+    // *****************************************
 
     if (onMobile) {
         enableMouseover = false;
@@ -5117,11 +5388,19 @@ function webglAddLayer() {
 function webglInit() {
     let init = true;
 
-    new Toggle({
+    // *************************************************************************
+    // *********** INICIO WEBGL - PARTE DE LA CATEGORÍA DISPLAY ****************
+    // *************************************************************************
+    // new Toggle({
+    createToggle({
         key: "webgl",
-        display: "Canvas WebGL",
-        tooltip: "Use WebGL to display aircraft icons. This can significantly improve performance, especially when many aircraft are displayed, but may cause issues on some devices/browsers.",
+        // display: "Canvas WebGL",
+        // tooltip: "Use WebGL to display aircraft icons. This can significantly improve performance, especially when many aircraft are displayed, but may cause issues on some devices/browsers.",
         // container: "#settingsRight",
+        display: 'webgl',
+        displayKey: 'webgl',
+        tooltip: 'webgl_tooltip',
+        tooltipKey: 'webgl_tooltip',
         container: "#category-display-container",
         init: init,
         setState: function (state) {
@@ -5155,6 +5434,9 @@ function webglInit() {
             }
         },
     });
+    // *************************************************************************
+    // ************* FIN WEBGL - PARTE DE LA CATEGORÍA DISPLAY *****************
+    // *************************************************************************
 }
 
 //Inicializa OpenLayers para controlar el mapa
@@ -6291,10 +6573,35 @@ function initMap() {
     function setInfoBlockMinimized(state) {
         infoBlockMinimized = state;
         jQuery('#selected_infoblock').toggleClass('infoblock-minimized', state);
-        jQuery('#infoblock_minimize').attr('title', state ? 'Restore infoblock' : 'Minimize infoblock');
+
+        // --- CORRECCIÓN: Usar traducción dinámica ---
+        let restoreText = 'Restore infoblock';
+        let minimizeText = 'Minimize infoblock';
+
+        // Intentar obtener la traducción
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            restoreText = window.translate.t('restore_infoblock') || restoreText;
+            minimizeText = window.translate.t('minimize_infoblock') || minimizeText;
+        } else if (typeof window.t === 'function') {
+            restoreText = window.t('restore_infoblock') || restoreText;
+            minimizeText = window.t('minimize_infoblock') || minimizeText;
+        }
+
+        jQuery('#infoblock_minimize').attr('title', state ? restoreText : minimizeText);
+        // const minimizeTitle = (typeof window.t === 'function')
+        //     ? (state ? window.t('restore_infoblock') : window.t('minimize_infoblock'))
+        //     : (state ? 'Restore infoblock' : 'Minimize infoblock');
+        // jQuery('#infoblock_minimize').attr('title', minimizeTitle);
+
+
+        // jQuery('#infoblock_minimize').attr('title', state ? 'Restore infoblock' : 'Minimize infoblock');
         jQuery('#infoblock_minimize').text(state ? '+' : '−');
         adjustInfoBlock();
     }
+
+    jQuery('#infoblock_minimize').on('click', function () {
+        setInfoBlockMinimized(!infoBlockMinimized);
+    });
 
     jQuery('#infoblock_close').on('click', function () {
         if (showTrace)
@@ -6304,10 +6611,6 @@ function initMap() {
 
         deselect(SelectedPlane);
         refreshFilter();
-    });
-
-    jQuery('#infoblock_minimize').on('click', function () {
-        setInfoBlockMinimized(!infoBlockMinimized);
     });
 
     jQuery(document).on('click', '#infoblocks_container .plane-card-minimize', function () {
@@ -6430,11 +6733,19 @@ function initMap() {
         lyr.dimKey = lyr.on('postrender', dim);
     });
 
-    new Toggle({
+    // *************************************************************************
+    // ***** INICIO DIM MAP Y LABEL UNITS - PARTE DE LA CATEGORÍA DISPLAY ******
+    // *************************************************************************
+    // new Toggle({
+    createToggle({
         key: "MapDim",
-        display: "Dim map",
-        tooltip: "Toggle dimming of map layers to enhance visibility of overlays",
+        // display: "Dim map",
+        // tooltip: "Toggle dimming of map layers to enhance visibility of overlays",
         // container: "#settingsRight",
+        display: 'dim_map',
+        displayKey: 'dim_map',
+        tooltip: 'dim_map_tooltip',
+        tooltipKey: 'dim_map_tooltip',
         container: "#category-display-container",
         init: MapDim,
         setState: function (state) {
@@ -6460,11 +6771,16 @@ function initMap() {
         }
     });
 
-    new Toggle({
+    // new Toggle({
+    createToggle({
         key: "showLabelUnits",
-        display: "Label units",
-        tooltip: "Show units (ft, kts, etc.) in the labels.",
+        // display: "Label units",
+        // tooltip: "Show units (ft, kts, etc.) in the labels.",
         // container: "#settingsRight",
+        display: 'label_units',
+        displayKey: 'label_units',
+        tooltip: 'label_units_tooltip',
+        tooltipKey: 'label_units_tooltip',
         container: "#category-display-container",
         init: showLabelUnits,
         setState: function (state) {
@@ -6478,6 +6794,10 @@ function initMap() {
             refreshSelected();
         }
     });
+
+    // *************************************************************************
+    // ******* FIN DIM MAP Y LABEL UNITS - PARTE DE LA CATEGORÍA DISPLAY *******
+    // *************************************************************************
 
     // new Toggle({
     //     key: "windLabelsSlim",
@@ -7678,15 +7998,47 @@ function refreshFeatures() {
     let htmlTable = null;
     let tbody = null;
 
+    // *************************************************
+    // *** INICIO INICIALIZAR COLUMNAS TABLA AVIONES ***
+    // *************************************************
     planeMan.init = function () {
-        // initialize columns
         htmlTable = document.getElementById('planesTable');
         for (let i in columns) {
             let col = columns[i];
             // col.visible = true;
             col.toggleKey = 'column_' + col.id;
 
-            // Cargar estado guardado de localStorage
+            const translationKey = 'col_' + col.id;
+            if (col.text) {
+                let translatedText = col.text;
+                if (typeof window.translate !== 'undefined' && window.translate.t) {
+                    translatedText = window.translate.t(translationKey) || col.text;
+                } else if (typeof window.t === 'function') {
+                    translatedText = window.t(translationKey) || col.text;
+                }
+                col.text = translatedText;
+            }
+
+            if (col.header) {
+                const originalHeader = col.header;
+                col.header = function () {
+                    let headerText = col.text || col.id;
+                    const translationKey = 'col_' + col.id;
+                    if (typeof window.translate !== 'undefined' && window.translate.t) {
+                        const translated = window.translate.t(translationKey);
+                        if (translated && translated !== translationKey) {
+                            headerText = translated;
+                        }
+                    } else if (typeof window.t === 'function') {
+                        const translated = window.t(translationKey);
+                        if (translated && translated !== translationKey) {
+                            headerText = translated;
+                        }
+                    }
+                    return headerText;
+                };
+            }
+
             const savedState = localStorage.getItem(col.toggleKey);
             if (savedState !== null) {
                 col.visible = savedState === 'true';
@@ -7707,6 +8059,10 @@ function refreshFeatures() {
             planeMan.setColumnVis('flag', false);
         }
     }
+
+    // *************************************************
+    // **** FIN INICIALIZAR COLUMNAS TABLA AVIONES *****
+    // *************************************************
 
     planeMan.redraw = function () {
         activeCols = [];
@@ -8015,35 +8371,38 @@ function refreshFeatures() {
         planeMan.refresh();
     }
 
+    // *****************************************
+    // * INICIO CREAR COLUMNAS SELECCIONABLES **
+    // *****************************************
     function createColumnToggles() {
         const prefix = 'dd_';
         const container = jQuery('#sortableColumns');
 
-        // Limpiar container
         container.empty();
 
         const DEFAULT_COLUMNS = [
-            'icao',      // hex id
-            'country',   // flag
-            'flight',    // callsign
-            'route',     // route
-            'type',      // type
-            'squawk',    // squawk
-            'altitude',  // altitude
-            'speed',     // speed
-            'sitedist',  // distance
-            'rssi'       // rssi
+            'icao',
+            'country',
+            'flight',
+            'route',
+            'type',
+            'squawk',
+            'altitude',
+            'speed',
+            'sitedist',
+            'rssi'
         ];
 
+        // *****************************************
+        // * INICIO RESTAURAR COLUMNAS POR DEFECTO *
+        // *****************************************
         window.resetColumnsToDefault = function () {
-            // Restaurar visibilidad de cada columna según DEFAULT_COLUMNS
             for (const col of Object.values(cols)) {
                 const shouldBeVisible = DEFAULT_COLUMNS.includes(col.id);
                 col.visible = shouldBeVisible;
                 localStorage.setItem(col.toggleKey, shouldBeVisible ? 'true' : 'false');
             }
 
-            // Restaurar el orden original de las columnas
             if (originalColumnsOrder && originalColumnsOrder.length > 0) {
                 const originalOrder = [];
                 for (const col of originalColumnsOrder) {
@@ -8051,7 +8410,6 @@ function refreshFeatures() {
                 }
                 localStorage.setItem('columnOrder', JSON.stringify(originalOrder));
 
-                // Reconstruir columns global con el orden original
                 const restoredColumns = [];
                 for (const colId of originalOrder) {
                     const column = cols[colId];
@@ -8061,7 +8419,6 @@ function refreshFeatures() {
                 }
                 window.columns = restoredColumns;
             } else {
-                // Fallback: orden por defecto basado en DEFAULT_COLUMNS
                 const defaultOrder = [...DEFAULT_COLUMNS];
                 for (const col of Object.values(cols)) {
                     if (!defaultOrder.includes(col.id)) {
@@ -8080,14 +8437,52 @@ function refreshFeatures() {
                 window.columns = restoredColumns;
             }
 
-            // Recrear el UI de columnas
             createColumnToggles();
 
-            // Redibujar la tabla
             if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
                 TAR.planeMan.redraw();
             }
         };
+        // *****************************************
+        // ** FIN RESTAURAR COLUMNAS POR DEFECTO ***
+        // *****************************************
+
+        // *****************************************
+        // * INICIO TRADUCIR TEXTO DE UNA COLUMNA **
+        // *****************************************
+        function getTranslatedColumnText(col) {
+            let text = col.text || col.id;
+            const translationKey = 'col_' + col.id;
+            if (typeof window.translate !== 'undefined' && window.translate.t) {
+                const translated = window.translate.t(translationKey);
+                if (translated && translated !== translationKey) {
+                    text = translated;
+                }
+            } else if (typeof window.t === 'function') {
+                const translated = window.t(translationKey);
+                if (translated && translated !== translationKey) {
+                    text = translated;
+                }
+            }
+            return text;
+        }
+        // *****************************************
+        // *** FIN TRADUCIR TEXTO DE UNA COLUMNA ***
+        // *****************************************
+
+        let restoreText = 'Restore default columns';
+        let activeColumnsText = 'Active columns';
+        let inactiveColumnsText = 'Inactive columns';
+
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            restoreText = window.translate.t('restore_default_columns') || restoreText;
+            activeColumnsText = window.translate.t('active_columns') || activeColumnsText;
+            inactiveColumnsText = window.translate.t('inactive_columns') || inactiveColumnsText;
+        } else if (typeof window.t === 'function') {
+            restoreText = window.t('restore_default_columns') || restoreText;
+            activeColumnsText = window.t('active_columns') || activeColumnsText;
+            inactiveColumnsText = window.t('inactive_columns') || inactiveColumnsText;
+        }
 
         const checkedColumnIds = [];
         const uncheckedColumnIds = [];
@@ -8100,21 +8495,19 @@ function refreshFeatures() {
             }
         }
 
-        // Mantener el orden original de las columnas CHECKED (según el orden de la tabla)
         const orderedCheckedIds = [];
         for (const col of columns) {
             if (checkedColumnIds.includes(col.id)) {
                 orderedCheckedIds.push(col.id);
             }
         }
-        // Añadir cualquier checked que falte (por si acaso)
+
         for (const id of checkedColumnIds) {
             if (!orderedCheckedIds.includes(id) && cols[id]) {
                 orderedCheckedIds.push(id);
             }
         }
 
-        // Ordenar UNCHECKED alfabéticamente por su texto de visualización
         const orderedUncheckedIds = [...uncheckedColumnIds];
         orderedUncheckedIds.sort((a, b) => {
             const textA = cols[a].text || a;
@@ -8122,43 +8515,90 @@ function refreshFeatures() {
             return textA.localeCompare(textB);
         });
 
-        container.append(`
-        <div style="margin-bottom: 15px;">
-            <button class="formButton" id="reset-columns-btn" title="Restore default column configuration">
-                Restore default columns
-            </button>
-        </div>
-        <div class="column-category" id="column-category-checked">
-            <div class="column-category-title"> Active columns (${orderedCheckedIds.length})</div>
-            <div class="columns-grid" id="checked-columns-grid"></div>
-        </div>
-        <div class="column-category" id="column-category-unchecked">
-            <div class="column-category-title"> Inactive columns (${orderedUncheckedIds.length})</div>
-            <div class="columns-grid" id="unchecked-columns-grid"></div>
-        </div>
-    `);
+        const restoreButtonHtml = `
+            <div style="margin-bottom: 15px;">
+                <button class="formButton" id="reset-columns-btn" title="${restoreText}">
+                    ${restoreText}
+                </button>
+            </div>
+        `;
 
-        // Evento del botón de restaurar
-        jQuery('#reset-columns-btn').off('click').on('click', function (e) {
-            e.preventDefault();
-            window.resetColumnsToDefault();
-        });
+        const activeCategoryHtml = `
+            <div class="column-category" id="column-category-checked">
+                <div class="column-category-title">
+                    ${activeColumnsText} (${orderedCheckedIds.length})
+                </div>
+                <div class="columns-grid" id="checked-columns-grid"></div>
+            </div>
+        `;
+
+        const inactiveCategoryHtml = `
+            <div class="column-category" id="column-category-unchecked">
+                <div class="column-category-title">
+                    ${inactiveColumnsText} (${orderedUncheckedIds.length})
+                </div>
+                <div class="columns-grid" id="unchecked-columns-grid"></div>
+            </div>
+        `;
+
+        container.append(restoreButtonHtml);
+        container.append(activeCategoryHtml);
+        container.append(inactiveCategoryHtml);
+
+        // container.append(`
+        // <div style="margin-bottom: 15px;">
+        //     <button class="formButton" id="reset-columns-btn" title="${restoreText}>
+        //         ${restoreText}
+        //     </button>
+        // </div>
+        // <div class="column-category" id="column-category-checked">
+        //     <div class="column-category-title">${activeColumnsText} (${orderedCheckedIds.length})</div>
+        //     <div class="columns-grid" id="checked-columns-grid"></div>
+        // </div>
+        // <div class="column-category" id="column-category-unchecked">
+        //     <div class="column-category-title">${inactiveColumnsText} (${orderedUncheckedIds.length})</div>
+        //     <div class="columns-grid" id="unchecked-columns-grid"></div>
+        // </div>
+        // `);
+
+        // *****************************************
+        // *** FIN CREAR COLUMNAS SELECCIONABLES ***
+        // *****************************************
 
         const checkedGrid = jQuery('#checked-columns-grid');
         const uncheckedGrid = jQuery('#unchecked-columns-grid');
 
-        // Función para crear el HTML de un ítem de columna
-        function createColumnItem(col, isChecked) {
-            return `
-            <li class="ui-state-default" id="${prefix + col.id}" data-column-id="${col.id}">
-                <div class="settingsCheckbox ${isChecked ? 'settingsCheckboxChecked' : ''}" 
-                     style="display: inline-block; cursor: pointer;"></div>
-                <span class="settingsText" style="cursor: pointer;">${col.text}</span>
-            </li>
-        `;
-        }
+        // Evento del botón de restaurar
+        // jQuery('#reset-columns-btn').off('click').on('click', function (e) {
+        //     e.preventDefault();
+        //     window.resetColumnsToDefault();
+        // });
 
-        // Añadir columnas CHECKED en el orden de la tabla
+        // const checkedGrid = jQuery('#checked-columns-grid');
+        // const uncheckedGrid = jQuery('#unchecked-columns-grid');
+
+        // *****************************************
+        // ***** INICIO CREAR HTML DE UN ITEM ******
+        // *****************************************
+        function createColumnItem(col, isChecked) {
+            const displayText = getTranslatedColumnText(col);
+            return `
+                <li class="ui-state-default" id="${prefix + col.id}" data-column-id="${col.id}" 
+                    style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; 
+                        background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); 
+                        border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
+                    <div class="settingsCheckbox ${isChecked ? 'settingsCheckboxChecked' : ''}" 
+                        style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
+                    <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;">
+                        ${displayText}
+                    </span>
+                </li>
+            `;
+        }
+        // *****************************************
+        // ****** FIN CREAR HTML DE UN ITEM ********
+        // *****************************************
+
         for (const colId of orderedCheckedIds) {
             const col = cols[colId];
             if (col) {
@@ -8166,7 +8606,6 @@ function refreshFeatures() {
             }
         }
 
-        // Añadir columnas UNCHECKED en orden alfabético
         for (const colId of orderedUncheckedIds) {
             const col = cols[colId];
             if (col) {
@@ -8176,29 +8615,28 @@ function refreshFeatures() {
 
         for (const col of Object.values(cols)) {
             const $li = jQuery(`#${prefix + col.id}`);
+            if (!$li.length) continue;
+
             const $checkbox = $li.find('.settingsCheckbox');
             const $text = $li.find('.settingsText');
 
-            // Función para alternar el estado
             function toggleColumnState() {
                 const newState = !col.visible;
                 col.visible = newState;
 
-                // Mover el elemento entre categorías visualmente
                 const $element = jQuery(`#${prefix + col.id}`);
                 if (newState) {
-                    // Mover a checked (al final, manteniendo orden de tabla)
                     $element.detach();
                     checkedGrid.append($element);
                     $checkbox.addClass('settingsCheckboxChecked');
                     updateCategoryCounts();
                 } else {
-                    // Mover a unchecked (manteniendo orden alfabético)
                     $element.detach();
-                    // Insertar en orden alfabético
                     let inserted = false;
                     const newText = col.text;
                     uncheckedGrid.children('li').each(function () {
+                        const existingId = jQuery(this).attr('id').replace(prefix, '');
+                        const existingCol = cols[existingId];
                         const existingText = jQuery(this).find('.settingsText').text();
                         if (newText.localeCompare(existingText) < 0) {
                             jQuery(this).before($element);
@@ -8213,25 +8651,20 @@ function refreshFeatures() {
                     updateCategoryCounts();
                 }
 
-                // Guardar en localStorage
                 localStorage.setItem(col.toggleKey, newState ? 'true' : 'false');
 
-                // Actualizar el orden global de columnas
                 updateColumnsOrderFromDOM();
 
-                // Redibujar la tabla
                 if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
                     TAR.planeMan.redraw();
                 }
             }
 
-            // Evento click en el checkbox
             $checkbox.off('click').on('click', function (e) {
                 e.stopPropagation();
                 toggleColumnState();
             });
 
-            // Evento click en el texto
             $text.off('click').on('click', function (e) {
                 e.stopPropagation();
                 toggleColumnState();
@@ -8242,8 +8675,17 @@ function refreshFeatures() {
         function updateCategoryCounts() {
             const checkedCount = checkedGrid.children('li').length;
             const uncheckedCount = uncheckedGrid.children('li').length;
-            jQuery('#column-category-checked .column-category-title').html(` Active columns (${checkedCount})`);
-            jQuery('#column-category-unchecked .column-category-title').html(` Inactive columns (${uncheckedCount})`);
+            const activeTitle = jQuery('#column-category-checked .column-category-title');
+            const inactiveTitle = jQuery('#column-category-unchecked .column-category-title');
+            
+            if (activeTitle.length) {
+                activeTitle.html(`${activeColumnsText} (${checkedCount})`);
+            }
+            if (inactiveTitle.length) {
+                inactiveTitle.html(`${inactiveColumnsText} (${uncheckedCount})`);
+            }
+            // jQuery('#column-category-checked .column-category-title').html(` Active columns (${checkedCount})`);
+            // jQuery('#column-category-unchecked .column-category-title').html(` Inactive columns (${uncheckedCount})`);
         }
 
         // Función para actualizar el orden global de columnas basado en el DOM
@@ -8280,6 +8722,11 @@ function refreshFeatures() {
             localStorage.setItem('columnOrder', JSON.stringify(newOrder));
         }
 
+        jQuery('#reset-columns-btn').off('click').on('click', function (e) {
+            e.preventDefault();
+            window.resetColumnsToDefault();
+        });
+
         // Inicializar contadores
         updateCategoryCounts();
     }
@@ -8312,6 +8759,27 @@ function refreshFeatures() {
 //
 // g.planes table end
 //
+
+// *****************************************************
+// ** INICIO ACTUALIZAR IDIOMA COLUMNAS TABLA AVIONES **
+// *****************************************************
+
+
+
+// *****************************************************
+// *** FIN ACTUALIZAR IDIOMA COLUMNAS TABLA AVIONES ****
+// *****************************************************
+
+
+
+
+
+
+
+
+
+
+
 
 let lastSelected = null;
 function deselect(plane) {
@@ -8668,7 +9136,7 @@ function updateReplayBarPosition() {
 
     // Verificar si la barra de replay está visible
     const replayVisible = replayBar.is(':visible');
-    
+
     if (replayVisible) {
         const replayHeight = replayBar.outerHeight();
         bottomOffset = replayHeight;
@@ -9001,21 +9469,32 @@ function invertMap(evt) {
         }
     }
 
+    // *************************************************************************
+    // ******* INICIO ALTITUDE CHART - PARTE DE LA CATEGORÍA DISPLAY ***********
+    // *************************************************************************
     altitudeChart.init = function () {
         // let chartOn = (onMobile ? false : altitudeChartDefaultState);
         let chartOn = false;
         if (usp.has('altitudeChart')) {
             chartOn = Boolean(parseInt(usp.get('altitudeChart')));
         }
-        new Toggle({
+        // new Toggle({
+        createToggle({
             key: "altitudeChart",
-            display: "Color-coded altitude chart",
-            tooltip: "Displays an altitude profile chart, showing altitude with units and a color legend.",
+            // display: "Color-coded altitude chart",
+            // tooltip: "Displays an altitude profile chart, showing altitude with units and a color legend.",
+            display: 'altitude_chart',
+            displayKey: 'altitude_chart',
+            tooltip: 'altitude_chart_tooltip',
+            tooltipKey: 'altitude_chart_tooltip',
             container: "#category-display-container",
             init: false,
             setState: altitudeChart.render
         });
     }
+    // *************************************************************************
+    // ********* FIN ALTITUDE CHART - PARTE DE LA CATEGORÍA DISPLAY ************
+    // *************************************************************************
 
     return TAR;
 }(window, jQuery, TAR || {}));
@@ -9501,12 +9980,14 @@ function onResetAltitudeFilter(e) {
     refreshFilter();
 }
 
+// *****************************************
+// ** INICIO ACTUALIZAR FILTRO DE ALTITUD **
+// *****************************************
 function updateAltFilter() {
     let minAltitude = parseFloat(jQuery("#altitude_filter_min").val().trim());
     let maxAltitude = parseFloat(jQuery("#altitude_filter_max").val().trim());
     let enabled = false;
 
-    // Validar que los valores sean números válidos
     if (isNaN(minAltitude)) {
         minAltitude = -1e6;
     }
@@ -9514,34 +9995,35 @@ function updateAltFilter() {
         maxAltitude = 1e6;
     }
 
-    // Validar que el valor mínimo no sea mayor que el máximo
     const hasMinValid = minAltitude !== -1e6;
     const hasMaxValid = maxAltitude !== 1e6;
 
     if (hasMinValid && hasMaxValid && minAltitude > maxAltitude) {
-        // Mostrar mensaje de error ROJO
-        showSearchWarning('ERROR: Minimum altitude (' + minAltitude + ') cannot be greater than maximum altitude (' + maxAltitude + '). Please correct the values.');
+        let errorText = 'ERROR: Minimum altitude ({min}) cannot be greater than maximum altitude ({max}). Please correct the values.';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            errorText = window.translate.t('error_min_alt_greater') || errorText;
+        } else if (typeof window.t === 'function') {
+            errorText = window.t('error_min_alt_greater') || errorText;
+        }
+        errorText = errorText.replace(/\{min\}/g, minAltitude).replace(/\{max\}/g, maxAltitude);
+        showSearchWarning(errorText);
+        // showSearchWarning('ERROR: Minimum altitude (' + minAltitude + ') cannot be greater than maximum altitude (' + maxAltitude + '). Please correct the values.');
 
-        // Marcar los inputs como inválidos visualmente
         jQuery("#altitude_filter_min").addClass('input-error').removeClass('filter-active');
         jQuery("#altitude_filter_max").addClass('input-error').removeClass('filter-active');
 
-        // IMPORTANTE: Deshabilitar el filtro y limpiar valores anteriores
         PlaneFilter.enabled = false;
         PlaneFilter.minAltitude = undefined;
         PlaneFilter.maxAltitude = undefined;
 
-        // No continuar con la aplicación del filtro
         return;
 
     } else {
-        // Limpiar mensaje de error y clases de error si los valores son correctos
         hideSearchWarning();
         jQuery("#altitude_filter_min").removeClass('input-error');
         jQuery("#altitude_filter_max").removeClass('input-error');
     }
 
-    // Validar límites razonables
     if (minAltitude < -1e6 || minAltitude > 1e6 || isNaN(minAltitude))
         minAltitude = -1e6;
     else
@@ -9552,7 +10034,6 @@ function updateAltFilter() {
     else
         enabled = true;
 
-    // Si solo hay un valor válido (solo min o solo max), habilitar el filtro
     const hasMinValidFinal = minAltitude !== -1e6;
     const hasMaxValidFinal = maxAltitude !== 1e6;
 
@@ -9570,19 +10051,33 @@ function updateAltFilter() {
         return;
     }
 
-    // Si llegamos aquí, el filtro es válido - mostrar mensaje VERDE
-    const minDisplay = minAltitude !== -1e6 ? minAltitude : 'no limit';
-    const maxDisplay = maxAltitude !== 1e6 ? maxAltitude : 'no limit';
-    const unit = DisplayUnits === "metric" ? "m" : "ft";
-    showSuccessMessage('✓ Altitude filter active: ' + minDisplay + ' to ' + maxDisplay + ' ' + unit);
+    let noLimitText = 'no limit';
+    let toText = 'to';
+    let successPrefix = '✓ Altitude filter active:';
 
-    // Marcar los inputs como válidos visualmente (VERDE)
+    if (typeof window.translate !== 'undefined' && window.translate.t) {
+        noLimitText = window.translate.t('no_limit') || noLimitText;
+        toText = window.translate.t('to') || toText;
+        successPrefix = window.translate.t('altitude_filter_active') || successPrefix;
+    } else if (typeof window.t === 'function') {
+        noLimitText = window.t('no_limit') || noLimitText;
+        toText = window.t('to') || toText;
+        successPrefix = window.t('altitude_filter_active') || successPrefix;
+    }
+
+    // const minDisplay = minAltitude !== -1e6 ? minAltitude : 'no limit';
+    // const maxDisplay = maxAltitude !== 1e6 ? maxAltitude : 'no limit';
+    const minDisplay = minAltitude !== -1e6 ? minAltitude : noLimitText;
+    const maxDisplay = maxAltitude !== 1e6 ? maxAltitude : noLimitText;
+    const unit = DisplayUnits === "metric" ? "m" : "ft";
+    // showSuccessMessage('✓ Altitude filter active: ' + minDisplay + ' to ' + maxDisplay + ' ' + unit);
+    showSuccessMessage(successPrefix + ' ' + minDisplay + ' ' + toText + ' ' + maxDisplay + ' ' + unit);
+
     jQuery("#altitude_filter_min").addClass('filter-active').removeClass('input-error');
     jQuery("#altitude_filter_max").addClass('filter-active').removeClass('input-error');
 
     PlaneFilter.enabled = true;
 
-    // Convertir a pies si es necesario
     let minAltFeet = minAltitude;
     let maxAltFeet = maxAltitude;
 
@@ -9594,9 +10089,11 @@ function updateAltFilter() {
     PlaneFilter.minAltitude = minAltFeet;
     PlaneFilter.maxAltitude = maxAltFeet;
 
-    // Actualizar indicadores visuales
     updateAltitudeFilterIndicators(minAltFeet, maxAltFeet, enabled);
 }
+// *****************************************
+// **** FIN ACTUALIZAR FILTRO DE ALTITUD ***
+// *****************************************
 
 function getFlightAwareIdentLink(ident, linkText) {
     if (ident !== null && ident !== "") {
@@ -9724,11 +10221,13 @@ Filter.prototype.init = function () {
     jQuery(this.sid + '_reset').click((e) => { return this.reset(e); });
 }
 
+// *****************************************
+// ***** INICIO INICIALIZAR FILTROS ********
+// *****************************************
 function initFilters() {
     initSourceFilter(tableColors.unselected);
     initFlagFilter(tableColors.unselected);
 
-    // Limpiar las tablas existentes
     const filterTable = document.getElementById('filterTable');
     const filterTable2 = document.getElementById('filterTable2');
     const filterTable3 = document.getElementById('filterTable3');
@@ -9737,7 +10236,7 @@ function initFilters() {
     if (filterTable2) filterTable2.innerHTML = '';
     if (filterTable3) filterTable3.innerHTML = '';
 
-    // Contenedor para todos los grupos
+
     const container = document.createElement('div');
     container.className = 'filters-accordion';
 
@@ -9869,9 +10368,7 @@ function initFilters() {
     `;
     container.appendChild(group6);
 
-    // Insertar el contenedor en filterTable
     if (filterTable) {
-        // Limpiar filterTable y agregar el contenedor
         filterTable.innerHTML = '';
         const tbody = document.createElement('tbody');
         const tr = document.createElement('tr');
@@ -9894,7 +10391,6 @@ function initFilters() {
             const content = group.querySelector('.filter-group-content');
             const icon = header.querySelector('.accordion-icon');
 
-            // Estado inicial: todos cerrados
             let isExpanded = false;
             content.style.height = '0px';
             icon.textContent = '▶';
@@ -9904,24 +10400,20 @@ function initFilters() {
                 isExpanded = !isExpanded;
 
                 if (isExpanded) {
-                    // Expandir
                     const targetHeight = content.scrollHeight;
                     content.style.height = targetHeight + 'px';
                     icon.textContent = '▼';
                     header.setAttribute('aria-expanded', 'true');
 
-                    // Después de la transición, permitir que el height sea auto
                     const onTransitionEnd = () => {
                         content.style.height = 'auto';
                         content.removeEventListener('transitionend', onTransitionEnd);
                     };
                     content.addEventListener('transitionend', onTransitionEnd);
                 } else {
-                    // Colapsar
                     const currentHeight = content.scrollHeight;
                     content.style.height = currentHeight + 'px';
 
-                    // Forzar reflow
                     content.offsetHeight;
 
                     content.style.height = '0px';
@@ -9932,16 +10424,13 @@ function initFilters() {
         });
     }
 
-    // Valores activos de cada buscador
     let flightSearchPattern = '';
     let typeSearchPattern = '';
     let regSearchPattern = '';
 
-    // Función para actualizar los filtros activos
     function updateFilters() {
         filters_active.length = 0;
 
-        // Buscador de vuelo
         if (flightSearchPattern) {
             const pattern = flightSearchPattern.toUpperCase();
             filters_active.push({
@@ -9957,7 +10446,6 @@ function initFilters() {
             });
         }
 
-        // Buscador de tipo
         if (typeSearchPattern) {
             const pattern = typeSearchPattern.toUpperCase();
             filters_active.push({
@@ -9973,7 +10461,6 @@ function initFilters() {
             });
         }
 
-        // Buscador de registro
         if (regSearchPattern) {
             const pattern = regSearchPattern.toUpperCase();
             filters_active.push({
@@ -9992,9 +10479,16 @@ function initFilters() {
         refreshFilter();
     }
 
-    // Configurar buscadores
     const flightInput = document.getElementById('filter_flight_search');
     if (flightInput) {
+        let placeholder = 'Search by callsign, squawk or ICAO hex...';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            placeholder = window.translate.t('search_flight_placeholder') || placeholder;
+        } else if (typeof window.t === 'function') {
+            placeholder = window.t('search_flight_placeholder') || placeholder;
+        }
+        flightInput.placeholder = placeholder;
+
         flightInput.addEventListener('input', (e) => {
             flightSearchPattern = e.target.value;
             updateFilters();
@@ -10008,6 +10502,14 @@ function initFilters() {
 
     const typeInput = document.getElementById('filter_type_search');
     if (typeInput) {
+        let placeholder = 'Search by type code, description or category...';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            placeholder = window.translate.t('search_type_placeholder') || placeholder;
+        } else if (typeof window.t === 'function') {
+            placeholder = window.t('search_type_placeholder') || placeholder;
+        }
+        typeInput.placeholder = placeholder;
+
         typeInput.addEventListener('input', (e) => {
             typeSearchPattern = e.target.value;
             updateFilters();
@@ -10021,6 +10523,14 @@ function initFilters() {
 
     const regInput = document.getElementById('filter_reg_search');
     if (regInput) {
+        let placeholder = 'Search by registration, route or country...';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            placeholder = window.translate.t('search_reg_placeholder') || placeholder;
+        } else if (typeof window.t === 'function') {
+            placeholder = window.t('search_reg_placeholder') || placeholder;
+        }
+        regInput.placeholder = placeholder;
+
         regInput.addEventListener('input', (e) => {
             regSearchPattern = e.target.value;
             updateFilters();
@@ -10032,8 +10542,38 @@ function initFilters() {
         }
     }
 
-    // Botones Clear
+    const groupTitles = {
+        'Flight': 'filter_flight',
+        'Aircraft type': 'filter_aircraft_type',
+        'Registration & route': 'filter_registration_route',
+        'Source': 'filter_source',
+        'DB Flags': 'filter_db_flags',
+        'Altitude': 'filter_altitude'
+    };
+
+    document.querySelectorAll('.filter-group-header .filter-group-title').forEach(el => {
+        const text = el.textContent.trim();
+        const key = groupTitles[text];
+        if (key) {
+            let translation = text;
+            if (typeof window.translate !== 'undefined' && window.translate.t) {
+                translation = window.translate.t(key) || text;
+            } else if (typeof window.t === 'function') {
+                translation = window.t(key) || text;
+            }
+            el.textContent = translation;
+        }
+    });
+
     document.querySelectorAll('.filter-clear-btn').forEach(btn => {
+        let clearText = 'Clear';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            clearText = window.translate.t('clear') || clearText;
+        } else if (typeof window.t === 'function') {
+            clearText = window.t('clear') || clearText;
+        }
+        btn.textContent = clearText;
+
         btn.addEventListener('click', () => {
             const group = btn.dataset.group;
             if (group === 'flight') {
@@ -10050,7 +10590,26 @@ function initFilters() {
         });
     });
 
-    // Re-inicializar sourceFilter
+    document.querySelectorAll('#altitude_filter_apply, #source_filter_form button[type="submit"], #flag_filter_form button[type="submit"]').forEach(btn => {
+        let applyText = 'Apply';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            applyText = window.translate.t('apply') || applyText;
+        } else if (typeof window.t === 'function') {
+            applyText = window.t('apply') || applyText;
+        }
+        btn.textContent = applyText;
+    });
+
+    document.querySelectorAll('#altitude_filter_reset_button, #source_filter_reset_button, #flag_filter_reset_button').forEach(btn => {
+        let resetText = 'Reset';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            resetText = window.translate.t('reset') || resetText;
+        } else if (typeof window.t === 'function') {
+            resetText = window.t('reset') || resetText;
+        }
+        btn.textContent = resetText;
+    });
+
     initSourceFilter(tableColors.unselected);
 
     const sourceForm = document.getElementById('source_filter_form');
@@ -10071,7 +10630,6 @@ function initFilters() {
         };
     }
 
-    // Re-inicializar flagFilter
     initFlagFilter(tableColors.unselected);
 
     const flagForm = document.getElementById('flag_filter_form');
@@ -10092,7 +10650,6 @@ function initFilters() {
         };
     }
 
-    // Filtro de altitud
     const altitudeApply = document.getElementById('altitude_filter_apply');
     if (altitudeApply) {
         altitudeApply.addEventListener('click', (e) => {
@@ -10115,7 +10672,6 @@ function initFilters() {
         });
     }
 
-    // Restaurar valores guardados
     if (PlaneFilter) {
         if (PlaneFilter.minAltitude && PlaneFilter.minAltitude > -1000000) {
             jQuery('#altitude_filter_min').val(PlaneFilter.minAltitude);
@@ -10138,10 +10694,330 @@ function initFilters() {
     // Inicializar acordeón
     initAccordion();
 }
+// *****************************************
+// ******* FIN INICIALIZAR FILTROS *********
+// *****************************************
 
+// ******************************************************
+// *** INICIO ACTUALIZAR IDIOMA DE COLUMNAS Y FILTROS ***
+// ******************************************************
+(function() {
+    'use strict';
 
+    // *****************************************
+    // ***** INICIO OBTENER TRADUCCIONES *******
+    // *****************************************
+    function getTranslation(key, fallback) {
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            const translated = window.translate.t(key);
+            if (translated && translated !== key) return translated;
+        } else if (typeof window.t === 'function') {
+            const translated = window.t(key);
+            if (translated && translated !== key) return translated;
+        }
+        return fallback || key;
+    }
+    // *****************************************
+    // ****** FIN OBTENER TRADUCCIONES *********
+    // *****************************************
 
+    // ********************************************
+    // ** INICIO ACTUALIZAR LENGUAJE DE COLUMNAS **
+    // ********************************************
+    function updateTableColumnLanguage() {
+        if (typeof TAR === 'undefined' || !TAR.planeMan || !TAR.planeMan.cols) {
+            console.log('Column update: TAR.planeMan.cols not available yet');
+            return;
+        }
 
+        const cols = TAR.planeMan.cols;
+        let updatedCount = 0;
+
+        for (const colId in cols) {
+            const col = cols[colId];
+            if (!col || !col.id) continue;
+
+            const translationKey = 'col_' + col.id;
+            const translatedText = getTranslation(translationKey, col.text || col.id);
+
+            if (translatedText !== col.text) {
+                col.text = translatedText;
+                updatedCount++;
+            }
+
+            col.header = function() {
+                return col.text || col.id;
+            };
+        }
+
+        document.querySelectorAll('#planesTable thead th, #planesTable thead td').forEach(el => {
+            const colId = el.id;
+            if (colId && cols[colId]) {
+                const newText = cols[colId].text || colId;
+                if (el.textContent !== newText) {
+                    el.textContent = newText;
+                }
+            }
+        });
+
+        document.querySelectorAll('#sortableColumns .settingsText').forEach(el => {
+            const li = el.closest('li');
+            if (li) {
+                const id = li.id.replace('dd_', '');
+                if (id && cols[id]) {
+                    const newText = cols[id].text || id;
+                    if (el.textContent !== newText) {
+                        el.textContent = newText;
+                    }
+                }
+            }
+        });
+
+        const activeTitle = document.querySelector('#column-category-checked .column-category-title');
+        const inactiveTitle = document.querySelector('#column-category-unchecked .column-category-title');
+
+        if (activeTitle) {
+            const checkedCount = document.querySelectorAll('#checked-columns-grid li').length;
+            const activeText = getTranslation('active_columns', 'Active columns');
+            const newText = activeText + ' (' + checkedCount + ')';
+            if (activeTitle.textContent !== newText) {
+                activeTitle.textContent = newText;
+            }
+        }
+
+        if (inactiveTitle) {
+            const uncheckedCount = document.querySelectorAll('#unchecked-columns-grid li').length;
+            const inactiveText = getTranslation('inactive_columns', 'Inactive columns');
+            const newText = inactiveText + ' (' + uncheckedCount + ')';
+            if (inactiveTitle.textContent !== newText) {
+                inactiveTitle.textContent = newText;
+            }
+        }
+
+        const resetBtn = document.getElementById('reset-columns-btn');
+        if (resetBtn) {
+            const restoreText = getTranslation('restore_default_columns', 'Restore default columns');
+            if (resetBtn.textContent !== restoreText) {
+                resetBtn.textContent = restoreText;
+            }
+            if (resetBtn.title !== restoreText) {
+                resetBtn.title = restoreText;
+            }
+        }
+
+        if (updatedCount > 0 && typeof TAR.planeMan.redraw === 'function') {
+            TAR.planeMan.redraw();
+        }
+
+        return updatedCount;
+    }
+    // ********************************************
+    // *** FIN ACTUALIZAR LENGUAJE DE COLUMNAS ****
+    // ********************************************
+
+    // ********************************************
+    // ** INICIO ACTUALIZAR LENGUAJE DE FILTROS ***
+    // ********************************************
+    function updateFilterLanguage() {
+        let updatedCount = 0;
+
+        const groupTitleMap = {
+            'flight': 'filter_flight',
+            'type': 'filter_aircraft_type',
+            'reg': 'filter_registration_route',
+            'source': 'filter_source',
+            'flags': 'filter_db_flags',
+            'altitude': 'filter_altitude'
+        };
+
+        const textToKeyMap = {
+            'Flight': 'filter_flight',
+            'Aircraft type': 'filter_aircraft_type',
+            'Registration & route': 'filter_registration_route',
+            'Source': 'filter_source',
+            'DB Flags': 'filter_db_flags',
+            'Altitude': 'filter_altitude'
+        };
+
+        document.querySelectorAll('.filter-group-header .filter-group-title').forEach(el => {
+            const currentText = el.textContent.trim();
+            let key = null;
+
+            const header = el.closest('.filter-group-header');
+            if (header && header.dataset.group && groupTitleMap[header.dataset.group]) {
+                key = groupTitleMap[header.dataset.group];
+            }
+
+            if (!key && textToKeyMap[currentText]) {
+                key = textToKeyMap[currentText];
+            }
+
+            if (key) {
+                const translated = getTranslation(key, currentText);
+                if (translated !== currentText) {
+                    el.textContent = translated;
+                    updatedCount++;
+                }
+            }
+        });
+
+        const flightInput = document.getElementById('filter_flight_search');
+        if (flightInput) {
+            const placeholder = getTranslation('search_flight_placeholder', 'Search by callsign, squawk or ICAO hex...');
+            if (flightInput.placeholder !== placeholder) {
+                flightInput.placeholder = placeholder;
+                updatedCount++;
+            }
+        }
+
+        const typeInput = document.getElementById('filter_type_search');
+        if (typeInput) {
+            const placeholder = getTranslation('search_type_placeholder', 'Search by type code, description or category...');
+            if (typeInput.placeholder !== placeholder) {
+                typeInput.placeholder = placeholder;
+                updatedCount++;
+            }
+        }
+
+        const regInput = document.getElementById('filter_reg_search');
+        if (regInput) {
+            const placeholder = getTranslation('search_reg_placeholder', 'Search by registration, route or country...');
+            if (regInput.placeholder !== placeholder) {
+                regInput.placeholder = placeholder;
+                updatedCount++;
+            }
+        }
+
+        document.querySelectorAll('.filter-clear-btn').forEach(btn => {
+            const translated = getTranslation('clear', 'Clear');
+            if (btn.textContent !== translated) {
+                btn.textContent = translated;
+                updatedCount++;
+            }
+        });
+
+        document.querySelectorAll('#altitude_filter_apply, #source_filter_form button[type="submit"], #flag_filter_form button[type="submit"]').forEach(btn => {
+            const translated = getTranslation('apply', 'Apply');
+            if (btn.textContent !== translated) {
+                btn.textContent = translated;
+                updatedCount++;
+            }
+        });
+
+        document.querySelectorAll('#altitude_filter_reset_button, #source_filter_reset_button, #flag_filter_reset_button').forEach(btn => {
+            const translated = getTranslation('reset', 'Reset');
+            if (btn.textContent !== translated) {
+                btn.textContent = translated;
+                updatedCount++;
+            }
+        });
+
+        document.querySelectorAll('.filter-group-fields span').forEach(el => {
+            const text = el.textContent.trim();
+            if (text === 'to' || text === 'To') {
+                const translated = getTranslation('to', 'to');
+                if (el.textContent !== translated) {
+                    el.textContent = translated;
+                    updatedCount++;
+                }
+            }
+        });
+
+        return updatedCount;
+    }
+    // ********************************************
+    // *** FIN ACTUALIZAR LENGUAJE DE FILTROS *****
+    // ********************************************
+
+    // *****************************************************
+    // *** INICIO ACTUALIZAR LENGUAJE DE ELEMENTOS DE UI ***
+    // *****************************************************
+    function updateUIElements() {
+        let updatedCount = 0;
+
+        const tabMap = {
+            'Map': 'tab_map',
+            'Filters': 'tab_filters',
+            'Columns': 'tab_columns'
+        };
+
+        document.querySelectorAll('#tabs .ui-tabs-tab a').forEach(tab => {
+            const text = tab.textContent.trim();
+            if (tabMap[text]) {
+                const translated = getTranslation(tabMap[text], text);
+                if (tab.textContent !== translated) {
+                    tab.textContent = translated;
+                    updatedCount++;
+                }
+            }
+        });
+
+        const legSel = document.getElementById('leg_sel');
+        if (legSel) {
+            const currentText = legSel.textContent;
+            if (currentText === 'Legs: All' || currentText === 'Tramos: Todos') {
+                const translated = getTranslation('legs_all', 'Legs: All');
+                if (legSel.textContent !== translated) {
+                    legSel.textContent = translated;
+                    updatedCount++;
+                }
+            }
+        }
+
+        return updatedCount;
+    }
+    // *****************************************************
+    // **** FIN ACTUALIZAR LENGUAJE DE ELEMENTOS DE UI *****
+    // *****************************************************
+
+    // **********************************************************
+    // ** INICIO EJECUTAR TODAS LAS FUNCIONES DE ACTUALIZACIÓN **
+    // **********************************************************
+    function updateAllLanguage() {
+        if (typeof window.updateAllToggles === 'function') {
+            window.updateAllToggles();
+        }
+
+        updateTableColumnLanguage();
+        updateFilterLanguage();
+        updateUIElements();
+
+        if (typeof updateZoomIndicator === 'function') {
+            updateZoomIndicator();
+        }
+    }
+    // **********************************************************
+    // *** FIN EJECUTAR TODAS LAS FUNCIONES DE ACTUALIZACIÓN ****
+    // **********************************************************
+
+    document.removeEventListener('languageChanged', updateAllLanguage);
+    document.addEventListener('languageChanged', updateAllLanguage);
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Esperar un poco a que todo esté inicializado
+            setTimeout(updateAllLanguage, 500);
+        });
+    } else {
+        setTimeout(updateAllLanguage, 500);
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('#settingsCog') || e.target.closest('#settings_infoblock')) {
+            setTimeout(updateAllLanguage, 100);
+        }
+    });
+
+    window.updateAllLanguage = updateAllLanguage;
+    window.updateTableColumnLanguage = updateTableColumnLanguage;
+    window.updateFilterLanguage = updateFilterLanguage;
+    window.updateUIElements = updateUIElements;
+
+})();
+
+// ******************************************************
+// **** FIN ACTUALIZAR IDIOMA DE COLUMNAS Y FILTROS *****
+// ******************************************************
 
 function getFlightAwareModeSLink(code, ident, linkText) {
     if (code !== null && code.length > 0 && code[0] !== '~' && code !== "000000") {
@@ -12343,8 +13219,18 @@ function currentExtent(factor) {
     return myExtent(OLMap.getView().calculateExtent(size));
 }
 
+// *****************************************
+// *** INICIO ESTADO POR DEFECTO REPLAY ****
+// *****************************************
 function replayDefaults(ts) {
-    jQuery("#replayPlay").html("Play");
+    let playText = 'Play';
+    if (typeof window.translate !== 'undefined' && window.translate.t) {
+        playText = window.translate.t('play') || playText;
+    } else if (typeof window.t === 'function') {
+        playText = window.t('play') || playText;
+    }
+    // jQuery("#replayPlay").html("Play");
+    jQuery("#replayPlay").html(playText);
     let playing = true;
     let speed = 30;
     if (usp.has("replaySpeed")) {
@@ -12367,6 +13253,9 @@ function replayDefaults(ts) {
         minutes: ts.getUTCMinutes(),
     };
 }
+// *****************************************
+// **** FIN ESTADO POR DEFECTO REPLAY ******
+// *****************************************
 
 function replayClear() {
     clearTimeout(refreshId);
@@ -12384,6 +13273,9 @@ function replayGetChunk(ts) {
     return { date: sDate, index: index, key: key, url: url, };
 }
 
+// *****************************************
+// ******** INICIO CARGAR REPLAY ***********
+// *****************************************
 function loadReplay(ts) {
     if (isNaN(ts.getTime())) {
         ts = new Date();
@@ -12426,7 +13318,16 @@ function loadReplay(ts) {
 
         replay.loadingKey = rKey;
 
-        jQuery('#replayLoading').text('Loading ...');
+        // jQuery('#replayLoading').text('Loading ...');
+
+        let loadingText = 'Loading ...';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            loadingText = window.translate.t('loading') || loadingText;
+        } else if (typeof window.t === 'function') {
+            loadingText = window.t('loading') || loadingText;
+        }
+
+        jQuery('#replayLoading').text(loadingText);
 
         replay.abortController = new AbortController();
 
@@ -12474,6 +13375,13 @@ function loadReplay(ts) {
 
     }
 }
+// *****************************************
+// ********* FIN CARGAR REPLAY *************
+// *****************************************
+
+// *****************************************
+// ** INICIO INICIALIZAR DATOS DEL REPLAY **
+// *****************************************
 function initReplay(chunk, data) {
     if (data.byteLength % 16 != 0) {
         console.log("Invalid heatmap file (byteLength)");
@@ -12520,19 +13428,44 @@ function initReplay(chunk, data) {
     }
     replay.index = index;
     replayStep();
-}
 
+    jQuery('#replayLoading').text('');
+}
+// *****************************************
+// *** FIN INICIALIZAR DATOS DEL REPLAY ****
+// *****************************************
+
+// **********************************************************
+// *** INICIO MOSTRAR FECHA, HORAS Y MINUTOS EN EL REPLAY ***
+// **********************************************************
 function setReplayTimeHint(date) {
+    let dateLabel = 'Date:';
+    let utcLabel = 'UTC:';
+
+    if (typeof window.translate !== 'undefined' && window.translate.t) {
+        dateLabel = window.translate.t('date_label') || dateLabel;
+        utcLabel = window.translate.t('utc_label') || utcLabel;
+    } else if (typeof window.t === 'function') {
+        dateLabel = window.t('date_label') || dateLabel;
+        utcLabel = window.t('utc_label') || utcLabel;
+    }
     if (true || utcTimesHistoric) {
-        jQuery("#replayDateHintLocal").html(TIMEZONE + " Date: " + lDateString(date));
+        // jQuery("#replayDateHintLocal").html(TIMEZONE + " Date: " + lDateString(date));
+        jQuery("#replayDateHintLocal").html(TIMEZONE + " " + dateLabel + " " + lDateString(date));
         jQuery("#replayDateHint").html("" + zDateString(date));
-        jQuery("#replayTimeHint").html("UTC:" + NBSP + zuluTime(date) + ' / ' + TIMEZONE + ":" + NBSP + localTime(date));
+        // jQuery("#replayTimeHint").html("UTC:" + NBSP + zuluTime(date) + ' / ' + TIMEZONE + ":" + NBSP + localTime(date));
+        jQuery("#replayTimeHint").html(utcLabel + " " + zuluTime(date) + ' / ' + TIMEZONE + ":" + NBSP + localTime(date));
     } else {
         jQuery("#replayDateHintLocal").html("");
-        jQuery("#replayDateHint").html("Date: " + lDateString(date));
-        jQuery("#replayTimeHint").html("Time: " + localTime(date) + NBSP + TIMEZONE);
+        jQuery("#replayDateHint").html(dateLabel + " " + lDateString(date));
+        // jQuery("#replayDateHint").html("Date: " + lDateString(date));
+        // jQuery("#replayTimeHint").html("Time: " + localTime(date) + NBSP + TIMEZONE);
     }
 }
+// **********************************************************
+// **** FIN MOSTRAR FECHA, HORAS Y MINUTOS EN EL REPLAY *****
+// **********************************************************
+
 function replayOnSliderMove() {
     clearTimeout(refreshId);
 
@@ -12891,6 +13824,10 @@ function updateMessageRate(data) {
         MessageRate = null;
     }
 }
+
+// *****************************************
+// ******* INICIO REPRODUCIR REPLAY ********
+// *****************************************
 function playReplay(state) {
     if (!replay) {
         return;
@@ -12901,17 +13838,39 @@ function playReplay(state) {
             return;
         }
         replay.playing = true;
-        jQuery("#replayPlay").html("Pause");
+
+        let pauseText = 'Pause';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            pauseText = window.translate.t('pause') || pauseText;
+        } else if (typeof window.t === 'function') {
+            pauseText = window.t('pause') || pauseText;
+        }
+
+        // jQuery("#replayPlay").html("Pause");
+        jQuery("#replayPlay").html(pauseText);
         replayStep();
     } else {
         replay.playing = false;
-        jQuery("#replayPlay").html("Play");
+        // jQuery("#replayPlay").html("Play");
+        let playText = 'Play';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            playText = window.translate.t('play') || playText;
+        } else if (typeof window.t === 'function') {
+            playText = window.t('play') || playText;
+        }
+
+        jQuery("#replayPlay").html(playText);
         clearTimeout(refreshId);
     }
 };
+// *****************************************
+// ******* FIN REPRODUCIR REPLAY ***********
+// *****************************************
 
+// *****************************************
+// ******* INICIO MOSTRAR REPLAY ***********
+// *****************************************
 function showReplayBar() {
-    console.log('showReplayBar()');
     showingReplayBar = !showingReplayBar;
     if (!showingReplayBar) {
         jQuery("#replayBar").hide();
@@ -12948,13 +13907,10 @@ function showReplayBar() {
             datepickerOptions.beforeShow = function (input, inst) {
                 jQuery("replayDatepicker").attr("disabled", true);
             };
-        } else {
-            //
         }
 
         jQuery("#replayDatepicker").datepicker(datepickerOptions);
 
-        // --- SLIDER DE HORAS ---
         jQuery('#hourSelect').slider({
             step: 1, min: 0, max: 23,
             slide: function (event, ui) {
@@ -12968,10 +13924,8 @@ function showReplayBar() {
             }
         });
 
-        // Inyección de etiquetas
         setupSliderDecorations('#hourSelect', '00h', '23h');
 
-        // --- SLIDER DE MINUTOS ---
         jQuery('#minuteSelect').slider({
             step: 1, min: 0, max: 59,
             slide: function (event, ui) {
@@ -12985,7 +13939,6 @@ function showReplayBar() {
             }
         });
 
-        // Inyección de etiquetas
         setupSliderDecorations('#minuteSelect', '00m', '59m');
 
         const slideBase = 3.0;
@@ -12996,17 +13949,38 @@ function showReplayBar() {
             max: Math.pow(1000, 1 / slideBase),
             slide: function (event, ui) {
                 replay.speed = Math.pow(ui.value, slideBase).toFixed(1);
-                jQuery('#replaySpeedHint').text('Speed: ' + replay.speed + 'x');
+
+                let speedLabel = 'Speed: ';
+                if (typeof window.translate !== 'undefined' && window.translate.t) {
+                    speedLabel = window.translate.t('speed_label') || speedLabel;
+                } else if (typeof window.t === 'function') {
+                    speedLabel = window.t('speed_label') || speedLabel;
+                }
+
+                // jQuery('#replaySpeedHint').text('Speed: ' + replay.speed + 'x');
+                jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
             },
             change: function (event, ui) {
                 replayStep();
             },
         });
-        jQuery('#replaySpeedHint').text('Speed: ' + replay.speed + 'x');
+
+        let speedLabel = 'Speed: ';
+        if (typeof window.translate !== 'undefined' && window.translate.t) {
+            speedLabel = window.translate.t('speed_label') || speedLabel;
+        } else if (typeof window.t === 'function') {
+            speedLabel = window.t('speed_label') || speedLabel;
+        }
+
+        // jQuery('#replaySpeedHint').text('Speed: ' + replay.speed + 'x');
+        jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
 
         jQuery("#selected_showTrace_hide").hide();
     }
 };
+// *****************************************
+// ********* FIN MOSTRAR REPLAY ************
+// *****************************************
 
 // Actualiza el texto de la etiqueta del slider
 function updateSliderTip(handle, value, suffix) {
@@ -14262,7 +15236,28 @@ function updateStarredButtonInInfoblock() {
 
     // Actualizar contenido y clase del botón
     starBtn.textContent = isStarred ? '★' : '✰';
-    starBtn.title = isStarred ? 'Remove from notable' : 'Mark as notable';
+    // starBtn.title = isStarred ? 'Remove from notable' : 'Mark as notable';
+    // if (typeof window.t === 'function') {
+    //     starBtn.title = isStarred ? window.t('remove_from_notable') : window.t('mark_as_notable');
+    // } else {
+    //     // Fallback si la traducción no está disponible
+    //     starBtn.title = isStarred ? 'Remove from notable' : 'Mark as notable';
+    // }
+
+    let removeText = 'Remove from notable';
+    let markText = 'Mark as notable';
+
+    // Si la función de traducción global está disponible
+    if (typeof window.translate !== 'undefined' && window.translate.t) {
+        removeText = window.translate.t('remove_from_notable') || removeText;
+        markText = window.translate.t('mark_as_notable') || markText;
+    } else if (typeof window.t === 'function') {
+        // Fallback: si existe window.t (el alias)
+        removeText = window.t('remove_from_notable') || removeText;
+        markText = window.t('mark_as_notable') || markText;
+    }
+
+    starBtn.title = isStarred ? removeText : markText;
 
     if (isStarred) {
         starBtn.classList.add('starred');
