@@ -47,6 +47,9 @@ let SelectedAllPlanes = false;
 let HighlightedPlane = null;
 let FollowSelected = false;
 let followPos = [];
+// **************************************************
+// ** INICIO VARIABLES DISTANCIA AERONAVE-AERONAVE **
+// **************************************************
 let distanceBetweenPlanesMode = false;
 let selectedPlanesForDistance = [];
 let distanceLineLayer = null;
@@ -60,7 +63,6 @@ let pairHiddenState = new Map();
 // Plane-plane distance modes and storage for multiple pairs
 let planeDistanceModeType = '1A1B';
 const PP_MODES = ['1A1B', 'pairs'];
-// const PP_MAX_PAIRS = 3; // límite total de pares
 let distanceLineFeaturesMap = new Map(); // key -> ol.Feature
 let distanceOverlaysMap = new Map(); // key -> ol.Overlay
 let selectedPlaneA = null; // anchor A when in anchor mode
@@ -70,101 +72,102 @@ let pairBuffer = []; // temporary buffer for click pairing
 // Per-pair missing signal tracking for plane-plane mode
 let ppMissingSince = new Map();
 let ppRemoved = new Set();
-// Enable/disable ground-to-air distance measurement mode
+// **************************************************
+// ** FIN VARIABLES DISTANCIA AERONAVE-AERONAVE **
+// **************************************************
+
+// **************************************************
+// *** INICIO VARIABLES DISTANCIA TIERRA-AERONAVE ***
+// **************************************************
 let distanceToGroundMode = false;
-// Overlay showing the distance between point A and the aircraft
 let distanceGroundOverlay = null;
-// Interval that refreshes the ground-to-air measurement
 let distanceGroundUpdateInterval = null;
-// Aircraft chosen as point B for the measurement
 let selectedPlaneForGround = null;
-// Coordinates of the marked ground point A
 let groundPointCoord = null;
-// Vector source that stores point A on the map
 let groundPointSource = null;
-// Layer that draws point A on the map
 let groundPointLayer = null;
-// Layer that draws the line between point A and the aircraft
 let groundToPlaneLineLayer = null;
-// Vector source for the A-B line
 let groundToPlaneLineSource = null;
-// Current rendered feature of the A-B line
 let groundToPlaneLineFeature = null;
-// Modo de medición por defecto
 let distanceToGroundModeType = '1A1B';
-// Arreglo para almacenar los hex/aviones seleccionados como punto B
 let planesForGround = [];
-// Arreglo para almacenar los puntos A marcados en el suelo
 let groundPoints = [];
-// Mapa que asocia cada avión con su feature de línea A‑B en modos multi‑B
 const groundPlaneFeaturesByHex = new Map();
-// Mapa que asocia cada avión con su overlay de distancia en modos multi‑B
 const groundPlaneOverlaysByHex = new Map();
-// Mapa genérico de features de líneas A‑B
 const groundPlaneFeatures = new Map();
-// Mapa genérico de overlays de distancia para cada par A‑B
 const groundPlaneOverlays = new Map();
-// Lista de pares A‑B acumulados en el modo nA_nB
 let taPairs = [];
-
-// NUEVO: mapa de Features por coordenada de punto A (lon,lat con 6 decimales)
 const groundPointFeaturesByCoord = new Map();
-
-// Guardar temporalmente el avión seleccionado a la espera de que se marque un punto A (modo nA_nB)
 let taPendingPlaneHex = null;
-// Guardar temporalmente el punto A marcado a la espera de que se seleccione un avión (modo nA_nB)
 let taPendingGround = null;
-// Modos de distancia tierra-aeronave
 const TA_MODES = ['1A1B', '1A_nB', 'nA_1B', 'nA_nB'];
-// Tiempo desde que cada par A‑B perdió señal
 const groundPlaneMissingSince = new Map();
-// Pares A‑B ya descartados tras perder señal
 const groundPlaneRemoved = new Set();
-// Manejar qué pares tierra-avión están 
 let groundPlaneHiddenState = new Map();
-// Flag del modo distancia tierra‑tierra
+let distanceGuideEl = null;
+// **************************************************
+// **** FIN VARIABLES DISTANCIA TIERRA-AERONAVE *****
+// **************************************************
+
+// **************************************************
+// **** INICIO VARIABLES DISTANCIA TIERRA-TIERRA ****
+// **************************************************
 let groundToGroundMode = false;
-// Modo activo por defecto
 let groundToGroundModeType = '1A1B';
 const GG_MODES = ['1A1B', '1A_nB', 'nA_nB'];
-// Punto A actual en tierra
 let ggPointA = null;
-// Lista de puntos B marcados en tierra
 let ggPointsB = [];
-// Soporte nA_nB
 let ggPairs = [];
 let ggPendingA = null;
-// Vector source for A-B lines
 let ggLineSource = null;
-// Capa que dibuja las líneas A‑B
 let ggLineLayer = null;
-// Vector source for points A and B
 let ggPointSource = null;
-// Capa que dibuja los puntos A y B
 let ggPointLayer = null;
-// Features de línea por cada par A‑B
 const ggLineFeatures = new Map();
-// Overlays de distancia por cada par A‑B
 const ggOverlays = new Map();
-// Intervalo de refresco del modo tierra‑tierra
 let ggUpdateInterval = null;
 let ggHiddenState = new Map();
 let ggMissingSince = new Map();
 let ggRemoved = new Set();
 let ggPairMap = new Map();
 let ggPairOrder = [];
-// Indicador de zoom
+// **************************************************
+// ***** FIN VARIABLES DISTANCIA TIERRA-TIERRA ******
+// **************************************************
+
+// **************************************************
+// ****** INICIO VARIABLES INDICADOR DE ZOOM ********
+// **************************************************
 let zoomIndicatorBaseline = null;
 let ZOOM_BASELINE_KEY = 'zoomIndicatorBaseline_v2';
-// Almacenar el marcador temporal del aeropuerto cuando se busca con el buscador
+// **************************************************
+// ******* FIN VARIABLES INDICADOR DE ZOOM **********
+// **************************************************
+
+// **************************************************
+// **** INICIO VARIABLES MARCADOR DE AEROPUERTO *****
+// **************************************************
 let airportMarkerFeature = null;
 let airportMarkerLayer = null;
 let airportMarkerTimeout = null;
 let airportFadeInterval = null;
+// **************************************************
+// ***** FIN VARIABLES MARCADOR DE AEROPUERTO *******
+// **************************************************
+
+// **************************************************
+// ***** INICIO VARIABLES AVIONES DE INTERÉS ********
+// **************************************************
 let columns = [];
 let starredAircraft = new Set();
 let starredListCollapsed = false;
-// Estado de la ventana de configuración
+// **************************************************
+// ******* FIN VARIABLES AVIONES DE INTERÉS *********
+// **************************************************
+
+// **************************************************
+// ***** INICIO VARIABLES VENTANA DE SETTINGS *******
+// **************************************************
 let settingsWindowState = {
     isMaximized: false,
     isMinimized: false,
@@ -174,6 +177,10 @@ let settingsWindowState = {
     savedHeight: null
 };
 let settingsResizeHandle = null;
+// **************************************************
+// ****** FIN VARIABLES VENTANA DE SETTINGS *********
+// **************************************************
+
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -261,31 +268,22 @@ let nextQuerySelected = 0;
 let enableDynamicCachebusting = false;
 g.lastRefreshInt = 1000;
 let reapTimeout = globeIndex ? 240 : 480;
-
-
 let baroCorrectQNH = 1013.25;
-
 let limitUpdates = -1;
-
 let infoBlockWidth = baseInfoBlockWidth;
-
 const renderBuffer = 60;
-
 let shareLink = '';
-
 let CenterLat = 0;
 let CenterLon = 0;
 g.zoomLvl = 5;
 g.zoomLvlCache;
-
 let TrackedAircraft = 0;
 let globeTrackedAircraft = 0;
 let TrackedAircraftPositions = 0;
 let TrackedHistorySize = 0;
 let aircraftShown = 0;
-
 let SitePosition = null;
-
+let infoBlockMinimized = false;
 // timestamps
 let now = 0;
 let last = 0;
@@ -293,24 +291,22 @@ let uat_now = 0;
 let uat_last = 0;
 let FetchPending = [];
 let FetchPendingUAT = null;
-
 let MessageCountHistory = [];
 let MessageRate = 0;
-
 let layers;
 let layers_group;
-
 const nullStyle = new ol.style.Style({});
-
 let estimateStyle;
 let estimateStyleSlim;
 let badLine;
 let badLineMlat;
 let badDot;
 let badDotMlat;
-
 let showingReplayBar = false;
 
+// **************************************************
+// ******** INICIO FUNCIÓN DE HAVERSINE *************
+// **************************************************
 function haversineDistance(lat1, lon1, lat2, lon2) {
     const R = 6371 / 1.852; // Radio de la Tierra en millas náuticas
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -321,15 +317,19 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
 }
+// **************************************************
+// ********** FIN FUNCIÓN DE HAVERSINE **************
+// **************************************************
 
+// ***********************************************************
+// ** INICIO FUNCIÓN ACTUALIZAR DISTANCIA AERONAVE-AERONAVE **
+// ***********************************************************
 function updateDistanceLine() {
     if (!distanceBetweenPlanesMode) return;
 
-    // Modo 1A1B: comportamiento original (solo un par)
     if (planeDistanceModeType === '1A1B') {
         if (selectedPlanesForDistance.length !== 2) return;
 
-        // --- NUEVO: Inicializar el Overlay con estructura y botones ---
         if (!distanceOverlay) {
             let element = document.createElement('div');
             element.id = 'distance-label-tag';
@@ -338,14 +338,13 @@ function updateDistanceLine() {
             element.style.padding = '5px';
             element.style.fontSize = '12px';
             element.style.color = 'black';
-            element.style.pointerEvents = 'auto'; // CRÍTICO: Permitir clics en los íconos
+            element.style.pointerEvents = 'auto';
             element.style.borderRadius = '4px';
 
-            // Estructura: Controles arriba, texto de medición abajo
             element.innerHTML = `
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                    <i id="dist-toggle-btn" class="fa-solid fa-eye-slash" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
-                    <i id="dist-close-btn" class="fa-solid fa-xmark" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+                    <i id="dist-toggle-btn" class="fa-solid fa-eye-slash" style="cursor: pointer; color: #444;"></i>
+                    <i id="dist-close-btn" class="fa-solid fa-xmark" style="cursor: pointer; color: #c00;"></i>
                 </div>
                 <div id="dist-text-content"></div>
             `;
@@ -354,11 +353,10 @@ function updateDistanceLine() {
                 element: element,
                 positioning: 'bottom-center',
                 offset: [0, -10],
-                stopEvent: true // Evita que los clics pasen al mapa (no seleccionará aviones por error)
+                stopEvent: true
             });
             OLMap.addOverlay(distanceOverlay);
 
-            // Funcionalidad de Ocultar/Mostrar
             document.getElementById('dist-toggle-btn').addEventListener('click', function (e) {
                 e.stopPropagation();
                 distance1A1BHidden = !distance1A1BHidden;
@@ -366,21 +364,18 @@ function updateDistanceLine() {
                 let textContent = document.getElementById('dist-text-content');
 
                 if (distance1A1BHidden) {
-                    textContent.style.display = 'none'; // Oculta el texto
-                    this.className = 'fa-solid fa-eye'; // Cambia el ícono
-                    // Ocultar la línea visualmente sin eliminar el dato
+                    textContent.style.display = 'none';
+                    this.className = 'fa-solid fa-eye';
                     if (distanceLineFeature) distanceLineFeature.setStyle(new ol.style.Style({}));
                 } else {
-                    textContent.style.display = 'block'; // Muestra el texto
-                    this.className = 'fa-solid fa-eye-slash'; // Cambia el ícono
-                    // Restaura la línea
+                    textContent.style.display = 'block';
+                    this.className = 'fa-solid fa-eye-slash';
                     if (distanceLineFeature) distanceLineFeature.setStyle(null);
                 }
             });
-            // Funcionalidad de Cerrar
             document.getElementById('dist-close-btn').addEventListener('click', function (e) {
                 e.stopPropagation();
-                resetDistanceCalculation(); // Limpia la medición por completo
+                resetDistanceCalculation();
             });
         }
 
@@ -411,7 +406,6 @@ function updateDistanceLine() {
 
             let secondsMissing = (Date.now() - ppMissingSince.get(key)) / 1000;
 
-            // Actualizar solo el contenedor de texto, respetando los botones
             let textContainer = document.getElementById('dist-text-content');
             if (textContainer) {
                 textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${Math.ceil(15 - secondsMissing)}s`;
@@ -440,7 +434,6 @@ function updateDistanceLine() {
                     selectedPlanesForDistance = selectedPlanesForDistance.filter(p => `${selectedPlaneA}|${p.hex}` !== key && `${p.hex}|${selectedPlaneA}` !== key);
                 }
             }
-
             return;
         }
         // ----------------------------------------------
@@ -452,11 +445,9 @@ function updateDistanceLine() {
         let coords1 = plane1.position;
         let coords2 = plane2.position;
 
-        // Calcular distancia y diferencia de altitud con seguridad
         let distance = haversineDistance(coords1[1], coords1[0], coords2[1], coords2[0]);
         let altDiff = Math.abs(plane1.altitude - plane2.altitude);
 
-        // Actualizar o crear la línea
         let lineCoords = [ol.proj.fromLonLat(coords1), ol.proj.fromLonLat(coords2)];
         if (!distanceLineFeature) {
             distanceLineFeature = new ol.Feature({
@@ -467,18 +458,15 @@ function updateDistanceLine() {
             distanceLineFeature.getGeometry().setCoordinates(lineCoords);
         }
 
-        // Respetar la elección visual del usuario en cada refresco de coordenadas
         if (distance1A1BHidden) {
             distanceLineFeature.setStyle(new ol.style.Style({}));
         } else {
             distanceLineFeature.setStyle(null);
         }
 
-        // Actualizar o crear el Cartel (Overlay)
         let midPoint = [(coords1[0] + coords2[0]) / 2, (coords1[1] + coords2[1]) / 2];
         let midPointProj = ol.proj.fromLonLat(midPoint);
 
-        // Actualizamos solo el contenedor de texto
         let textContainer = document.getElementById('dist-text-content');
         if (textContainer) {
             textContainer.innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
@@ -488,7 +476,7 @@ function updateDistanceLine() {
         return;
     }
 
-    // Modo 1A_nB: un avión A contra varios B (hasta PP_MAX_1A_nB)
+    // Modo 1A_nB: un avión A contra varios B
     if (planeDistanceModeType === 'pairs') {
         // iterate over pairMap and draw/update each pair
         if (!pairMap.size) return;
@@ -530,16 +518,14 @@ function updateDistanceLine() {
                     el.style.borderRadius = '4px';
                     el.innerHTML = `
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                        <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
-                        <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+                        <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: #444;"></i>
+                        <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;"></i>
                     </div>
                     <div class="pair-text-content"></div>
                 `;
 
-                    // Inicializar estado de oculto para este par (por defecto visible)
                     if (!pairHiddenState.has(key)) pairHiddenState.set(key, false);
 
-                    // Configurar eventos
                     const toggleBtn = el.querySelector('.pair-toggle-btn');
                     const closeBtn = el.querySelector('.pair-close-btn');
                     const textContent = el.querySelector('.pair-text-content');
@@ -553,13 +539,11 @@ function updateDistanceLine() {
                         if (newHidden) {
                             textContent.style.display = 'none';
                             toggleBtn.className = 'fa-solid fa-eye';
-                            // Ocultar la línea
                             const feat = distanceLineFeaturesMap.get(key);
                             if (feat) feat.setStyle(new ol.style.Style({}));
                         } else {
                             textContent.style.display = 'block';
                             toggleBtn.className = 'fa-solid fa-eye-slash';
-                            // Restaurar la línea
                             const feat = distanceLineFeaturesMap.get(key);
                             if (feat) feat.setStyle(null);
                         }
@@ -662,8 +646,8 @@ function updateDistanceLine() {
                 el.style.borderRadius = '4px';
                 el.innerHTML = `
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                    <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
-                    <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+                    <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: #444;"></i>
+                    <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;"></i>
                 </div>
                 <div class="pair-text-content"></div>
             `;
@@ -739,13 +723,16 @@ function updateDistanceLine() {
         }
     }
 }
+// ***********************************************************
+// *** FIN FUNCIÓN ACTUALIZAR DISTANCIA AERONAVE-AERONAVE ****
+// ***********************************************************
 
-// Crear o actualizar el punto A en el mapa
+// *******************************************************************
+// ** INICIO FUNCIÓN ACTUALIZAR PUNTO A EN EL MAPA (TIERRA-AERONAVE)**
+// *******************************************************************
 function setGroundPoint(lonlat) {
-    // Guardar las coordenadas del punto A
     groundPointCoord = lonlat;
 
-    // Create the source and layer for point A if they don't exist
     if (!groundPointSource) {
         groundPointSource = new ol.source.Vector();
         groundPointLayer = new ol.layer.Vector({
@@ -763,23 +750,26 @@ function setGroundPoint(lonlat) {
             })
         });
     }
-    // Limpiar cualquier punto previo y marcar el nuevo
+
     groundPointSource.clear();
     const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)));
     groundPointSource.addFeature(f);
 
-    // Si el mapa ya está creado y el punto no está añadido, se añade
     if (groundPointLayer && OLMap) {
         const exists = OLMap.getLayers().getArray().includes(groundPointLayer);
         if (!exists) OLMap.addLayer(groundPointLayer);
     }
 
-    // Asegurar que la capa esté visible al colocar el punto
     if (groundPointLayer) groundPointLayer.setVisible(true);
 
 }
+// *******************************************************************
+// *** FIN FUNCIÓN ACTUALIZAR PUNTO A EN EL MAPA (TIERRA-AERONAVE)****
+// *******************************************************************
 
-// Paso 1 de los tooltips según el modo (tierra-aeronave)
+// *******************************************************************
+// *************** INICIO TOOLTIPS (TIERRA-AERONAVE)******************
+// *******************************************************************
 function taStep1Message() {
     switch (distanceToGroundModeType) {
         case '1A1B':
@@ -795,7 +785,6 @@ function taStep1Message() {
     }
 }
 
-// Paso 2 de los tooltips según el modo (tierra-aeronave)
 function taStep2Message() {
     switch (distanceToGroundModeType) {
         case '1A1B':
@@ -811,7 +800,6 @@ function taStep2Message() {
     }
 }
 
-// Mensaje según el modo (tierra-aeronave)
 function taPreMessage() {
     switch (distanceToGroundModeType) {
         case '1A1B': return '1 Point - 1 Aircraft Mode';
@@ -821,8 +809,13 @@ function taPreMessage() {
         default: return '';
     }
 }
+// *******************************************************************
+// ***************** FIN TOOLTIPS (TIERRA-AERONAVE)*******************
+// *******************************************************************
 
-// Mensaje según el modo (tierra-tierra)
+// *******************************************************************
+// **************** INICIO TOOLTIPS (TIERRA-TIERRA)*******************
+// *******************************************************************
 function ggPreMessage() {
     switch (groundToGroundModeType) {
         case '1A1B': return '1 Point - 1 Point Mode';
@@ -857,28 +850,27 @@ function ggStep2Message() {
             return 'Click on the map to mark point B.';
     }
 }
+// *******************************************************************
+// ***************** FIN TOOLTIPS (TIERRA-TIERRA)*********************
+// *******************************************************************
 
-// Limpiar puntos, líneas y overlays en el modo tierra-aeronave
+// ************************************************************************
+// ** INICIO FUNCIÓN LIMPIAR PUNTOS, LÍNEAS Y OVERLAYS (TIERRA-AERONAVE) **
+// ************************************************************************
 function clearTAGroundDrawings(opts = {}) {
 
-    // Limpiar estado oculto de pares tierra‑avión
     if (groundPlaneHiddenState) {
         groundPlaneHiddenState.clear();
     }
 
-    // Clear the vector source for point A if it exists
     try { groundPointSource && groundPointSource.clear() } catch (_) { }
 
-    // Limpiar referencias indexadas a Features de puntos A
     try { groundPointFeaturesByCoord && groundPointFeaturesByCoord.clear() } catch (_) { }
 
-    // Empty the vector source for A-B lines
     try { groundToPlaneLineSource && groundToPlaneLineSource.clear() } catch (_) { }
 
-    // Resetear referencia a la feature de la línea actual
     groundToPlaneLineFeature = null;
 
-    // Eliminar y limpiar todos los overlays A‑B
     if (groundPlaneOverlays && groundPlaneOverlays.size) {
         groundPlaneOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
         groundPlaneOverlays.clear();
@@ -888,18 +880,15 @@ function clearTAGroundDrawings(opts = {}) {
         groundPlaneOverlaysByHex.clear();
     }
 
-    // Eliminar el overlay único de distancia suelo‑avión si existe
     if (distanceGroundOverlay) {
         try { distanceGroundOverlay.setPosition(undefined); } catch (_) { }
         try { OLMap && OLMap.removeOverlay(distanceGroundOverlay); } catch (_) { }
         distanceGroundOverlay = null;
     }
 
-    // Limpiar el mapa genérico de features de líneas A‑B si existe
     try { groundPlaneFeatures && groundPlaneFeatures.clear(); } catch (_) { }
     try { typeof groundPlaneFeaturesByHex !== 'undefined' && groundPlaneFeaturesByHex.clear(); } catch (_) { }
 
-    // Resetear variables según opción
     if (opts.reset !== false) {
         selectedPlaneForGround = null;
         groundPointCoord = null;
@@ -912,22 +901,24 @@ function clearTAGroundDrawings(opts = {}) {
         try { groundPlaneRemoved && groundPlaneRemoved.clear(); } catch (_) { }
     }
 
-    // Detener refresco de distancia si está activo
     if (distanceGroundUpdateInterval) {
         clearInterval(distanceGroundUpdateInterval);
         distanceGroundUpdateInterval = null;
     }
 }
+// ************************************************************************
+// *** FIN FUNCIÓN LIMPIAR PUNTOS, LÍNEAS Y OVERLAYS (TIERRA-AERONAVE) ****
+// ************************************************************************
 
+// ************************************************************************
+// *** INICIO FUNCIÓN LIMPIAR PUNTOS, LÍNEAS Y OVERLAYS (TIERRA-TIERRA) ***
+// ************************************************************************
 // Limpiar puntos, líneas y overlays en el modo tierra-tierra
 function clearGroundToGround(opts = {}) {
 
-    // Borrar las líneas A‑B
     try { ggLineSource && ggLineSource.clear(); } catch (_) { }
-    // Borrar los puntos A y B
     try { ggPointSource && ggPointSource.clear(); } catch (_) { }
 
-    // Limpiar overlays y colección de features
     try { ggLineFeatures && ggLineFeatures.clear(); } catch (_) { }
     if (ggOverlays && ggOverlays.size) {
         ggOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
@@ -940,187 +931,143 @@ function clearGroundToGround(opts = {}) {
     if (ggPairMap) ggPairMap.clear();
     if (ggPairOrder) ggPairOrder.length = 0;
 
-    // Limpiar pares y estado pendiente para nA_nB
     try { ggPairs && (ggPairs.length = 0); } catch (_) { }
     ggPendingA = null;
 
-    // Si se pide reset completo:
     if (opts.reset !== false) {
-        // Olvidar el punto A
         ggPointA = null;
-        // Olvidar la lista de puntos B
         ggPointsB = [];
     }
-    // Detener refresco periódico
+
     if (ggUpdateInterval) {
         clearInterval(ggUpdateInterval);
         ggUpdateInterval = null;
     }
 }
+// ************************************************************************
+// **** FIN FUNCIÓN LIMPIAR PUNTOS, LÍNEAS Y OVERLAYS (TIERRA-TIERRA) *****
+// ************************************************************************
 
-// Ciclar cada modo según click en el botón (tierra-aeronave)
+// ************************************************************************
+// ****** INICIO FUNCIÓN CICLAR MODO SEGÚN CLICK (TIERRA-AERONAVE) ********
+// ************************************************************************
 function onTACycleClick() {
-    // Si está apagado, activarlo en el primer modo
     if (!distanceToGroundMode) {
-        // Seleccionar el modo inicial (1A1B)
         distanceToGroundModeType = TA_MODES[0];
-        // Encender el modo de distancia suelo‑avión
         DistanceToGround();
-        // Si el modo tierra-tierra está activo, apagarlo
         if (groundToGroundMode) DistanceGroundToGround();
         return;
     }
 
-    // Ubicar el modo actual en la lista
     const idx = TA_MODES.indexOf(distanceToGroundModeType);
-    // Si no es el último modo disponible, avanzar al siguiente
+
     if (idx >= 0 && idx < TA_MODES.length - 1) {
         distanceToGroundModeType = TA_MODES[idx + 1];
-
-        // Limpiar puntos, líneas y overlays previos
         clearTAGroundDrawings();
-
-        // Mostrar nombre del modo activo y guía paso 1
         showDistanceGuide(`<center>${taPreMessage()}</center><br><center>${taStep1Message()}</center>`);
-        // Refrescar la medición según el nuevo modo
         updateDistanceToGroundOverlay();
     } else {
-        // Si es el último modo, apagar la función
         DistanceToGround();
     }
 }
+// ************************************************************************
+// ******** FIN FUNCIÓN CICLAR MODO SEGÚN CLICK (TIERRA-AERONAVE) *********
+// ************************************************************************
 
-// Ciclar cada modo según click en el botón (tierra-tierra)
+// ************************************************************************
+// ****** INICIO FUNCIÓN CICLAR MODO SEGÚN CLICK (TIERRA-TIERRA) **********
+// ************************************************************************
 function onTTCycleClick() {
-    // Si está apagado, encenderlo en el primer modo
     if (!groundToGroundMode) {
-        // Seleccionar el modo inicial (1A1B)
         groundToGroundModeType = GG_MODES[0];
-        // Activar el modo tierra‑tierra
         DistanceGroundToGround();
         return;
     }
 
-    // Posición del modo actual en la lista
     const idx = GG_MODES.indexOf(groundToGroundModeType);
-    // Si no es el último modo disponible, pasar al siguiente modo
     if (idx >= 0 && idx < GG_MODES.length - 1) {
         groundToGroundModeType = GG_MODES[idx + 1];
-        // Limpiar puntos, líneas y overlays previos
         clearGroundToGround();
 
-        // Asegurar que la capa de puntos esté visible
         if (ggPointLayer) ggPointLayer.setVisible(true);
 
-        // Mostrar nombre del modo activo y guía paso 1
         showDistanceGuide(`<center>${ggPreMessage()}</center><br><center>${ggStep1Message()}</center>`);
-        // Refrescar la medición con el nuevo modo
         updateGroundToGroundOverlay();
     } else {
-        // Apagar el modo tierra‑tierra
         DistanceGroundToGround();
     }
 }
+// ************************************************************************
+// ******** FIN FUNCIÓN CICLAR MODO SEGÚN CLICK (TIERRA-TIERRA) ***********
+// ************************************************************************
 
-function stableOverlayOffset(key) {
-    // Deterministic, small scatter around the anchor to avoid overlap
-    let h = 0;
-    for (let i = 0; i < key.length; i++) {
-        h = (h * 31 + key.charCodeAt(i)) >>> 0;
-    }
-    const dx = (h % 7 - 3) * 12;                // -36 .. +36 px
-    const dy = -10 - (Math.floor(h / 7) % 3) * 14; // -10, -24, -38 px
-    return [dx, dy];
-}
+// function stableOverlayOffset(key) {
+//     // Deterministic, small scatter around the anchor to avoid overlap
+//     let h = 0;
+//     for (let i = 0; i < key.length; i++) {
+//         h = (h * 31 + key.charCodeAt(i)) >>> 0;
+//     }
+//     const dx = (h % 7 - 3) * 12;                // -36 .. +36 px
+//     const dy = -10 - (Math.floor(h / 7) % 3) * 14; // -10, -24, -38 px
+//     return [dx, dy];
+// }
 
-// Función para actualizar la medición de distancia suelo‑avión
+// ***********************************************************
+// *** INICIO FUNCIÓN ACTUALIZAR DISTANCIA TIERRA-AERONAVE ***
+// ***********************************************************
 function updateDistanceToGroundOverlay() {
-
-    // Si la capa de líneas está creada pero el usuario la ocultó, no crear ni volver a añadir overlays.
     if (groundToPlaneLineLayer && !groundToPlaneLineLayer.getVisible()) return;
 
-    // Arreglo para almacenar los pares
     const pairs = [];
 
-    // Modo 1 punto tierra 1 avión: un único par
     if (distanceToGroundModeType === '1A1B') {
-        // Solo si hay un punto en tierra y un avión seleccionado
         if (groundPoints.length === 1 && planesForGround.length === 1) {
-            // Guardar el par A‑B con su clave y hex del avión
             pairs.push({ key: '0|' + planesForGround[0], gp: groundPoints[0], hex: planesForGround[0] });
         }
-
-        // Modo 1 punto tierra n aviones: varios pares con el mismo punto A
     } else if (distanceToGroundModeType === '1A_nB') {
-        // Solo si ya hay un punto A y al menos un avión marcado
         if (groundPoints.length === 1 && planesForGround.length) {
-            // Recorrer cada avión y crear su par con el mismo punto A
             for (const hex of planesForGround) {
                 pairs.push({ key: '0|' + hex, gp: groundPoints[0], hex });
             }
         }
-
-        // Modo n puntos tierra 1 avión: varios pares con el mismo avión B
     } else if (distanceToGroundModeType === 'nA_1B') {
-        // Solo si hay un avión seleccionado y al menos un punto en tierra
         if (planesForGround.length === 1 && groundPoints.length) {
             const hex = planesForGround[0];
-            // Recorrer todos los puntos A y crear su par con el mismo avión
             for (let gi = 0; gi < groundPoints.length; gi++) {
                 pairs.push({ key: gi + '|' + hex, gp: groundPoints[gi], hex });
             }
         }
-
-        // Modo n puntos tierra n aviones: todos los pares acumulados
     } else if (distanceToGroundModeType === 'nA_nB') {
-
-        // Añadir cada par guardado previamente a la lista de pares activos
         for (const p of taPairs) {
             pairs.push({ key: p.key, gp: p.gp, hex: p.hex });
         }
     }
 
-    // Si no hay pares, no se dibuja nada
     if (!pairs.length) return;
-
-    // Mostrar la capa de líneas si existe
-    // if (groundToPlaneLineLayer) groundToPlaneLineLayer.setVisible(true);
-
-    // IDs de pares que siguen activos
     const active = new Set();
 
-    // Recorrer cada par A‑B pendiente de dibujar
     for (const { key, gp, hex } of pairs) {
-        // Buscar el avión por su hex
         let plane = g.planes[hex];
-        // Marcar si falta o no tiene posición
         const missingPlane = !plane || !plane.position;
-        // Considera “viejo” si no reporta en >15 s
         const isStale = missingPlane || plane.seen > 15;
 
-        // Sin punto A, no se puede dibujar
         if (!gp) continue;
 
-        // Si ya se descartó antes por pérdida de señal
         if (groundPlaneRemoved.has(key)) {
-            // Si volvió a reportar, lo rehabilita
             if (!isStale) {
                 groundPlaneRemoved.delete(key);
                 groundPlaneMissingSince.delete(key);
             } else {
-                // Si sigue sin señal, omite este par
                 continue;
             }
         }
 
         if (isStale) {
             active.add(key);
-
             const started = groundPlaneMissingSince.get(key) || Date.now();
             groundPlaneMissingSince.set(key, started);
             const secondsMissing = (Date.now() - started) / 1000;
             const remaining = Math.max(0, Math.ceil(15 - secondsMissing));
-
             let ov = groundPlaneOverlays.get(key);
             if (!ov) {
                 const el = document.createElement('div');
@@ -1132,23 +1079,20 @@ function updateDistanceToGroundOverlay() {
                 el.style.color = 'black';
                 el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
-
                 el.innerHTML = `
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
-                <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+                <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: #444;"></i>
+                <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;"></i>
             </div>
             <div class="ta-text-content"></div>
         `;
 
-                // Inicializar estado oculto si no existe
                 if (!groundPlaneHiddenState.has(key)) groundPlaneHiddenState.set(key, false);
 
                 const toggleBtn = el.querySelector('.ta-toggle-btn');
                 const closeBtn = el.querySelector('.ta-close-btn');
                 const textContainer = el.querySelector('.ta-text-content');
 
-                // Evento: Ocultar/Mostrar
                 toggleBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const isHidden = groundPlaneHiddenState.get(key) || false;
@@ -1168,72 +1112,54 @@ function updateDistanceToGroundOverlay() {
                     }
                 });
 
-                // Evento: Cerrar (eliminar el par)
                 closeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
 
-                    // Eliminar línea
                     const feat = groundPlaneFeatures.get(key);
                     if (feat && groundToPlaneLineSource) {
                         groundToPlaneLineSource.removeFeature(feat);
                         groundPlaneFeatures.delete(key);
                     }
 
-                    // Eliminar overlay
                     if (ov) OLMap && OLMap.removeOverlay(ov);
                     groundPlaneOverlays.delete(key);
 
-                    // Limpiar estado
                     groundPlaneHiddenState.delete(key);
                     groundPlaneMissingSince.delete(key);
                     groundPlaneRemoved.delete(key);
 
-                    // --- LÓGICA ESPECIAL PARA LIMPIAR PUNTOS A ---
                     if (distanceToGroundModeType === '1A1B') {
-                        // Limpiar lógica
                         groundPoints = [];
                         groundPointCoord = null;
                         planesForGround = [];
                         selectedPlaneForGround = null;
 
-                        // Limpiar visualmente el punto A del mapa
                         if (groundPointSource) {
                             groundPointSource.clear();
                             groundPointFeaturesByCoord.clear();
-                            // Forzar notificación de cambio
                             groundPointSource.changed();
                         }
 
-                        // Ocultar la capa del punto A
                         if (groundPointLayer) {
                             groundPointLayer.setVisible(false);
-                            // Forzar redibujado de la capa
                             groundPointLayer.changed();
                         }
 
-                        // Forzar redibujado completo del mapa
                         if (OLMap) {
                             OLMap.renderSync();
                         }
                     }
                     else if (distanceToGroundModeType === 'nA_nB') {
-                        // 1. Obtener la clave del punto A
                         const gpKey = key.split('|')[0];
 
-                        // 2. Verificar si este punto A es usado por otros pares
                         const stillUsed = taPairs.some(p => p.key !== key && p.key.startsWith(gpKey + '|'));
 
-                        // 3. Remove point A from the visual source ONLY if it's no longer used
                         if (!stillUsed && groundPointSource) {
-                            // Buscar la feature por coordenada
                             const featA = groundPointFeaturesByCoord.get(gpKey);
                             if (featA) {
                                 groundPointSource.removeFeature(featA);
                                 groundPointFeaturesByCoord.delete(gpKey);
                             }
-
-                            // 🔧 IMPORTANTE: También buscar cualquier feature con coordenadas similares
-                            // (por si la clave no coincide exactamente)
                             const featuresToRemove = [];
                             groundPointSource.forEachFeature(feat => {
                                 const geom = feat.getGeometry();
@@ -1247,15 +1173,10 @@ function updateDistanceToGroundOverlay() {
                                 }
                             });
                             featuresToRemove.forEach(feat => groundPointSource.removeFeature(feat));
-
-                            // Force refresh of the source
                             groundPointSource.changed();
                         }
 
-                        // 4. Eliminar el par del array
                         taPairs = taPairs.filter(p => p.key !== key);
-
-                        // 5. Gestionar la visibilidad de la capa de puntos
                         if (groundPointSource && groundPointSource.getFeatures().length === 0) {
                             if (groundPointLayer) {
                                 groundPointLayer.setVisible(false);
@@ -1266,7 +1187,6 @@ function updateDistanceToGroundOverlay() {
                             groundPointLayer.changed();
                         }
 
-                        // 6. Forzar redibujado completo del mapa
                         if (OLMap) {
                             OLMap.renderSync();
                         }
@@ -1293,13 +1213,11 @@ function updateDistanceToGroundOverlay() {
                 groundPlaneOverlays.set(key, ov);
             }
 
-            // Actualizar el contenido del texto
             const textContainer = ov.getElement().querySelector('.ta-text-content');
             if (textContainer) {
                 textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
             }
 
-            // Aplicar estado de oculto actual
             const isHidden = groundPlaneHiddenState.get(key) || false;
             if (isHidden) {
                 if (textContainer) textContainer.style.display = 'none';
@@ -1315,7 +1233,6 @@ function updateDistanceToGroundOverlay() {
                 if (feat) feat.setStyle(null);
             }
 
-            // Posicionar el overlay
             let overlayPos;
             if (groundPlaneFeatures.has(key)) {
                 overlayPos = groundPlaneFeatures.get(key).getGeometry().getCoordinateAt(0.5);
@@ -1330,7 +1247,6 @@ function updateDistanceToGroundOverlay() {
             ov.setOffset([0, 0]);
             ov.setPosition(overlayPos);
 
-            // Si supera los 15 segundos, eliminar el par
             if (secondsMissing >= 15) {
                 groundPlaneMissingSince.delete(key);
                 groundPlaneRemoved.add(key);
@@ -1345,13 +1261,11 @@ function updateDistanceToGroundOverlay() {
                 groundPlaneHiddenState.delete(key);
 
                 if (distanceToGroundModeType === '1A1B') {
-                    // Limpiar lógica
                     groundPoints = [];
                     groundPointCoord = null;
                     planesForGround = [];
                     selectedPlaneForGround = null;
 
-                    // Limpiar visualmente el punto A
                     if (groundPointSource) {
                         groundPointSource.clear();
                         groundPointFeaturesByCoord.clear();
@@ -1362,23 +1276,14 @@ function updateDistanceToGroundOverlay() {
                         groundPointLayer.changed();
                     }
                 } else if (distanceToGroundModeType === 'nA_nB') {
-                    // 1. Obtener la clave del punto A
                     const gpKey = key.split('|')[0];
-
-                    // 2. Verificar si este punto A es usado por otros pares
                     const stillUsed = taPairs.some(p => p.key !== key && p.key.startsWith(gpKey + '|'));
-
-                    // 3. Remove point A from the visual source ONLY if it's no longer used
                     if (!stillUsed && groundPointSource) {
-                        // Buscar la feature por coordenada
                         const featA = groundPointFeaturesByCoord.get(gpKey);
                         if (featA) {
                             groundPointSource.removeFeature(featA);
                             groundPointFeaturesByCoord.delete(gpKey);
                         }
-
-                        // 🔧 IMPORTANTE: También buscar cualquier feature con coordenadas similares
-                        // (por si la clave no coincide exactamente)
                         const featuresToRemove = [];
                         groundPointSource.forEachFeature(feat => {
                             const geom = feat.getGeometry();
@@ -1393,14 +1298,10 @@ function updateDistanceToGroundOverlay() {
                         });
                         featuresToRemove.forEach(feat => groundPointSource.removeFeature(feat));
 
-                        // Force refresh of the source
                         groundPointSource.changed();
                     }
 
-                    // 4. Eliminar el par del array
                     taPairs = taPairs.filter(p => p.key !== key);
-
-                    // 5. Gestionar la visibilidad de la capa de puntos
                     if (groundPointSource && groundPointSource.getFeatures().length === 0) {
                         if (groundPointLayer) {
                             groundPointLayer.setVisible(false);
@@ -1411,7 +1312,6 @@ function updateDistanceToGroundOverlay() {
                         groundPointLayer.changed();
                     }
 
-                    // 6. Forzar redibujado completo del mapa
                     if (OLMap) {
                         OLMap.renderSync();
                     }
@@ -1428,67 +1328,36 @@ function updateDistanceToGroundOverlay() {
             continue;
         }
 
-        // Borrar el registro de ausencia del par
         groundPlaneMissingSince.delete(key);
-        // Quitar el par de la lista de descartados
         groundPlaneRemoved.delete(key);
-        // Marcar el par como activo
         active.add(key);
-
-        // Tomar la altitud barométrica
         let altBaro = plane.altitude;
-        // Si reporta “ground”, usarlo como 0 ft
         if (altBaro === "ground") altBaro = 0;
-        // Corregir altitud baro por QNH
         altBaro = adjust_baro_alt(altBaro);
-        // Ajustar altitud geométrica (EGM si aplica)
         let altGeom = adjust_geom_alt(plane.alt_geom, plane.position);
-        // “ground” a 0 ft en geométrica
         if (altGeom === "ground") altGeom = 0;
-        // Usar geométrica si existe, si no baro
         const verticalFt = (altGeom != null) ? altGeom : altBaro;
-        // Sin altitud válida, pasar al siguiente par
         if (verticalFt == null) continue;
-
-        // Posición del avión
         const pp = plane.position;
-        // Distancia horizontal A‑B (NM)
         const horizNm = haversineDistance(gp[1], gp[0], pp[1], pp[0]);
-        // Distancia horizontal en metros
         const horizM = horizNm * 1852;
-        // Altura en millas náuticas
         const vertNm = Math.abs(verticalFt) / 6076.12;
-        // Distancia inclinada combinando horiz/vert
         const slantNm = Math.sqrt(horizNm * horizNm + vertNm * vertNm);
-        // Distancia inclinada en metros
         const slantM = slantNm * 1852;
-        // Texto formateado (NM)
         const slantText = format_distance_long(slantM, DisplayUnits).replace(/nmi?/i, 'NM');
-
-        // Proyectar posición del avión al mapa
         const projPlane = ol.proj.fromLonLat(pp);
-        // Proyectar el punto A al mapa
         const projGround = ol.proj.fromLonLat(gp);
-
-        // Volver a marcar el par como activo
         active.add(key);
 
-        // Recuperar la feature de línea A‑B si ya existe
         let feat = groundPlaneFeatures.get(key);
-        // Si no existe, crear una nueva
         if (!feat) {
-            // Definir la línea entre punto A y avión
             feat = new ol.Feature(new ol.geom.LineString([projGround, projPlane]));
-            // Add the line to the vector source
             groundToPlaneLineSource && groundToPlaneLineSource.addFeature(feat);
-            // Guardar la feature en el mapa de líneas
             groundPlaneFeatures.set(key, feat);
         } else {
-            // Actualizar las coordenadas de la línea existente
             feat.getGeometry().setCoordinates([projGround, projPlane]);
         }
 
-        // Punto medio A‑B
         const midProj = feat.getGeometry().getCoordinateAt(0.5);
 
         let ov = groundPlaneOverlays.get(key);
@@ -1503,23 +1372,20 @@ function updateDistanceToGroundOverlay() {
             el.style.pointerEvents = 'auto';
             el.style.borderRadius = '4px';
 
-            // Estructura con botones y contenedor de texto
             el.innerHTML = `
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-            <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: #444;" title="Ocultar/Mostrar línea"></i>
-            <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;" title="Cerrar medición"></i>
+            <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: #444;"></i>
+            <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;"></i>
         </div>
         <div class="ta-text-content"></div>
     `;
 
-            // Inicializar estado oculto para este par si no existe
             if (!groundPlaneHiddenState.has(key)) groundPlaneHiddenState.set(key, false);
 
             const toggleBtn = el.querySelector('.ta-toggle-btn');
             const closeBtn = el.querySelector('.ta-close-btn');
             const textContainer = el.querySelector('.ta-text-content');
 
-            // Evento: Ocultar/Mostrar
             toggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const isHidden = groundPlaneHiddenState.get(key) || false;
@@ -1538,72 +1404,52 @@ function updateDistanceToGroundOverlay() {
                 }
             });
 
-            // Evento: Cerrar (eliminar el par)
             closeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
 
-                // Eliminar línea
                 const feat = groundPlaneFeatures.get(key);
                 if (feat && groundToPlaneLineSource) {
                     groundToPlaneLineSource.removeFeature(feat);
                     groundPlaneFeatures.delete(key);
                 }
 
-                // Eliminar overlay
                 if (ov) OLMap && OLMap.removeOverlay(ov);
                 groundPlaneOverlays.delete(key);
 
-                // Limpiar estado
                 groundPlaneHiddenState.delete(key);
                 groundPlaneMissingSince.delete(key);
                 groundPlaneRemoved.delete(key);
 
-                // LIMPIAR PUNTOS A ---
                 if (distanceToGroundModeType === '1A1B') {
-                    // Limpiar lógica
                     groundPoints = [];
                     groundPointCoord = null;
                     planesForGround = [];
                     selectedPlaneForGround = null;
 
-                    // Limpiar visualmente el punto A del mapa
                     if (groundPointSource) {
                         groundPointSource.clear();
                         groundPointFeaturesByCoord.clear();
-                        // Forzar notificación de cambio
                         groundPointSource.changed();
                     }
 
-                    // Ocultar la capa del punto A
                     if (groundPointLayer) {
                         groundPointLayer.setVisible(false);
-                        // Forzar redibujado de la capa
                         groundPointLayer.changed();
                     }
 
-                    // Forzar redibujado completo del mapa
                     if (OLMap) {
                         OLMap.renderSync();
                     }
                 }
                 else if (distanceToGroundModeType === 'nA_nB') {
-                    // 1. Obtener la clave del punto A
                     const gpKey = key.split('|')[0];
-
-                    // 2. Verificar si este punto A es usado por otros pares
                     const stillUsed = taPairs.some(p => p.key !== key && p.key.startsWith(gpKey + '|'));
-
-                    // 3. Remove point A from the visual source ONLY if it's no longer used
                     if (!stillUsed && groundPointSource) {
-                        // Buscar la feature por coordenada
                         const featA = groundPointFeaturesByCoord.get(gpKey);
                         if (featA) {
                             groundPointSource.removeFeature(featA);
                             groundPointFeaturesByCoord.delete(gpKey);
                         }
-
-                        // 🔧 IMPORTANTE: También buscar cualquier feature con coordenadas similares
-                        // (por si la clave no coincide exactamente)
                         const featuresToRemove = [];
                         groundPointSource.forEachFeature(feat => {
                             const geom = feat.getGeometry();
@@ -1617,15 +1463,10 @@ function updateDistanceToGroundOverlay() {
                             }
                         });
                         featuresToRemove.forEach(feat => groundPointSource.removeFeature(feat));
-
-                        // Force refresh of the source
                         groundPointSource.changed();
                     }
 
-                    // 4. Eliminar el par del array
                     taPairs = taPairs.filter(p => p.key !== key);
-
-                    // 5. Gestionar la visibilidad de la capa de puntos
                     if (groundPointSource && groundPointSource.getFeatures().length === 0) {
                         if (groundPointLayer) {
                             groundPointLayer.setVisible(false);
@@ -1636,21 +1477,16 @@ function updateDistanceToGroundOverlay() {
                         groundPointLayer.changed();
                     }
 
-                    // 6. Forzar redibujado completo del mapa
                     if (OLMap) {
                         OLMap.renderSync();
                     }
                 }
                 else if (distanceToGroundModeType === '1A_nB') {
-                    // Modo 1A_nB: NO eliminar el punto A, solo el avión B
                     planesForGround = planesForGround.filter(h => h !== hex);
-                    // El punto A permanece porque puede seguir siendo usado por otros B
                 }
                 else if (distanceToGroundModeType === 'nA_1B') {
-                    // Modo nA_1B: NO eliminar el punto A, solo el avión B
                     planesForGround = [];
                     selectedPlaneForGround = null;
-                    // Los puntos A permanecen (pueden seguir usándose si se selecciona otro avión)
                 }
 
                 updateDistanceToGroundOverlay();
@@ -1666,13 +1502,11 @@ function updateDistanceToGroundOverlay() {
             groundPlaneOverlays.set(key, ov);
         }
 
-        // Actualizar contenido de texto
         const textContainer = ov.getElement().querySelector('.ta-text-content');
         if (textContainer) {
             textContainer.innerHTML = `Distance: ${slantText}`;
         }
 
-        // Aplicar estado de oculto actual
         const isHidden = groundPlaneHiddenState.get(key) || false;
         if (isHidden) {
             textContainer.style.display = 'none';
@@ -1686,27 +1520,19 @@ function updateDistanceToGroundOverlay() {
             if (lineFeat) lineFeat.setStyle(null);
         }
 
-        // Posicionar el overlay en el punto medio A‑B
         ov.setPosition(midProj);
     }
 
-    // Recorrer todas las líneas A‑B dibujadas
     for (const [k, feat] of groundPlaneFeatures) {
-        // Si la línea no quedó activa en este ciclo
         if (!active.has(k)) {
-            // It is removed from the map source
             groundToPlaneLineSource && groundToPlaneLineSource.removeFeature(feat);
-            // Se elimina del registro de líneas
             groundPlaneFeatures.delete(k);
         }
     }
-    // Recorrer todos los overlays de distancia
+
     for (const [k, ov] of groundPlaneOverlays) {
-        // Si el overlay no quedó activo en este ciclo
         if (!active.has(k)) {
-            // Se retira del mapa
             OLMap && OLMap.removeOverlay(ov);
-            // Se elimina del registro de overlays
             groundPlaneOverlays.delete(k);
         }
     }
@@ -1714,26 +1540,27 @@ function updateDistanceToGroundOverlay() {
     return;
 
 }
+// ***********************************************************
+// *** FIN FUNCIÓN ACTUALIZAR DISTANCIA TIERRA-AERONAVE ****
+// ***********************************************************
 
+// ***********************************************************
+// **** INICIO FUNCIÓN ACTUALIZAR DISTANCIA TIERRA-TIERRA ****
+// ***********************************************************
 function updateGroundToGroundOverlay() {
-    // If line layer is hidden by user, don't create/add overlays
     if (ggLineLayer && !ggLineLayer.getVisible()) return;
-
     const pairs = [];
 
-    // Mode 1A1B: single point A to single point B
     if (groundToGroundModeType === '1A1B') {
         if (ggPointA && ggPointsB.length === 1) {
             pairs.push({ key: '0', a: ggPointA, b: ggPointsB[0] });
         }
     }
-    // Mode 1A_nB: single point A to multiple points B
     else if (groundToGroundModeType === '1A_nB') {
         if (ggPointA && ggPointsB.length) {
             ggPointsB.forEach((pt, idx) => pairs.push({ key: `${idx}`, a: ggPointA, b: pt }));
         }
     }
-    // Mode nA_nB: multiple pairs accumulated
     else if (groundToGroundModeType === 'nA_nB') {
         if (ggPairs && ggPairs.length) {
             for (const p of ggPairs) {
@@ -1743,11 +1570,9 @@ function updateGroundToGroundOverlay() {
     }
 
     if (!pairs.length) return;
-
     const activeKeys = new Set();
 
     for (const { key, a, b } of pairs) {
-        // Calculate distance in nautical miles
         const distNm = haversineDistance(a[1], a[0], b[1], b[0]);
         const distM = distNm * 1852;
         const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
@@ -1782,8 +1607,8 @@ function updateGroundToGroundOverlay() {
 
             el.innerHTML = `
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                    <i class="fa-solid fa-eye-slash gg-toggle-btn" style="cursor: pointer; color: #444;" title="Hide/Show line"></i>
-                    <i class="fa-solid fa-xmark gg-close-btn" style="cursor: pointer; color: #c00;" title="Close measurement"></i>
+                    <i class="fa-solid fa-eye-slash gg-toggle-btn" style="cursor: pointer; color: #444;"></i>
+                    <i class="fa-solid fa-xmark gg-close-btn" style="cursor: pointer; color: #c00;"></i>
                 </div>
                 <div class="gg-text-content"></div>
             `;
@@ -1814,26 +1639,19 @@ function updateGroundToGroundOverlay() {
 
             closeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-
-                // Remove line
                 const lineFeat = ggLineFeatures.get(key);
                 if (lineFeat && ggLineSource) {
                     ggLineSource.removeFeature(lineFeat);
                     ggLineFeatures.delete(key);
                 }
 
-                // Remove overlay
                 if (ov && OLMap) OLMap.removeOverlay(ov);
                 ggOverlays.delete(key);
-
-                // Clean up state
                 ggHiddenState.delete(key);
                 ggMissingSince.delete(key);
                 ggRemoved.delete(key);
 
-                // --- Special logic for cleaning points ---
                 if (groundToGroundModeType === '1A1B') {
-                    // Remove both points
                     if (ggPointSource) ggPointSource.clear();
                     ggPointA = null;
                     ggPointsB = [];
@@ -1845,7 +1663,6 @@ function updateGroundToGroundOverlay() {
                         p.a[0].toFixed(6) === a[0].toFixed(6) &&
                         p.a[1].toFixed(6) === a[1].toFixed(6));
 
-                    // Remove point A only if no longer used by other pairs
                     if (!stillUsed && ggPointSource) {
                         const featuresToRemove = [];
                         ggPointSource.forEachFeature(feat => {
@@ -1861,7 +1678,6 @@ function updateGroundToGroundOverlay() {
                         ggPointSource.changed();
                     }
 
-                    // Remove point B
                     if (ggPointSource) {
                         const featuresToRemove = [];
                         ggPointSource.forEachFeature(feat => {
@@ -1877,10 +1693,8 @@ function updateGroundToGroundOverlay() {
                         ggPointSource.changed();
                     }
 
-                    // Remove the pair from array
                     ggPairs = ggPairs.filter(p => p.key !== key);
 
-                    // Hide layer if no points left
                     if (ggPointSource && ggPointSource.getFeatures().length === 0 && ggPointLayer) {
                         ggPointLayer.setVisible(false);
                         ggPointLayer.changed();
@@ -1890,7 +1704,6 @@ function updateGroundToGroundOverlay() {
                     }
                 }
                 else if (groundToGroundModeType === '1A_nB') {
-                    // Only remove point B, keep point A
                     if (ggPointSource) {
                         const featuresToRemove = [];
                         ggPointSource.forEachFeature(feat => {
@@ -1905,8 +1718,6 @@ function updateGroundToGroundOverlay() {
                         featuresToRemove.forEach(f => ggPointSource.removeFeature(f));
                         ggPointSource.changed();
                     }
-
-                    // Remove from points B list
                     ggPointsB = ggPointsB.filter(p =>
                         Math.abs(p[0] - b[0]) > 1e-8 || Math.abs(p[1] - b[1]) > 1e-8
                     );
@@ -1949,7 +1760,6 @@ function updateGroundToGroundOverlay() {
         ov.setPosition(mid);
     }
 
-    // Remove lines and overlays for inactive keys
     for (const [k, feat] of ggLineFeatures) {
         if (!activeKeys.has(k)) {
             ggLineSource && ggLineSource.removeFeature(feat);
@@ -1963,23 +1773,17 @@ function updateGroundToGroundOverlay() {
         }
     }
 }
+// ***********************************************************
+// ***** FIN FUNCIÓN ACTUALIZAR DISTANCIA TIERRA-TIERRA ******
+// ***********************************************************
 
-
-
-
-
-
-// Overlay de guía para usar el modo distancia suelo‑avión
-let distanceGuideEl = null;
-
-// Función para mostrar el texto guía del modo distancia suelo‑avión
+// ***********************************************************
+// ********* INICIO FUNCIÓN CONTENEDOR DE TOOLTIPS ***********
+// ***********************************************************
 function showDistanceGuide(text) {
-    // Seleccionar el contenedor donde se insertará la guía: el mapa si existe, o el body como respaldo.
     const host = document.getElementById('map_container') || document.body;
-    // Crear el overlay si no existe
     if (!distanceGuideEl) {
         distanceGuideEl = document.createElement('div');
-        // Aplicar estilos al elemento creado
         Object.assign(distanceGuideEl.style, {
             position: 'absolute',
             top: '50px',
@@ -1996,25 +1800,32 @@ function showDistanceGuide(text) {
             zIndex: '10000',
             display: 'none',
         });
-        // Insertar elemento guía en el contenedor elegido.
         host.appendChild(distanceGuideEl);
     }
     distanceGuideEl.innerHTML = text;
     distanceGuideEl.style.display = 'block';
 }
+// ***********************************************************
+// ********** FIN FUNCIÓN CONTENEDOR DE TOOLTIPS *************
+// ***********************************************************
 
-// Función para ocultar la guía del modo distancia suelo‑avión
+// ***********************************************************
+// ******** INICIO FUNCIÓN OCULTAR TOOLTIPS GUÍA *************
+// ***********************************************************
 function hideDistanceGuide() {
     if (distanceGuideEl) distanceGuideEl.style.display = 'none';
 }
+// ***********************************************************
+// ********** FIN FUNCIÓN OCULTAR TOOLTIPS GUÍA **************
+// ***********************************************************
 
-// Función para activar/desactivar el modo distancia suelo‑avión
+// ***********************************************************
+// *** INICIO FUNCIÓN ACTIVAR/DESACTIVAR TIERRA-AERONAVE *****
+// ***********************************************************
 function DistanceToGround() {
-    // Alternar el modo de medición suelo‑avión
     distanceToGroundMode = !distanceToGroundMode;
 
     if (distanceToGroundMode) {
-        // Al activar TA, asegurarse de desactivar modos de avión-avión y tierra-tierra
         if (distanceBetweenPlanesMode) {
             distanceBetweenPlanesMode = false;
             resetDistanceCalculation();
@@ -2026,46 +1837,41 @@ function DistanceToGround() {
             hideDistanceGuide();
             buttonActive('#TT', false);
         }
-        // Limpieza y reset al activar
         clearTAGroundDrawings();
 
-        // Ensure source and layer for points A
         if (!groundPointSource) groundPointSource = new ol.source.Vector();
         if (groundPointLayer) {
             groundPointLayer.setSource(groundPointSource);
             groundPointLayer.setVisible(true);
         }
 
-        // Ensure line source
         if (!groundToPlaneLineSource) groundToPlaneLineSource = new ol.source.Vector();
         if (groundToPlaneLineLayer) {
             groundToPlaneLineLayer.setSource(groundToPlaneLineSource);
-            // Mostrar la capa de líneas al activar el modo
             groundToPlaneLineLayer.setVisible(true);
         }
 
-        // Mostrar guía paso 1 según modo actual
         showDistanceGuide(`<center>${taPreMessage()}</center><br><center>${taStep1Message()}</center>`);
 
-        // Intervalo de refresco
         distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
 
         buttonActive('#TA', true);
     } else {
-        // Apagar y limpiar todo
         clearTAGroundDrawings();
         hideDistanceGuide();
         buttonActive('#TA', false);
     }
 }
+// ***********************************************************
+// ***** FIN FUNCIÓN ACTIVAR/DESACTIVAR TIERRA-AERONAVE ******
+// ***********************************************************
 
-// Función para activar/desactivar el modo distancia tierra-tierra
+// ***********************************************************
+// **** INICIO FUNCIÓN ACTIVAR/DESACTIVAR TIERRA-TIERRA ******
+// ***********************************************************
 function DistanceGroundToGround() {
-    // Invertir el estado actual del modo
     groundToGroundMode = !groundToGroundMode;
-    // Si se enciende el modo
     if (groundToGroundMode) {
-        // Al activar GG, desactivar aircraft-aircraft y ground-aircraft si están activos
         if (distanceBetweenPlanesMode) {
             distanceBetweenPlanesMode = false;
             resetDistanceCalculation();
@@ -2077,45 +1883,32 @@ function DistanceGroundToGround() {
             hideDistanceGuide();
             buttonActive('#TA', false);
         }
-        // Limpiar puntos, líneas y overlays previos
         clearGroundToGround();
 
-        // Create the vector source for points (A/B) if it does not exist.
         if (!ggPointSource) ggPointSource = new ol.source.Vector();
-        // If the points layer is defined, set its source and visibility.
         if (ggPointLayer) {
-            // Assign the newly created source to the points layer.
             ggPointLayer.setSource(ggPointSource);
-            // Asegurar que la capa de puntos sea visible.
             ggPointLayer.setVisible(true);
         }
 
-        // Create the vector source for A-B lines if it does not exist.
         if (!ggLineSource) ggLineSource = new ol.source.Vector();
-        // If the line layer is defined, set its source and visibility.
         if (ggLineLayer) {
-            // Assign the line source to the corresponding layer.
             ggLineLayer.setSource(ggLineSource);
-            // Asegurar que la capa de líneas sea visible.
             ggLineLayer.setVisible(true);
         }
 
-        // Mostrar guía con el modo y paso 1
         showDistanceGuide(`<center>${ggPreMessage()}</center><br><center>${ggStep1Message()}</center>`);
-        // Refrescar medición cada segundo
         ggUpdateInterval = setInterval(updateGroundToGroundOverlay, 1000);
-        // Marcar el botón como activo
         buttonActive('#TT', true);
-        // Si se apaga el modo:
     } else {
-        // Limpiar puntos, líneas y overlays
         clearGroundToGround();
-        // Ocultar el texto guía
         hideDistanceGuide();
-        // Marcar el botón como inactivo
         buttonActive('#TT', false);
     }
 }
+// ***********************************************************
+// ****** FIN FUNCIÓN ACTIVAR/DESACTIVAR TIERRA-TIERRA *******
+// ***********************************************************
 
 // *****************************************
 // ******* INICIO INDICADOR DE ZOOM ********
@@ -2160,14 +1953,14 @@ function updateZoomIndicator() {
         .replace(/\{baseline\}/g, zoomIndicatorBaseline.toFixed(2));
 
     el.title = tooltipText;
-
-    // el.title = `Current zoom level: ${z.toFixed(2)} (${pct}% relative to base zoom ${zoomIndicatorBaseline.toFixed(2)})`;
 }
 // *****************************************
 // ******** FIN INDICADOR DE ZOOM **********
 // *****************************************
 
-// Zoom In - Zoom Out
+// *****************************************
+// ***** INICIO BOTONES ZOOM IN/OUT ********
+// *****************************************
 function zoomInMap() {
     if (!OLMap || !OLMap.getView) return;
     const v = OLMap.getView();
@@ -2183,59 +1976,59 @@ function zoomOutMap() {
     updateZoomIndicator();
     if (FollowSelected) toggleFollow(true);
 }
+// *****************************************
+// ******* FIN BOTONES ZOOM IN/OUT *********
+// *****************************************
 
-// Función para restaurar el ancho del sidebar
+// *****************************************
+// **** INICIO RESTAURAR ANCHO SIDEBAR *****
+// *****************************************
 function resetSidebarWidth() {
     const sidebar = document.getElementById('sidebar_container');
     if (!sidebar) return;
 
-    // Ancho base por defecto (25% del ancho de la ventana, con límites)
     const windowWidth = window.innerWidth;
     let baseWidth = windowWidth * 0.25;
 
-    // Limitar el ancho mínimo y máximo
     const minWidth = 200;
     const maxWidth = windowWidth * 0.6;
     baseWidth = Math.min(maxWidth, Math.max(minWidth, baseWidth));
 
-    // Aplicar el nuevo ancho
     sidebar.style.width = baseWidth + 'px';
 
-    // Guardar en localStorage
     localStorage.setItem('sidebar_width', baseWidth);
 
-    // Actualizar el tamaño del mapa
     if (typeof updateMapSize === 'function') {
         updateMapSize();
     }
 
-    // Forzar redibujado de la tabla
     if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
         TAR.planeMan.redraw();
     }
 
-    // Pequeña animación de feedback visual
     sidebar.style.transition = 'width 0.2s ease';
     setTimeout(() => {
         sidebar.style.transition = '';
     }, 200);
 }
+// *****************************************
+// ***** FIN RESTAURAR ANCHO SIDEBAR *******
+// *****************************************
 
-// Inicializar el botón en los tabs
+// ******************************************
+// ** INICIO BOTÓN RESTAURAR ANCHO SIDEBAR **
+// ******************************************
 function initSidebarResetTab() {
     const resetTab = document.getElementById('reset-sidebar-tab');
     const resetLink = document.getElementById('reset-sidebar-link');
 
     if (!resetTab || !resetLink) return;
 
-    // Forzar que jQuery UI tabs no lo trate como pestaña
     if (typeof jQuery !== 'undefined' && jQuery.ui && jQuery.ui.tabs) {
-        // Marcar este elemento como no seleccionable por tabs
         resetTab.setAttribute('aria-controls', '');
         resetTab.setAttribute('aria-labelledby', '');
     }
 
-    // Prevenir que jQuery UI tabs lo maneje como pestaña
     resetLink.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -2244,21 +2037,21 @@ function initSidebarResetTab() {
     });
 }
 
-// Ejecutar después de que jQuery UI tabs se haya inicializado
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-        // Pequeño retraso para asegurar que jQuery UI tabs ya está listo
         setTimeout(initSidebarResetTab, 100);
     });
 } else {
     setTimeout(initSidebarResetTab, 100);
 }
+// ******************************************
+// *** FIN BOTÓN RESTAURAR ANCHO SIDEBAR ****
+// ******************************************
 
-// ============================================
-// RESET ALL SETTINGS CON CONFIRMACIÓN
-// ============================================
+// **********************************************************
+// *** INICIO FUNCIÓN RESTAURAR CONFIGURACIÓN POR DEFECTO ***
+// **********************************************************
 (function () {
-    // Esperar a que el DOM esté listo
     const initResetButton = function () {
         const resetBtn = document.getElementById('reset-all-settings-btn');
         if (!resetBtn) return;
@@ -2266,7 +2059,6 @@ if (document.readyState === 'loading') {
         resetBtn.addEventListener('click', function (e) {
             e.preventDefault();
 
-            // Crear overlay de confirmación
             const overlay = document.createElement('div');
             overlay.id = 'reset-confirm-overlay';
             overlay.style.cssText = `
@@ -2283,7 +2075,6 @@ if (document.readyState === 'loading') {
                 backdrop-filter: blur(3px);
             `;
 
-            // Crear modal de confirmación
             const modal = document.createElement('div');
             modal.style.cssText = `
                 background: var(--BGCOLOR1, #fff);
@@ -2332,29 +2123,24 @@ if (document.readyState === 'loading') {
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
 
-            // Función para cerrar el modal
             const closeModal = function () {
                 if (overlay && overlay.parentNode) {
                     overlay.parentNode.removeChild(overlay);
                 }
             };
 
-            // Botón Cancelar
             const cancelBtn = document.getElementById('reset-confirm-cancel');
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', closeModal);
             }
 
-            // Clic fuera del modal
             overlay.addEventListener('click', function (e) {
                 if (e.target === overlay) closeModal();
             });
 
-            // Botón Confirmar
             const confirmBtn = document.getElementById('reset-confirm-ok');
             if (confirmBtn) {
                 confirmBtn.addEventListener('click', function () {
-                    // Mostrar mensaje de "Resetting..."
                     const loadingMsg = document.createElement('div');
                     loadingMsg.style.cssText = `
                         position: fixed;
@@ -2373,17 +2159,14 @@ if (document.readyState === 'loading') {
                     loadingMsg.innerHTML = '🔄 Resetting settings...<br><span style="font-size: 12px;">Page will reload</span>';
                     document.body.appendChild(loadingMsg);
 
-                    // Llamar a resetSettings() existente
                     if (typeof resetSettings === 'function') {
                         resetSettings();
                     } else {
-                        // Fallback: limpiar localStorage
                         try {
                             localStorage.clear();
                         } catch (e) { }
                     }
 
-                    // Recargar la página después de un breve momento
                     setTimeout(function () {
                         window.location.reload();
                     }, 300);
@@ -2392,14 +2175,15 @@ if (document.readyState === 'loading') {
         });
     };
 
-    // Ejecutar cuando el DOM esté listo
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initResetButton);
     } else {
         initResetButton();
     }
 })();
-
+// **********************************************************
+// **** FIN FUNCIÓN RESTAURAR CONFIGURACIÓN POR DEFECTO *****
+// **********************************************************
 
 function processAircraft(ac, init, uat) {
     const isArray = Array.isArray(ac);
@@ -3157,32 +2941,6 @@ function initPage() {
         CenterLon = DefaultCenterLon;
     }
 
-    // Escuchar cambios de idioma para actualizar los textos de los toggles
-    document.addEventListener('languageChanged', function () {
-        // Actualizar los display y tooltip de los toggles existentes
-        // Nota: Esto requiere acceso a los objetos Toggle. Si no tienes acceso directo,
-        // puedes recrear los toggles o actualizar su DOM manualmente.
-
-        // Opción simple: Recargar la interfaz de configuración
-        // Esto es un enfoque rápido, pero idealmente deberías actualizar cada toggle
-        jQuery('#settings_infoblock .settingsText').each(function () {
-            // Intenta traducir el texto si tiene un data-i18n
-            const key = $(this).data('i18n');
-            if (key) {
-                const text = getTranslatedText(key, $(this).text());
-                $(this).text(text);
-            }
-        });
-
-        jQuery('#settings_infoblock [data-i18n-title]').each(function () {
-            const key = $(this).data('i18n-title');
-            if (key) {
-                const text = getTranslatedText(key, $(this).attr('title'));
-                $(this).attr('title', text);
-            }
-        });
-    });
-
 }
 
 function earlyInitPage() {
@@ -3311,10 +3069,6 @@ function earlyInitPage() {
         squareMania = true;
     }
 
-    // if (usp.has('darkerColors')) {
-    //     darkerColors = true;
-    // }
-
     if (usp.has('mapDim')) {
         let dim = parseFloat(usp.get('mapDim'));
         if (!isNaN(dim))
@@ -3389,35 +3143,38 @@ function earlyInitPage() {
             setGlobalScale(userScale);
         },
     });
-    // Botón reset para Text and icon size (userScale)
+
+    // **********************************************************************************
+    // ** INICIO BOTONES DE RESETEO PARA "TEXT AND ICON SIZE" Y "ICON SIZE MULTIPLIER" **
+    // **********************************************************************************
     const resetUserScaleBtn = document.getElementById('resetUserScaleBtn');
     if (resetUserScaleBtn) {
         resetUserScaleBtn.addEventListener('click', function () {
-            const defaultValue = 1.0; // Valor base por defecto
+            const defaultValue = 1.0;
             userScale = defaultValue;
             checkScale();
             mapRefresh();
             loStore['userScale'] = userScale;
             setGlobalScale(userScale);
-            // Actualizar el slider visualmente
             const slideBase = 0.6;
             jQuery('#userScaleSlider').slider('value', Math.pow(userScale, 1 / slideBase));
         });
     }
-    // Botón reset para Icon size multiplier (iconScale)
     const resetIconScaleBtn = document.getElementById('resetIconScaleBtn');
     if (resetIconScaleBtn) {
         resetIconScaleBtn.addEventListener('click', function () {
-            const defaultValue = 1.0; // Valor base por defecto
+            const defaultValue = 1.0;
             iconScale = defaultValue;
             checkScale();
             mapRefresh();
             loStore['iconScale'] = iconScale;
-            // Actualizar el slider visualmente
             const slideBase = 0.6;
             jQuery('#iconScaleSlider').slider('value', Math.pow(iconScale, 1 / slideBase));
         });
     }
+    // **********************************************************************************
+    // *** FIN BOTONES DE RESETEO PARA "TEXT AND ICON SIZE" Y "ICON SIZE MULTIPLIER" ****
+    // **********************************************************************************
 
     setGlobalScale(userScale, "init");
 
@@ -3664,14 +3421,8 @@ function earlyInitPage() {
     // *****************************************
     // ****** INICIO CATEGORÍA FILTERS *********
     // *****************************************
-    // new Toggle({
     createToggle({
         key: "hideAircraftFunctions",
-        // display: getTranslatedText('hide_aircraft_functions', 'Hide aircraft functions'),
-        // tooltip: getTranslatedText('hide_aircraft_functions_tooltip', 'Hides the aircraft action dropdown and disables aircraft-specific controls (selection, follow, infoblock, and related functions).'),
-        // display: "Hide aircraft functions",
-        // tooltip: "Hides the aircraft action dropdown and disables aircraft-specific controls (selection, follow, infoblock, and related functions).",
-        // container: "#settingsLeft",
         display: 'hide_aircraft_functions',
         displayKey: 'hide_aircraft_functions',
         tooltip: 'hide_aircraft_functions_tooltip',
@@ -3682,12 +3433,8 @@ function earlyInitPage() {
             jQuery("#aircraft_dropdown").toggle(!state);
         }
     });
-    // new Toggle({
     createToggle({
         key: "hideDistanceFunctions",
-        // display: "Hide distance functions",
-        // tooltip: "Hides the measurement dropdown and disables all distance tools (aircraft-aircraft, ground-aircraft, ground-ground).",
-        // container: "#settingsLeft",
         display: 'hide_distance_functions',
         displayKey: 'hide_distance_functions',
         tooltip: 'hide_distance_functions_tooltip',
@@ -3696,15 +3443,10 @@ function earlyInitPage() {
         init: true,
         setState: function (state) {
             jQuery("#measurement_dropdown").toggle(!state);
-            // jQuery("#D, #TA, #TT").toggle(!state);
         }
     });
-    // new Toggle({
     createToggle({
         key: "hideLabelFunctions",
-        // display: "Hide label functions",
-        // tooltip: "Hides label controls and disables aircraft labels and related label settings (live/historic labels, units, and formatting).",
-        // container: "#settingsLeft",
         display: 'hide_label_functions',
         displayKey: 'hide_label_functions',
         tooltip: 'hide_label_functions_tooltip',
@@ -3715,12 +3457,8 @@ function earlyInitPage() {
             jQuery("#label_dropdown").toggle(!state);
         }
     });
-    // new Toggle({
     createToggle({
         key: "hideLayerFunctions",
-        // display: "Hide layer functions",
-        // tooltip: "Hides layer controls and prevents changing or interacting with map layers and overlay settings (base layers, overlays, and layer switcher).",
-        // container: "#settingsLeft",
         display: 'hide_layer_functions',
         displayKey: 'hide_layer_functions',
         tooltip: 'hide_layer_functions_tooltip',
@@ -3731,12 +3469,8 @@ function earlyInitPage() {
             jQuery("#layer-select").toggle(!state);
         }
     });
-    // new Toggle({
     createToggle({
         key: "hideRecenterFunction",
-        // display: "Hide recenter function",
-        // tooltip: "Hides the recenter control and disables manual re-centering of the map to the site.",
-        // container: "#settingsLeft",
         display: 'hide_recenter_function',
         displayKey: 'hide_recenter_function',
         tooltip: 'hide_recenter_function_tooltip',
@@ -3747,12 +3481,8 @@ function earlyInitPage() {
             jQuery("#H").toggle(!state);
         }
     });
-    // new Toggle({
     createToggle({
         key: "hideReplayFunction",
-        // display: "Hide replay function",
-        // tooltip: "Hides the replay controls and disables timeline playback and related replay controls (play, pause).",
-        // container: "#settingsLeft",
         display: 'hide_replay_function',
         displayKey: 'hide_replay_function',
         tooltip: 'hide_replay_function_tooltip',
@@ -3763,12 +3493,8 @@ function earlyInitPage() {
             jQuery("#RP").toggle(!state);
         }
     });
-    // new Toggle({
     createToggle({
         key: "hideTrackFunctions",
-        // display: "Hide track functions",
-        // tooltip: "Hides track controls and prevents drawing or interacting with aircraft trails and track-related features.",
-        // container: "#settingsLeft",
         display: 'hide_track_functions',
         displayKey: 'hide_track_functions',
         tooltip: 'hide_track_functions_tooltip',
@@ -3779,12 +3505,8 @@ function earlyInitPage() {
             jQuery("#track_dropdown").toggle(!state);
         }
     });
-    // new Toggle({
     createToggle({
         key: "hideZoomFunctions",
-        // display: "Hide zoom functions",
-        // tooltip: "Hides zoom controls and disables map zooming.",
-        // container: "#settingsLeft",
         display: 'hide_zoom_functions',
         displayKey: 'hide_zoom_functions',
         tooltip: 'hide_zoom_functions_tooltip',
@@ -3799,33 +3521,11 @@ function earlyInitPage() {
     // ******** FIN CATEGORÍA FILTERS **********
     // *****************************************
 
-
-    // new Toggle({
-    //     key: "lastLeg",
-    //     display: "Last leg only",
-    //     tooltip: "When enabled with Track Tools > All Tracks, shows only the final segment of each aircraft's trajectory instead of the complete flight path.",
-    //     // container: "#settingsLeft",
-    //     container: "#category-filters-container",
-    //     init: true,
-    //     setState: function (state) {
-    //         lastLeg = state;
-    //         if (loadFinished && !showTrace) {
-    //             for (let i in SelPlanes) {
-    //                 SelPlanes[i].processTrace();
-    //             }
-    //         }
-    //     }
-    // });
-
     // *****************************************
     // ******* INICIO CATEGORÍA DATA ***********
     // *****************************************
-    // new Toggle({
     createToggle({
         key: "baroUseQNH",
-        // display: "Baro. alt.: correct for QNH",
-        // tooltip: "Adjusts pressure altitude according to local atmospheric pressure (QNH) to display the actual altitude above sea level.",
-        // container: "#settingsLeft",
         display: 'baro_alt_correct_qnh',
         displayKey: 'baro_alt_correct_qnh',
         tooltip: 'baro_alt_correct_qnh_tooltip',
@@ -3850,11 +3550,7 @@ function earlyInitPage() {
         }
     });
     createToggle({
-        // new Toggle({
         key: "geomUseEGM",
-        // display: "Geom. alt.: WGS84 -> EGM conversion (long load)",
-        // tooltip: "It applies a mathematical correction to make the GPS altitude more accurate relative to sea level (it takes longer to load).",
-        // container: "#settingsLeft",
         display: 'geom_alt_wgs84_egm',
         displayKey: 'geom_alt_wgs84_egm',
         tooltip: 'geom_alt_wgs84_egm_tooltip',
@@ -3885,13 +3581,8 @@ function earlyInitPage() {
             }
         }
     });
-
-    // new Toggle({
     createToggle({
         key: "utcTimesHistoric",
-        // display: "Historic track labels: UTC",
-        // tooltip: "When enabled with Track Tools > Track Labels, displays timestamps in UTC instead of local time.",
-        // container: "#settingsLeft",
         display: 'historic_track_labels_utc',
         displayKey: 'historic_track_labels_utc',
         tooltip: 'historic_track_labels_utc_tooltip',
@@ -3913,12 +3604,8 @@ function earlyInitPage() {
         toggles['geomUseEGM'].toggle(true, 'init');
     }
 
-    // new Toggle({
     createToggle({
         key: "labelsGeom",
-        // display: "Labels: geom. alt. (WGS84)",
-        // tooltip: "When enabled with Label Tools > Track Labels, displays geometric altitude (GPS) instead of standard barometric altitude.",
-        // container: "#settingsLeft",
         display: 'labels_geom_alt',
         displayKey: 'labels_geom_alt',
         tooltip: 'labels_geom_alt_tooltip',
@@ -3933,13 +3620,8 @@ function earlyInitPage() {
             }
         }
     });
-
-    // new Toggle({
     createToggle({
         key: "utcTimesLive",
-        // display: "Live track labels: UTC",
-        // tooltip: "When enabled with Track Tools > Track Labels, displays timestamps on live paths using Universal Time (UTC).",
-        // container: "#settingsLeft",
         display: 'live_track_labels_utc',
         displayKey: 'live_track_labels_utc',
         tooltip: 'live_track_labels_utc_tooltip',
@@ -3952,12 +3634,8 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
-
     createToggle({
-        // new Toggle({
         key: "enableStarredAircraft",
-        // display: "Notable Aircraft",
-        // tooltip: "Enable/disable the starred aircraft feature. Allows marking aircraft as notable and displays them in the sidebar.",
         display: 'notable_aircraft',
         displayKey: 'notable_aircraft',
         tooltip: 'notable_aircraft_tooltip',
@@ -3966,29 +3644,22 @@ function earlyInitPage() {
         init: false,
         setState: function (state) {
             const starredSection = document.getElementById('starred-aircraft-section');
-            // const starBtnContainer = document.querySelector('.star-btn-container');
-
             if (state) {
-                // Habilitar: mostrar la sección y la estrella
                 if (starredSection) {
                     starredSection.classList.remove('hidden-by-setting');
                 }
-                // Asegurar que la lista sea visible (no oculta por el toggle)
                 const starredContainer = document.getElementById('starred-list-container');
                 if (starredContainer) {
                     starredContainer.style.display = 'block';
                 }
-                // Mostrar botón de estrella en el infoblock si hay un avión seleccionado
                 if (SelectedPlane) {
                     updateStarredButtonInInfoblock();
                 }
             } else {
-                // Deshabilitar: ocultar la sección y la estrella
                 if (starredSection) {
                     starredSection.classList.add('hidden-by-setting');
                 }
             }
-
             updateStarredButtonInInfoblock();
         }
     });
@@ -3996,8 +3667,9 @@ function earlyInitPage() {
     // ********* FIN CATEGORÍA DATA ************
     // *****************************************
 
-
-
+    // *****************************************
+    // ** INICIO OCULTAR TOOLTIPS DE SETTINGS **
+    // *****************************************
     function setHideSettingsTooltips(state) {
         try {
             const sel = '#settings_infoblock [title], #settingsLeft [title], #settingsRight [title]';
@@ -4007,7 +3679,6 @@ function earlyInitPage() {
                     n.removeAttribute('title');
                 });
             } else {
-                // Si el modo global está activo, no restaurar aquí
                 if (document.body.classList.contains('hide-tooltips-all')) return;
                 const sel2 = '#settings_infoblock [data-orig-title], #settingsLeft [data-orig-title], #settingsRight [data-orig-title]';
                 document.querySelectorAll(sel2).forEach(n => {
@@ -4019,7 +3690,13 @@ function earlyInitPage() {
             }
         } catch (e) { console.error(e); }
     };
+    // *****************************************
+    // *** FIN OCULTAR TOOLTIPS DE SETTINGS ****
+    // *****************************************
 
+    // *****************************************
+    // *** INICIO OCULTAR TODOS LOS TOOLTIPS ***
+    // *****************************************
     function setHideAllTooltips(state) {
         try {
             if (state) {
@@ -4039,7 +3716,9 @@ function earlyInitPage() {
             }
         } catch (e) { console.error(e); }
     };
-
+    // *****************************************
+    // **** FIN OCULTAR TODOS LOS TOOLTIPS *****
+    // *****************************************
 
     jQuery('#tStop').on('click', function () { traceOpts.replaySpeed = 0; gotoTime(traceOpts.showTime); });
     jQuery('#t1x').on('click', function () { replaySpeedChange(1); });
@@ -4048,29 +3727,11 @@ function earlyInitPage() {
     jQuery('#t20x').on('click', function () { replaySpeedChange(20); });
     jQuery('#t40x').on('click', function () { replaySpeedChange(40); });
 
-    /*
-    new Toggle({
-        key: "SiteCircles",
-        display: "Distance Circles",
-        container: "#settingsRight",
-        init: SiteCircles,
-        setState: function(state) {
-            SiteCircles = state;
-            if (loadFinished)
-                initSitePos();
-        }
-    });
-    */
-
     // *****************************************
     // ****** INICIO CATEGORÍA SYSTEM **********
     // *****************************************
-    // new Toggle({
     createToggle({
         key: "autoselect",
-        // display: "Auto-select plane",
-        // tooltip: "Automatically selects the aircraft closest to the map center every 5 seconds. Only considers aircraft with a recent position (seen in last 20 seconds).",
-        // container: "#settingsRight",
         display: 'auto_select_plane',
         displayKey: 'auto_select_plane',
         tooltip: 'auto_select_plane_tooltip',
@@ -4082,17 +3743,14 @@ function earlyInitPage() {
             setAutoselect();
         }
     });
+
     if (usp.has('autoselect')) {
         autoselect = true;
         setAutoselect();
     }
 
-    // new Toggle({
     createToggle({
         key: "debugAll",
-        // display: "Debug show all",
-        // tooltip: "Show all debug information.",
-        // container: "#settingsRight",
         display: 'debug_show_all',
         displayKey: 'debug_show_all',
         tooltip: 'debug_show_all_tooltip',
@@ -4106,12 +3764,8 @@ function earlyInitPage() {
                 debugAll = false;
         }
     });
-    // new Toggle({
     createToggle({
         key: "debugTracks",
-        // display: "Debug tracks",
-        // tooltip: "When enabled with Track Tools > All Tracks, displays detailed track information in the console",
-        // container: "#settingsRight",
         display: 'debug_tracks',
         displayKey: 'debug_tracks',
         tooltip: 'debug_tracks_tooltip',
@@ -4123,12 +3777,8 @@ function earlyInitPage() {
             remakeTrails();
         }
     });
-    // new Toggle({
     createToggle({
         key: "hideAllTooltips",
-        // display: "Hide all tooltips",
-        // tooltip: "Hides all element tooltips across the entire page (removes/restores title attributes).",
-        // container: "#settingsLeft",
         display: 'hide_all_tooltips',
         displayKey: 'hide_all_tooltips',
         tooltip: 'hide_all_tooltips_tooltip',
@@ -4139,12 +3789,8 @@ function earlyInitPage() {
             setHideAllTooltips(state);
         }
     });
-    // new Toggle({
     createToggle({
         key: "hideSettingsTooltips",
-        // display: "Hide settings tooltips",
-        // tooltip: "Hides tooltips for controls inside the settings menu.",
-        // container: "#settingsLeft",
         display: 'hide_settings_tooltips',
         displayKey: 'hide_settings_tooltips',
         tooltip: 'hide_settings_tooltips_tooltip',
@@ -4155,13 +3801,8 @@ function earlyInitPage() {
             setHideSettingsTooltips(state);
         }
     });
-
-    // new Toggle({
     createToggle({
         key: "shareFilters",
-        // display: "Include filters in URLs",
-        // tooltip: "Include the current filter settings in the URL.",
-        // container: "#settingsRight",
         display: 'include_filters_in_urls',
         displayKey: 'include_filters_in_urls',
         tooltip: 'include_filters_in_urls_tooltip',
@@ -4172,18 +3813,13 @@ function earlyInitPage() {
             updateAddressBar();
         }
     });
-
-    // new Toggle({
     createToggle({
         key: "updateLocation",
-        // display: "Update GPS location",
-        // container: "#settingsRight",
         display: 'update_gps_location',
         displayKey: 'update_gps_location',
         tooltip: 'update_gps_location_tooltip',
         tooltipKey: 'update_gps_location_tooltip',
         container: "#category-system-container",
-        // tooltip: "Updates the browser/device GPS location and enables periodic tracking to center the map; requires browser permission.",
         init: updateLocation,
         setState: function (state) {
             updateLocation = state;
@@ -4194,16 +3830,11 @@ function earlyInitPage() {
     // ******** FIN CATEGORÍA SYSTEM ***********
     // *****************************************
 
-
     // *****************************************
     // ******* INICIO CATEGORÍA DISPLAY ********
     // *****************************************
-    // new Toggle({
     createToggle({
         key: "ColoredPlanes",
-        // display: "Colored planes",
-        // tooltip: "Display aircraft markers in color instead of grayscale.",
-        // container: "#settingsRight",
         display: 'colored_planes',
         displayKey: 'colored_planes',
         tooltip: 'colored_planes_tooltip',
@@ -4219,13 +3850,8 @@ function earlyInitPage() {
             refreshFeatures();
         }
     });
-
-    // new Toggle({
     createToggle({
         key: "ColoredTrails",
-        // display: "Colored trails",
-        // tooltip: "Display aircraft trails in color instead of grayscale.",
-        // container: "#settingsRight",
         display: 'colored_trails',
         displayKey: 'colored_trails',
         tooltip: 'colored_trails_tooltip',
@@ -4244,7 +3870,6 @@ function earlyInitPage() {
     // *****************************************
     // ******** FIN CATEGORÍA DISPLAY **********
     // *****************************************
-
 
     new Toggle({
         key: "sidebar_visible",
@@ -4305,11 +3930,8 @@ function earlyInitPage() {
     // *****************************************
     // ***** INICIO CATEGORÍA INFORMATION ******
     // *****************************************
-    // new Toggle({
     createToggle({
         key: "enableInfoblock",
-        // display: "Enable infoblock",
-        // tooltip: "Show the infoblock with detailed information about the selected aircraft.",
         display: 'enable_infoblock',
         displayKey: 'enable_infoblock',
         tooltip: 'enable_infoblock_tooltip',
@@ -4320,16 +3942,12 @@ function earlyInitPage() {
             adjustInfoBlock();
         }
     });
-
-    // new Toggle({
     createToggle({
         key: "enableMouseover",
         display: 'enable_mouseover_block',
         displayKey: 'enable_mouseover_block',
         tooltip: 'enable_mouseover_block_tooltip',
         tooltipKey: 'enable_mouseover_block_tooltip',
-        // display: "Enable mouse-over block",
-        // tooltip: "Show detailed information about the selected aircraft when hovering over it.",
         container: "#category-info-container",
         init: enableMouseover,
         setState: function (state) {
@@ -4345,11 +3963,8 @@ function earlyInitPage() {
             // adsb.im API provider kindly asks that tar1090 uses http for the route API if possible
             routeApiUrl = "https://adsb.im/api/0/routeset";
         }
-        // new Toggle({
         createToggle({
             key: "useRouteAPI",
-            // display: "Lookup route",
-            // tooltip: "Look up the route of the aircraft (origin and destination airports) using an online API (if available).",
             display: 'lookup_route',
             displayKey: 'lookup_route',
             tooltip: 'lookup_route_tooltip',
@@ -4381,10 +3996,7 @@ function earlyInitPage() {
     }
 
     createToggle({
-        // new Toggle({
         key: "planespottingAPI",
-        // display: "Pictures planespotting.be",
-        // tooltip: "Display pictures from planespotting.be (if available).",
         display: 'pictures_planespotting_be',
         displayKey: 'pictures_planespotting_be',
         tooltip: 'pictures_planespotting_be_tooltip',
@@ -4401,14 +4013,11 @@ function earlyInitPage() {
         }
     });
     createToggle({
-        // new Toggle({
         key: "planespottersAPI",
         display: 'pictures_planespotters_net',
         displayKey: 'pictures_planespotters_net',
         tooltip: 'pictures_planespotters_net_tooltip',
         tooltipKey: 'pictures_planespotters_net_tooltip',
-        // display: "Pictures planespotters.net",
-        // tooltip: "Display pictures from planespotters.net (if available).",
         container: "#category-info-container",
         init: planespottersAPI,
         setState: function (state) {
@@ -4420,11 +4029,8 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
-    // new Toggle({
     createToggle({
         key: "wideInfoblock",
-        // display: "Wide infoblock",
-        // tooltip: "Use a wider layout for the infoblock, allowing more information to be displayed in a single line.",
         display: 'wide_infoblock',
         displayKey: 'wide_infoblock',
         tooltip: 'wide_infoblock_tooltip',
@@ -4436,7 +4042,6 @@ function earlyInitPage() {
             adjustInfoBlock();
         }
     });
-
     // *****************************************
     // ****** FIN CATEGORÍA INFORMATION ********
     // *****************************************
@@ -4445,10 +4050,6 @@ function earlyInitPage() {
         enableMouseover = false;
         (typeof hideById != 'undefined') && (hideById) && (hideById('tracking_leaderboard_container'));
     }
-
-
-
-
 
     jQuery('#selectall_checkbox').on('click', function () {
         if (jQuery('#selectall_checkbox').hasClass('settingsCheckboxChecked')) {
@@ -4501,9 +4102,9 @@ function earlyInitPage() {
 
     initCategoryResetButtons();
 
-    // ============================================
-    // FUNCIONALIDADES DE LA VENTANA DE CONFIGURACIÓN (Solo redimensionar)
-    // ============================================
+    // ******************************************
+    // ** INICIO FUNCIÓN REDIMENSIONAR SIDEBAR **
+    // ******************************************
     (function () {
         const settingsWindow = document.getElementById('settings_infoblock');
         const dragHandle = document.getElementById('settings_window_header');
@@ -4511,11 +4112,9 @@ function earlyInitPage() {
 
         if (!settingsWindow || !dragHandle) return;
 
-        // Ancho base capturado del CSS original
         const DEFAULT_WIDTH = '453px';
         const DEFAULT_HEIGHT = 'auto';
 
-        // Crear handle de redimensionamiento si no existe
         if (!document.getElementById('settings_resize_handle')) {
             const handle = document.createElement('div');
             handle.id = 'settings_resize_handle';
@@ -4523,7 +4122,6 @@ function earlyInitPage() {
             settingsWindow.appendChild(handle);
         }
 
-        // Aplicar estilos iniciales
         settingsWindow.style.position = 'fixed';
         settingsWindow.style.top = '80px';
         settingsWindow.style.left = '20px';
@@ -4531,8 +4129,6 @@ function earlyInitPage() {
         settingsWindow.style.overflow = 'auto';
         settingsWindow.style.minWidth = '400px';
         settingsWindow.style.minHeight = '300px';
-
-        // Restaurar último tamaño guardado por el usuario, o usar el base
         const savedWidth = localStorage.getItem('settings_window_width');
         const savedHeight = localStorage.getItem('settings_window_height');
 
@@ -4544,19 +4140,16 @@ function earlyInitPage() {
             settingsWindow.style.height = DEFAULT_HEIGHT;
         }
 
-        // Botón para restaurar tamaño base (453px)
         if (resetSizeBtn) {
             resetSizeBtn.onclick = function (e) {
                 e.stopPropagation();
                 settingsWindow.style.width = DEFAULT_WIDTH;
                 settingsWindow.style.height = DEFAULT_HEIGHT;
-                // Limpiar tamaño guardado por el usuario
                 localStorage.removeItem('settings_window_width');
                 localStorage.removeItem('settings_window_height');
             };
         }
 
-        // Redimensionamiento
         const resizeHandle = document.getElementById('settings_resize_handle');
         if (resizeHandle) {
             let isResizing = false;
@@ -4589,43 +4182,39 @@ function earlyInitPage() {
                     isResizing = false;
                     document.body.style.userSelect = '';
                     document.body.style.cursor = '';
-                    // Guardar tamaño actual del usuario
                     localStorage.setItem('settings_window_width', settingsWindow.style.width);
                     localStorage.setItem('settings_window_height', settingsWindow.style.height);
                 }
             };
         }
     })();
+    // ******************************************
+    // ** INICIO FUNCIÓN REDIMENSIONAR SIDEBAR **
+    // ******************************************
 }
 
-// Función para resetear una categoría a sus valores por defecto
+// *************************************************************
+// ** INICIO FUNCIÓN RESETEAR CATEGORÍAS A ESTADO POR DEFECTO **
+// *************************************************************
 function resetCategory(category) {
-
     switch (category) {
         case 'units':
-            // Resetear unidades a Aeronautical (nautical)
             DisplayUnits = 'nautical';
             loStore['displayUnits'] = DisplayUnits;
             jQuery('#units_selector').val(DisplayUnits).trigger('change');
             break;
 
         case 'display':
-            // Resetear opciones de display
             if (toggles['ColoredPlanes']) toggles['ColoredPlanes'].toggle(true);
             if (toggles['ColoredTrails']) toggles['ColoredTrails'].toggle(true);
             if (toggles['altitudeChart']) toggles['altitudeChart'].toggle(false);
             if (toggles['webgl']) toggles['webgl'].toggle(true);
-            // if (toggles['darkerColors']) toggles['darkerColors'].toggle(false);
-            // if (toggles['darkMode']) toggles['darkMode'].toggle(darkModeDefault);
             if (toggles['MapDim']) toggles['MapDim'].toggle(true);
             if (toggles['showLabelUnits']) toggles['showLabelUnits'].toggle(true);
             if (toggles['windLabelsSlim']) toggles['windLabelsSlim'].toggle(false);
-
-
             break;
 
         case 'filters':
-            // Resetear filtros
             if (toggles['hideAircraftFunctions']) toggles['hideAircraftFunctions'].toggle(true);
             if (toggles['hideDistanceFunctions']) toggles['hideDistanceFunctions'].toggle(true);
             if (toggles['hideLabelFunctions']) toggles['hideLabelFunctions'].toggle(true);
@@ -4634,22 +4223,18 @@ function resetCategory(category) {
             if (toggles['hideReplayFunction']) toggles['hideReplayFunction'].toggle(true);
             if (toggles['hideTrackFunctions']) toggles['hideTrackFunctions'].toggle(true);
             if (toggles['hideZoomFunctions']) toggles['hideZoomFunctions'].toggle(true);
-            // if (toggles['lastLeg']) toggles['lastLeg'].toggle(true);
             break;
 
         case 'data':
-            // Resetear opciones de datos
             if (toggles['baroUseQNH']) toggles['baroUseQNH'].toggle(false);
             if (toggles['geomUseEGM']) toggles['geomUseEGM'].toggle(false);
             if (toggles['utcTimesHistoric']) toggles['utcTimesHistoric'].toggle(true);
             if (toggles['labelsGeom']) toggles['labelsGeom'].toggle(false);
             if (toggles['utcTimesLive']) toggles['utcTimesLive'].toggle(false);
             if (toggles['enableStarredAircraft']) toggles['enableStarredAircraft'].toggle(false);
-
             break;
 
         case 'system':
-            // Resetear opciones del sistema
             if (toggles['autoselect']) toggles['autoselect'].toggle(false);
             if (toggles['debugAll']) toggles['debugAll'].toggle(false);
             if (toggles['debugTracks']) toggles['debugTracks'].toggle(false);
@@ -4660,7 +4245,6 @@ function resetCategory(category) {
             break;
 
         case 'info':
-            // Resetear opciones de información
             if (toggles['enableInfoblock']) toggles['enableInfoblock'].toggle(true);
             if (toggles['enableMouseover']) toggles['enableMouseover'].toggle(true);
             if (toggles['useRouteAPI']) toggles['useRouteAPI'].toggle(true);
@@ -4670,13 +4254,11 @@ function resetCategory(category) {
             break;
     }
 
-    // Refrescar la interfaz después de resetear
     if (typeof refreshFilter === 'function') refreshFilter();
     if (typeof adjustInfoBlock === 'function') adjustInfoBlock();
     if (typeof refreshSelected === 'function') refreshSelected();
 }
 
-// Inicializar botones de reset por categoría
 function initCategoryResetButtons() {
     const resetBtns = document.querySelectorAll('.category-reset-btn');
 
@@ -4690,6 +4272,9 @@ function initCategoryResetButtons() {
         });
     });
 }
+// *************************************************************
+// ** INICIO FUNCIÓN RESETEAR CATEGORÍAS A ESTADO POR DEFECTO **
+// *************************************************************
 
 function initLegend(colors) {
     let html = '';
@@ -5391,12 +4976,8 @@ function webglInit() {
     // *************************************************************************
     // *********** INICIO WEBGL - PARTE DE LA CATEGORÍA DISPLAY ****************
     // *************************************************************************
-    // new Toggle({
     createToggle({
         key: "webgl",
-        // display: "Canvas WebGL",
-        // tooltip: "Use WebGL to display aircraft icons. This can significantly improve performance, especially when many aircraft are displayed, but may cause issues on some devices/browsers.",
-        // container: "#settingsRight",
         display: 'webgl',
         displayKey: 'webgl',
         tooltip: 'webgl_tooltip',
@@ -5417,7 +4998,6 @@ function webglInit() {
                 }
                 if (!webgl)
                     return false;
-                // returning false means the toggle will flip back as the activation of the webgl layer was unsuccessful.
             } else {
                 webgl = false;
                 if (loadFinished) {
@@ -5439,7 +5019,6 @@ function webglInit() {
     // *************************************************************************
 }
 
-//Inicializa OpenLayers para controlar el mapa
 function ol_map_init() {
 
     if (0) {
@@ -5505,11 +5084,11 @@ function ol_map_init() {
                     const onVisible = lyr.get('onVisible');
                     onVisible && onVisible(lyr);
 
-                    // --- LÓGICA DE EXCLUSIVIDAD Y AUTO-ACTIVACIÓN ---
+                    // **********************************************
+                    // ** INICIO ACTIVAR/DESACTIVAR GRUPO DE CAPAS **
+                    // **********************************************
                     try {
                         let currentParentGroup = null;
-
-                        // 1. Identificar el grupo de la capa base activada
                         layers_group.getLayers().forEach(group => {
                             if (group instanceof ol.layer.Group) {
                                 if (group.getLayers().getArray().includes(evt.target)) {
@@ -5517,35 +5096,31 @@ function ol_map_init() {
                                 }
                             }
                         });
-
                         if (currentParentGroup) {
-                            // 2. Procesar todos los grupos del mapa
                             layers_group.getLayers().forEach(group => {
                                 if (group instanceof ol.layer.Group) {
-
                                     if (group === currentParentGroup) {
-                                        // SI ES EL GRUPO ACTUAL: Activamos todos sus overlays
                                         group.getLayers().forEach(l => {
                                             if (l.get('type') === 'overlay') {
                                                 l.setVisible(true);
                                             }
                                         });
                                     } else {
-                                        // SI ES OTRO GRUPO: Desactivamos todos sus overlays
                                         group.getLayers().forEach(l => {
                                             if (l.get('type') === 'overlay') {
                                                 l.setVisible(false);
                                             }
                                         });
                                     }
-
                                 }
                             });
                         }
                     } catch (e) {
                         console.error("Error en gestión de capas:", e);
                     }
-                    // --- FIN LÓGICA ---
+                    // **********************************************
+                    // *** FIN ACTIVAR/DESACTIVAR GRUPO DE CAPAS ****
+                    // **********************************************
                 }
             });
         } else if (lyr.get('type') === 'overlay') {
@@ -5693,16 +5268,12 @@ function ol_map_init() {
             gotoTime(trailTS);
         }
 
-        // Si está activo el modo tierra‑aeronave
+        // ******************************************************
+        // ** INICIO MANEJAR CAPAS Y ALERTAS (TIERRA-AERONAVE) **
+        // ******************************************************
         if (distanceToGroundMode) {
-
-            // Obtener las coordenadas del clic en el mapa
             const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
-
-            // Si se hace click sobre un avión
             if (planeHex) {
-
-                // Siempre marcar punto A antes que avión/es
                 if (distanceToGroundModeType === '1A1B' && groundPoints.length === 0) {
                     showDistanceGuide('First mark point A.');
                     evt.stopPropagation();
@@ -5723,181 +5294,114 @@ function ol_map_init() {
                     evt.stopPropagation();
                     return;
                 }
-
-                // Modo nA_nB
                 if (distanceToGroundModeType === 'nA_nB') {
-                    // Si había un punto A pendiente
                     if (taPendingGround) {
-                        // Tomar el punto A pendiente
                         const lonlat = taPendingGround;
-                        // Limpiar el pendiente
                         taPendingGround = null;
-                        // Clave única A|B
                         const key = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}|${planeHex}`;
-                        // Guardar el par A‑B
                         taPairs.push({ hex: planeHex, gp: lonlat, key });
-                        // Asegurar visibilidad de la capa de puntos A
                         if (groundPointLayer) groundPointLayer.setVisible(true);
-                        // Añadir el punto A al mapa y guardar referencia
                         if (groundPointSource) {
                             const featA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)));
                             groundPointSource.addFeature(featA);
                             const gpKey = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}`;
                             groundPointFeaturesByCoord.set(gpKey, featA);
                         }
-                        // Ocultar guía
                         hideDistanceGuide();
-
-                        // Si no había punto A pendiente
                     } else {
-                        // Guardar avión a la espera de marcar punto A
                         taPendingPlaneHex = planeHex;
-                        // Mostrar guía paso 2
                         showDistanceGuide(taStep2Message());
                     }
-                    // Modo 1A_nB
                 } else if (distanceToGroundModeType === '1A_nB') {
-                    // Evita duplicar el mismo avión B
                     if (planesForGround.includes(planeHex)) {
-                        // Refrescar guía
                         showDistanceGuide(taStep2Message());
                     } else {
-                        // Añadir el avión B
                         planesForGround.push(planeHex);
-                        // Ocultar guía
                         hideDistanceGuide();
                     }
-                    // Modo nA_1B
                 } else if (distanceToGroundModeType === 'nA_1B') {
-                    // Fijar el avión como único B
                     planesForGround = [planeHex];
-                    // Ocultar guía
                     hideDistanceGuide();
-                    // Modo 1A1B
                 } else {
-                    // Buscar el avión en memoria
                     const p = g.planes[planeHex];
-                    // Solo si tiene posición válida
                     if (p && p.position) {
-                        // Fijar este avión como B
                         planesForGround = [planeHex];
-                        // Guardar referencia al avión
                         selectedPlaneForGround = p;
-                        // Ocultar guía
                         hideDistanceGuide();
-                        // Si no tiene posición válida
                     } else {
-                        // Aviso de error
                         showDistanceGuide('Select an aircraft with a valid position.');
                     }
                 }
-                // Si se hace clic sobre el mapa
             } else {
-                // Convertir a lon/lat del clic
                 const lonlat = ol.proj.toLonLat(evtCoords);
-                // Modo nA_nB
                 if (distanceToGroundModeType === 'nA_nB') {
-                    // Si hay un punto A pendiente sin avión
                     if (taPendingGround && !taPendingPlaneHex) {
-                        // Pedir escoger avión
                         showDistanceGuide('Select an aircraft to complete the pair.');
-                        // Detener propagación
                         evt.stopPropagation();
                         return;
                     }
-                    // Si hay avión pendiente de un punto A
                     if (taPendingPlaneHex) {
-                        // Recuperar avión pendiente
                         const hex = taPendingPlaneHex;
-                        // Limpiar pendiente
                         taPendingPlaneHex = null;
-                        // Clave A|B
                         const key = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}|${hex}`;
-                        // Guardar el nuevo par
                         taPairs.push({ hex, gp: lonlat, key });
-
-                        // Mostrar capa de puntos A
                         if (groundPointLayer) groundPointLayer.setVisible(true);
-                        // Dibujar punto A
                         groundPointSource && groundPointSource.addFeature(
                             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                         );
-                        // Ocultar guía
                         hideDistanceGuide();
-                        // Si no hay avión pendiente
                     } else {
-                        // Guardar el punto A pendiente
                         taPendingGround = lonlat;
-                        // Asegurar visibilidad
                         if (groundPointLayer) groundPointLayer.setVisible(true);
-                        // Dibujar punto A y guardar referencia
                         if (groundPointSource) {
                             const featA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)));
                             groundPointSource.addFeature(featA);
                             const gpKey = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}`;
                             groundPointFeaturesByCoord.set(gpKey, featA);
                         }
-                        // Mostrar guía paso 2
                         showDistanceGuide(taStep2Message());
                     }
-                    // Modo nA_1B
                 } else if (distanceToGroundModeType === 'nA_1B') {
-                    // Mostrar capa de puntos
                     if (groundPointLayer) groundPointLayer.setVisible(true);
-                    // Añadir nuevo punto A
                     groundPoints.push(lonlat);
-                    // Dibujar punto A
                     groundPointSource && groundPointSource.addFeature(
                         new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                     );
-                    // Actualizar guía
                     showDistanceGuide(taStep2Message());
-                    // }
-                    // Modo 1A1B o 1A_nB
                 } else {
-                    // Reemplazar el punto A único
                     groundPoints = [lonlat];
-                    // Guardar coordenada actual de A
                     groundPointCoord = lonlat;
-                    // Asegurar visibilidad de capa
                     if (groundPointLayer) groundPointLayer.setVisible(true);
-                    // If there is a source, clear and draw A
                     if (groundPointSource) {
                         groundPointSource.clear();
                         groundPointSource.addFeature(
                             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                         );
                     }
-                    // Mostrar siguiente instrucción
                     showDistanceGuide(taStep2Message());
                 }
             }
 
-            // Recalcular y mostrar distancias
             updateDistanceToGroundOverlay();
-            // Si no hay intervalo activo
             if (!distanceGroundUpdateInterval) {
-                // Refrescar cada segundo
                 distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
             }
-            // Evitar que otros manejadores usen el clic
             evt.stopPropagation();
             return;
         }
+        // ***************************************************
+        // ** FIN MANEJAR CAPAS Y ALERTAS (TIERRA-AERONAVE) **
+        // ***************************************************
 
-        // Si el modo tierra‑tierra está activo
+        // ****************************************************
+        // ** INICIO MANEJAR CAPAS Y ALERTAS (TIERRA-TIERRA) **
+        // ****************************************************
         if (groundToGroundMode) {
-            // Obtener coordenadas del clic en el mapa 
             const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
-            // Convertir a lon/lat en grados
             const lonlat = ol.proj.toLonLat(evtCoords);
-
-            // Asegurar que la capa de puntos esté visible
             if (ggPointLayer) ggPointLayer.setVisible(true);
 
-            // Modo nA_nB: crear pares A|B por clicks alternados (pendiente A -> B)
             if (groundToGroundModeType === 'nA_nB') {
-                // Si no hay A pendiente, marcar A pendiente y dibujar su punto
                 if (!ggPendingA) {
                     ggPendingA = lonlat;
                     ggPointSource && ggPointSource.addFeature(
@@ -5905,12 +5409,10 @@ function ol_map_init() {
                     );
                     showDistanceGuide(ggStep2Message());
                 } else {
-                    // Crear par A-B y limpiar pendiente
                     const a = ggPendingA;
                     const b = lonlat;
                     const key = `${a[0].toFixed(6)},${a[1].toFixed(6)}|${b[0].toFixed(6)},${b[1].toFixed(6)}`;
                     ggPairs.push({ key, a, b });
-                    // Añadir punto B visualmente
                     ggPointSource && ggPointSource.addFeature(
                         new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(b)))
                     );
@@ -5918,80 +5420,53 @@ function ol_map_init() {
                     hideDistanceGuide();
                 }
 
-                // Recalcular y pintar líneas/overlays A‑B
                 updateGroundToGroundOverlay();
-                // Si no hay intervalo de refresco activo
                 if (!ggUpdateInterval) {
-                    // Programar refresco cada segundo
                     ggUpdateInterval = setInterval(updateGroundToGroundOverlay, 1000);
                 }
-                // Evitar que el clic lo manejen otros listeners
                 evt.stopPropagation();
                 return;
             }
 
-            // Si aún no se fijó el punto A
             if (!ggPointA) {
-                // Guardar este clic como punto A
                 ggPointA = lonlat;
-
-                // Limpiar puntos anteriores
                 if (ggPointSource) ggPointSource.clear();
-                // Dibujar punto A
                 ggPointSource && ggPointSource.addFeature(
                     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                 );
-
-                // Mostrar guía paso 2
                 showDistanceGuide(ggStep2Message());
-                // Si el modo es 1A1B
             } else if (groundToGroundModeType === '1A1B') {
-                // Guardar clic como único punto B
                 ggPointsB = [lonlat];
-
-                // If the ground-to-ground points source exists
                 if (ggPointSource) {
-                    // Vaciar todas las features actuales
                     ggPointSource.clear();
-                    // Si hay un punto A registrado
                     if (ggPointA) {
-                        // Add the feature for point A to the source and create the point in map projection
                         ggPointSource.addFeature(
                             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(ggPointA)))
                         );
                     }
                 }
-
-                // Dibujar punto B
                 ggPointSource && ggPointSource.addFeature(
                     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                 );
-                // Ocultar guía
                 hideDistanceGuide();
-                // 1A_nB
             } else {
-                // Añadir este clic a la lista de B
                 ggPointsB.push(lonlat);
-                // Dibujar el nuevo punto B
                 ggPointSource && ggPointSource.addFeature(
                     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                 );
-                // Ocultar guía
                 hideDistanceGuide();
-                // }
             }
 
-            // Recalcular y pintar líneas/overlays A‑B
             updateGroundToGroundOverlay();
-            // Si no hay intervalo de refresco activo
             if (!ggUpdateInterval) {
-                // Programar refresco cada segundo
                 ggUpdateInterval = setInterval(updateGroundToGroundOverlay, 1000);
             }
-            // Evitar que el clic lo manejen otros listeners
             evt.stopPropagation();
             return;
         }
+        // ****************************************************
+        // *** FIN MANEJAR CAPAS Y ALERTAS (TIERRA-TIERRA) ****
+        // ****************************************************
 
         //console.log(`planeHex: ${planeHex} trailHex: ${trailHex}`);
         if (distanceBetweenPlanesMode && planeHex) {
@@ -6197,17 +5672,6 @@ function initMap() {
                 lineDash: actual_range_outline_dash,
             }),
         });
-        /*actualOutline.layer = new ol.layer.Vector({
-            name: 'actualRangeOutline',
-            type: 'overlay',
-            title: 'actual range outline',
-            source: actualOutline.features,
-            zIndex: 101,
-            renderBuffer: renderBuffer,
-            style: actualOutline.style,
-            visible: actual_range_show,
-        });
-        layers.push(actualOutline.layer);*/
     }
     if (calcOutlineData) {
         calcOutlineLayer = new ol.layer.Vector({
@@ -6234,7 +5698,6 @@ function initMap() {
 
     trailLayers = new ol.layer.Group({
         name: 'ac_trail',
-        // title: 'Aircraft trails',
         type: 'overlay',
         layers: trailGroup,
         zIndex: 150,
@@ -6253,6 +5716,9 @@ function initMap() {
     });
     layers.push(iconLayer);
 
+    // **************************************************************
+    // ** INICIO MENÚ DROPDOWN CON CAPAS DE FUNCIONES DE DISTANCIA **
+    // **************************************************************
     distanceLineLayer = new ol.layer.Vector({
         source: new ol.source.Vector(),
         style: new ol.style.Style({
@@ -6308,7 +5774,6 @@ function initMap() {
         }
         layers.push(ggLineLayer);
 
-        // Manejar visibilidad de la capa de líneas TT: limpiar overlays al ocultar; regenerar al mostrar.
         ggLineLayer.on('change:visible', function (evt) {
             const vis = !!evt.target.getVisible();
             if (!vis) {
@@ -6327,29 +5792,21 @@ function initMap() {
         console.error('init TT layers', e);
     }
 
-
-    // Si existe la capa de puntos en el mapa
     if (groundPointLayer) {
-        // Registrar manejador para cuando cambie la visibilidad de la capa
         groundPointLayer.on('change:visible', function (evt) {
-            // Convertir el valor de visibilidad a booleano (true = visible)
             const vis = !!evt.target.getVisible();
             try {
                 if (!vis) {
                     return;
                 }
-                // Forzar una actualización inmediata de las líneas/overlays A‑B
                 updateDistanceToGroundOverlay();
-                // Si no hay intervalo activo y el modo está encendido
                 if (!distanceGroundUpdateInterval && distanceToGroundMode) {
-                    // Crear intervalo que actualice cada segundo
                     distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
                 }
             } catch (e) { }
         });
     }
 
-    // Capa para el punto A (suelo)
     groundPointSource = new ol.source.Vector();
     groundPointLayer = new ol.layer.Vector({
         name: 'groundPoint',
@@ -6367,7 +5824,6 @@ function initMap() {
     });
     layers.push(groundPointLayer);
 
-    // Capa para la línea entre punto y aeronave
     groundToPlaneLineSource = new ol.source.Vector();
     groundToPlaneLineLayer = new ol.layer.Vector({
         name: 'groundToPlane',
@@ -6381,23 +5837,17 @@ function initMap() {
     });
     layers.push(groundToPlaneLineLayer);
 
-    // Listener para reaccionar cuando cambia la visibilidad de la capa de líneas tierra-aeronave.
     groundToPlaneLineLayer.on('change:visible', function (evt) {
-        // Obtener el estado visible de la capa y normalizar a booleano.
         const vis = !!evt.target.getVisible();
-        // Si la capa fue ocultada, entrar en la rutina de limpieza.
         if (!vis) {
             try {
-                // Quitar y limpiar overlays de pares A‑B
                 groundPlaneOverlays.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
                 groundPlaneOverlays.clear();
             } catch (_) { }
             try {
-                // Quitar y limpiar overlays indexados por hex (modo multi)
                 groundPlaneOverlaysByHex.forEach(ov => { try { OLMap && OLMap.removeOverlay(ov); } catch (_) { } });
                 groundPlaneOverlaysByHex.clear();
             } catch (_) { }
-            // Quitar y limpiar overlay único de distancia suelo‑avión
             if (distanceGroundOverlay) {
                 try { distanceGroundOverlay.setPosition(undefined); } catch (_) { }
                 try { OLMap && OLMap.removeOverlay(distanceGroundOverlay); } catch (_) { }
@@ -6405,10 +5855,7 @@ function initMap() {
             }
         } else {
             try {
-                // Forzar una actualización inmediata para recrear overlays y líneas según el modo activo
                 updateDistanceToGroundOverlay();
-
-                // Si no hay intervalo activo y el modo está encendido, crearlo.
                 if (!distanceGroundUpdateInterval && distanceToGroundMode) {
                     distanceGroundUpdateInterval = setInterval(updateDistanceToGroundOverlay, 1000);
                 }
@@ -6416,7 +5863,6 @@ function initMap() {
         }
     });
 
-    // Crear una capa vectorial para las líneas entre aviones
     distanceLineLayer = new ol.layer.Vector({
         name: 'distanceLines',
         type: 'overlay',
@@ -6470,7 +5916,6 @@ function initMap() {
         }
     });
 
-    // Agrupar capas de las opciones de distancia
     (function buildDistanceLayerTree() {
         try {
             const takeLayer = (name) => {
@@ -6488,7 +5933,6 @@ function initMap() {
             const lGG_line = takeLayer('groundToGround');
             const lGG_point = takeLayer('ggPoints');
 
-            // Ground point-ground point
             const gGG = new ol.layer.Group({
                 title: 'Ground point-ground point',
                 type: 'overlay',
@@ -6499,7 +5943,6 @@ function initMap() {
                 )
             });
 
-            // Ground point-aircraft
             const gGA = new ol.layer.Group({
                 title: 'Ground point-aircraft',
                 type: 'overlay',
@@ -6510,7 +5953,6 @@ function initMap() {
                 )
             });
 
-            // Aircraft-aircraft
             const gAA = new ol.layer.Group({
                 title: 'Aircraft-aircraft',
                 type: 'overlay',
@@ -6521,7 +5963,6 @@ function initMap() {
                 )
             });
 
-            // Menú padre
             const distanceRoot = new ol.layer.Group({
                 name: 'distance_tools',
                 title: 'Distance tools',
@@ -6530,8 +5971,6 @@ function initMap() {
                 combine: false,
                 layers: new ol.Collection([gGG, gGA, gAA])
             });
-
-            // layers.push(distanceRoot);
 
             let vfrIndex = -1;
             let siteCircleIndex = -1;
@@ -6557,6 +5996,9 @@ function initMap() {
             console.error('Error agrupando capas de distancia:', e);
         }
     })();
+    // **************************************************************
+    // *** FIN MENÚ DROPDOWN CON CAPAS DE FUNCIONES DE DISTANCIA ****
+    // **************************************************************
 
     ol_map_init();
 
@@ -6568,17 +6010,15 @@ function initMap() {
     //toggleLayer('#acpositions_checkbox', 'webglLayer');
     //});
 
-    let infoBlockMinimized = false;
-
+    
+    // ****************************************************************
+    // ** INICIO FUNCIÓN MINIZAR/MAXIMIZAR/CERRAR SELECTED_INFOBLOCK **
+    // ****************************************************************
     function setInfoBlockMinimized(state) {
         infoBlockMinimized = state;
         jQuery('#selected_infoblock').toggleClass('infoblock-minimized', state);
-
-        // --- CORRECCIÓN: Usar traducción dinámica ---
         let restoreText = 'Restore infoblock';
         let minimizeText = 'Minimize infoblock';
-
-        // Intentar obtener la traducción
         if (typeof window.translate !== 'undefined' && window.translate.t) {
             restoreText = window.translate.t('restore_infoblock') || restoreText;
             minimizeText = window.translate.t('minimize_infoblock') || minimizeText;
@@ -6586,15 +6026,7 @@ function initMap() {
             restoreText = window.t('restore_infoblock') || restoreText;
             minimizeText = window.t('minimize_infoblock') || minimizeText;
         }
-
         jQuery('#infoblock_minimize').attr('title', state ? restoreText : minimizeText);
-        // const minimizeTitle = (typeof window.t === 'function')
-        //     ? (state ? window.t('restore_infoblock') : window.t('minimize_infoblock'))
-        //     : (state ? 'Restore infoblock' : 'Minimize infoblock');
-        // jQuery('#infoblock_minimize').attr('title', minimizeTitle);
-
-
-        // jQuery('#infoblock_minimize').attr('title', state ? 'Restore infoblock' : 'Minimize infoblock');
         jQuery('#infoblock_minimize').text(state ? '+' : '−');
         adjustInfoBlock();
     }
@@ -6625,22 +6057,13 @@ function initMap() {
         }
     });
 
-    // new Toggle({
-    //     key: "darkerColors",
-    //     display: "Darker colors",
-    //     // container: "#settingsRight",
-    //     container: "#category-display-container",
-    //     tooltip: "Darkens map and UI elements and increases contrast to improve visibility and reduce glare.",
-    //     init: darkerColors,
-    //     setState: function (state) {
-    //         darkerColors = state;
-    //         if (loadFinished) {
-    //             refreshFeatures();
-    //             remakeTrails();
-    //         }
-    //     }
-    // });
+    // *************************************************************
+    // ** FIN FUNCIÓN MINIZAR/MAXIMIZAR/CERRAR SELECTED_INFOBLOCK **
+    // *************************************************************
 
+    // *************************************************************
+    // *** INICIO FUNCIÓN ESTABLECER ESTÉTICA OSCURA POR DEFECTO ***
+    // *************************************************************
     tableColorsLight = tableColors;
     tableColorsDark = JSON.parse(JSON.stringify(tableColors));
     let darkVals = Object.values(tableColorsDark);
@@ -6655,65 +6078,18 @@ function initMap() {
             obj[key] = hslToRgb(hsl);
         }
     }
-    // new Toggle({
-    //     key: "darkMode",
-    //     display: "Dark mode",
-    //     // container: "#settingsRight",
-    //     container: "#category-display-container",
-    //     tooltip: "Switches the interface to a dark color scheme, lowering brightness and improving readability in low-light conditions.",
-    //     init: darkModeDefault,
-    //     setState: function (state) {
-    //         let root = document.documentElement;
-    //         jQuery(".layer-switcher .panel").css("background", "var(--BGCOLOR1)");
-    //         jQuery(".layer-switcher .panel").css("border", "4px solid var(--BGCOLOR1)");
-    //         if (state) {
-    //             root.style.setProperty("--BGCOLOR1", '#313131');
-    //             root.style.setProperty("--BGCOLOR2", '#242424');
-    //             root.style.setProperty("--TXTCOLOR1", "#BFBFBF");
-    //             root.style.setProperty("--TXTCOLOR2", "#D8D8D8");
-    //             root.style.setProperty("--TXTCOLOR3", "#a8a8a8");
-    //             //invert the "x" images
-    //             jQuery(".infoblockCloseBox").css('filter', 'invert(100%)');
-    //             jQuery(".infoblockCloseBox").css(' -webkit-filter', 'invert(100%)');
-    //             jQuery(".settingsCloseBox").css('filter', 'invert(100%)');
-    //             jQuery(".settingsCloseBox").css(' -webkit-filter', 'invert(100%)');
-    //             tableColors = tableColorsDark;
-    //         } else {
-    //             root.style.setProperty("--BGCOLOR1", '#F8F8F8');
-    //             root.style.setProperty("--BGCOLOR2", '#CCCCCC');
-    //             root.style.setProperty("--TXTCOLOR1", "#003f4b");
-    //             root.style.setProperty("--TXTCOLOR2", "#050505");
-    //             root.style.setProperty("--TXTCOLOR3", "#003f4b");
-    //             jQuery(".infoblockCloseBox").css('filter', 'invert(0%)');
-    //             jQuery(".infoblockCloseBox").css(' -webkit-filter', 'invert(0%)');
-    //             jQuery(".settingsCloseBox").css('filter', 'invert(0%)');
-    //             jQuery(".settingsCloseBox").css(' -webkit-filter', 'invert(0%)');
-
-    //             tableColors = tableColorsLight;
-    //         }
-    //         if (loadFinished) {
-    //             TAR.planeMan.redraw();
-    //             refreshFilter();
-    //             initLegend(tableColors.unselected);
-    //             initSourceFilter(tableColors.unselected);
-    //             initFlagFilter(tableColors.unselected);
-    //         }
-    //     }
-    // });
 
     (function applyDarkModePermanently() {
         let root = document.documentElement;
         jQuery(".layer-switcher .panel").css("background", "var(--BGCOLOR1)");
         jQuery(".layer-switcher .panel").css("border", "4px solid var(--BGCOLOR1)");
 
-        // Forzar colores oscuros
         root.style.setProperty("--BGCOLOR1", '#313131');
         root.style.setProperty("--BGCOLOR2", '#242424');
         root.style.setProperty("--TXTCOLOR1", "#BFBFBF");
         root.style.setProperty("--TXTCOLOR2", "#D8D8D8");
         root.style.setProperty("--TXTCOLOR3", "#a8a8a8");
 
-        // Invertir iconos de cierre
         jQuery(".infoblockCloseBox").css('filter', 'invert(100%)');
         jQuery(".infoblockCloseBox").css('-webkit-filter', 'invert(100%)');
         jQuery(".settingsCloseBox").css('filter', 'invert(100%)');
@@ -6724,6 +6100,10 @@ function initMap() {
     })();
 
     initLegend(tableColors.unselected);
+
+    // *************************************************************
+    // **** FIN FUNCIÓN ESTABLECER ESTÉTICA OSCURA POR DEFECTO *****
+    // *************************************************************
 
     initFilters();
 
@@ -6736,12 +6116,8 @@ function initMap() {
     // *************************************************************************
     // ***** INICIO DIM MAP Y LABEL UNITS - PARTE DE LA CATEGORÍA DISPLAY ******
     // *************************************************************************
-    // new Toggle({
     createToggle({
         key: "MapDim",
-        // display: "Dim map",
-        // tooltip: "Toggle dimming of map layers to enhance visibility of overlays",
-        // container: "#settingsRight",
         display: 'dim_map',
         displayKey: 'dim_map',
         tooltip: 'dim_map_tooltip',
@@ -6749,34 +6125,14 @@ function initMap() {
         container: "#category-display-container",
         init: MapDim,
         setState: function (state) {
-            /*
-            if (!state) {
-                ol.control.LayerSwitcher.forEachRecursive(layers_group, function(lyr) {
-                    if (lyr.get('type') != 'base')
-                        return;
-                    ol.Observable.unByKey(lyr.dimKey);
-                });
-            } else {
-                ol.control.LayerSwitcher.forEachRecursive(layers_group, function(lyr) {
-                    if (lyr.get('type') != 'base')
-                        return;
-                    lyr.dimKey = lyr.on('postrender', dim);
-                });
-            }
-            */
             if (loadFinished) {
                 OLMap.render();
             }
             buttonActive('#B', state);
         }
     });
-
-    // new Toggle({
     createToggle({
         key: "showLabelUnits",
-        // display: "Label units",
-        // tooltip: "Show units (ft, kts, etc.) in the labels.",
-        // container: "#settingsRight",
         display: 'label_units',
         displayKey: 'label_units',
         tooltip: 'label_units_tooltip',
@@ -6794,27 +6150,9 @@ function initMap() {
             refreshSelected();
         }
     });
-
     // *************************************************************************
     // ******* FIN DIM MAP Y LABEL UNITS - PARTE DE LA CATEGORÍA DISPLAY *******
     // *************************************************************************
-
-    // new Toggle({
-    //     key: "windLabelsSlim",
-    //     display: "Smaller wind labels",
-    //     tooltip: "Reduce the size of the wind indicators (if the aircraft transmits that data).",
-    //     // container: "#settingsRight",
-    //     container: "#category-display-container",
-    //     init: windLabelsSlim,
-    //     setState: function (state) {
-    //         windLabelsSlim = state;
-    //         if (!loadFinished)
-    //             return;
-    //         for (let key in g.planesOrdered) {
-    //             g.planesOrdered[key].updateMarker();
-    //         }
-    //     }
-    // });
 
     window.addEventListener('keydown', function (e) {
         active();
@@ -6944,10 +6282,6 @@ function initMap() {
             case "k":
                 toggleTrackLabels();
                 break;
-            // debug stuff
-            // case "L":
-            //     toggles['lastLeg'].toggle();
-            //     break;
             case "D":
                 debug = !debug;
                 loStore['debug'] = debug;
@@ -7262,7 +6596,6 @@ function refreshSelected() {
             const lon = selected.position[0];
 
             // Creamos el hipervínculo que ejecuta el salto usando executeJump([lat, lon])
-            // const callsignLink = `<a class="link" href="#" style="text-decoration: none; color: inherit;" onclick="executeJump([${lat}, ${lon}]); return false;">${selected.name.toUpperCase()}</a>`;
             const callsignLink = `<a class="link" href="#" style="text-decoration: none; color: inherit;" onclick="executeJump([${lat}, ${lon}], false); return false;">${selected.name.toUpperCase()}</a>`;
             jQuery('#selected_callsign').html(callsignLink);
         } else {
@@ -7788,9 +7121,9 @@ function refreshFeatures() {
     }
 }
 
-//
-// g.planes table begin
-//
+// *************************************************************
+// *********** INICIO TABLA DE AVIONES EN SIDEBAR **************
+// *************************************************************
 (function (global, jQuery, TAR) {
     let planeMan = TAR.planeMan = TAR.planeMan || {};
 
@@ -7974,7 +7307,6 @@ function refreshFeatures() {
         console.log('Original columns order saved:', originalColumnsOrder.map(c => c.id));
     }
 
-    // Llamar inmediatamente después de definir todas las columnas
     saveOriginalColumnsOrder();
 
     const colsEntries = Object.entries(cols);
@@ -8005,7 +7337,6 @@ function refreshFeatures() {
         htmlTable = document.getElementById('planesTable');
         for (let i in columns) {
             let col = columns[i];
-            // col.visible = true;
             col.toggleKey = 'column_' + col.id;
 
             const translationKey = 'col_' + col.id;
@@ -8048,9 +7379,6 @@ function refreshFeatures() {
                 col.visible = true;
             }
 
-            // if (HideCols.includes('#' + col.id)) {
-            //     planeMan.setColumnVis(col.id, false);
-            // }
         }
 
         createColumnToggles();
@@ -8059,7 +7387,6 @@ function refreshFeatures() {
             planeMan.setColumnVis('flag', false);
         }
     }
-
     // *************************************************
     // **** FIN INICIALIZAR COLUMNAS TABLA AVIONES *****
     // *************************************************
@@ -8221,8 +7548,6 @@ function refreshFeatures() {
                 }
             }
 
-            // ** PLACE YOUR CODE HERE **
-            // Después de actualizar las celdas, pero antes de agregar la fila al DOM
             if (starredAircraft && starredAircraft.has(plane.icao)) {
                 plane.tr.classList.add('starred-table-row');
             } else {
@@ -8236,8 +7561,6 @@ function refreshFeatures() {
         jQuery('#dump1090_message_rate').updateText(MessageRate === null ? 'n/a' : MessageRate.toFixed(1));
         jQuery('#dump1090_total_ac').updateText(globeIndex ? globeTrackedAircraft : TrackedAircraft);
         jQuery('#dump1090_total_ac_positions').updateText(TrackedAircraftPositions);
-
-
 
         ctime && console.time("DOM1");
 
@@ -8545,37 +7868,12 @@ function refreshFeatures() {
         container.append(activeCategoryHtml);
         container.append(inactiveCategoryHtml);
 
-        // container.append(`
-        // <div style="margin-bottom: 15px;">
-        //     <button class="formButton" id="reset-columns-btn" title="${restoreText}>
-        //         ${restoreText}
-        //     </button>
-        // </div>
-        // <div class="column-category" id="column-category-checked">
-        //     <div class="column-category-title">${activeColumnsText} (${orderedCheckedIds.length})</div>
-        //     <div class="columns-grid" id="checked-columns-grid"></div>
-        // </div>
-        // <div class="column-category" id="column-category-unchecked">
-        //     <div class="column-category-title">${inactiveColumnsText} (${orderedUncheckedIds.length})</div>
-        //     <div class="columns-grid" id="unchecked-columns-grid"></div>
-        // </div>
-        // `);
-
         // *****************************************
         // *** FIN CREAR COLUMNAS SELECCIONABLES ***
         // *****************************************
 
         const checkedGrid = jQuery('#checked-columns-grid');
         const uncheckedGrid = jQuery('#unchecked-columns-grid');
-
-        // Evento del botón de restaurar
-        // jQuery('#reset-columns-btn').off('click').on('click', function (e) {
-        //     e.preventDefault();
-        //     window.resetColumnsToDefault();
-        // });
-
-        // const checkedGrid = jQuery('#checked-columns-grid');
-        // const uncheckedGrid = jQuery('#unchecked-columns-grid');
 
         // *****************************************
         // ***** INICIO CREAR HTML DE UN ITEM ******
@@ -8671,7 +7969,9 @@ function refreshFeatures() {
             });
         }
 
-        // Función para actualizar los contadores de cada categoría
+        // **************************************************************
+        // ** INICIO ACTUALIZAR CONTADOR DE COLUMNAS ACTIVAS/INACTIVAS **
+        // **************************************************************
         function updateCategoryCounts() {
             const checkedCount = checkedGrid.children('li').length;
             const uncheckedCount = uncheckedGrid.children('li').length;
@@ -8684,11 +7984,14 @@ function refreshFeatures() {
             if (inactiveTitle.length) {
                 inactiveTitle.html(`${inactiveColumnsText} (${uncheckedCount})`);
             }
-            // jQuery('#column-category-checked .column-category-title').html(` Active columns (${checkedCount})`);
-            // jQuery('#column-category-unchecked .column-category-title').html(` Inactive columns (${uncheckedCount})`);
         }
+        // **************************************************************
+        // *** FIN ACTUALIZAR CONTADOR DE COLUMNAS ACTIVAS/INACTIVAS ****
+        // **************************************************************
 
-        // Función para actualizar el orden global de columnas basado en el DOM
+        // **************************************************************
+        // *** INICIO ACTUALIZAR ORDEN DE COLUMNAS ACTIVAS/INACTIVAS ****
+        // **************************************************************
         function updateColumnsOrderFromDOM() {
             const newOrder = [];
             checkedGrid.children('li').each(function () {
@@ -8700,7 +8003,6 @@ function refreshFeatures() {
                 newOrder.push(colId);
             });
 
-            // Reconstruir columns en el nuevo orden
             const newColumns = [];
             for (const colId of newOrder) {
                 const column = cols[colId];
@@ -8708,17 +8010,14 @@ function refreshFeatures() {
                     newColumns.push(column);
                 }
             }
-            // Añadir cualquier columna que falte (por si acaso)
+
             for (const col of Object.values(cols)) {
                 if (!newColumns.includes(col)) {
                     newColumns.push(col);
                 }
             }
 
-            // Actualizar la variable global columns
             window.columns = newColumns;
-
-            // Guardar en localStorage
             localStorage.setItem('columnOrder', JSON.stringify(newOrder));
         }
 
@@ -8727,10 +8026,16 @@ function refreshFeatures() {
             window.resetColumnsToDefault();
         });
 
-        // Inicializar contadores
         updateCategoryCounts();
+
+        // **************************************************************
+        // **** FIN ACTUALIZAR ORDEN DE COLUMNAS ACTIVAS/INACTIVAS ******
+        // **************************************************************
     }
 
+    // ***************************************************************
+    // ** INICIO FUNCIÓN ORDENAR COLUMNAS INACTIVAS ALFABÉTICAMENTE **
+    // ***************************************************************
     function createOrderedColumns() {
         if (window.columns && window.columns.length > 0) {
             return window.columns;
@@ -8753,33 +8058,15 @@ function refreshFeatures() {
         window.columns = Object.values(cols);
         return window.columns;
     }
+    // ***************************************************************
+    // *** FIN FUNCIÓN ORDENAR COLUMNAS INACTIVAS ALFABÉTICAMENTE ****
+    // ***************************************************************
 
     return TAR;
 }(window, jQuery, TAR || {}));
-//
-// g.planes table end
-//
-
-// *****************************************************
-// ** INICIO ACTUALIZAR IDIOMA COLUMNAS TABLA AVIONES **
-// *****************************************************
-
-
-
-// *****************************************************
-// *** FIN ACTUALIZAR IDIOMA COLUMNAS TABLA AVIONES ****
-// *****************************************************
-
-
-
-
-
-
-
-
-
-
-
+// *************************************************************
+// ************* FIN TABLA DE AVIONES EN SIDEBAR ***************
+// *************************************************************
 
 let lastSelected = null;
 function deselect(plane) {
@@ -9174,22 +8461,25 @@ function updateReplayBarPosition() {
     const altitudeChart = jQuery('#altitude_chart');
     if (altitudeChart.length) {
         if (replayVisible) {
-            // Si el replay está visible, la tabla de altitudes sube
-            // Usamos el mismo bottom que la escala (o un poco más)
             altitudeChart.css('bottom', (bottomOffset + 5) + 'px');
         } else {
-            // Restaurar posición original
             altitudeChart.css('bottom', '35px');
         }
     }
 }
 
+// ***********************************************************************************
+// ** INICIO FUNCIÓN ACTUALIZAR POSICIÓN DE ALTITUDE CHART SEGÚN POSICIÓN DE REPLAY **
+// ***********************************************************************************
 function restoreAltitudeChartPosition() {
     const altitudeChart = jQuery('#altitude_chart');
     if (altitudeChart.length) {
         altitudeChart.css('bottom', '35px');
     }
 }
+// ***********************************************************************************
+// *** FIN FUNCIÓN ACTUALIZAR POSICIÓN DE ALTITUDE CHART SEGÚN POSICIÓN DE REPLAY ****
+// ***********************************************************************************
 
 function initializeUnitsSelector() {
     // Get display unit preferences from local storage otherwise use value previously set defaults_86d9793e4a0945a79fb7bffb2437e312.js or config.js
@@ -9335,44 +8625,40 @@ function togglePersistence() {
     refreshFilter();
 }
 
+// *****************************************************
+// *** INICIO FUNCIÓN MODOS DE DISTANCIA EXCLUYENTES ***
+// *****************************************************
 function toggleDistance() {
-    // Si está apagado, activarlo en el primer modo
     if (!distanceBetweenPlanesMode) {
-        // Desactivar modos de distancia en tierra si están activos
         if (distanceToGroundMode) {
-            DistanceToGround(); // esto limpiará y desactivará TA
+            DistanceToGround();
         }
         if (groundToGroundMode) {
-            DistanceGroundToGround(); // esto limpiará y desactivará TT
+            DistanceGroundToGround();
         }
         distanceBetweenPlanesMode = true;
         planeDistanceModeType = PP_MODES[0];
         selectedPlanesForDistance = [];
         selectedPlaneA = null;
-        // Asegurar limpieza de restos
         resetDistanceCalculation();
         showDistanceGuide(`<center>${planeDistanceModeType} Mode</center><br>Click on two aircraft to measure the distance.`);
         buttonActive('#D', true);
         return;
     }
 
-    // Si está activo, ciclar al siguiente modo disponible
     const idx = PP_MODES.indexOf(planeDistanceModeType);
     if (idx >= 0 && idx < PP_MODES.length - 1) {
         planeDistanceModeType = PP_MODES[idx + 1];
-        // Limpiar selecciones previas
         resetDistanceCalculation();
         selectedPlaneA = null;
         selectedPlanesForDistance = [];
-        // Mostrar guía según modo
         if (planeDistanceModeType === 'pairs') {
             showDistanceGuide('<center>Pairs Mode</center><br>Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.');
         } else {
-            showDistanceGuide(`<center>Modo ${planeDistanceModeType}</center>`);
+            showDistanceGuide(`<center>Mode ${planeDistanceModeType}</center>`);
         }
         buttonActive('#D', true);
     } else {
-        // Si es el último modo, apagar la herramienta
         DistanceBetweenPlanes();
         hideDistanceGuide();
     }
@@ -9389,8 +8675,6 @@ function dim(evt) {
             currentContrastPercentage /= 4;
         }
 
-        // const dim = currentDimPercentage * (1 + 0.25 * toggles['darkerColors'].state);
-        // const contrast = currentContrastPercentage * (1 + 0.1 * toggles['darkerColors'].state);
         const dim = currentDimPercentage;
         const contrast = currentContrastPercentage;
         if (dim > 0.0001) {
@@ -9426,9 +8710,10 @@ function invertMap(evt) {
 
 
 }
-//
-// Altitude Chart begin
-//
+
+// *****************************************************
+// **** INICIO TABLA DE CÓDIGO DE COLOR POR ALTITUD ****
+// *****************************************************
 (function (global, jQuery, TAR) {
     let altitudeChart = TAR.altitudeChart = TAR.altitudeChart || {};
 
@@ -9473,16 +8758,12 @@ function invertMap(evt) {
     // ******* INICIO ALTITUDE CHART - PARTE DE LA CATEGORÍA DISPLAY ***********
     // *************************************************************************
     altitudeChart.init = function () {
-        // let chartOn = (onMobile ? false : altitudeChartDefaultState);
         let chartOn = false;
         if (usp.has('altitudeChart')) {
             chartOn = Boolean(parseInt(usp.get('altitudeChart')));
         }
-        // new Toggle({
         createToggle({
             key: "altitudeChart",
-            // display: "Color-coded altitude chart",
-            // tooltip: "Displays an altitude profile chart, showing altitude with units and a color legend.",
             display: 'altitude_chart',
             displayKey: 'altitude_chart',
             tooltip: 'altitude_chart_tooltip',
@@ -9498,9 +8779,9 @@ function invertMap(evt) {
 
     return TAR;
 }(window, jQuery, TAR || {}));
-//
-// Altitude Chart end
-//
+// *****************************************************
+// ***** FIN TABLA DE CÓDIGO DE COLOR POR ALTITUD ******
+// *****************************************************
 
 function followRandomPlane() {
     if (showTrace)
@@ -9541,12 +8822,9 @@ function toggleLabels() {
     g.enableLabels = !g.enableLabels;
     loStore['enableLabels'] = g.enableLabels;
 
-    // Cuando se desactivan las etiquetas principales, también desactivar Label Details
     if (!g.enableLabels && g.extendedLabels > 0) {
-        // Forzar que extendedLabels se ponga a 0
         g.extendedLabels = 0;
         loStore['extendedLabels'] = g.extendedLabels;
-        // Actualizar el estado visual del botón
         buttonActive('#O', g.extendedLabels);
     }
 
@@ -9669,24 +8947,9 @@ function onSearch(e) {
 }
 */
 
-// function hideSearchWarning() {
-//     const searchWarning = jQuery('#search_warning');
-//     if (searchWarning.css('display') !== 'none') {
-//         searchWarning.hide('slow');
-//     }
-// }
-
-// function showSearchWarning(message) {
-//     const searchWarning = jQuery('#search_warning');
-//     searchWarning.text(message)
-//     if (searchWarning.css('display') === 'none') {
-//         searchWarning.show();
-//     }
-
-//     //auto hide after 15 seconds
-//     setTimeout(() => hideSearchWarning(), 15000);
-// }
-
+// *****************************************************
+// **** INICIO ALERTA DE ERROR EN FILTRO DE ALTITUD ****
+// *****************************************************
 function ensureWarningElement() {
     let searchWarning = document.getElementById('search_warning');
     if (!searchWarning) {
@@ -9694,7 +8957,6 @@ function ensureWarningElement() {
         searchWarning.id = 'search_warning';
         searchWarning.className = 'warning';
         searchWarning.style.display = 'none';
-        // Buscar un contenedor adecuado (el contenedor de filtros o el body)
         const filterTable = document.getElementById('filterTable');
         if (filterTable) {
             filterTable.parentNode.insertBefore(searchWarning, filterTable.nextSibling);
@@ -9704,7 +8966,6 @@ function ensureWarningElement() {
     }
     return jQuery(searchWarning);
 }
-
 
 function showSearchWarning(message) {
     const searchWarning = ensureWarningElement();
@@ -9743,7 +9004,13 @@ function hideSearchWarning() {
         window.searchWarningTimeout = null;
     }
 }
+// *****************************************************
+// ****** FIN ALERTA DE ERROR EN FILTRO DE ALTITUD *****
+// *****************************************************
 
+// *****************************************************
+// **** INICIO ALERTA DE FILTRO DE ALTITUD CORRECTO ****
+// *****************************************************
 function showSuccessMessage(message) {
     const searchWarning = ensureWarningElement();
     if (!searchWarning.length) return;
@@ -9753,10 +9020,6 @@ function showSuccessMessage(message) {
     searchWarning.css('background-color', 'var(--BGCOLOR2)');
     searchWarning.css('border', '2px solid #006600');
     searchWarning.css('color', 'var(--TXTCOLOR2)');
-    // searchWarning.css('background-color', '#ccffcc');
-    // searchWarning.css('border', '2px solid #00cc00');
-    // searchWarning.css('color', '#006600');
-    // searchWarning.css('font-weight', 'bold');
     searchWarning.css('padding', '8px');
     searchWarning.css('margin', '10px 0');
     searchWarning.css('border-radius', '4px');
@@ -9767,7 +9030,13 @@ function showSuccessMessage(message) {
     }
     window.searchWarningTimeout = setTimeout(() => hideSearchWarning(), 3000);
 }
+// *****************************************************
+// ****** FIN ALERTA DE FILTRO DE ALTITUD CORRECTO *****
+// *****************************************************
 
+// *********************************************************
+// ** INICIO ACTUALIZAR INDICADORES DEL FILTRO DE ALTITUD **
+// *********************************************************
 function updateAltitudeFilterIndicators(minAlt, maxAlt, enabled) {
     const minInput = jQuery("#altitude_filter_min");
     const maxInput = jQuery("#altitude_filter_max");
@@ -9786,6 +9055,9 @@ function updateAltitudeFilterIndicators(minAlt, maxAlt, enabled) {
         maxInput.attr('title', 'Set maximum altitude');
     }
 }
+// *********************************************************
+// *** FIN ACTUALIZAR INDICADORES DEL FILTRO DE ALTITUD ****
+// *********************************************************
 
 // 1. La función principal (Definida fuera para que sea global)
 function unifiedSearch(e) {
@@ -9838,7 +9110,9 @@ jQuery(document).ready(function () {
     });
 });
 
-// Función para inicializar la capa del marcador de aeropuerto si no existe
+// *****************************************************************
+// ** INICIO FUNCIÓN DIBUJAR UN MARCADOR EN EL AEROPUERTO BUSCADO **
+// *****************************************************************
 function initAirportMarkerLayer() {
     if (!airportMarkerLayer && OLMap) {
         const source = new ol.source.Vector();
@@ -9859,12 +9133,16 @@ function initAirportMarkerLayer() {
         OLMap.addLayer(airportMarkerLayer);
     }
 }
+// *****************************************************************
+// *** FIN FUNCIÓN DIBUJAR UN MARCADOR EN EL AEROPUERTO BUSCADO ****
+// *****************************************************************
 
-// Función para mostrar marcador en coordenadas específicas
+// *****************************************************************
+// *** INICIO FUNCIÓN MOSTRAR MARCADOR EN EL AEROPUERTO BUSCADO ****
+// *****************************************************************
 function showAirportMarker(lonlat) {
     initAirportMarkerLayer();
 
-    // Limpiar marcador anterior si existe
     if (airportMarkerFeature) {
         airportMarkerLayer.getSource().removeFeature(airportMarkerFeature);
     }
@@ -9872,18 +9150,14 @@ function showAirportMarker(lonlat) {
         clearTimeout(airportMarkerTimeout);
     }
 
-    // Crear nuevo marcador
     const projCoords = ol.proj.fromLonLat([lonlat[1], lonlat[0]]);
     airportMarkerFeature = new ol.Feature(new ol.geom.Point(projCoords));
     airportMarkerLayer.getSource().addFeature(airportMarkerFeature);
 
-    // Auto-eliminar después de 8 segundos
     airportMarkerTimeout = setTimeout(() => {
         if (airportMarkerFeature && airportMarkerLayer) {
             const startTime = performance.now();
             const duration = 1000;
-            // airportMarkerLayer.getSource().removeFeature(airportMarkerFeature);
-            // airportMarkerFeature = null;
             function animateFade(currentTime) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
@@ -9902,7 +9176,6 @@ function showAirportMarker(lonlat) {
                 if (progress < 1) {
                     requestAnimationFrame(animateFade);
                 } else {
-                    // Eliminar el marcador al finalizar el fade
                     if (airportMarkerLayer && airportMarkerLayer.getSource()) {
                         airportMarkerLayer.getSource().removeFeature(airportMarkerFeature);
                     }
@@ -9915,7 +9188,13 @@ function showAirportMarker(lonlat) {
         airportMarkerTimeout = null;
     }, 3000);
 }
+// *****************************************************************
+// **** FIN FUNCIÓN MOSTRAR MARCADOR EN EL AEROPUERTO BUSCADO ******
+// *****************************************************************
 
+// *****************************************************************
+// *********** INICIO FUNCIÓN RESTABLECER ZOOM BASE ****************
+// *****************************************************************
 function resetZoomBaselineToCurrent() {
     if (!OLMap || !OLMap.getView) return;
     const z = Number(OLMap.getView().getZoom()) || 0;
@@ -9925,17 +9204,18 @@ function resetZoomBaselineToCurrent() {
     } catch (e) { }
     updateZoomIndicator();
 }
+// *****************************************************************
+// ************ FIN FUNCIÓN RESTABLECER ZOOM BASE ******************
+// *****************************************************************
 
 function executeJump(coords, showMarker = true) {
 
-    // Mostrar marcador en la ubicación
     if (coords && coords.length >= 2 && showMarker) {
         showAirportMarker(coords);
     }
 
     OLMap.getView().setCenter(ol.proj.fromLonLat([coords[1], coords[0]]));
 
-    // Hacer zoom a nivel apropiado para visualizar el aeropuerto (zoom 12)
     const currentZoom = OLMap.getView().getZoom();
     if (currentZoom < 10) {
         OLMap.getView().setZoom(12);
@@ -9947,7 +9227,6 @@ function executeJump(coords, showMarker = true) {
 
 }
 
-// También actualizar searchAirport para usar la misma lógica
 const originalSearchAirport = searchAirport;
 function searchAirport(airport) {
     if (!g.airport_cache) {
@@ -10007,7 +9286,6 @@ function updateAltFilter() {
         }
         errorText = errorText.replace(/\{min\}/g, minAltitude).replace(/\{max\}/g, maxAltitude);
         showSearchWarning(errorText);
-        // showSearchWarning('ERROR: Minimum altitude (' + minAltitude + ') cannot be greater than maximum altitude (' + maxAltitude + '). Please correct the values.');
 
         jQuery("#altitude_filter_min").addClass('input-error').removeClass('filter-active');
         jQuery("#altitude_filter_max").addClass('input-error').removeClass('filter-active');
@@ -10065,12 +9343,9 @@ function updateAltFilter() {
         successPrefix = window.t('altitude_filter_active') || successPrefix;
     }
 
-    // const minDisplay = minAltitude !== -1e6 ? minAltitude : 'no limit';
-    // const maxDisplay = maxAltitude !== 1e6 ? maxAltitude : 'no limit';
     const minDisplay = minAltitude !== -1e6 ? minAltitude : noLimitText;
     const maxDisplay = maxAltitude !== 1e6 ? maxAltitude : noLimitText;
     const unit = DisplayUnits === "metric" ? "m" : "ft";
-    // showSuccessMessage('✓ Altitude filter active: ' + minDisplay + ' to ' + maxDisplay + ' ' + unit);
     showSuccessMessage(successPrefix + ' ' + minDisplay + ' ' + toText + ' ' + maxDisplay + ' ' + unit);
 
     jQuery("#altitude_filter_min").addClass('filter-active').removeClass('input-error');
@@ -10691,7 +9966,6 @@ function initFilters() {
         flagFilter.map((f) => jQuery('#flag-filter-' + f).addClass('ui-selected'));
     }
 
-    // Inicializar acordeón
     initAccordion();
 }
 // *****************************************
@@ -11138,26 +10412,11 @@ function bearingFromLonLat(position1, position2) {
     return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
 }
 
-// function zoomIn() {
-//     const zoom = OLMap.getView().getZoom();
-//     OLMap.getView().setZoom((zoom + 1).toFixed());
-//     if (FollowSelected)
-//         toggleFollow(true);
-// }
-
-// function zoomOut() {
-//     const zoom = OLMap.getView().getZoom();
-//     OLMap.getView().setZoom((zoom - 1).toFixed());
-//     if (FollowSelected)
-//         toggleFollow(true);
-// }
-
 function changeZoom(init) {
     if (!OLMap)
         return;
 
     g.zoomLvl = OLMap.getView().getZoom();
-    // Actualizar el indicador al hacer zoom
     updateZoomIndicator();
 
     checkScale();
@@ -13229,7 +12488,6 @@ function replayDefaults(ts) {
     } else if (typeof window.t === 'function') {
         playText = window.t('play') || playText;
     }
-    // jQuery("#replayPlay").html("Play");
     jQuery("#replayPlay").html(playText);
     let playing = true;
     let speed = 30;
@@ -13317,8 +12575,6 @@ function loadReplay(ts) {
         }
 
         replay.loadingKey = rKey;
-
-        // jQuery('#replayLoading').text('Loading ...');
 
         let loadingText = 'Loading ...';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
@@ -13450,16 +12706,12 @@ function setReplayTimeHint(date) {
         utcLabel = window.t('utc_label') || utcLabel;
     }
     if (true || utcTimesHistoric) {
-        // jQuery("#replayDateHintLocal").html(TIMEZONE + " Date: " + lDateString(date));
         jQuery("#replayDateHintLocal").html(TIMEZONE + " " + dateLabel + " " + lDateString(date));
         jQuery("#replayDateHint").html("" + zDateString(date));
-        // jQuery("#replayTimeHint").html("UTC:" + NBSP + zuluTime(date) + ' / ' + TIMEZONE + ":" + NBSP + localTime(date));
         jQuery("#replayTimeHint").html(utcLabel + " " + zuluTime(date) + ' / ' + TIMEZONE + ":" + NBSP + localTime(date));
     } else {
         jQuery("#replayDateHintLocal").html("");
         jQuery("#replayDateHint").html(dateLabel + " " + lDateString(date));
-        // jQuery("#replayDateHint").html("Date: " + lDateString(date));
-        // jQuery("#replayTimeHint").html("Time: " + localTime(date) + NBSP + TIMEZONE);
     }
 }
 // **********************************************************
@@ -13846,12 +13098,10 @@ function playReplay(state) {
             pauseText = window.t('pause') || pauseText;
         }
 
-        // jQuery("#replayPlay").html("Pause");
         jQuery("#replayPlay").html(pauseText);
         replayStep();
     } else {
         replay.playing = false;
-        // jQuery("#replayPlay").html("Play");
         let playText = 'Play';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
             playText = window.translate.t('play') || playText;
@@ -13957,7 +13207,6 @@ function showReplayBar() {
                     speedLabel = window.t('speed_label') || speedLabel;
                 }
 
-                // jQuery('#replaySpeedHint').text('Speed: ' + replay.speed + 'x');
                 jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
             },
             change: function (event, ui) {
@@ -13972,7 +13221,6 @@ function showReplayBar() {
             speedLabel = window.t('speed_label') || speedLabel;
         }
 
-        // jQuery('#replaySpeedHint').text('Speed: ' + replay.speed + 'x');
         jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
 
         jQuery("#selected_showTrace_hide").hide();
@@ -13982,13 +13230,14 @@ function showReplayBar() {
 // ********* FIN MOSTRAR REPLAY ************
 // *****************************************
 
-// Actualiza el texto de la etiqueta del slider
+// *****************************************************************
+// ****** INICIO TEXTO Y ETIQUETAS DE LOS SLIDER DEL REPLAY ********
+// *****************************************************************
 function updateSliderTip(handle, value, suffix) {
     const formatted = value.toString().padStart(2, '0') + suffix;
     jQuery(handle).find('.slider-tip').text(formatted);
 }
 
-// Configura las decoraciones (etiquetas) del slider
 function setupSliderDecorations(selector, minTxt, maxTxt) {
     const el = jQuery(selector);
     const handle = el.find('.ui-slider-handle');
@@ -13997,6 +13246,9 @@ function setupSliderDecorations(selector, minTxt, maxTxt) {
     }
 
 }
+// *****************************************************************
+// ******* FIN TEXTO Y ETIQUETAS DE LOS SLIDER DEL REPLAY **********
+// *****************************************************************
 
 function timeoutFetch() {
     console.log("timeoutFetch " + localTime(new Date()));
@@ -14065,7 +13317,6 @@ function refreshHistory() {
         setTimeout(refreshHistory, 500);
     });
 }
-
 
 function handleVisibilityChange() {
     const prevHidden = tabHidden;
@@ -14939,7 +14190,9 @@ function updateTime() {
 setInterval(updateTime, 1000);
 updateTime();
 
-// Función para plegar/desplegar los menús de información en el sidebar izquierdo
+// *************************************************************
+// ** INICIO PLEGAR/DESPLEGAR SECCIONES EN SELECTED_INFOBLOCK **
+// *************************************************************
 document.addEventListener('DOMContentLoaded', () => {
     const toggles = document.querySelectorAll('.section-toggle');
 
@@ -14950,7 +14203,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const icon = btn.querySelector('.section-toggle-icon') || btn;
 
-        // Guarda paddings originales
         const initialPadTop = getComputedStyle(block).paddingTop;
         const initialPadBottom = getComputedStyle(block).paddingBottom;
         const collapsedPad = '0.2rem';
@@ -15003,13 +14255,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+// *************************************************************
+// *** FIN PLEGAR/DESPLEGAR SECCIONES EN SELECTED_INFOBLOCK ****
+// *************************************************************
 
+// **************************************************************
+// **** INICIO LIMPIAR DISTANCIA CALCULADA AERONAVE-AERONAVE ****
+// **************************************************************
 function resetDistanceCalculation() {
     selectedPlanesForDistance = [];
     planesMissingSince = null;
     distance1A1BHidden = false;
 
-    // Limpiar estado de oculto de pares
     if (pairHiddenState) pairHiddenState.clear();
 
     if (distanceUpdateInterval) {
@@ -15027,11 +14284,9 @@ function resetDistanceCalculation() {
         distanceOverlay = null;
     }
 
-    // Limpieza manual por ID por si OpenLayers falló
     let extraDiv = document.getElementById('distance-label-tag');
     if (extraDiv) extraDiv.remove();
 
-    // Limpiar múltiples líneas y overlays si existen (modo 1A_nB)
     if (distanceLineFeaturesMap && distanceLineFeaturesMap.size) {
         for (const f of distanceLineFeaturesMap.values()) {
             try { distanceLineLayer.getSource().removeFeature(f); } catch (_) { }
@@ -15045,12 +14300,9 @@ function resetDistanceCalculation() {
         distanceOverlaysMap.clear();
     }
 
-    // Reset de selección A en modos multi
     selectedPlaneA = null;
-    // Limpiar mapas de señal perdida
     ppMissingSince && ppMissingSince.clear();
     ppRemoved && ppRemoved.clear();
-    // Limpiar pares y buffer
     pairMap && pairMap.clear();
     pairOrder = [];
     pairBuffer = [];
@@ -15066,9 +14318,14 @@ function DistanceBetweenPlanes() {
     // Cambiamos el color del botón en la UI
     buttonActive('#D', distanceBetweenPlanesMode);
 }
+// **************************************************************
+// ***** FIN LIMPIAR DISTANCIA CALCULADA AERONAVE-AERONAVE ******
+// **************************************************************
 
 
-// Función que coloca una imagen genérica al selected_infoblock si el avión no tiene imagen
+// ***********************************************************************
+// ** INICIO IMAGEN GENÉRICA EN SELECTED_INFOBLOCK SI EL AVIÓN NO TIENE **
+// ***********************************************************************
 (function () {
     const fallbackSrc = 'images/no-plane.jpg';
     const container = document.getElementById('selected_photo');
@@ -15107,12 +14364,15 @@ function DistanceBetweenPlanes() {
 
     new MutationObserver(ensurePhoto).observe(container, { childList: true, subtree: true });
 })();
+// ***********************************************************************
+// *** FIN IMAGEN GENÉRICA EN SELECTED_INFOBLOCK SI EL AVIÓN NO TIENE ****
+// ***********************************************************************
 
-// Función para actualizar el contador y la lista visual
+// ***********************************************************************
+// ****** INICIO ACTUALIZAR CONTADOR Y LISTA DE AVIONES DE INTERÉS *******
+// ***********************************************************************
 function updateStarredUI() {
-    // Verificar si la función está habilitada
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
-
     const countSpan = document.getElementById('starred-count');
     const container = document.getElementById('starred-list-container');
 
@@ -15122,7 +14382,6 @@ function updateStarredUI() {
 
     if (!container) return;
 
-    // Si la función no está habilitada, no mostramos nada
     if (!isEnabled) {
         container.innerHTML = '';
         return;
@@ -15137,7 +14396,6 @@ function updateStarredUI() {
     for (const hex of starredAircraft) {
         const plane = g.planes[hex];
         if (!plane) {
-            // Si el avión ya no existe en g.planes, lo eliminamos de la lista
             starredAircraft.delete(hex);
             continue;
         }
@@ -15158,11 +14416,12 @@ function updateStarredUI() {
     }
 
     container.innerHTML = html;
-    // Asegurar que el contenedor sea visible
     container.style.display = 'block';
 }
 
-// Función para escapar HTML (seguridad)
+// *****************************************************
+// ********** INICIO FUNCIÓN ESCAPAR HTML **************
+// *****************************************************
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function (m) {
@@ -15172,10 +14431,14 @@ function escapeHtml(str) {
         return m;
     });
 }
+// *****************************************************
+// ************ FIN FUNCIÓN ESCAPAR HTML ***************
+// *****************************************************
 
-// Función principal para marcar/desmarcar un avión como interés
+// *******************************************************************
+// ** INICIO FUNCIÓN ACTUALIZAR VISUALIZACIÓN DE AVIONES DE INTERÉS **
+// *******************************************************************
 function toggleStarredPlane(hex) {
-    // Verificar si la función está habilitada
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
 
     if (!hex) return;
@@ -15189,22 +14452,19 @@ function toggleStarredPlane(hex) {
     updateStarredUI();
     updateStarredPlaneVisual(hex);
     updateStarredButtonInInfoblock();
-    refreshFilter(); // Refrescar la tabla para aplicar estilo de fila
+    refreshFilter();
 }
 
-// Función para actualizar el aspecto visual del avión en el mapa
 function updateStarredPlaneVisual(hex) {
     const plane = g.planes[hex];
     if (!plane) return;
 
     const isStarred = starredAircraft.has(hex);
 
-    // Actualizar el marcador del avión
     if (plane.marker || plane.glMarker) {
-        plane.updateMarker(); // Esto forzará la recreación del marcador con el nuevo estilo
+        plane.updateMarker();
     }
 
-    // Actualizar la fila en la tabla
     if (plane.tr) {
         if (isStarred) {
             plane.tr.classList.add('starred-table-row');
@@ -15213,46 +14473,36 @@ function updateStarredPlaneVisual(hex) {
         }
     }
 }
+// *******************************************************************
+// *** FIN FUNCIÓN ACTUALIZAR VISUALIZACIÓN DE AVIONES DE INTERÉS ****
+// *******************************************************************
 
-// Función para actualizar el botón de estrella en el infoblock (versión unificada)
+// *******************************************************************************
+// ** INICIO FUNCIÓN ACTUALIZAR BOTÓN DE AVIÓN DE INTERÉS EN SELECTED_INFOBLOCK **
+// *******************************************************************************
 function updateStarredButtonInInfoblock() {
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
     const selected = SelectedPlane;
 
-    // Buscar el botón de estrella en la nueva ubicación
     let starBtn = document.getElementById('infoblock_star');
 
     if (!starBtn) return;
 
-    // Si la función no está habilitada o no hay avión seleccionado, ocultar el botón
     if (!isEnabled || !selected) {
         starBtn.style.display = 'none';
         return;
     }
 
     starBtn.style.display = 'unset';
-
     const isStarred = starredAircraft.has(selected.icao);
-
-    // Actualizar contenido y clase del botón
     starBtn.textContent = isStarred ? '★' : '✰';
-    // starBtn.title = isStarred ? 'Remove from notable' : 'Mark as notable';
-    // if (typeof window.t === 'function') {
-    //     starBtn.title = isStarred ? window.t('remove_from_notable') : window.t('mark_as_notable');
-    // } else {
-    //     // Fallback si la traducción no está disponible
-    //     starBtn.title = isStarred ? 'Remove from notable' : 'Mark as notable';
-    // }
-
     let removeText = 'Remove from notable';
     let markText = 'Mark as notable';
 
-    // Si la función de traducción global está disponible
     if (typeof window.translate !== 'undefined' && window.translate.t) {
         removeText = window.translate.t('remove_from_notable') || removeText;
         markText = window.translate.t('mark_as_notable') || markText;
     } else if (typeof window.t === 'function') {
-        // Fallback: si existe window.t (el alias)
         removeText = window.t('remove_from_notable') || removeText;
         markText = window.t('mark_as_notable') || markText;
     }
@@ -15265,45 +14515,37 @@ function updateStarredButtonInInfoblock() {
         starBtn.classList.remove('starred');
     }
 
-    // Actualizar evento click
     starBtn.onclick = function (e) {
         e.stopPropagation();
         toggleStarredPlane(selected.icao);
     };
 }
+// *******************************************************************************
+// *** FIN FUNCIÓN ACTUALIZAR BOTÓN DE AVIÓN DE INTERÉS EN SELECTED_INFOBLOCK ****
+// *******************************************************************************
 
-// Función para verificar si un avión está marcado como interés (para usar en filtros/resaltados)
+// *******************************************************************************************
+// ** INICIO FUNCIONES VERIFICAR AVIONES MARCADOS COMO INTERÉS Y LIMPIAR AVIONES DE INTERÉS **
+// *******************************************************************************************
 function isPlaneStarred(plane) {
     return plane && starredAircraft.has(plane.icao);
 }
 
-// Función para limpiar todos los aviones de interés
-// Función para limpiar todos los aviones de interés
 function clearAllStarred() {
-    // Verificar si hay elementos para limpiar
+
     if (starredAircraft.size === 0) return;
-
-    // Crear copia de los hexes antes de limpiar
     const hexes = [...starredAircraft];
-
-    // Limpiar el Set
     starredAircraft.clear();
 
-    // Actualizar visualmente cada avión que estaba marcado
     for (const hex of hexes) {
         updateStarredPlaneVisual(hex);
     }
 
-    // Actualizar UI
     updateStarredUI();
     updateStarredButtonInInfoblock();
-
-    // Refrescar la tabla para quitar el estilo de las filas
     refreshFilter();
 }
 
-
-// Sobrescribir la función select existente para actualizar el botón de estrella
 const originalSelect = select;
 select = function (plane, options) {
     originalSelect(plane, options);
@@ -15312,7 +14554,6 @@ select = function (plane, options) {
     }
 };
 
-// Sobrescribir la función deselect para limpiar el botón
 const originalDeselect = deselect;
 deselect = function (plane) {
     originalDeselect(plane);
@@ -15321,17 +14562,20 @@ deselect = function (plane) {
         if (starBtnContainer) starBtnContainer.innerHTML = '';
     }
 };
+// *******************************************************************************************
+// *** FIN FUNCIONES VERIFICAR AVIONES MARCADOS COMO INTERÉS Y LIMPIAR AVIONES DE INTERÉS ****
+// *******************************************************************************************
 
-// Agregar funcionalidad al botón de estrella en el marcador de aviones
+// *******************************************************************************************
+// ***** INICIO AGREGAR FUNCIONALIDAD AL BOTÓN DE ESTRELLA PARA MARCAR COMO DE INTERÉS *******
+// *******************************************************************************************
 function enhancePlaneObjectForStarred() {
     if (typeof PlaneObject !== 'undefined' && PlaneObject.prototype) {
-        // Guardar método original si existe
         const originalUpdateMarker = PlaneObject.prototype.updateMarker;
         if (originalUpdateMarker) {
             PlaneObject.prototype.updateMarker = function () {
                 originalUpdateMarker.apply(this, arguments);
                 if (starredAircraft.has(this.icao)) {
-                    // Aplicar clase de resaltado al elemento del marcador
                     if (this.markerElement) {
                         this.markerElement.classList.add('plane-starred-marker');
                     }
@@ -15341,32 +14585,24 @@ function enhancePlaneObjectForStarred() {
     }
 }
 
-// Inicializar la sección de aviones de interés cuando cargue la página
 function initStarredAircraft() {
-    // Crear la sección en el DOM si no existe (se añade al HTML pero oculta por CSS)
     const starredSection = document.getElementById('starred-aircraft-section');
     if (starredSection) {
-        // Por defecto, ocultar por CSS (la clase hidden-by-setting)
         starredSection.classList.add('hidden-by-setting');
     }
 
-    // Asegurar que la lista no tenga el toggle de ocultar/mostrar
     const starredHeader = document.querySelector('.starred-header');
     if (starredHeader) {
-        // Remover el onclick que tenía
         starredHeader.removeAttribute('onclick');
-        // Opcional: remover cualquier ícono de toggle si existe
         const toggleIcon = starredHeader.querySelector('.toggle-icon');
         if (toggleIcon) toggleIcon.remove();
     }
 
-    // Asegurar que el contenedor de la lista sea visible
     const starredContainer = document.getElementById('starred-list-container');
     if (starredContainer) {
         starredContainer.style.display = 'block';
     }
 
-    // Cargar lista guardada de localStorage si existe
     const saved = localStorage.getItem('tar1090_starred_aircraft');
     if (saved) {
         try {
@@ -15380,11 +14616,9 @@ function initStarredAircraft() {
 
     enhancePlaneObjectForStarred();
 
-    // Guardar en localStorage cuando cambie la lista
     const originalUpdateStarredUI = updateStarredUI;
     window.updateStarredUI = function () {
         originalUpdateStarredUI();
-        // Solo guardar si la función está habilitada
         if (toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state) {
             localStorage.setItem('tar1090_starred_aircraft', JSON.stringify([...starredAircraft]));
         }
@@ -15393,16 +14627,13 @@ function initStarredAircraft() {
 
     const toggle = toggles['enableStarredAircraft'];
     if (toggle && toggle.state === true) {
-        // Si el toggle está activado, mostrar la sección
         if (starredSection) {
             starredSection.classList.remove('hidden-by-setting');
         }
-        // Actualizar el botón de estrella en el infoblock si hay avión seleccionado
         if (SelectedPlane) {
             updateStarredButtonInInfoblock();
         }
     } else {
-        // Si el toggle está desactivado, asegurar que la sección esté oculta
         if (starredSection) {
             starredSection.classList.add('hidden-by-setting');
         }
@@ -15410,14 +14641,14 @@ function initStarredAircraft() {
 
     const clearAllBtn = document.getElementById('clear-all-starred-btn');
     if (clearAllBtn) {
-        // Eliminar event listener anterior si existe
         clearAllBtn.removeEventListener('click', clearAllStarredHandler);
-        // Añadir nuevo event listener
         clearAllBtn.addEventListener('click', clearAllStarredHandler);
     }
 }
+// *******************************************************************************************
+// ******* FIN AGREGAR FUNCIONALIDAD AL BOTÓN DE ESTRELLA PARA MARCAR COMO DE INTERÉS ********
+// *******************************************************************************************
 
-// Manejador del botón Clear All
 function clearAllStarredHandler(e) {
     e.stopPropagation();
     if (starredAircraft.size > 0) {
@@ -15425,19 +14656,15 @@ function clearAllStarredHandler(e) {
     }
 }
 
-// Ejecutar inicialización cuando el DOM esté listo
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initStarredAircraft);
 } else {
     initStarredAircraft();
 }
 
-// Función global para toggle desde el botón de estrella
 window.toggleStarredPlane = toggleStarredPlane;
 window.clearAllStarred = clearAllStarred;
-// window.toggleStarredList = toggleStarredList;
 
-// Definir toggleStarredList si no existe
 if (typeof toggleStarredList === 'undefined') {
     window.toggleStarredList = function () {
         console.log('toggleStarredList called but not implemented');
@@ -15445,9 +14672,14 @@ if (typeof toggleStarredList === 'undefined') {
 } else {
     window.toggleStarredList = toggleStarredList;
 }
+// ***********************************************************************
+// ******* FIN ACTUALIZAR CONTADOR Y LISTA DE AVIONES DE INTERÉS *********
+// ***********************************************************************
 
+// *******************************************************************************
+// ** INICIO FUNCIÓN PARA MOVER SETTINGS_INFOBLOCK COMO VENTANA POR LA PANTALLA **
+// *******************************************************************************
 (function () {
-
     let settingsWindow = null;
     let isDragging = false;
     let dragStartX, dragStartY;
@@ -15456,8 +14688,6 @@ if (typeof toggleStarredList === 'undefined') {
     function initDraggable() {
         settingsWindow = document.getElementById('settings_infoblock');
         const dragHandle = document.getElementById('settings_window_header');
-
-        // FORZAR estilos iniciales usando setAttribute para mayor prioridad
         settingsWindow.setAttribute('style',
             'position: fixed !important; ' +
             'top: 80px !important; ' +
@@ -15475,7 +14705,6 @@ if (typeof toggleStarredList === 'undefined') {
     }
 
     function onMouseDown(e) {
-        // No arrastrar si se hace clic en botones
         if (e.target.closest('.formButton')) {
             return;
         }
@@ -15486,12 +14715,9 @@ if (typeof toggleStarredList === 'undefined') {
         isDragging = true;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
-
-        // Obtener posición actual del elemento
         const rect = settingsWindow.getBoundingClientRect();
         startLeft = rect.left;
         startTop = rect.top;
-
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'move';
         e.preventDefault();
@@ -15504,15 +14730,10 @@ if (typeof toggleStarredList === 'undefined') {
 
         let newLeft = startLeft + (e.clientX - dragStartX);
         let newTop = startTop + (e.clientY - dragStartY);
-
-        // Limitar dentro de la ventana
         const maxLeft = window.innerWidth - settingsWindow.offsetWidth;
         const maxTop = window.innerHeight - settingsWindow.offsetHeight;
-
         newLeft = Math.min(Math.max(0, newLeft), maxLeft);
         newTop = Math.min(Math.max(0, newTop), maxTop);
-
-        // Aplicar estilos directamente con !important
         settingsWindow.style.setProperty('left', newLeft + 'px', 'important');
         settingsWindow.style.setProperty('top', newTop + 'px', 'important');
 
@@ -15526,14 +14747,15 @@ if (typeof toggleStarredList === 'undefined') {
         }
     }
 
-    // Registrar event handlers globales (una sola vez)
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
 
-    // Iniciar cuando el DOM esté listo
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initDraggable);
     } else {
         setTimeout(initDraggable, 100);
     }
 })();
+// *******************************************************************************
+// ** INICIO FUNCIÓN PARA MOVER SETTINGS_INFOBLOCK COMO VENTANA POR LA PANTALLA **
+// *******************************************************************************

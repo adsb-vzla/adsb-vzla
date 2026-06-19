@@ -1,13 +1,11 @@
 ﻿<!DOCTYPE HTML>
 <html>
-
 <head>
   <meta name="description" data-i18n-meta="meta_description" content="ADS‑B Venezuela - Air traffic monitoring in Venezuela" />
-  <meta charset="utf-8" />
+  <meta charset="utf-8"/>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="viewport"
-    content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui" />
+  <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui" />
   <!-- JQUERY -->
   <link rel="stylesheet" href="libs/jquery-ui-1.13.2.min.css" type="text/css">
   <!-- OPENLAYERS -->
@@ -30,8 +28,9 @@
 
 <body>
   <div id="layout_container">
-    <!-- INICIO CARD CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER HOVER AL AVIÓN) -->
+    <!-- INICIO CARD HOVER -->
     <div id="highlighted_infoblock" style="pointer-events: none">
+      <!-- iNICIO ENCABEZADO -->
       <div class="highlightedTitle infoBlockSection">
         <div>
           <span class="identLarge"><span id="highlighted_callsign">n/a</span></span>
@@ -40,6 +39,8 @@
           <span class="identSmall"><span id="highlighted_pf_route">n/a</span></span>
         </div>
       </div>
+      <!-- FIN ENCABEZADO -->
+      <!-- INICIO CUERPO DEL CARD -->
       <div class="infoBlockSection">
         <div>
           <div class="infoHeading"><span data-i18n="reg">Reg.: </span></div>
@@ -75,12 +76,14 @@
           <div class="infoData"><span id="highlighted_rssi">n/a</span></div>
         </div>
       </div>
+      <!-- FIN CUERPO DEL CARD -->
     </div>
-    <!-- FIN CARD CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER HOVER AL AVIÓN) -->
+    <!-- FIN CARD HOVER -->
 
-    <!-- INICIO SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER CLIC AL AVIÓN) -->
+    <!-- INICIO SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN -->
     <div id="selected_infoblock" style="display: none">
       <div id="infoblock-container">
+        <!-- INICIO ENCABEZADO -->
         <div class="highlightedTitle infoBlockSection">
           <div>
             <span class="identLarge" data-i18n-title="callsign_tooltip"
@@ -109,7 +112,10 @@
             </table>
           </div>
         </div>
-
+        <!-- FIN ENCABEZADO -->
+        
+        <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
+        <!-- INICIO BLOQUE RESUMEN -->
         <div id="selected_infoblock_summary" class="infoBlockSection infoblockSummary" style="display: none;">
           <div class="summaryHeader">
             <div class="summaryPhoto" id="selected_mini_photo"></div>
@@ -129,8 +135,10 @@
             </div>
           </div>
         </div>
+        <!-- FIN BLOQUE RESUMEN -->
 
-        <!-- START MLAT SOURCE INFO -->
+        <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
+        <!-- INICIO MLAT SOURCE INFO -->
         <div id=anon_mlat_info class="infoBlockSection hidden">
           <div>
             <div class="infoHeading">
@@ -157,9 +165,10 @@
             </div>
           </div>
         </div>
-        <!-- END MLAT SOURCE INFO -->
+        <!-- FIN MLAT SOURCE INFO -->
 
-        <!-- START TIS-B SOURCE INFO -->
+        <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
+        <!-- INICIO TIS-B SOURCE INFO -->
         <div id=tisb_info class="infoBlockSection hidden">
           <div class="infoHeading">
             <span data-i18n="non_icao_hex_info">Non-ICAO hex, info:</span>
@@ -189,10 +198,9 @@
                 rel="noreferrer" data-i18n="what_is_hex_id">What is a hex ID?</a></span>
           </div>
         </div>
-        <!-- END TIS-B SOURCE INFO -->
+        <!-- FIN TIS-B SOURCE INFO -->
 
-        <!-- START SELECTED AIRCRAFT INFO -->
-        <!-- Información del avión seleccionado -->
+        <!-- INICIO INFORMACIÓN GENERAL DEL AVIÓN -->
         <div id=reg_info class="infoBlockSection">
           <table class="infoSectionTable">
             <tr id=pf_info_container>
@@ -290,59 +298,7 @@
             </tr>
           </table>
         </div>
-        <!-- END SELECTED AIRCRAFT INFO -->
-
-        <!-- *** HISTORIAL (ADS-B VZLA LO TIENE OCULTO) *** -->
-        <!-- <button id="show_trace" type="button" class="greyButton">History</button>
-          <div id="history_collapse" class="infoBlockSection" style="display: none">
-            <div class="identSmall" id="trace_date">UTC day:
-            </div>
-            <div class="rSpacer">
-            </div>
-            <div>
-              <input id=histDatePicker class="identSmall datepicker" value="Pick a date">
-            </div>
-            <div class="rSpacer">
-            </div>
-            <div>
-              <button class="formButton" id="trace_back_1d">previous</button>
-              <button class="formButton" id="trace_jump_1d">next</button>
-            </div>
-            <div class="rSpacer">
-            </div>
-            <div class="identSmall" id="leg_sel">
-            </div>
-            <div class="rSpacer">
-            </div>
-            <div>
-              <button class="formButton" id="leg_prev">previous</button>
-              <button class="formButton" id="leg_next">next</button>
-            </div>
-            <div class="rSpacer">
-            </div>
-            <div class="identSmall" id="trace_time">
-            </div>
-            <div class="rSpacer">
-            </div>
-            <div>
-              <button class="formButton" id="tStop">stop</button>
-              <button class="formButton" id="t1x">1x</button>
-              <button class="formButton" id="t5x">5x</button>
-            </div>
-            <div class="rSpacer">
-            </div>
-            <div>
-              <button class="formButton" id="t10x">10x</button>
-              <button class="formButton" id="t20x">20x</button>
-              <button class="formButton" id="t40x">40x</button>
-            </div>
-            <div class="rSpacer">
-            </div>
-            <div>
-              Click on the trace line to start playback!
-            </div>
-          </div> -->
-        <!-- *** FIN HISTORIAL *** -->
+        <!-- INICIO INFORMACIÓN GENERAL DEL AVIÓN -->
 
         <!-- INICIO SECCIÓN ESPACIAL -->
         <div class="sectionTitle" data-i18n-title="spatial_tooltip" title="Show or hide spatial data: groundspeed, altitude, position and distance.">
@@ -833,7 +789,7 @@
         </div>
         <!-- FIN SECCIÓN PRECISIÓN -->
 
-        <!-- EXPORTAR KML -->
+        <!-- INICIO SECCIÓN EXPORTAR KML -->
         <div class="sectionTitle" data-i18n-title="export_kml_tooltip"
           title="Export the current aircraft position to a KML file for viewing in mapping applications. Choose altitude source: geometric, geom_avg, or baro.">
           <button class="section-toggle" data-target="export_kml_block" aria-expanded="false"
@@ -850,19 +806,11 @@
           <button id="export_kml_baro" data-i18n-title="export_kml_baro_tooltip" title="Export KML using uncorrected pressure altitude (barometric)."
             onclick='exportKML("baro")' data-i18n="export_kml_baro">uncorrected pressure alt.</button>
         </div>
+        <!-- FIN SECCIÓN EXPORTAR KML -->
       </div>
     </div>
     <div id="infoblocks_container" class="infoblocks-container" style="display: none;"></div>
     <!-- FIN SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER CLIC AL AVIÓN) -->
-
-    <!-- <div id="loader">
-      <div class="spinner">
-        <img class="spinner-logo" src="images/logo-adsb-vzla-planet6.png" alt="">
-        <div class="spinner-orbit">
-          <img class="spinner-plane" src="images/plane-around-orange-dark.png" alt="">
-        </div>
-      </div>
-    </div> -->
 
     <!-- INICIO CONTENEDOR DEL MAPA -->
     <div id="map_container" style="background-color:#727272;">
@@ -872,6 +820,7 @@
       </div>
       <!-- INICIO MENÚ CONFIGURACIONES -->
       <div id="settings_infoblock">
+        <!-- INICIO ENCABEZADO -->
         <div id="settings_window_header">
           <div class="panel-title"
             style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
@@ -885,6 +834,9 @@
             <button id="settings_close" class="formButton" data-i18n-title="close" title="Close">X</button>
           </div>
         </div>
+        <!-- FIN ENCABEZADO -->
+        
+        <!-- INICIO SLIDES DE TAMAÑO DE ÍCONOS -->
         <div class="settingsOptionContainer">
           <div class="settingsText" data-i18n="text_icon_size">Text and icon size:</div>
         </div>
@@ -901,9 +853,11 @@
           <button id="resetIconScaleBtn" class="formButton" style="padding: 4px 8px; font-size: 11px;"
             data-i18n-title="reset_to_default_multiplier" title="Reset to default multiplier" data-i18n="reset">Reset</button>
         </div>
+        <!-- FIN SLIDES DE TAMAÑO DE ÍCONOS -->
 
+        <!-- INICIO CATEGORÍAS DE CONFIGURACIONES -->
         <div id="settingsLeft" class="settingsColumn">
-          <!-- Categoría UNITS -->
+          <!-- INICIO CATEGORÍA UNITS -->
           <div id="category-units" class="settings-category">
             <div class="settings-category-title" data-i18n="units">UNITS</div>
             <div id="category-units-container">
@@ -916,7 +870,9 @@
               </div>
             </div>
           </div>
-          <!-- Categoría DISPLAY -->
+          <!-- FIN CATEGORÍA UNITS -->
+
+          <!-- INICIO CATEGORÍA DISPLAY -->
           <div id="category-display" class="settings-category">
             <div class="settings-category-title" data-i18n="display">DISPLAY</div>
             <div id="category-display-container"></div>
@@ -924,7 +880,9 @@
             <button class="formButton category-reset-btn" data-category="display" data-i18n-title="reset_to_default" title="Reset to default"  data-i18n="reset_to_default">Reset to
               default</button>
           </div>
-          <!-- Categoría FILTERS -->
+          <!-- FIN CATEGORÍA DISPLAY -->
+
+          <!-- INICIO CATEGORÍA FILTERS -->
           <div id="category-filters" class="settings-category">
             <div class="settings-category-title" data-i18n="filters">FILTERS</div>
             <div id="category-filters-container">
@@ -942,10 +900,10 @@
             <button class="formButton category-reset-btn" data-category="filters" data-i18n-title="reset_to_default" title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
+          <!-- FIN CATEGORÍA FILTERS -->
         </div>
         <div id="settingsRight" class="settingsColumn">
-
-          <!-- Categoría DATA -->
+          <!-- INICIO CATEGORÍA DATA -->
           <div id="category-data" class="settings-category">
             <div class="settings-category-title" data-i18n="data">DATA</div>
             <div id="category-data-container"></div>
@@ -953,8 +911,9 @@
             <button class="formButton category-reset-btn" data-category="data" data-i18n-title="reset_to_default" title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
+          <!-- FIN CATEGORÍA DATA -->
 
-          <!-- Categoría SYSTEM -->
+          <!-- INICIO CATEGORÍA SYSTEM -->
           <div id="category-system" class="settings-category">
             <div class="settings-category-title" data-i18n="system">SYSTEM</div>
             <div id="category-system-container"></div>
@@ -962,8 +921,9 @@
             <button class="formButton category-reset-btn" data-category="system" data-i18n-title="reset_to_default" title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
+          <!-- FIN CATEGORÍA SYSTEM -->
 
-          <!-- Categoría INFORMATION -->
+          <!-- INICIO CATEGORÍA INFORMATION -->
           <div id="category-info" class="settings-category">
             <div class="settings-category-title" data-i18n="information">INFORMATION</div>
             <div id="category-info-container"></div>
@@ -971,23 +931,21 @@
             <button class="formButton category-reset-btn" data-category="info" data-i18n-title="reset_to_default" title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
+          <!-- FIN CATEGORÍA INFORMATION -->
         </div>
+        <!-- FIN CATEGORÍAS DE CONFIGURACIONES -->
       </div>
       <!-- FIN MENÚ CONFIGURACIONES -->
 
+      <!-- INICIO CRÉDITOS DE IMAGEN -->
       <div style="display: none" id="credits">
         <span class=credits-image></span>
         <span class=credits-text>aggregator.com</span>
       </div>
+      <!-- FIN CRÉDITOS DE IMAGEN -->
 
       <!-- INICIO NAVBAR -->
       <div id="navbar">
-        <!--<div id="name_container">
-          <span>ADSB-VZLA </span>
-          <img
-            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFVklEQVR4nO2Z64tWVRTGf++AVmoGWUlqN9NKR6EPXUgtiZjS6EblZLdPfelLRFKZENNVjIguhn9CpkY16JTdyyQouk03NbqQkDRTOTPpWE2NnVjwbFhszj7vOTPvjH6YBQtm9mXt8+y91rPW3i+MyZgc9jIJWAqsAbYAu4Ae4B9pj9o6gNXA5cBEDhOpAUuATcBfQFZR/9TcS2XrkMi1QOcQPj6lXwFXjyaA04E3Gggg1jeBU0caxHLgjxEEkUltjRtGCsTDowAgc/ofsKLRIJ4tubgF/GvAHcBCYJaYyXQ2sAi4U2PqkUMXMKeRIB4pAaBLuzexIl3fA3Qn7M3VuDmNOJnldQAMAg84AE3ABXLD94EfgH7pd8A2jT/P0a3NfVS2MgFrVt9cgTI3ax0OOxUFti1wsQOwTBRaNgaMuq/XXGSrE5in/5u1RhjfB5wyFCCvRwsPAPcC04DpwPEaN027P9Sgfg+YEa09L+FyRvuVk11sZGXOuNmJBavqTmC8s1uUaK8sC6KWMGQ7b/IBsF1/H5szzk5uI3AjcKZiYAIwU23Pq/byLhpiYpxzsxAzsX5RtpxZmjAwVf3b5UrIxfyYF/XB9cR8vR34xbGTgdnp3KyILVvKANmUmGzxEcsq9R0UlXoffxr4Wox1APhG+SgEs8lxETtlYrYmnWTKbTeU4fZUorrdHf90gRhQXwBhfr5OwFK7aX0PuTWn6GT8GGMzZDfPxoF6OSvlVn3y85p2NnanAOLtEoG9Fzg7Wrc9GtOptYo29rIiII8lJlmAmizOCewQE+tKgLANOUfjzcUedDHjCSBT0kTlTJ4tu5wlZUti0m3qfyJq3+g+KsUyQfcp64fA7pabhZixzfLjrQJAtVmevc1FQL5NTDrXMZZvNzpFgV0Ewnz6opzANl2r9puiOe+qfVHC5o4iIL8nJoUsHrPIGWqP4yZoh4jhSFcAehCZmC2URJlTq81QBZ1n2741KYGFYj1C/X9H7UerfV9ini89xuWwUyZ6RiyUOd2v9kkJ2wNDARKorn8YQE5KjLHCFJ1aVgGIbWpl1wrM9GNF13pVYAzE1sSYL2XD1vDt3ydcLuhvRUB2JSYFttkWtVuAmjxVJ9iL1JgQEUfm9B21LxxKsG9OTDIKRLyfR7/NJejX60/AJXJZcx10epnTNrXflbBhSTQpaxKTXlH/gpyAs6Ovcq/PBIKoTIk34nz1bR1KQlySmNSvwM4r8V9yJcpbJYHEdVIc0J+q/Ri9RlaugItqm7sTvuwr4/FKcEVudtDdP4K0RGNa1X5fQYK12q9QNiQm71E+aVLWjT/Ol/n2oU/qDr8/KuPnu3ET9O67O3pprAFH5STPoOspISn3yvQ6Eoq8vpz+l5WJ68msRDHY43LP48O9WNlufJ4wMKiAN7kwJ0FmqmJfAG4GzpK7hge6W1X257meJdUF7qqbutN8UuXl/pqC3djtnmUW636RDVN/VXGIAO8pGHsFFSV1D8iU4U/WuBk5MVNFLSZOdCB+LhhrRWhlmZmIA38yYRdrOsWPoxyzQjliiljPX54+1O7WXGx2FazXO5yfG1rr7OagXjuMYYLM113bYiSWWwQovJyYTNZ9xp5Fi9a6jmFKXJbkabc43xJYLP4dzMtUvfn2lrDfRoNkbUl/H1C8rHIlvn8HmywK/6jOS0vm9BkaLGVOxqudUCz3V7TRxgjJsjoE4PVfxcoJcqOVaiszt7cRMVFPTsspuRupHaPxY6iXq4DPGgjAMnblZNcoqanoW19QbhepFZPPla2dRktCJbtat7cdKl8GpHvV1q4xLWVK8TEZEw6t/A/PLG69l2ut8AAAAABJRU5ErkJggg=="
-            alt="radar">
-        </div> -->
         <div id="right_controls">
           <div id="utc_clock" data-i18n-title="utc_tooltip" title="Current UTC time - Universal Time Coordinated.">00:00 <span data-i18n="utc">UTC</span></div>
           <div id="zoom_indicator" class="dateTime" data-i18n-title="zoom_tooltip" title="Zoom">100%</div>
@@ -1004,8 +962,6 @@
               </button>
             </form>
           </div>
-          <!-- hamburger/close button moved into the sidebar container so it appears inside the sidebar corner -->
-          <!-- visible when sidebar is closed: triggers the existing toggle handler by proxy -->
           <div id="button_container_closed" style="display: block; position: relative;">
             <button id="toggle_sidebar_button_closed" class="show_sidebar sidebar_button" data-i18n-title="open_sidebar" title="Open Sidebar"
               style="background: none; border: none; padding: 6px; cursor: pointer;">
@@ -1017,24 +973,12 @@
             </button>
           </div>
         </div>
-        <!--
-          <div class="buttonContainer">
-            <span id="U" title="only show the U2 and other military planes" class="button inActiveButton" onclick="toggleMilitary();"><span class="buttonText">U</span></span>
-            <span id="H" title="(H)ome / Reset Map" class="button inActiveButton" onclick="resetMap();"><span class="buttonText">H</span></span>
-            <span id="T" title="All (T)racks" class="button inActiveButton" onclick="selectAllPlanes();"><span class="buttonText">T</span></span>
-          </div>
-          -->
       </div>
       <!-- FIN NAVBAR -->
       
       <!-- INICIO TIRA DE OPCIONES LATERAL -->
       <div id="header_side" class="infoHeading">
         <div class="buttonContainer">
-          <!--
-            <div id="toggle_sidebar_control">
-              <button id="toggle_sidebar_button" class="show_sidebar sidebar_button " title="Toggle Sidebar"></button>
-            </div>
-          -->
           <!-- INICIO OPCIONES DE AERONAVES -->
           <div id="aircraft_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" data-i18n-title="aircraft_tools_tooltip"
@@ -1112,8 +1056,6 @@
           <div id="layer-select" class="button-layer">
             <!-- FIN OPCIONES DE CAPAS -->
           </div>
-          <!-- <div id="fullscreenButton" class="svgButton fullscreenButton"></div> -->
-          <!-- <div id="settingsCog" class="svgButton settingsCog"></div> -->
 
           <!-- INICIO OPCIONES Y CONFIGURACIONES -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" data-i18n-title="settings_tooltip"
@@ -1122,35 +1064,6 @@
           </div>
           <!-- FIN OPCIONES Y CONFIGURACIONES -->
 
-          <!-- <div id="L" title="Toggle (L)abels" class="button inActiveButton" onclick="toggleLabels();"><span
-              class="buttonText">L</span></div> -->
-          <!-- <div id="O" title="Toggle Label Extensi(O)ns" class="button inActiveButton" onclick="toggleExtendedLabels();">
-            <span class="buttonText">O</span>
-          </div> -->
-          <!-- <div id="K" title="Toggle Trac(K) Labels" class="button inActiveButton" onclick="toggleTrackLabels();"><span
-              class="buttonText">K</span></div> -->
-          <!--<div class="buttonSpacer">
-          </div> -->
-          <!-- <div style="display: none" id="B" title="Toggle Map (B)rightness" class="button inActiveButton"
-            onclick="toggles['MapDim'].toggle();"><span class="buttonText">B</span></div> -->
-          <!--<div class="buttonSpacer">
-          </div>-->
-          <!-- <div style="display: none" id="V" title="Table: only show aircraft in current (V)iew"
-            class="button inActiveButton" onclick="toggleTableInView();"><span class="buttonText">V</span></div> -->
-          <!-- <div id="M" title="Toggle (M)ultiSelect" class="button inActiveButton" onclick="toggleMultiSelect();"><span
-              class="buttonText">M</span></div> -->
-          <!--<div class="buttonSpacer">
-          </div>-->
-          <!-- <div id="P" title="(P)ersistence mode" class="button inActiveButton" onclick="togglePersistence();"><span
-              class="buttonText">P</span></div> -->
-          <!-- <div id="I" title="(I)solate: only show selected aircraft" class="button inActiveButton"
-            onclick="toggleIsolation();"><span class="buttonText">I</span></div> -->
-          <!--<div class="buttonSpacer">
-          </div>-->
-          <!-- <div id="U" title="Mostrar aeronaves militares" class="button inActiveButton" onclick="toggleMilitary();">
-            <span class="buttonText">U</span>
-          </div> -->
-
           <!-- INICIO OPCIÓN PARA RECENTRAR EL MAPA -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="H" data-i18n-title="recenter_tooltip"
             title="Recenter the map and restore the default view." onclick="resetMap();"><i
@@ -1158,34 +1071,12 @@
           </div>
           <!-- FIN OPCIÓN PARA RECENTRAR EL MAPA -->
 
-          <!-- <div>
-            <span id="H" title="(H)ome / Reset Map" class="button inActiveButton" onclick="resetMap();"><span class="buttonText"><i class="fa-solid fa-location-dot fa-l"></i></span></span>
-          </div> -->
-          <!-- <div>
-            <span id="T" title="All (T)racks" class="button inActiveButton" onclick="selectAllPlanes();"><span class="buttonText">T</span></span>
-          </div> -->
-          <!-- <div id="F" title="(F)ollow" class="button inActiveButton" onclick="toggleFollow();"><span
-              class="buttonText">F</span></div>  -->
-
           <!-- INICIO OPCIÓN DE REPLAY -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="RP" data-i18n-title="replay_tooltip"
             title="Open playback controls for historical flights." onclick="showReplayBar();"><img
               src="images/replay.png" class="header-icon">
           </div>
           <!-- FIN OPCIÓN DE REPLAY -->
-
-          <!-- <div id="D" title="Distancia entre 2 aviones" class="button inActiveButton"
-            onclick="toggleDistance();">
-            <span class="buttonText">AA</span>
-          </div>
-          <div id="TA" title="Distancia entre punto en tierra y aeronave" class="button inActiveButton"
-            onclick="onTACycleClick();">
-            <span class="buttonText">TA</span>
-          </div>
-          <div id="TT" title="Distancia tierra-aeronave" class="button inActiveButton"
-            onclick="onTTCycleClick();">
-            <span class="buttonText">TT</span>
-          </div> -->
 
           <!-- INICIO OPCIONES DE ZOOM -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZI" data-i18n-title="zoom_in_tooltip"
@@ -1196,35 +1087,15 @@
           </div>
           <!-- FIN OPCIONES DE ZOOM -->
         </div>
-
       </div>
       <!-- FIN TIRA DE OPCIONES LATERAL -->
 
       <!-- INICIO TABLA DE ALTITUDES -->
-      <!-- <div id="altitude_chart" class="ol-unselectable ol-control altitudeFeet">
-        <button id="altitude_chart_button"></button>
-      </div> -->
       <div id="altitude_chart" class="ol-unselectable ol-control altitudeFeet">
         <!-- <img id="altitude_chart_image" src="" alt="Altitude Legend" /> -->
         <img id="altitude_chart_image" src="images/alt_legend_ft.svg" alt="Altitude Legend" />
       </div>
       <!-- FIN TABLA DE ALTITUDES -->
-
-      <!-- INICIO BARRA DE REPLAY -->
-      <!-- <div id="replayBar">
-        <button id="replayPlay">Play</button>
-        <p id="replayDateHint">Date:</p>
-        <p id="replayDateHintLocal"></p>
-        <input type="text" class="datepicker" id="replayDatepicker">
-        <p id="replayTimeHint">Time:</p>
-        <p id="hourSelect"></p>
-        <p id="minuteSelect"></p>
-        <p id="replayTimeZone">UTC Date:</p>
-        <p id="replaySpeedHint">Speed:</p>
-        <p id="replaySpeedSelect"></p>
-        <p id="replayLoading"></p>
-        <p></p>
-      </div> -->
 
       <!-- INICIO REPLAY -->
       <div id="replayBar">
@@ -1250,6 +1121,7 @@
 
     <!-- INICIO MENÚ LATERAL DERECHO -->
     <div id="sidebar_container" style="display: none; height: 100%; position: relative;">
+      <!-- INICIO ENCABEZADO -->
       <div class="header_sidebar">
         <div id="sidebar_close_button_container" style="position: absolute; right: 8px; top: -3px; z-index: 1200;">
           <button id="toggle_sidebar_button" class="show_sidebar sidebar_button" data-i18n-title="toggle_sidebar" title="Toggle Sidebar"
@@ -1262,22 +1134,13 @@
             </svg>
           </button>
         </div>
-        <!-- <div id="splitter" class="ui-resizable-handle ui-resizable-w" style="display: none;"></div> -->
-      </div>
-      <!-- <div id="sidebar_close_button_container" style="position: absolute; top: 8px; right: 8px; z-index: 1200;">
-        <button id="toggle_sidebar_button" class="show_sidebar sidebar_button" title="Toggle Sidebar"
-          style="background: none; border: none; padding: 6px; cursor: pointer;">
-          <svg id="hamburger-menu" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="34" height="34"
-            viewBox="0 0 50 50">
-            <path
-              d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z">
-            </path>
-          </svg>
-        </button>
-      </div> -->
+      </div> 
       <div id="splitter" class="ui-resizable-handle ui-resizable-w" style="display: none;" data-i18n-title="control_sidebar_width" title="Control the width of the sidebar."></div>
+      <!-- FIN ENCABEZADO -->
+
       <div id="sidebar_canvas">
         <div id="sidebar-table">
+          <!-- INICIO TÍTULO Y DATOS GENERALES -->
           <table style="width: 100%">
             <tr>
               <td>
@@ -1285,6 +1148,8 @@
                   title="Show Map"></button>
               </td>
             </tr>
+            <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
+            <!-- INICIO INFORMACIÓN DEL AGREGADOR -->
             <tr id='aggregator_header' class="infoblock_row hidden">
               <td style="text-align: center">
                 <div>
@@ -1313,6 +1178,7 @@
                 </div>
               </td>
             </tr>
+            <!-- FIN INFORMACIÓN DEL AGREGADOR -->
             <tr class="infoblock_heading">
               <td style="text-align: center" class="infoBlockTitleText">
                 <p>ADS-B VZLA</p>
@@ -1361,6 +1227,9 @@
               </td>
             </tr>
           </table>
+          <!-- FIN TÍTULO Y DATOS GENERALES -->
+          
+          <!-- INICIO SELECTOR DE FILTROS Y COLUMNAS -->
           <div id="tabs" style="min-height: 10px; overflow: auto">
             <ul>
               <li data-i18n-title="filter_flights_tooltip" title="Filter flights by specific criteria."><a href="#tab-filters" data-i18n="filters">Filters</a></li>
@@ -1369,34 +1238,8 @@
                 <a href="#" id="reset-sidebar-link" data-i18n-title="restore_sidebar_tooltip" title="Restore sidebar to default width" data-i18n="restore">Restore</a>
               </li>
             </ul>
-            <!--
-              <div id="tab-search">
-                <table id="tab-search-table" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td>
-                      <form id="search_form">
-                        <div class="infoBlockTitleText">Search:</div>
-                        <input id="search_input" name="searchBox" type="text" class="searchInput" maxlength="128" title="Searches on the hex ID, callsign, registration, and type.">
-                        <button class="formButton" type="submit">Search</button>
-                        <button class="formButton" type="button" id="search_clear_button">Clear Search</button>
-                      </form>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <form id="jump_form">
-                        <div class="infoBlockTitleText">Jump to Airport or Latitude, Longitude:</div>
-                        <input id="jump_input" name="jumpBox" type="text" class="searchInput" maxlength="128" title="Search by airport code like KATL, ZBAA, or LAX">
-                        <button class="formButton" type="submit">Jump</button>
-                        <button class="formButton" type="button" id="jump_clear_button">Clear</button>
-                      </form>
-                    </td>
-                  </tr>
-                </table>
-                <div class="warning" id="search_warning" style="display:none">
-                </div>
-              </div>
-              -->
+
+            <!-- INICIO SELECTOR DE FILTROS -->
             <div id="tab-filters">
               <table cellpadding="0" cellspacing="0" id="filterTable">
                 <tbody>
@@ -1468,22 +1311,28 @@
                 </tbody>
               </table>
             </div>
+            <!-- FIN SELECTOR DE FILTROS -->
+
+            <!-- INICIO SELECTOR DE COLUMNAS -->
             <div id="tab-columns">
               <ul id="sortableColumns"></ul>
             </div>
+            <!-- FIN SELECTOR DE COLUMNAS -->
           </div>
+          <!-- FIN SELECTOR DE FILTROS Y COLUMNAS -->
 
-          <!-- <table id="planesTable" style="width: 100%">
-          </table> -->
-
+          <!-- INICIO TABLA DE AVIONES -->
           <div class="planes-table-wrapper">
             <div class="planes-table-title" data-i18n="aircraft_list">Aircraft List</div>
             <table id="planesTable" style="width: 100%">
             </table>
           </div>
+          <!-- FIN TABLA DE AVIONES -->
 
+          <!-- INICIO LEYENDA DE COLORES SEGÚN FUENTE -->
           <div id="legend" class="legend">
           </div>
+          <!-- FIN LEYENDA DE COLORES SEGÚN FUENTE -->
 
           <!-- INICIO SECCIÓN AVIONES DE INTERÉS -->
           <div id="starred-aircraft-section" class="starred-aircraft-section hidden-by-setting">
@@ -1505,6 +1354,7 @@
     <!-- FIN MENÚ LATERAL DERECHO -->
   </div>
 
+  <!-- INICIO BLOQUE DE ERRORES -->
   <div id="update_error" class="hidden error_box" data-i18n="error_fetching_data">
     Problem fetching data from the server:<br>
     <span id="update_error_detail"></span>
@@ -1521,6 +1371,7 @@
   <div id="inaccurate_warning" class='identSmall hidden inaccurate_warning'></div>
   <div id="js_error" class="hidden"></div>
   <div id="container_splitter"></div>
+  <!-- FIN BLOQUE DE ERRORES -->
 
   <script>let databaseFolder = "db-8108b4e";</script>
   <!-- JS_ANCHOR1 -->
@@ -1698,10 +1549,6 @@
   </script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">
-
-</body>
-
-</html>
 
 </body>
 
