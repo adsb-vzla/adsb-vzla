@@ -843,6 +843,12 @@ input.error {
 
 }
 
+#resetUserScaleBtn,
+#resetIconScaleBtn {
+    font-size: calc(11px * var(--SCALE));
+
+}
+
 .link,
 .link a {
     color: #527fff;
@@ -1152,7 +1158,7 @@ table.infoSectionTable tr td {
     position: fixed !important;
     top: calc(10px * var(--SCALE));
     left: calc(10px * var(--SCALE));
-    width: calc(220px * var(--SCALE)) !important;
+    width: calc(240px * var(--SCALE)) !important;
     max-height: calc(80vh) !important;
     height: auto !important;
     background-color: rgba(19,19,19,0.98) !important;
@@ -1800,8 +1806,8 @@ html .ui-button.ui-state-disabled:active {
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
 
-    grid-template-columns:
-        minmax(150px, 150px) minmax(200px, 200px) minmax(150px, auto) minmax(150px, auto) minmax(170px, auto);
+    /* grid-template-columns:
+        minmax(150px, 150px) minmax(200px, 200px) minmax(150px, auto) minmax(150px, auto) minmax(170px, auto); */
     grid-template-rows: auto 64px;
     grid-template-areas:
         "dateLocal timeHint hoursHint minutesHint speedHint"
@@ -1816,6 +1822,7 @@ html .ui-button.ui-state-disabled:active {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    z-index: 10020 !important;
 }
 
 #replayBar button#replayPlay {
@@ -2033,7 +2040,6 @@ div.ui-slider::before {
     z-index: 1;
 }
 
-/* asegurar handle visible y con misma estética */
 #userScaleSlider .ui-slider-handle,
 #iconScaleSlider .ui-slider-handle,
 div.ui-slider .ui-slider-handle {
@@ -2043,20 +2049,27 @@ div.ui-slider .ui-slider-handle {
     transform: translate(-50%, -50%) !important;
     margin: 0 !important;
     z-index: 6 !important;
-    /* background: var(--BASE-COLOR) !important;
-  border: 1px solid var(--LIGHTER-BASE-COLOR) !important; */
     border-radius: 0.5rem !important;
     background: var(--LIGHTER-BASE-COLOR);
     border: 1px solid var(--DARKER-BASE-COLOR);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.22);
 }
 
-/* Solo para estos dos sliders */
 #userScaleSlider .ui-slider-handle,
 #iconScaleSlider .ui-slider-handle {
     width: 25px !important;
     height: 20px !important;
-    transform: translate(-50%, -50%) !important;
+    border-radius: 3px !important;
+    position: absolute !important;
+    transition: transform 0.1s ease;
+}
+#userScaleSlider .ui-slider-handle::after,
+#iconScaleSlider .ui-slider-handle::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
 }
 
 .layer-switcher.shown.layer-switcher-activation-mode-click>button {
