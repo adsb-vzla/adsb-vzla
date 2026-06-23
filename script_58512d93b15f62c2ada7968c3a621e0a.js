@@ -407,8 +407,12 @@ function updateDistanceLine() {
             let secondsMissing = (Date.now() - ppMissingSince.get(key)) / 1000;
 
             let textContainer = document.getElementById('dist-text-content');
+
             if (textContainer) {
-                textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${Math.ceil(15 - secondsMissing)}s`;
+                // textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${Math.ceil(15 - secondsMissing)}s`;
+                let signalLost = getTranslatedText('signal_lost', 'SIGNAL LOST');
+                let retrying = getTranslatedText('retrying', 'Retrying...');
+                textContainer.innerHTML = `<b style="color:red;">${signalLost}</b><br>${retrying} ${Math.ceil(15 - secondsMissing)}s`;
             }
 
             if (secondsMissing >= 15) {
@@ -469,7 +473,12 @@ function updateDistanceLine() {
 
         let textContainer = document.getElementById('dist-text-content');
         if (textContainer) {
-            textContainer.innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+            // textContainer.innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+            let distLabel = getTranslatedText('dist_label', 'Dist:');
+            let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
+            let nm = getTranslatedText('nm', 'NM');
+            let ft = getTranslatedText('ft', 'ft');
+            textContainer.innerHTML = `${distLabel} ${distance.toFixed(2)} ${nm}<br>${altDiffLabel} ${altDiff} ${ft}`;
         }
 
         distanceOverlay.setPosition(midPointProj);
@@ -574,7 +583,10 @@ function updateDistanceLine() {
 
                 const textContainer = ov.getElement().querySelector('.pair-text-content');
                 if (textContainer) {
-                    textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
+                    // textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
+                    let signalLost = getTranslatedText('signal_lost', 'SIGNAL LOST');
+                    let retrying = getTranslatedText('retrying', 'Retrying...');
+                    textContainer.innerHTML = `<b style="color:red;">${signalLost}</b><br>${retrying} ${remaining}s`;
                 }
 
                 // Posicionar el overlay donde sea posible
@@ -698,7 +710,14 @@ function updateDistanceLine() {
 
             const textContainer = ov.getElement().querySelector('.pair-text-content');
             if (textContainer) {
-                textContainer.innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+                // textContainer.innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
+                // if (isHidden) textContainer.style.display = 'none';
+                // else textContainer.style.display = 'block';
+                let distLabel = getTranslatedText('dist_label', 'Dist:');
+                let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
+                let nm = getTranslatedText('nm', 'NM');
+                let ft = getTranslatedText('ft', 'ft');
+                textContainer.innerHTML = `${distLabel} ${distance.toFixed(2)} ${nm}<br>${altDiffLabel} ${altDiff} ${ft}`;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';
             }
@@ -771,42 +790,61 @@ function setGroundPoint(lonlat) {
 // *************** INICIO TOOLTIPS (TIERRA-AERONAVE)******************
 // *******************************************************************
 function taStep1Message() {
+    let msg = 'Click on the map to mark point A.';
     switch (distanceToGroundModeType) {
         case '1A1B':
-            return 'Click on the map to mark point A.';
+            msg = getTranslatedText('ta_click_map_point_a', 'Click on the map to mark point A.');
+            break;
         case '1A_nB':
-            return 'Click on the map to mark a single point A.';
+            msg = getTranslatedText('ta_click_map_single_point_a', 'Click on the map to mark a single point A.');
+            break;
         case 'nA_1B':
-            return 'Click on the map to mark multiple points A.';
+            msg = getTranslatedText('ta_click_map_multiple_points_a', 'Click on the map to mark multiple points A.');
+            break;
         case 'nA_nB':
-            return 'Click on the map to mark point A.';
+            msg = getTranslatedText('ta_click_map_point_a', 'Click on the map to mark point A.');
+            break;
         default:
-            return 'Click on the map to mark point A.';
+            msg = getTranslatedText('ta_click_map_point_a', 'Click on the map to mark point A.');
+            break;
     }
+    return msg;
 }
 
 function taStep2Message() {
+    let msg = 'Click on an aircraft to mark point B.';
     switch (distanceToGroundModeType) {
         case '1A1B':
-            return 'Click on an aircraft to mark point B.';
+            msg = getTranslatedText('ta_click_aircraft_point_b', 'Click on an aircraft to mark point B.');
+            break;
         case '1A_nB':
-            return 'Click on one or more aircraft to mark multiple points B.';
+            msg = getTranslatedText('ta_click_aircraft_multiple_points_b', 'Click on one or more aircraft to mark multiple points B.');
+            break;
         case 'nA_1B':
-            return 'Click on an aircraft to mark a single point B.';
+            msg = getTranslatedText('ta_click_aircraft_single_point_b', 'Click on an aircraft to mark a single point B.');
+            break;
         case 'nA_nB':
-            return 'Click on an aircraft to mark point B.';
+            msg = getTranslatedText('ta_click_aircraft_point_b', 'Click on an aircraft to mark point B.');
+            break;
         default:
-            return 'Click on an aircraft to mark point B.';
+            msg = getTranslatedText('ta_click_aircraft_point_b', 'Click on an aircraft to mark point B.');
+            break;
     }
+    return msg;
 }
 
 function taPreMessage() {
     switch (distanceToGroundModeType) {
-        case '1A1B': return '1 Point - 1 Aircraft Mode';
-        case '1A_nB': return '1 Point - Multiple Aircraft Mode';
-        case 'nA_1B': return 'Multiple Points - 1 Aircraft Mode';
-        case 'nA_nB': return 'Multiple Points - Multiple Aircraft Mode';
-        default: return '';
+        case '1A1B': 
+            return getTranslatedText('ta_1_point_1_aircraft', '1 Point - 1 Aircraft Mode');
+        case '1A_nB': 
+            return getTranslatedText('ta_1_point_multiple_aircraft', '1 Point - Multiple Aircraft Mode');
+        case 'nA_1B': 
+            return getTranslatedText('ta_multiple_points_1_aircraft', 'Multiple Points - 1 Aircraft Mode');
+        case 'nA_nB': 
+            return getTranslatedText('ta_multiple_points_multiple_aircraft', 'Multiple Points - Multiple Aircraft Mode');
+        default: 
+            return '';
     }
 }
 // *******************************************************************
@@ -818,37 +856,53 @@ function taPreMessage() {
 // *******************************************************************
 function ggPreMessage() {
     switch (groundToGroundModeType) {
-        case '1A1B': return '1 Point - 1 Point Mode';
-        case '1A_nB': return '1 Point - Multiple Points Mode';
-        case 'nA_nB': return 'Multiple Points - Multiple Points Mode';
-        default: return '';
+        case '1A1B': 
+            return getTranslatedText('gg_1_point_1_point', '1 Point - 1 Point Mode');
+        case '1A_nB': 
+            return getTranslatedText('gg_1_point_multiple_points', '1 Point - Multiple Points Mode');
+        case 'nA_nB': 
+            return getTranslatedText('gg_multiple_points_multiple_points', 'Multiple Points - Multiple Points Mode');
+        default: 
+            return '';
     }
 }
 
 function ggStep1Message() {
+    let msg = 'Click on the map to mark point A.';
     switch (groundToGroundModeType) {
         case '1A1B':
-            return 'Click on the map to mark point A.';
+            msg = getTranslatedText('ta_click_map_point_a', 'Click on the map to mark point A.');
+            break;
         case '1A_nB':
-            return 'Click on the map to mark a single point A.';
+            msg = getTranslatedText('ta_click_map_single_point_a', 'Click on the map to mark a single point A.');
+            break;
         case 'nA_nB':
-            return 'Click on the map to mark point A.';
+            msg = getTranslatedText('ta_click_map_point_a', 'Click on the map to mark point A.');
+            break;
         default:
-            return 'Click on the map to mark point A.';
+            msg = getTranslatedText('ta_click_map_point_a', 'Click on the map to mark point A.');
+            break;
     }
+    return msg;
 }
 
 function ggStep2Message() {
+    let msg = 'Click on the map to mark point B.';
     switch (groundToGroundModeType) {
         case '1A1B':
-            return 'Click on the map to mark point B.';
+            msg = getTranslatedText('gg_click_map_point_b', 'Click on the map to mark point B.');
+            break;
         case '1A_nB':
-            return 'Click on the map to mark multiple points B.';
+            msg = getTranslatedText('gg_click_map_multiple_points_b', 'Click on the map to mark multiple points B.');
+            break;
         case 'nA_nB':
-            return 'Click on the map to mark point B.';
+            msg = getTranslatedText('gg_click_map_point_b', 'Click on the map to mark point B.');
+            break;
         default:
-            return 'Click on the map to mark point B.';
+            msg = getTranslatedText('gg_click_map_point_b', 'Click on the map to mark point B.');
+            break;
     }
+    return msg;
 }
 // *******************************************************************
 // ***************** FIN TOOLTIPS (TIERRA-TIERRA)*********************
@@ -1215,7 +1269,10 @@ function updateDistanceToGroundOverlay() {
 
             const textContainer = ov.getElement().querySelector('.ta-text-content');
             if (textContainer) {
-                textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
+                // textContainer.innerHTML = `<b style="color:red;">SIGNAL LOST</b><br>Retrying... ${remaining}s`;
+                let signalLost = getTranslatedText('signal_lost', 'SIGNAL LOST');
+                let retrying = getTranslatedText('retrying', 'Retrying...');
+                textContainer.innerHTML = `<b style="color:red;">${signalLost}</b><br>${retrying} ${remaining}s`;
             }
 
             const isHidden = groundPlaneHiddenState.get(key) || false;
@@ -1504,7 +1561,9 @@ function updateDistanceToGroundOverlay() {
 
         const textContainer = ov.getElement().querySelector('.ta-text-content');
         if (textContainer) {
-            textContainer.innerHTML = `Distance: ${slantText}`;
+            // textContainer.innerHTML = `Distance: ${slantText}`;
+            let distanceLabel = getTranslatedText('distance_label', 'Distance:');
+            textContainer.innerHTML = `${distanceLabel} ${slantText}`;
         }
 
         const isHidden = groundPlaneHiddenState.get(key) || false;
@@ -1739,7 +1798,9 @@ function updateGroundToGroundOverlay() {
 
         const textContainer = ov.getElement().querySelector('.gg-text-content');
         if (textContainer) {
-            textContainer.innerHTML = `Distance: ${distText}`;
+            // textContainer.innerHTML = `Distance: ${distText}`;
+            let distanceLabel = getTranslatedText('distance_label', 'Distance:');
+            textContainer.innerHTML = `${distanceLabel} ${distText}`;
         }
 
         const isHidden = ggHiddenState.get(key) || false;
@@ -1777,14 +1838,140 @@ function updateGroundToGroundOverlay() {
 // ***** FIN FUNCIÓN ACTUALIZAR DISTANCIA TIERRA-TIERRA ******
 // ***********************************************************
 
+// *******************************************************************
+// ** INICIO FUNCIÓN ACTUALIZAR IDIOMA DE LOS TOOLTIPS DE DISTANCIA **
+// *******************************************************************
+function updateDistanceGuideContent() {
+    const guideEl = document.getElementById('distance-guide-element');
+    if (!guideEl || guideEl.style.display !== 'block') return;
+
+    const currentText = guideEl.innerHTML;
+
+    let messageType = 'step1';
+
+    const taWarningPatterns = [
+        'First mark point A.',
+        'First mark at least one point A.',
+        'Primero marca el punto A.',
+        'Primero marca al menos un punto A.',
+    ];
+
+    const step2Patterns = [
+        'Click on an aircraft to mark point B.',
+        'Click on one or more aircraft to mark multiple points B.',
+        'Click on an aircraft to mark a single point B.',
+        'Haz clic en una aeronave para marcar el punto B.',
+        'Haz clic en una o más aeronaves para marcar múltiples puntos B.',
+        'Haz clic en una aeronave para marcar un único punto B.'
+    ];
+
+    const pairsPatterns = [
+        'First selected. Click another aircraft to form a pair, or click this aircraft again to anchor it.',
+        'Anchor aircraft. Now click on B aircraft to create pairs with A. Click A again to unanchor.',
+        'Pair already exists.',
+        'Independent pair added',
+        'Pair added',
+        'Anchor disabled',
+        'Primero seleccionado. Haga clic en otro avión para formar un par, o haga clic en este avión nuevamente para anclarlo.',
+        'Anclar avión. Ahora haga clic en un avión B para crear pares con A. Haga clic en A nuevamente para desanclar.',
+        'El par ya existe.',
+        'Par independiente añadido',
+        'Par añadido',
+        'Anclaje desactivado',
+    ];
+    
+    const ggStep2Patterns = [
+        'Click on the map to mark point B.',
+        'Click on the map to mark multiple points B.',
+        'Haz clic en el mapa para marcar el punto B.',
+        'Haz clic en el mapa para marcar múltiples puntos B.'
+    ];
+
+    let isTAWarning = taWarningPatterns.some(pattern => currentText.includes(pattern));
+    let isStep2 = step2Patterns.some(pattern => currentText.includes(pattern));
+    let isPairs = pairsPatterns.some(pattern => currentText.includes(pattern));
+    let isGGStep2 = ggStep2Patterns.some(pattern => currentText.includes(pattern));
+
+    let newText = '';
+    
+    if (isTAWarning) {
+        if (currentText.includes('First mark point A.') || currentText.includes('Primero marca el punto A.')) {
+            newText = getTranslatedText('first_mark_point_a', 'First mark point A.');
+        } else if (currentText.includes('First mark at least one point A.') || currentText.includes('Primero marca al menos un punto A.')) {
+            newText = getTranslatedText('first_mark_at_least_one_point_a', 'First mark at least one point A.');
+        }
+    } else if (isPairs || (distanceBetweenPlanesMode && planeDistanceModeType === 'pairs')) {
+        if (currentText.includes('First selected') || currentText.includes('Primero seleccionado')) {
+            newText = getTranslatedText('first_selected', 'First selected. Click another aircraft to form a pair, or click this aircraft again to anchor it.');
+        } else if (currentText.includes('Anchor aircraft') || currentText.includes('Anclar avión')) {
+            newText = getTranslatedText('anchor_aircraft', 'Anchor aircraft. Now click on B aircraft to create pairs with A. Click A again to unanchor.');
+        } else if (currentText.includes('Pair already exists') || currentText.includes('El par ya existe')) {
+            newText = getTranslatedText('pair_already_exists', 'Pair already exists.');
+        } else if (currentText.includes('Independent pair added') || currentText.includes('Par independiente añadido')) {
+            newText = getTranslatedText('independent_pair_added', 'Independent pair added.');
+        } else if (currentText.includes('Pair added') || currentText.includes('Par añadido')) {
+            newText = getTranslatedText('pair_added', 'Pair added.');
+        } else if (currentText.includes('Anchor disabled') || currentText.includes('Anclaje desactivado')) {
+            newText = getTranslatedText('anchor_disabled', 'Anchor disabled.');
+        } else {
+            const modeText = getTranslatedText('pairs_mode', 'Pairs Mode');
+            const clickMsg = getTranslatedText('click_two_aircraft_sequence', 'Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.');
+            newText = `<center>${modeText}</center><br>${clickMsg}`;
+        }
+    } else if (isStep2) {
+        const step2 = taStep2Message();
+        newText = `<center>${step2}</center>`;
+    } else if (isGGStep2) {
+        const step2 = ggStep2Message();
+        newText = `<center>${step2}</center>`;
+    } else {
+        if (distanceToGroundMode) {
+            const pre = taPreMessage();
+            const step1 = taStep1Message();
+            newText = `<center>${pre}</center><br><center>${step1}</center>`;
+        } else if (groundToGroundMode) {
+            const pre = ggPreMessage();
+            const step1 = ggStep1Message();
+            newText = `<center>${pre}</center><br><center>${step1}</center>`;
+        } else if (distanceBetweenPlanesMode) {
+            let modeText = '';
+            switch (planeDistanceModeType) {
+                case '1A1B':
+                    modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+                    break;
+                case 'pairs':
+                    modeText = getTranslatedText('pairs_mode', 'Pairs Mode');
+                    break;
+                default:
+                    modeText = planeDistanceModeType || '1A1B';
+                    break;
+            }
+            const clickMsg = getTranslatedText('click_two_aircraft_measure', 'Click on two aircraft to measure the distance.');
+            newText = `<center>${modeText}</center><br>${clickMsg}`;
+        } else {
+            return;
+        }
+    }
+
+    if (newText && newText !== currentText) {
+        guideEl.innerHTML = newText;
+    }
+}
+
+window.updateDistanceGuideContent = updateDistanceGuideContent;
+// *******************************************************************
+// *** FIN FUNCIÓN ACTUALIZAR IDIOMA DE LOS TOOLTIPS DE DISTANCIA ****
+// *******************************************************************
+
 // ***********************************************************
 // ********* INICIO FUNCIÓN CONTENEDOR DE TOOLTIPS ***********
 // ***********************************************************
 function showDistanceGuide(text) {
-    const host = document.getElementById('map_container') || document.body;
-    if (!distanceGuideEl) {
-        distanceGuideEl = document.createElement('div');
-        Object.assign(distanceGuideEl.style, {
+    let guideEl = document.getElementById('distance-guide-element');
+    if (!guideEl) {
+        guideEl = document.createElement('div');
+        guideEl.id = 'distance-guide-element';
+        Object.assign(guideEl.style, {
             position: 'absolute',
             top: '50px',
             left: '50%',
@@ -1800,11 +1987,20 @@ function showDistanceGuide(text) {
             zIndex: '10000',
             display: 'none',
         });
-        host.appendChild(distanceGuideEl);
+        const host = document.getElementById('map_container') || document.body;
+        host.appendChild(guideEl);
     }
-    distanceGuideEl.innerHTML = text;
-    distanceGuideEl.style.display = 'block';
+    guideEl.innerHTML = text;
+    guideEl.style.display = 'block';
 }
+
+const originalHideDistanceGuide = window.hideDistanceGuide || function() {};
+window.hideDistanceGuide = function() {
+    const guideEl = document.getElementById('distance-guide-element');
+    if (guideEl) {
+        guideEl.style.display = 'none';
+    }
+};
 // ***********************************************************
 // ********** FIN FUNCIÓN CONTENEDOR DE TOOLTIPS *************
 // ***********************************************************
@@ -1813,7 +2009,10 @@ function showDistanceGuide(text) {
 // ******** INICIO FUNCIÓN OCULTAR TOOLTIPS GUÍA *************
 // ***********************************************************
 function hideDistanceGuide() {
-    if (distanceGuideEl) distanceGuideEl.style.display = 'none';
+    const guideEl = document.getElementById('distance-guide-element');
+    if (guideEl) {
+        guideEl.style.display = 'none';
+    }
 }
 // ***********************************************************
 // ********** FIN FUNCIÓN OCULTAR TOOLTIPS GUÍA **************
@@ -2089,12 +2288,12 @@ if (document.readyState === 'loading') {
 
             modal.innerHTML = `
                 <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-                <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: bold;">Reset all settings</h3>
+                <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: bold;">${getTranslatedText('reset_all_settings', 'Reset all settings')}</h3>
                 <p style="margin: 0 0 8px 0; line-height: 1.5;">
-                    This will restore all settings to their default values.
+                    ${getTranslatedText('reset_all_settings_confirm', 'This will restore all settings to their default values.')}
                 </p>
                 <p style="margin: 0 0 20px 0; color: #e74c3c; font-weight: bold;">
-                    The page will reload to apply the changes.
+                    ${getTranslatedText('reset_all_settings_reload', 'The page will reload to apply the changes.')}
                 </p>
                 <div style="display: flex; gap: 12px; justify-content: center;">
                     <button id="reset-confirm-cancel" style="
@@ -2106,7 +2305,7 @@ if (document.readyState === 'loading') {
                         font-size: 14px;
                         font-weight: bold;
                         color: var(--TXTCOLOR2, #333);
-                    ">Cancel</button>
+                    ">${getTranslatedText('cancel', 'Cancel')}</button>
                     <button id="reset-confirm-ok" style="
                         padding: 10px 24px;
                         border: none;
@@ -2116,7 +2315,7 @@ if (document.readyState === 'loading') {
                         cursor: pointer;
                         font-size: 14px;
                         font-weight: bold;
-                    ">Reset & Reload</button>
+                    ">${getTranslatedText('reset_reload', 'Reset & Reload')}</button>
                 </div>
             `;
 
@@ -2141,24 +2340,6 @@ if (document.readyState === 'loading') {
             const confirmBtn = document.getElementById('reset-confirm-ok');
             if (confirmBtn) {
                 confirmBtn.addEventListener('click', function () {
-                    const loadingMsg = document.createElement('div');
-                    loadingMsg.style.cssText = `
-                        position: fixed;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        background: rgba(0, 0, 0, 0.85);
-                        color: white;
-                        padding: 16px 32px;
-                        border-radius: 8px;
-                        z-index: 20001;
-                        font-size: 16px;
-                        font-weight: bold;
-                        text-align: center;
-                    `;
-                    loadingMsg.innerHTML = '🔄 Resetting settings...<br><span style="font-size: 12px;">Page will reload</span>';
-                    document.body.appendChild(loadingMsg);
-
                     if (typeof resetSettings === 'function') {
                         resetSettings();
                     } else {
@@ -2373,7 +2554,8 @@ function fetchFail(jqxhr, status, error) {
             checkMovement();
         }
         status = jqxhr.status;
-        if (jqxhr.readyState == 0) error = "Can't connect to server, check your network!";
+        // if (jqxhr.readyState == 0) error = "Can't connect to server, check your network!";
+        if (jqxhr.readyState == 0) error = getTranslatedText('error_connect_server', "Can't connect to server, check your network!");
         let errText = status + (error ? (": " + error) : "");
         console.log(jqxhr);
         console.log(error);
@@ -2480,7 +2662,9 @@ function fetchDone(data) {
         if (last == now && !globeIndex) {
             StaleReceiverCount++;
             if (StaleReceiverCount > 5) {
-                jQuery("#update_error_detail").text("The data from the server hasn't been updated in a while.");
+                // jQuery("#update_error_detail").text("The data from the server hasn't been updated in a while.");
+                let errorMsg = getTranslatedText('error_data_not_updated', "The data from the server hasn't been updated in a while.");
+                jQuery("#update_error_detail").text(errorMsg);
                 jQuery("#update_error").css('display', 'block');
             }
         } else if (StaleReceiverCount > 0) {
@@ -2830,13 +3014,21 @@ function replaySpeedChange(arg) {
 // ***** INICIO OBTENER TEXTO TRADUCIDO ****
 // *****************************************
 function getTranslatedText(key, fallback) {
+    // Usar directamente el sistema de traducción global sin llamarse a sí misma
     if (typeof window.translate !== 'undefined' && window.translate.t) {
         const translated = window.translate.t(key);
         if (translated !== key) return translated;
-    } else if (typeof window.t === 'function') {
+    }
+    
+    if (typeof window.t === 'function') {
         const translated = window.t(key);
         if (translated !== key) return translated;
     }
+    
+    // Si tenemos la función global getTranslatedText, usarla (pero evitando recursión)
+    // NOTA: No podemos usar window.getTranslatedText aquí porque es esta misma función
+    // La función global ya está expuesta por language_patch.js
+    
     return fallback || key;
 }
 // *****************************************
@@ -5275,22 +5467,26 @@ function ol_map_init() {
             const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
             if (planeHex) {
                 if (distanceToGroundModeType === '1A1B' && groundPoints.length === 0) {
-                    showDistanceGuide('First mark point A.');
+                    // showDistanceGuide('First mark point A.');
+                    showDistanceGuide(getTranslatedText('first_mark_point_a', 'First mark point A.'));
                     evt.stopPropagation();
                     return;
                 }
                 if (distanceToGroundModeType === '1A_nB' && groundPoints.length === 0) {
-                    showDistanceGuide('First mark point A.');
+                    // showDistanceGuide('First mark point A.');
+                    showDistanceGuide(getTranslatedText('first_mark_point_a', 'First mark point A.'));
                     evt.stopPropagation();
                     return;
                 }
                 if (distanceToGroundModeType === 'nA_1B' && groundPoints.length === 0) {
-                    showDistanceGuide('First mark at least one point A.');
+                    // showDistanceGuide('First mark at least one point A.');
+                    showDistanceGuide(getTranslatedText('first_mark_at_least_one_point_a', 'First mark at least one point A.'));
                     evt.stopPropagation();
                     return;
                 }
                 if (distanceToGroundModeType === 'nA_nB' && !taPendingGround) {
-                    showDistanceGuide('First mark point A.');
+                    // showDistanceGuide('First mark point A.');
+                    showDistanceGuide(getTranslatedText('first_mark_point_a', 'First mark point A.'));
                     evt.stopPropagation();
                     return;
                 }
@@ -5495,17 +5691,20 @@ function ol_map_init() {
                     if (planeHex === selectedPlaneA) {
                         // clicking anchor again clears it
                         selectedPlaneA = null;
-                        showDistanceGuide('Anchor disabled.');
+                        // showDistanceGuide('Anchor disabled.');
+                        showDistanceGuide(getTranslatedText('anchor_disabled', 'Anchor disabled.'));
                         return;
                     }
                     const key = `${selectedPlaneA}|${planeHex}`;
                     if (pairMap.has(key)) {
-                        showDistanceGuide('Pair already exists.');
+                        // showDistanceGuide('Pair already exists.');
+                        showDistanceGuide(getTranslatedText('pair_already_exists', 'Pair already exists.'));
                         return;
                     }
                     pairMap.set(key, { a: selectedPlaneA, b: planeHex });
                     pairOrder.push(key);
-                    showDistanceGuide('Pair added.');
+                    // showDistanceGuide('Pair added.');
+                    showDistanceGuide(getTranslatedText('pair_added', 'Pair added.'));
                     updateDistanceLine();
                     if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
                     distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
@@ -5515,7 +5714,8 @@ function ol_map_init() {
                 // No anchor active: use pairBuffer to form independent pairs or set anchor by clicking same aircraft twice
                 if (pairBuffer.length === 0) {
                     pairBuffer.push(planeHex);
-                    showDistanceGuide('First selected. Click another aircraft to form a pair, or click this aircraft again to anchor it.');
+                    // showDistanceGuide('First selected. Click another aircraft to form a pair, or click this aircraft again to anchor it.');
+                    showDistanceGuide(getTranslatedText('first_selected', 'First selected. Click another aircraft to form a pair, or click this aircraft again to anchor it.'));
                     return;
                 } else {
                     const first = pairBuffer[0];
@@ -5523,20 +5723,23 @@ function ol_map_init() {
                     if (first === planeHex) {
                         selectedPlaneA = planeHex;
                         pairBuffer = [];
-                        showDistanceGuide('Anchor aircraft. Now click on B aircraft to create pairs with A. Click A again to unanchor.');
+                        // showDistanceGuide('Anchor aircraft. Now click on B aircraft to create pairs with A. Click A again to unanchor.');
+                        showDistanceGuide(getTranslatedText('anchor_aircraft', 'Anchor aircraft. Now click on B aircraft to create pairs with A. Click A again to unanchor.'));
                         return;
                     }
 
                     const newKey = `${first}|${planeHex}`;
                     if (pairMap.has(newKey)) {
-                        showDistanceGuide('Pair already exists.');
+                        // showDistanceGuide('Pair already exists.');
+                        showDistanceGuide(getTranslatedText('pair_already_exists', 'Pair already exists.'));
                         pairBuffer = [];
                         return;
                     }
                     pairMap.set(newKey, { a: first, b: planeHex });
                     pairOrder.push(newKey);
                     pairBuffer = [];
-                    showDistanceGuide('Independent pair added.');
+                    // showDistanceGuide('Independent pair added.');
+                    showDistanceGuide(getTranslatedText('independent_pair_added', 'Independent pair added.'));
                     updateDistanceLine();
                     if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
                     distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
@@ -8641,7 +8844,21 @@ function toggleDistance() {
         selectedPlanesForDistance = [];
         selectedPlaneA = null;
         resetDistanceCalculation();
-        showDistanceGuide(`<center>${planeDistanceModeType} Mode</center><br>Click on two aircraft to measure the distance.`);
+        let modeText = '';
+        switch (planeDistanceModeType) {
+            case '1A1B':
+                modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+                break;
+            case 'pairs':
+                modeText = getTranslatedText('pairs_mode', 'Pairs Mode');
+                break;
+            default:
+                modeText = planeDistanceModeType;
+                break;
+        }
+        let clickMsg = getTranslatedText('click_two_aircraft_measure', 'Click on two aircraft to measure the distance.');
+        // showDistanceGuide(`<center>${planeDistanceModeType} Mode</center><br>Click on two aircraft to measure the distance.`);
+        showDistanceGuide(`<center>${modeText}</center><br>${clickMsg}`);
         buttonActive('#D', true);
         return;
     }
@@ -8653,9 +8870,14 @@ function toggleDistance() {
         selectedPlaneA = null;
         selectedPlanesForDistance = [];
         if (planeDistanceModeType === 'pairs') {
-            showDistanceGuide('<center>Pairs Mode</center><br>Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.');
+            let pairsMode = getTranslatedText('pairs_mode', 'Pairs Mode');
+            let pairsMsg = getTranslatedText('click_two_aircraft_sequence', 'Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.');
+            showDistanceGuide(`<center>${pairsMode}</center><br>${pairsMsg}`);
+            // showDistanceGuide('<center>Pairs Mode</center><br>Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.');
         } else {
-            showDistanceGuide(`<center>Mode ${planeDistanceModeType}</center>`);
+            // showDistanceGuide(`<center>Mode ${planeDistanceModeType}</center>`);
+            let modeLabel = getTranslatedText('mode_label', 'Mode');
+            showDistanceGuide(`<center>${modeLabel} ${planeDistanceModeType}</center>`);
         }
         buttonActive('#D', true);
     } else {
@@ -10292,6 +10514,7 @@ function initFilters() {
 // ******************************************************
 // **** FIN ACTUALIZAR IDIOMA DE COLUMNAS Y FILTROS *****
 // ******************************************************
+
 
 function getFlightAwareModeSLink(code, ident, linkText) {
     if (code !== null && code.length > 0 && code[0] !== '~' && code !== "000000") {
@@ -14322,7 +14545,6 @@ function DistanceBetweenPlanes() {
 // ***** FIN LIMPIAR DISTANCIA CALCULADA AERONAVE-AERONAVE ******
 // **************************************************************
 
-
 // ***********************************************************************
 // ** INICIO IMAGEN GENÉRICA EN SELECTED_INFOBLOCK SI EL AVIÓN NO TIENE **
 // ***********************************************************************
@@ -14757,5 +14979,5 @@ if (typeof toggleStarredList === 'undefined') {
     }
 })();
 // *******************************************************************************
-// ** INICIO FUNCIÓN PARA MOVER SETTINGS_INFOBLOCK COMO VENTANA POR LA PANTALLA **
+// ** FIN FUNCIÓN PARA MOVER SETTINGS_INFOBLOCK COMO VENTANA POR LA PANTALLA **
 // *******************************************************************************

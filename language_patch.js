@@ -293,6 +293,14 @@
             'pictures_planespotters_net_tooltip': 'Display pictures from planespotters.net (if available).',
             'wide_infoblock': 'Wide infoblock',
             'wide_infoblock_tooltip': 'Use a wider layout for the infoblock, allowing more information to be displayed in a single line.',
+            // *** reset-all-settings-btn ***
+            'reset_all_settings': 'Reset all settings',
+            'reset_all_settings_confirm': 'This will restore all settings to their default values.',
+            'reset_all_settings_reload': 'The page will reload to apply the changes.',
+            'cancel': 'Cancel',
+            'reset_reload': 'Reset & Reload',
+            'error_connect_server': "Can't connect to server, check your network!",
+            'error_data_not_updated': "The data from the server hasn't been updated in a while.",
 
             // *** NAVBAR ***
             'utc': 'UTC',
@@ -448,7 +456,47 @@
 
             'error_fetching_data': 'Problem fetching data from the server:',
 
-
+            // *** FUNCIONES DE DISTANCIA ***
+            'signal_lost': 'SIGNAL LOST',
+            'retrying': 'Retrying...',
+            'dist_label': 'Dist:',
+            'alt_diff_label': 'Alt Diff:',
+            'nm': 'NM',
+            'ft': 'ft',
+            'mode_label': 'Mode',
+            'distance_label': 'Distance:',
+            // *** Aeronave-Aeronave ***
+            '1_aircraft_1_aircraft': '1 Aircraft - 1 Aircraft Mode',
+            'select_aircraft_valid_position': 'Select an aircraft with a valid position.',
+            'select_aircraft_complete_pair': 'Select an aircraft to complete the pair.',
+            'pairs_mode': 'Pairs Mode',
+            'click_two_aircraft_measure': 'Click on two aircraft to measure the distance.',
+            'click_two_aircraft_sequence': 'Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.',
+            'first_selected': 'First selected. Click another aircraft to form a pair, or click this aircraft again to anchor it.',
+            'anchor_aircraft': 'Anchor aircraft. Now click on B aircraft to create pairs with A. Click A again to unanchor.',
+            'pair_already_exists': 'Pair already exists.',
+            'independent_pair_added': 'Independent pair added.',
+            'anchor_disabled': 'Anchor disabled.',
+            'pair_added': 'Pair added.',
+            // *** Tierra-Aeronave ***
+            'ta_click_map_point_a': 'Click on the map to mark point A.',
+            'ta_click_map_single_point_a': 'Click on the map to mark a single point A.',
+            'ta_click_map_multiple_points_a': 'Click on the map to mark multiple points A.',
+            'ta_click_aircraft_point_b': 'Click on an aircraft to mark point B.',
+            'ta_click_aircraft_multiple_points_b': 'Click on one or more aircraft to mark multiple points B.',
+            'ta_click_aircraft_single_point_b': 'Click on an aircraft to mark a single point B.',
+            'ta_1_point_1_aircraft': '1 Point - 1 Aircraft Mode',
+            'ta_1_point_multiple_aircraft': '1 Point - Multiple Aircraft Mode',
+            'ta_multiple_points_1_aircraft': 'Multiple Points - 1 Aircraft Mode',
+            'ta_multiple_points_multiple_aircraft': 'Multiple Points - Multiple Aircraft Mode',
+            'first_mark_point_a': 'First mark point A.',
+            'first_mark_at_least_one_point_a': 'First mark at least one point A.',
+            // *** Tierra-Tierra ***
+            'gg_1_point_1_point': '1 Point - 1 Point Mode',
+            'gg_1_point_multiple_points': '1 Point - Multiple Points Mode',
+            'gg_multiple_points_multiple_points': 'Multiple Points - Multiple Points Mode',
+            'gg_click_map_point_b': 'Click on the map to mark point B.',
+            'gg_click_map_multiple_points_b': 'Click on the map to mark multiple points B.',
         },
         es: {
             // *** HEAD ***
@@ -738,6 +786,14 @@
             'pictures_planespotters_net_tooltip': 'Muestra imágenes de planespotters.net (si están disponibles).',
             'wide_infoblock': 'Bloque de información ancho',
             'wide_infoblock_tooltip': 'Usa un diseño más ancho para el bloque de información, permitiendo mostrar más información en una sola línea.',
+            // *** reset-all-settings-btn ***
+            'reset_all_settings': 'Restablecer configuración',
+            'reset_all_settings_confirm': 'Esto restaurará toda la configuración a sus valores predeterminados.',
+            'reset_all_settings_reload': 'La página se recargará para aplicar los cambios.',
+            'cancel': 'Cancelar',
+            'reset_reload': 'Restablecer y Recargar',
+            'error_connect_server': '¡No se puede conectar al servidor, verifica tu red!',
+            'error_data_not_updated': 'Los datos del servidor no se han actualizado en un tiempo.',
 
             // *** NAVBAR ***
             'utc': 'UTC',
@@ -893,9 +949,49 @@
 
             'error_fetching_data': 'Problema al obtener datos del servidor:',
 
+            // *** FUNCIONES DE DISTANCIA ***
+            'signal_lost': 'SEÑAL PERDIDA',
+            'retrying': 'Reintentando...',
+            'dist_label': 'Distancia:',
+            'alt_diff_label': 'Dif. Alt.:',
+            'nm': 'NM',
+            'ft': 'ft',
+            'mode_label': 'Modo',
+            'distance_label': 'Distancia:',
+            // *** Aeronave-Aeronave ***
+            '1_aircraft_1_aircraft': 'Modo 1 Aeronave - 1 Aeronave',
+            'select_aircraft_valid_position': 'Selecciona una aeronave con posición válida.',
+            'select_aircraft_complete_pair': 'Selecciona una aeronave para completar el par.',
+            'pairs_mode': 'Modo Pares',
+            'click_two_aircraft_measure': 'Haz clic en dos aeronaves para medir la distancia.',
+            'click_two_aircraft_sequence': 'Haz clic en dos aeronaves en secuencia para crear pares independientes (A-B, C-D), o haz clic dos veces en una aeronave para anclarla y luego selecciona múltiples puntos B.',
+            'first_selected': 'Primero seleccionado. Haga clic en otro avión para formar un par, o haga clic en este avión nuevamente para anclarlo.',
+            'anchor_aircraft': 'Avión anclado. Ahora haga clic en un avión B para crear pares con A. Haga clic en A nuevamente para desanclar.',
+            'pair_already_exists': 'El par ya existe.',
+            'independent_pair_added': 'Par independiente añadido.',
+            'anchor_disabled': 'Anclaje desactivado.',
+            'pair_added': 'Par añadido.',
+            // *** Tierra-Aeronave ***
+            'ta_click_map_point_a': 'Haz clic en el mapa para marcar el punto A.',
+            'ta_click_map_single_point_a': 'Haz clic en el mapa para marcar un único punto A.',
+            'ta_click_map_multiple_points_a': 'Haz clic en el mapa para marcar múltiples puntos A.',
+            'ta_click_aircraft_point_b': 'Haz clic en una aeronave para marcar el punto B.',
+            'ta_click_aircraft_multiple_points_b': 'Haz clic en una o más aeronaves para marcar múltiples puntos B.',
+            'ta_click_aircraft_single_point_b': 'Haz clic en una aeronave para marcar un único punto B.',
+            'ta_1_point_1_aircraft': 'Modo 1 Punto - 1 Aeronave',
+            'ta_1_point_multiple_aircraft': 'Modo 1 Punto - Múltiples Aeronaves',
+            'ta_multiple_points_1_aircraft': 'Modo Múltiples Puntos - 1 Aeronave',
+            'ta_multiple_points_multiple_aircraft': 'Modo Múltiples Puntos - Múltiples Aeronaves',
+            'first_mark_point_a': 'Primero marca el punto A.',
+            'first_mark_at_least_one_point_a': 'Primero marca al menos un punto A.',
+            // *** Tierra-Tierra ***
+            'gg_1_point_1_point': 'Modo 1 Punto - 1 Punto',
+            'gg_1_point_multiple_points': 'Modo 1 Punto - Múltiples Puntos',
+            'gg_multiple_points_multiple_points': 'Modo Múltiples Puntos - Múltiples Puntos',
+            'gg_click_map_point_b': 'Haz clic en el mapa para marcar el punto B.',
+            'gg_click_map_multiple_points_b': 'Haz clic en el mapa para marcar múltiples puntos B.',
         }
     };
-
     // *****************************************
     // ********* FIN TRADUCCIONES **************
     // *****************************************
@@ -903,14 +999,17 @@
     // *****************************************
     // *** INICIO FUNCIONES DE TRADUCCIÓN ******
     // *****************************************
-    let currentLang = localStorage.getItem('app_lang') || 'en';
+    const DEFAULT_LANG = 'es';
+    let currentLang = localStorage.getItem('app_lang');
 
-    if (!localStorage.getItem('app_lang')) {
+    if (!currentLang) {
         const browserLang = navigator.language || navigator.userLanguage;
         if (browserLang && browserLang.startsWith('es')) {
             currentLang = 'es';
-            localStorage.setItem('app_lang', 'es');
+        } else {
+            currentLang = DEFAULT_LANG;
         }
+        localStorage.setItem('app_lang', currentLang);
     }
 
     function t(key) {
@@ -922,12 +1021,30 @@
         if (translations[lang]) {
             currentLang = lang;
             localStorage.setItem('app_lang', lang);
-            updateUI();
+
+            if (typeof updateUI === 'function') {
+                updateUI();
+            }
+
+            setTimeout(function () {
+                if (typeof window.updateDistanceGuideContent === 'function') {
+                    window.updateDistanceGuideContent();
+                }
+            }, 50);
+
             document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
             return true;
         }
         return false;
     }
+
+    document.addEventListener('languageChanged', function (e) {
+        setTimeout(function () {
+            if (typeof window.updateDistanceGuideContent === 'function') {
+                window.updateDistanceGuideContent();
+            }
+        }, 50);
+    });
 
     function getLang() {
         return currentLang;
@@ -1018,8 +1135,6 @@
     function initLanguagePatch() {
         updateUI();
         addLanguageSelector();
-        console.log(`🌐 Idioma: ${currentLang}`);
-        console.log(`📝 ${Object.keys(translations[currentLang]).length} traducciones cargadas`);
     }
 
     window.translate = { t, setLang, getLang, updateUI };
@@ -1035,4 +1150,24 @@
     // *** FIN INICIALIZACIÓN DE LA FUNCIÓN ****
     // *****************************************
 
+    // ****************************************************
+    // ** INICIO INICIALIZACIÓN DE FUNCIÓN DE TRADUCCIÓN **
+    // ****************************************************
+    function getTranslatedText(key, fallback) {
+        const translation = translations[currentLang]?.[key];
+        return translation !== undefined ? translation : (fallback || key);
+    }
+
+    window.getTranslatedText = getTranslatedText;
+
+    window.translate = {
+        t: t,
+        setLang: setLang,
+        getLang: getLang,
+        updateUI: updateUI,
+        getTranslatedText: getTranslatedText
+    };
+    // ****************************************************
+    // *** FIN INICIALIZACIÓN DE FUNCIÓN DE TRADUCCIÓN ****
+    // ****************************************************
 })();
