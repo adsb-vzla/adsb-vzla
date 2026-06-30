@@ -835,15 +835,15 @@ function taStep2Message() {
 
 function taPreMessage() {
     switch (distanceToGroundModeType) {
-        case '1A1B': 
+        case '1A1B':
             return getTranslatedText('ta_1_point_1_aircraft', '1 Point - 1 Aircraft Mode');
-        case '1A_nB': 
+        case '1A_nB':
             return getTranslatedText('ta_1_point_multiple_aircraft', '1 Point - Multiple Aircraft Mode');
-        case 'nA_1B': 
+        case 'nA_1B':
             return getTranslatedText('ta_multiple_points_1_aircraft', 'Multiple Points - 1 Aircraft Mode');
-        case 'nA_nB': 
+        case 'nA_nB':
             return getTranslatedText('ta_multiple_points_multiple_aircraft', 'Multiple Points - Multiple Aircraft Mode');
-        default: 
+        default:
             return '';
     }
 }
@@ -856,13 +856,13 @@ function taPreMessage() {
 // *******************************************************************
 function ggPreMessage() {
     switch (groundToGroundModeType) {
-        case '1A1B': 
+        case '1A1B':
             return getTranslatedText('gg_1_point_1_point', '1 Point - 1 Point Mode');
-        case '1A_nB': 
+        case '1A_nB':
             return getTranslatedText('gg_1_point_multiple_points', '1 Point - Multiple Points Mode');
-        case 'nA_nB': 
+        case 'nA_nB':
             return getTranslatedText('gg_multiple_points_multiple_points', 'Multiple Points - Multiple Points Mode');
-        default: 
+        default:
             return '';
     }
 }
@@ -1879,7 +1879,7 @@ function updateDistanceGuideContent() {
         'Par añadido',
         'Anclaje desactivado',
     ];
-    
+
     const ggStep2Patterns = [
         'Click on the map to mark point B.',
         'Click on the map to mark multiple points B.',
@@ -1893,7 +1893,7 @@ function updateDistanceGuideContent() {
     let isGGStep2 = ggStep2Patterns.some(pattern => currentText.includes(pattern));
 
     let newText = '';
-    
+
     if (isTAWarning) {
         if (currentText.includes('First mark point A.') || currentText.includes('Primero marca el punto A.')) {
             newText = getTranslatedText('first_mark_point_a', 'First mark point A.');
@@ -1994,8 +1994,8 @@ function showDistanceGuide(text) {
     guideEl.style.display = 'block';
 }
 
-const originalHideDistanceGuide = window.hideDistanceGuide || function() {};
-window.hideDistanceGuide = function() {
+const originalHideDistanceGuide = window.hideDistanceGuide || function () { };
+window.hideDistanceGuide = function () {
     const guideEl = document.getElementById('distance-guide-element');
     if (guideEl) {
         guideEl.style.display = 'none';
@@ -2365,6 +2365,218 @@ if (document.readyState === 'loading') {
 // **********************************************************
 // **** FIN FUNCIÓN RESTAURAR CONFIGURACIÓN POR DEFECTO *****
 // **********************************************************
+
+// ************************************************
+// ** INICIO FUNCIÓN ACTUALIZAR TÍTULOS DE CAPAS **
+// ************************************************
+function updateLayerTitles() {
+    if (!OLMap) return;
+    const layers = OLMap.getLayers().getArray();
+    let updatedCount = 0;
+
+    // **********************************************
+    // ** INICIO FUNCIÓN TRADUCIR TÍTULOS DE CAPAS **
+    // **********************************************
+    // function translateLayer(layer) {
+    //     if (!layer) return;
+    //     if (typeof layer.getLayers === 'function') {
+    //         const groupName = layer.get('name');
+    //         if (groupName) {
+    //             const translatedTitle = getLayerTitle('group_' + groupName, layer.get('title'));
+    //             if (translatedTitle !== layer.get('title')) {
+    //                 layer.set('title', translatedTitle);
+    //                 updatedCount++;
+    //             }
+    //         }
+    //         const subLayers = layer.getLayers();
+    //         if (subLayers) {
+    //             subLayers.forEach(subLayer => {
+    //                 translateLayer(subLayer);
+    //             });
+    //         }
+    //     } else if (typeof layer.get === 'function') {
+    //         const name = layer.get('name');
+    //         if (name) {
+    //             const translatedTitle = getLayerTitle(name, layer.get('title'));
+    //             if (translatedTitle !== layer.get('title')) {
+    //                 layer.set('title', translatedTitle);
+    //                 updatedCount++;
+    //             }
+    //         }
+    //     }
+    // }
+    function translateLayer(layer) {
+        if (!layer) return;
+
+        // Verificar si es un grupo (tiene método getLayers)
+        if (typeof layer.getLayers === 'function') {
+            // Es un grupo de capas
+            const groupName = layer.get('name');
+            const groupTitle = layer.get('title');
+
+            // Traducir título del grupo
+            if (groupName) {
+                const translatedTitle = getLayerTitle('group_' + groupName, groupTitle);
+                if (translatedTitle !== groupTitle) {
+                    layer.set('title', translatedTitle);
+                    updatedCount++;
+                    console.log(`Grupo actualizado: ${groupName} -> ${translatedTitle}`);
+                }
+            } else if (groupTitle) {
+                // Si no tiene name, intentar traducir por el título
+                // Esto es clave para los grupos de distancia que no tienen 'name'
+                const translatedTitle = getLayerTitle(groupTitle, groupTitle);
+                if (translatedTitle !== groupTitle) {
+                    layer.set('title', translatedTitle);
+                    updatedCount++;
+                    console.log(`Grupo actualizado (por título): ${groupTitle} -> ${translatedTitle}`);
+                }
+            }
+
+            // ⭐ IMPORTANTE: Recursivamente traducir capas hijas
+            const subLayers = layer.getLayers();
+            if (subLayers) {
+                subLayers.forEach(subLayer => {
+                    translateLayer(subLayer);
+                });
+            }
+        } else if (typeof layer.get === 'function') {
+            // Es una capa individual
+            const name = layer.get('name');
+            const title = layer.get('title');
+
+            if (name) {
+                const translatedTitle = getLayerTitle(name, title);
+                if (translatedTitle !== title) {
+                    layer.set('title', translatedTitle);
+                    updatedCount++;
+                    console.log(`Capa actualizada: ${name} -> ${translatedTitle}`);
+                }
+            } else if (title) {
+                // Si no tiene name, intentar traducir por el título
+                const translatedTitle = getLayerTitle(title, title);
+                if (translatedTitle !== title) {
+                    layer.set('title', translatedTitle);
+                    updatedCount++;
+                    console.log(`Capa actualizada (por título): ${title} -> ${translatedTitle}`);
+                }
+            }
+        }
+    }
+    // *******************************************
+    // ** FIN FUNCIÓN TRADUCIR TÍTULOS DE CAPAS **
+    // *******************************************
+
+    layers.forEach(layer => {
+        translateLayer(layer);
+    });
+
+    refreshLayerSwitcher();
+}
+// *********************************************
+// ** FIN FUNCIÓN ACTUALIZAR TÍTULOS DE CAPAS **
+// *********************************************
+
+// *********************************************
+// ** INICIO FUNCIÓN ACTUALIZAR MENÚ DE CAPAS **
+// *********************************************
+function refreshLayerSwitcher() {
+    if (!OLMap) {
+        console.warn('refreshLayerSwitcher: OLMap no está inicializado');
+        return;
+    }
+    let layerSwitcherControl = null;
+    OLMap.getControls().forEach(control => {
+        if (control && control.constructor) {
+            const name = control.constructor.name || control.constructor.displayName || '';
+            if (name === 'LayerSwitcher' ||
+                (control.element && control.element.className &&
+                    control.element.className.includes('layer-switcher'))) {
+                layerSwitcherControl = control;
+            }
+        }
+    });
+    if (layerSwitcherControl) {
+        try {
+            if (typeof layerSwitcherControl.renderPanel === 'function') {
+                layerSwitcherControl.renderPanel();
+            }
+            if (typeof layerSwitcherControl.updateLayers === 'function') {
+                layerSwitcherControl.updateLayers();
+            }
+            if (layerSwitcherControl.element) {
+                const panel = layerSwitcherControl.element.querySelector('.panel');
+                if (panel) {
+                    const list = panel.querySelector('.layer-switcher-list');
+                    if (list) {
+                        if (list.dispatchEvent) {
+                            list.dispatchEvent(new Event('change'));
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Error al actualizar LayerSwitcher:', e);
+        }
+    } else {
+        forceRecreateLayerSwitcher();
+    }
+    if (OLMap) {
+        OLMap.render();
+    }
+}
+// ******************************************
+// ** FIN FUNCIÓN ACTUALIZAR MENÚ DE CAPAS **
+// ******************************************
+
+// ***********************************************************
+// ** INICIO FUNCIÓN FORZAR ACTUALIZACIÓN DEL MENÚ DE CAPAS **
+// ***********************************************************
+function forceRecreateLayerSwitcher() {
+    if (!OLMap) return;
+    let oldControl = null;
+    let target = null;
+    OLMap.getControls().forEach(control => {
+        if (control && control.constructor) {
+            const name = control.constructor.name || control.constructor.displayName || '';
+            if (name === 'LayerSwitcher' ||
+                (control.element && control.element.className &&
+                    control.element.className.includes('layer-switcher'))) {
+                oldControl = control;
+                target = control.target;
+            }
+        }
+    });
+    if (oldControl) {
+        OLMap.removeControl(oldControl);
+    }
+    setTimeout(function () {
+        const newControl = new ol.control.LayerSwitcher({
+            groupSelectStyle: 'none',
+            activationMode: 'click',
+            target: target || 'layer-select',
+        });
+        OLMap.addControl(newControl);
+        OLMap.render();
+        setTimeout(function () {
+            if (typeof window.updateLayerTitles === 'function') {
+                window.updateLayerTitles();
+            }
+        }, 100);
+    }, 50);
+}
+
+// ********************************************************
+// ** FIN FUNCIÓN FORZAR ACTUALIZACIÓN DEL MENÚ DE CAPAS **
+// ********************************************************
+
+// ***********************************************
+// ** EXPONER FUNCIONES GLOBALMENTE PARA SU USO **
+// ***********************************************
+window.forceRecreateLayerSwitcher = forceRecreateLayerSwitcher;
+window.getLayerTitle = getLayerTitle;
+window.updateLayerTitles = updateLayerTitles;
+window.refreshLayerSwitcher = refreshLayerSwitcher;
 
 function processAircraft(ac, init, uat) {
     const isArray = Array.isArray(ac);
@@ -3019,16 +3231,16 @@ function getTranslatedText(key, fallback) {
         const translated = window.translate.t(key);
         if (translated !== key) return translated;
     }
-    
+
     if (typeof window.t === 'function') {
         const translated = window.t(key);
         if (translated !== key) return translated;
     }
-    
+
     // Si tenemos la función global getTranslatedText, usarla (pero evitando recursión)
     // NOTA: No podemos usar window.getTranslatedText aquí porque es esta misma función
     // La función global ya está expuesta por language_patch.js
-    
+
     return fallback || key;
 }
 // *****************************************
@@ -5355,6 +5567,13 @@ function ol_map_init() {
         target: 'layer-select',
     }));
 
+    // Añadir un listener para cuando el LayerSwitcher esté listo
+    setTimeout(function () {
+        if (typeof window.updateLayerTitles === 'function') {
+            window.updateLayerTitles();
+        }
+    }, 500);
+
     OLMap.on('movestart', function (event) {
         if (webgl) {
             if (TrackedAircraftPositions > webglIconMapMoveOpacityCrowdedThreshold) {
@@ -5803,6 +6022,14 @@ function initMapEarly() {
             runAfterLoad(geoFindMe);
         }
     });
+
+    // Después de crear el LayerSwitcher
+    setTimeout(function () {
+        // Forzar actualización inicial
+        if (typeof window.updateLayerTitles === 'function') {
+            window.updateLayerTitles();
+        }
+    }, 200);
 }
 
 function showHideButtons() {
@@ -5900,7 +6127,7 @@ function initMap() {
     trailGroup.push(dummyLayer);
 
     trailLayers = new ol.layer.Group({
-        name: 'ac_trail',
+        // name: 'ac_trail',
         type: 'overlay',
         layers: trailGroup,
         zIndex: 150,
@@ -6137,6 +6364,7 @@ function initMap() {
             const lGG_point = takeLayer('ggPoints');
 
             const gGG = new ol.layer.Group({
+                name: 'ground_point_ground_point',
                 title: 'Ground point-ground point',
                 type: 'overlay',
                 fold: 'close',
@@ -6147,6 +6375,7 @@ function initMap() {
             });
 
             const gGA = new ol.layer.Group({
+                name: 'ground_point_aircraft',
                 title: 'Ground point-aircraft',
                 type: 'overlay',
                 fold: 'close',
@@ -6157,6 +6386,7 @@ function initMap() {
             });
 
             const gAA = new ol.layer.Group({
+                name: 'aircraft_aircraft',
                 title: 'Aircraft-aircraft',
                 type: 'overlay',
                 fold: 'close',
@@ -6213,7 +6443,7 @@ function initMap() {
     //toggleLayer('#acpositions_checkbox', 'webglLayer');
     //});
 
-    
+
     // ****************************************************************
     // ** INICIO FUNCIÓN MINIZAR/MAXIMIZAR/CERRAR SELECTED_INFOBLOCK **
     // ****************************************************************
@@ -6529,6 +6759,12 @@ function initMap() {
     } else {
         runAfterLoad(initSitePos);
     }
+
+    setTimeout(function () {
+        if (typeof window.updateLayerTitles === 'function') {
+            window.updateLayerTitles();
+        }
+    }, 100);
 
 }
 
@@ -8180,7 +8416,7 @@ function refreshFeatures() {
             const uncheckedCount = uncheckedGrid.children('li').length;
             const activeTitle = jQuery('#column-category-checked .column-category-title');
             const inactiveTitle = jQuery('#column-category-unchecked .column-category-title');
-            
+
             if (activeTitle.length) {
                 activeTitle.html(`${activeColumnsText} (${checkedCount})`);
             }
@@ -10197,7 +10433,7 @@ function initFilters() {
 // ******************************************************
 // *** INICIO ACTUALIZAR IDIOMA DE COLUMNAS Y FILTROS ***
 // ******************************************************
-(function() {
+(function () {
     'use strict';
 
     // *****************************************
@@ -10241,7 +10477,7 @@ function initFilters() {
                 updatedCount++;
             }
 
-            col.header = function() {
+            col.header = function () {
                 return col.text || col.id;
             };
         }
@@ -10490,7 +10726,7 @@ function initFilters() {
     document.addEventListener('languageChanged', updateAllLanguage);
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Esperar un poco a que todo esté inicializado
             setTimeout(updateAllLanguage, 500);
         });
@@ -10498,7 +10734,7 @@ function initFilters() {
         setTimeout(updateAllLanguage, 500);
     }
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (e.target.closest('#settingsCog') || e.target.closest('#settings_infoblock')) {
             setTimeout(updateAllLanguage, 100);
         }

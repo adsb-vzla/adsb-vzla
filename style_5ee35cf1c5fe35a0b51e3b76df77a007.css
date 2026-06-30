@@ -787,7 +787,7 @@ input.error {
     height: 100% !important;
     max-height: 100% !important;
     border: var(--DARKER-BASE-COLOR) solid calc(2px * var(--SCALE)) !important;
-    width: calc(250px * var(--SCALE));
+    width: calc(256px * var(--SCALE));
     min-width: calc(240px * var(--SCALE));
     max-width: calc(260px * var(--SCALE));
     box-sizing: border-box;
@@ -2108,7 +2108,7 @@ div.ui-slider .ui-slider-handle {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     position: sticky;
     top: 0;
-    z-index: 5;
+    z-index: 1000;
     background-color: var(--BASE-COLOR);
 }
 

@@ -497,6 +497,45 @@
             'gg_multiple_points_multiple_points': 'Multiple Points - Multiple Points Mode',
             'gg_click_map_point_b': 'Click on the map to mark point B.',
             'gg_click_map_multiple_points_b': 'Click on the map to mark multiple points B.',
+
+            // *** MENÚ DE CAPAS ***
+            'layer_tools_title': 'Layer tools',
+            'layer_webgllayer': 'Aircraft pos. webGL',
+            'layer_iconlayer': 'Aircraft label',
+            'layer_locationdot': 'Site position',
+            'layer_sitecircles': 'Range rings',
+            // *** Dropdown de distancia ***
+            'layer_group_distance_tools': 'Distance tools',
+            'layer_group_ground_point_ground_point': 'Ground point-ground point',
+            'layer_groundtoground': 'A-B Line',
+            'layer_group_ground_point_aircraft': 'Ground point-aircraft',
+            'layer_groundtoplane': 'A-B Line',
+            'layer_groundpoint': 'Ground point',
+            'layer_group_aircraft_aircraft': 'Aircraft-aircraft',
+            'layer_ggpoints': 'A-B ground points',
+            'layer_distancelines': 'A-B Line',
+            // *** Capas base IFR ***
+            'layer_group_ifrhigh': 'IFR High',
+            'layer_group_ifrlow': 'IFR Low',
+            // *** Dropdown Worldwide ***
+            'layer_group_world': 'Worldwide',
+            'layer_osm_tiles_offline': 'Map Offline',
+            'layer_rainviewer_radar': 'RainViewer Radar',
+            // *** Overlays IFR/VFR/TMA ***
+            'layer_base': 'Base',
+            'layer_map': 'Map',
+            'layer_airports_aerodromes': 'Airports / Aerodromes',
+            'layer_airspace_classes': 'Airspace Classes',
+            'layer_airways_air_routes': 'Airways / Air Routes',
+            'layer_controlled_airspace': 'Controlled Airspace',
+            'layer_grid_mora_mea': 'Grid MORA / MEA',
+            'layer_navaids': 'Navaids',
+            'layer_obstacles': 'Obstacles',
+            'layer_political_boundaries': 'Political Boundaries',
+            'layer_special_use_airspace': 'Special Use Airspace',
+            'layer_terrain_topography': 'Terrain / Topography',
+            'layer_waypoints_fixes': 'Waypoints / Fixes',
+            'layer_weather_radar': 'Weather / Radar',
         },
         es: {
             // *** HEAD ***
@@ -990,6 +1029,45 @@
             'gg_multiple_points_multiple_points': 'Modo Múltiples Puntos - Múltiples Puntos',
             'gg_click_map_point_b': 'Haz clic en el mapa para marcar el punto B.',
             'gg_click_map_multiple_points_b': 'Haz clic en el mapa para marcar múltiples puntos B.',
+
+            // *** MENÚ DE CAPAS ***
+            'layer_tools_title': 'Herramientas de capas',
+            'layer_webgllayer': 'Pos. aeronave webGL',
+            'layer_iconlayer': 'Etiqueta de aeronave',
+            'layer_locationdot': 'Posición del sitio',
+            'layer_sitecircles': 'Anillos de distancia',
+            // *** Dropdown de distancia ***
+            'layer_group_distance_tools': 'Herramientas de distancia',
+            'layer_group_ground_point_ground_point': 'Punto en tierra-punto en tierra',
+            'layer_groundtoground': 'Línea A-B',
+            'layer_group_ground_point_aircraft': 'Punto en tierra-aeronave',
+            'layer_groundtoplane': 'Línea A-B',
+            'layer_groundpoint': 'Punto en tierra',
+            'layer_group_aircraft_aircraft': 'Aeronave-aeronave',
+            'layer_ggpoints': 'Puntos A-B en tierra',
+            'layer_distancelines': 'Línea A-B',
+            // *** Capas base IFR ***
+            'layer_group_ifrhigh': 'IFR Alto',
+            'layer_group_ifrlow': 'IFR Bajo',
+            // *** Dropdown Worldwide ***
+            'layer_group_world': 'Mundial',
+            'layer_osm_tiles_offline': 'Mapa sin conexión',
+            'layer_rainviewer_radar': 'Radar RainViewer',
+            // *** Overlays IFR/VFR/TMA ***
+            'layer_base': 'Base',
+            'layer_map': 'Mapa',
+            'layer_airports_aerodromes': 'Aeropuertos / Aeródromos',
+            'layer_airspace_classes': 'Clases de Espacio Aéreo',
+            'layer_airways_air_routes': 'Rutas Aéreas',
+            'layer_controlled_airspace': 'Espacio Aéreo Controlado',
+            'layer_grid_mora_mea': 'Cuadrícula MORA / MEA',
+            'layer_navaids': 'Ayudas a la Navegación',
+            'layer_obstacles': 'Obstáculos',
+            'layer_political_boundaries': 'Límites Políticos',
+            'layer_special_use_airspace': 'Espacio Aéreo de Uso Especial',
+            'layer_terrain_topography': 'Terreno / Topografía',
+            'layer_waypoints_fixes': 'Puntos de Navegación / Fijos',
+            'layer_weather_radar': 'Clima / Radar',
         }
     };
     // *****************************************
@@ -1032,6 +1110,27 @@
                 }
             }, 50);
 
+            if (typeof window.updateLayerTitles === 'function') {
+                const attempts = [100, 300, 600, 1000];
+                attempts.forEach(delay => {
+                    setTimeout(function () {
+                        window.updateLayerTitles();
+                    }, delay);
+                });
+            }
+
+            if (typeof window.updateLayerToolsTitle === 'function') {
+                setTimeout(function () {
+                    window.updateLayerToolsTitle();
+                }, 150);
+            }
+
+            if (typeof window.updateAllLanguage === 'function') {
+                setTimeout(function () {
+                    window.updateAllLanguage();
+                }, 150);
+            }
+
             document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
             return true;
         }
@@ -1052,6 +1151,22 @@
     // *****************************************
     // ***** FIN FUNCIONES DE TRADUCCIÓN *******
     // *****************************************
+
+    // ***********************************************************
+    // ** INICIO FUNCIÓN OBTENER TRADUCCIÓN DE TÍTULOS DE CAPAS **
+    // ***********************************************************
+    function getLayerTitle(layerName, defaultTitle) {
+        let key = 'layer_' + layerName.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+        const translation = translations[currentLang]?.[key];
+        if (translation !== undefined) {
+            return translation;
+        }
+        return defaultTitle || layerName;
+    }
+    window.getLayerTitle = getLayerTitle;
+    // ***********************************************************
+    // *** FIN FUNCIÓN OBTENER TRADUCCIÓN DE TÍTULOS DE CAPAS ****
+    // ***********************************************************
 
     // *****************************************
     // ****** INICIO ACTUALIZACIÓN DE UI *******
@@ -1165,7 +1280,12 @@
         setLang: setLang,
         getLang: getLang,
         updateUI: updateUI,
-        getTranslatedText: getTranslatedText
+        getTranslatedText: getTranslatedText,
+        getLayerTitle: window.getLayerTitle || function (name, fallback) {
+            const key = 'layer_' + name.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+            const translation = translations[currentLang]?.[key];
+            return translation !== undefined ? translation : (fallback || name);
+        }
     };
     // ****************************************************
     // *** FIN INICIALIZACIÓN DE FUNCIÓN DE TRADUCCIÓN ****

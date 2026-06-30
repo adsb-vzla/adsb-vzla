@@ -1,11 +1,14 @@
 ﻿<!DOCTYPE HTML>
 <html>
+
 <head>
-  <meta name="description" data-i18n-meta="meta_description" content="ADS‑B Venezuela - Air traffic monitoring in Venezuela" />
-  <meta charset="utf-8"/>
+  <meta name="description" data-i18n-meta="meta_description"
+    content="ADS‑B Venezuela - Air traffic monitoring in Venezuela" />
+  <meta charset="utf-8" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui" />
+  <meta name="viewport"
+    content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui" />
   <!-- JQUERY -->
   <link rel="stylesheet" href="libs/jquery-ui-1.13.2.min.css" type="text/css">
   <!-- OPENLAYERS -->
@@ -91,8 +94,10 @@
               id="selected_callsign">n/a
             </span>
             <div class="window-controls" style="display: flex; gap: 8px;">
-              <button id="infoblock_star" class="formButton" style="display: none;" data-i18n-title="mark_as_notable" title="Mark as notable">✰</button>
-              <button id="infoblock_minimize" class="formButton" data-i18n-title="minimize_infoblock" title="Minimize infoblock">−</button>
+              <button id="infoblock_star" class="formButton" style="display: none;" data-i18n-title="mark_as_notable"
+                title="Mark as notable">✰</button>
+              <button id="infoblock_minimize" class="formButton" data-i18n-title="minimize_infoblock"
+                title="Minimize infoblock">−</button>
               <button id="infoblock_close" class="formButton" data-i18n-title="close" title="Close">✕</button>
             </div>
           </div>
@@ -113,7 +118,7 @@
           </div>
         </div>
         <!-- FIN ENCABEZADO -->
-        
+
         <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
         <!-- INICIO BLOQUE RESUMEN -->
         <div id="selected_infoblock_summary" class="infoBlockSection infoblockSummary" style="display: none;">
@@ -126,12 +131,12 @@
                   id="selected_mini_altitude">n/a</span></div>
               <div class="summaryRow"><span class="infoHeading" data-i18n="spd_short">Spd.:</span><span class="infoData"
                   id="selected_mini_speed">n/a</span></div>
-              <div class="summaryRow"><span class="infoHeading" data-i18n="route_short">Route:</span><span class="infoData"
-                  id="selected_mini_route">n/a</span></div>
-              <div class="summaryRow"><span class="infoHeading" data-i18n="type_short">Type:</span><span class="infoData"
-                  id="selected_mini_typecode">n/a</span></div>
-              <div class="summaryRow"><span class="infoHeading" data-i18n="source_short">Source:</span><span class="infoData"
-                  id="selected_mini_source">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading" data-i18n="route_short">Route:</span><span
+                  class="infoData" id="selected_mini_route">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading" data-i18n="type_short">Type:</span><span
+                  class="infoData" id="selected_mini_typecode">n/a</span></div>
+              <div class="summaryRow"><span class="infoHeading" data-i18n="source_short">Source:</span><span
+                  class="infoData" id="selected_mini_source">n/a</span></div>
             </div>
           </div>
         </div>
@@ -176,8 +181,9 @@
           <div class="infoHeading">
             <span title="TIS-B link">
               <a class="link" target="_blank"
-                href="https://skybrary.aero/articles/traffic-information-service-broadcast-tis-b" rel="noreferrer"><span  data-i18n="atc_contact_broadcast">ATC
-                contact broadcast</span></a></span>
+                href="https://skybrary.aero/articles/traffic-information-service-broadcast-tis-b" rel="noreferrer"><span
+                  data-i18n="atc_contact_broadcast">ATC
+                  contact broadcast</span></a></span>
           </div>
           <div class="rSpacer">
           </div>
@@ -190,7 +196,8 @@
             Often corresponding MLAT contact for the same aircraft
           </div>
           <div class="infoHeading">
-            <span data-i18n="tisb_mlat_requires">MLAT requires the contact to have a ModeS transponder and reception by 4 receivers</span>
+            <span data-i18n="tisb_mlat_requires">MLAT requires the contact to have a ModeS transponder and reception by
+              4 receivers</span>
           </div>
           <div class="infoHeading">
             <span><a class="link" target="_blank"
@@ -204,7 +211,8 @@
         <div id=reg_info class="infoBlockSection">
           <table class="infoSectionTable">
             <tr id=pf_info_container>
-              <td data-i18n-title="reg_operator_tooltip" title="Registration, operator, type and reported route (if available).">
+              <td data-i18n-title="reg_operator_tooltip"
+                title="Registration, operator, type and reported route (if available).">
                 <div>
                   <span class="identMedium" id="selected_pf_info"> </span>
                 </div>
@@ -226,7 +234,8 @@
               </td>
             </tr>
             <tr>
-              <td data-i18n-title="country_tooltip" title="Country of registration as recorded in the aircraft registry.">
+              <td data-i18n-title="country_tooltip"
+                title="Country of registration as recorded in the aircraft registry.">
                 <div class="infoHeading">
                   <span data-i18n="country">Country: </span>
                 </div>
@@ -270,7 +279,8 @@
               </td>
             </tr>
             <tr>
-              <td data-i18n-title="squawk_tooltip" title="A 4-digit octal code assigned to the aircraft by Air Traffic Control">
+              <td data-i18n-title="squawk_tooltip"
+                title="A 4-digit octal code assigned to the aircraft by Air Traffic Control">
                 <div class="infoHeading">
                   <span data-i18n="squawk">Squawk:</span>
                 </div>
@@ -280,7 +290,8 @@
               </td>
             </tr>
             <tr id="routeRow" class="hidden">
-              <td data-i18n-title="route_tooltip" title="Reported flight origin and destination according to adsbdb.com">
+              <td data-i18n-title="route_tooltip"
+                title="Reported flight origin and destination according to adsbdb.com">
                 <div class="infoHeading">
                   <span data-i18n="route">Route:</span>
                 </div>
@@ -301,7 +312,8 @@
         <!-- INICIO INFORMACIÓN GENERAL DEL AVIÓN -->
 
         <!-- INICIO SECCIÓN ESPACIAL -->
-        <div class="sectionTitle" data-i18n-title="spatial_tooltip" title="Show or hide spatial data: groundspeed, altitude, position and distance.">
+        <div class="sectionTitle" data-i18n-title="spatial_tooltip"
+          title="Show or hide spatial data: groundspeed, altitude, position and distance.">
           <div class="section-title-content">
             <button id="spatial_toggle" class="section-toggle" aria-expanded="false" aria-controls="spatial_block">
               <span data-i18n="spatial">SPATIAL</span>
@@ -333,7 +345,8 @@
             <tr>
               <td data-i18n-title="wgs84_altitude_tooltip"
                 title="The geometric GPS derived altitude referenced to WGS84 ellipsoid (or reference EGM96 when enabled in the settings)">
-                <span class="infoHeading" id="selected_altitude_geom1_title" data-i18n="wgs84_altitude">WGS84 Altitude:</span>
+                <span class="infoHeading" id="selected_altitude_geom1_title" data-i18n="wgs84_altitude">WGS84
+                  Altitude:</span>
                 <span class="infoData" id="selected_altitude_geom1">n/a</span>
               </td>
             </tr>
@@ -358,7 +371,8 @@
               </td>
             </tr>
             <tr>
-              <td data-i18n-title="pos_tooltip" title="Latitude and longitude coordinates of the aircraft's last known position">
+              <td data-i18n-title="pos_tooltip"
+                title="Latitude and longitude coordinates of the aircraft's last known position">
                 <div class="infoHeading">
                   <span data-i18n="pos">Pos.:</span>
                 </div>
@@ -368,7 +382,8 @@
               </td>
             </tr>
             <tr>
-              <td data-i18n-title="distance_tooltip" title="Distance of the aircraft from your ADS-B site at its last known position">
+              <td data-i18n-title="distance_tooltip"
+                title="Distance of the aircraft from your ADS-B site at its last known position">
                 <div class="infoHeading">
                   <span data-i18n="distance">Distance:</span>
                 </div>
@@ -393,7 +408,8 @@
           </div>
         </div>
         <div class="infoBlockSection">
-          <div data-i18n-title="source_tooltip" title="Data source for the reported aircraft data (e.g., ADS-B, MLAT, Other Mode S)">
+          <div data-i18n-title="source_tooltip"
+            title="Data source for the reported aircraft data (e.g., ADS-B, MLAT, Other Mode S)">
             <div class="infoHeading">
               <span data-i18n="source">Source:</span>
             </div>
@@ -428,7 +444,8 @@
             </div>
             <div class="rSpacer">
             </div>
-            <div data-i18n-title="last_pos_tooltip" title="Time in seconds since a position was received from this aircraft">
+            <div data-i18n-title="last_pos_tooltip"
+              title="Time in seconds since a position was received from this aircraft">
               <div class="infoHeading">
                 <span data-i18n="last_pos">Last pos.:</span>
               </div>
@@ -436,7 +453,8 @@
                 <span id="selected_seen_pos">n/a</span>
               </div>
             </div>
-            <div data-i18n-title="last_seen_tooltip" title="Time in seconds since a message was received from this aircraft">
+            <div data-i18n-title="last_seen_tooltip"
+              title="Time in seconds since a message was received from this aircraft">
               <div class="infoHeading">
                 <span data-i18n="last_seen">Last seen:</span>
               </div>
@@ -449,7 +467,8 @@
         <!-- FIN SECCIÓN SEÑAL -->
 
         <!-- INICIO SECCIÓN FMS (SELECCIÓN) -->
-        <div class="sectionTitle" data-i18n-title="fms_tooltip" title="Show or hide selected FMS settings: selected altitude and selected heading.">
+        <div class="sectionTitle" data-i18n-title="fms_tooltip"
+          title="Show or hide selected FMS settings: selected altitude and selected heading.">
           <div class="section-title-content">
             <button class="section-toggle" data-target="fms_block" aria-expanded="false" aria-controls="fms_block">
               <span data-i18n="fms_sel">FMS SEL</span>
@@ -458,7 +477,8 @@
           </div>
         </div>
         <div class="infoBlockSection">
-          <div data-i18n-title="sel_alt_tooltip" title="The selected altitude in the aircraft's flight management system">
+          <div data-i18n-title="sel_alt_tooltip"
+            title="The selected altitude in the aircraft's flight management system">
             <div class="infoHeading">
               <span data-i18n="sel_alt">Sel. alt.:</span>
             </div>
@@ -466,7 +486,8 @@
               <span id="selected_nav_altitude">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="sel_head_tooltip" title="The selected heading in the aircraft's flight management system">
+          <div data-i18n-title="sel_head_tooltip"
+            title="The selected heading in the aircraft's flight management system">
             <div class="infoHeading">
               <span data-i18n="sel_head">Sel. head.:</span>
             </div>
@@ -478,7 +499,8 @@
         <!-- FIN SECCIÓN FMS (SELECCIÓN) -->
 
         <!-- INICIO SECCIÓN VIENTO -->
-        <div class="sectionTitle" data-i18n-title="wind_tooltip" title="Show or hide wind data: speed, direction (from), and temperatures (TAT/OAT).">
+        <div class="sectionTitle" data-i18n-title="wind_tooltip"
+          title="Show or hide wind data: speed, direction (from), and temperatures (TAT/OAT).">
           <div class="section-title-content">
             <button class="section-toggle" data-target="wind_block" aria-expanded="false" aria-controls="wind_block">
               <span data-i18n="wind">WIND</span>
@@ -503,7 +525,8 @@
               <span id="selected_wd">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="tat_oat_tooltip" title="Total (TAT) / Static (SAT/OAT) air temperature calculated using Mach and true airspeed">
+          <div data-i18n-title="tat_oat_tooltip"
+            title="Total (TAT) / Static (SAT/OAT) air temperature calculated using Mach and true airspeed">
             <div class="infoHeading">
               <span data-i18n="tat_oat">TAT / OAT:</span>
             </div>
@@ -533,7 +556,8 @@
               <span id="selected_speed2">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="true_speed_tooltip" title="True airspeed (the speed of the aircraft relative to the airmass in which it is flying)">
+          <div data-i18n-title="true_speed_tooltip"
+            title="True airspeed (the speed of the aircraft relative to the airmass in which it is flying)">
             <div class="infoHeading">
               <span data-i18n="true_speed">True:</span>
             </div>
@@ -541,7 +565,8 @@
               <span id="selected_tas">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="indicated_speed_tooltip" title="Indicated airspeed (the airspeed read directly from the airspeed indicator on the aircraft)">
+          <div data-i18n-title="indicated_speed_tooltip"
+            title="Indicated airspeed (the airspeed read directly from the airspeed indicator on the aircraft)">
             <div class="infoHeading">
               <span data-i18n="indicated_speed">Indicated:</span>
             </div>
@@ -549,7 +574,8 @@
               <span id="selected_ias">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="mach_tooltip" title="The ratio of the speed of the aircraft to the speed of sound in the surrounding space">
+          <div data-i18n-title="mach_tooltip"
+            title="The ratio of the speed of the aircraft to the speed of sound in the surrounding space">
             <div class="infoHeading">
               <span data-i18n="mach">Mach:</span>
             </div>
@@ -598,7 +624,8 @@
               <span id="selected_altitude_geom2">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="geom_rate_tooltip" title="Rate of climb or descent (derived from avionics which may be inertial or GNSS/satellite-based)">
+          <div data-i18n-title="geom_rate_tooltip"
+            title="Rate of climb or descent (derived from avionics which may be inertial or GNSS/satellite-based)">
             <div class="infoHeading fourColumnSection3">
               <span data-i18n="geom_rate">Geom. rate:</span>
             </div>
@@ -606,7 +633,8 @@
               <span id="selected_geom_rate">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="qnh_tooltip" title="The altimeter/QNH setting used by the aircraft's navigation systems">
+          <div data-i18n-title="qnh_tooltip"
+            title="The altimeter/QNH setting used by the aircraft's navigation systems">
             <div class="infoHeading">
               <span data-i18n="qnh">QNH:</span>
             </div>
@@ -643,7 +671,8 @@
               <span id="selected_true_heading">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="magnetic_heading_tooltip" title="The aircraft's nose heading relative to magnetic north">
+          <div data-i18n-title="magnetic_heading_tooltip"
+            title="The aircraft's nose heading relative to magnetic north">
             <div class="infoHeading">
               <span data-i18n="magnetic_heading">Magnetic heading:</span>
             </div>
@@ -651,7 +680,8 @@
               <span id="selected_mag_heading">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="magnetic_decl_tooltip" title="Magnetic Declination looked up from the World Magnetic Model">
+          <div data-i18n-title="magnetic_decl_tooltip"
+            title="Magnetic Declination looked up from the World Magnetic Model">
             <div class="infoHeading">
               <span data-i18n="magnetic_decl">Magnetic decl.:</span>
             </div>
@@ -732,7 +762,8 @@
           </button>
         </div>
         <div class="infoBlockSection">
-          <div data-i18n-title="nac_p_tooltip" title="Navigation accuracy category of the position (95% bound on positions)">
+          <div data-i18n-title="nac_p_tooltip"
+            title="Navigation accuracy category of the position (95% bound on positions)">
             <div class="infoHeading">
               <span data-i18n-html="nac_p">NAC<sub>P</sub>:</span>
             </div>
@@ -749,7 +780,8 @@
               <span id="selected_sil">n/a</span>
             </div>
           </div>
-          <div data-i18n-title="nac_v_tooltip" title="Navigation accuracy category of the velocity (95% bound on velocities)">
+          <div data-i18n-title="nac_v_tooltip"
+            title="Navigation accuracy category of the velocity (95% bound on velocities)">
             <div class="infoHeading">
               <span data-i18n-html="nac_v">NAC<sub>V</sub>:</span>
             </div>
@@ -776,9 +808,11 @@
             </div>
           </div>
           <div class="bottom-info-container">
-            <div class="bottom-info-text" data-i18n="learn_more_modes">Learn more about Mode S data type by hovering over each data label.</div>
+            <div class="bottom-info-text" data-i18n="learn_more_modes">Learn more about Mode S data type by hovering
+              over each data label.</div>
           </div>
-          <div data-i18n-title="pos_epoch_tooltip" title="Unix timestamp of the last received position report from the aircraft.">
+          <div data-i18n-title="pos_epoch_tooltip"
+            title="Unix timestamp of the last received position report from the aircraft.">
             <div class="infoHeading">
               <span data-i18n="pos_epoch">Pos. epoch:</span>
             </div>
@@ -799,12 +833,15 @@
           </button>
         </div>
         <div id="export_kml_block" class="infoBlockSection hidden">
-          <button id="export_kml_geom" data-i18n-title="export_kml_geom_tooltip" title="Export KML using geometric altitude (EGM96)."
-            onclick='exportKML("geom")' data-i18n="export_kml_geom">geometric altitude (EGM96)</button>
-          <button id="export_kml_geom_avg" data-i18n-title="export_kml_geom_avg_tooltip" title="Export KML using barometric altitude plus EGM96 average correction."
-            onclick='exportKML("geom_avg")' data-i18n="export_kml_geom_avg">baro + avg.(EGM96 - baro)</button>
-          <button id="export_kml_baro" data-i18n-title="export_kml_baro_tooltip" title="Export KML using uncorrected pressure altitude (barometric)."
-            onclick='exportKML("baro")' data-i18n="export_kml_baro">uncorrected pressure alt.</button>
+          <button id="export_kml_geom" data-i18n-title="export_kml_geom_tooltip"
+            title="Export KML using geometric altitude (EGM96)." onclick='exportKML("geom")'
+            data-i18n="export_kml_geom">geometric altitude (EGM96)</button>
+          <button id="export_kml_geom_avg" data-i18n-title="export_kml_geom_avg_tooltip"
+            title="Export KML using barometric altitude plus EGM96 average correction." onclick='exportKML("geom_avg")'
+            data-i18n="export_kml_geom_avg">baro + avg.(EGM96 - baro)</button>
+          <button id="export_kml_baro" data-i18n-title="export_kml_baro_tooltip"
+            title="Export KML using uncorrected pressure altitude (barometric)." onclick='exportKML("baro")'
+            data-i18n="export_kml_baro">uncorrected pressure alt.</button>
         </div>
         <!-- FIN SECCIÓN EXPORTAR KML -->
       </div>
@@ -826,16 +863,18 @@
             style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
             <span data-i18n="settings">Settings</span>
             <div class="settingsOptionContainer" style="display: flex; gap: 8px;">
-              <button class="formButton" id="reset-all-settings-btn" data-i18n="reset_all_settings">Reset all settings</button>
+              <button class="formButton" id="reset-all-settings-btn" data-i18n="reset_all_settings">Reset all
+                settings</button>
             </div>
           </div>
           <div class="window-controls" style="position: absolute; right: 8px; top: 8px; display: flex; gap: 8px;">
-            <button id="settings_reset_size_btn" class="formButton" data-i18n-title="restore_default_size" title="Restore default size">↺</button>
+            <button id="settings_reset_size_btn" class="formButton" data-i18n-title="restore_default_size"
+              title="Restore default size">↺</button>
             <button id="settings_close" class="formButton" data-i18n-title="close" title="Close">X</button>
           </div>
         </div>
         <!-- FIN ENCABEZADO -->
-        
+
         <!-- INICIO SLIDES DE TAMAÑO DE ÍCONOS -->
         <div class="settingsOptionContainer">
           <div class="settingsText" data-i18n="text_icon_size">Text and icon size:</div>
@@ -851,7 +890,8 @@
         <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
           <div style="display: block; width: 100%;" id="iconScaleSlider"></div>
           <button id="resetIconScaleBtn" class="formButton" style="padding: 4px 8px;"
-            data-i18n-title="reset_to_default_multiplier" title="Reset to default multiplier" data-i18n="reset">Reset</button>
+            data-i18n-title="reset_to_default_multiplier" title="Reset to default multiplier"
+            data-i18n="reset">Reset</button>
         </div>
         <!-- FIN SLIDES DE TAMAÑO DE ÍCONOS -->
 
@@ -861,7 +901,8 @@
           <div id="category-units" class="settings-category">
             <div class="settings-category-title" data-i18n="units">UNITS</div>
             <div id="category-units-container">
-              <div class="settingsOptionContainer" data-i18n-title="select_measurement_system" title="Select the measurement system">
+              <div class="settingsOptionContainer" data-i18n-title="select_measurement_system"
+                title="Select the measurement system">
                 <select name="units_selector" id="units_selector" class="units-select">
                   <option value="nautical" data-i18n="aeronautical">Aeronautical</option>
                   <option value="metric" data-i18n="metric">Metric</option>
@@ -877,7 +918,8 @@
             <div class="settings-category-title" data-i18n="display">DISPLAY</div>
             <div id="category-display-container"></div>
             <br>
-            <button class="formButton category-reset-btn" data-category="display" data-i18n-title="reset_to_default" title="Reset to default"  data-i18n="reset_to_default">Reset to
+            <button class="formButton category-reset-btn" data-category="display" data-i18n-title="reset_to_default"
+              title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
           <!-- FIN CATEGORÍA DISPLAY -->
@@ -886,18 +928,21 @@
           <div id="category-filters" class="settings-category">
             <div class="settings-category-title" data-i18n="filters">FILTERS</div>
             <div id="category-filters-container">
-              <div class="settingsOptionContainer" data-i18n-title="ground_vehicles_tooltip" title="Displays ground service vehicles that emit ADS-B signal.">
+              <div class="settingsOptionContainer" data-i18n-title="ground_vehicles_tooltip"
+                title="Displays ground service vehicles that emit ADS-B signal.">
                 <div class="settingsCheckbox" id="groundvehicle_filter"></div>
                 <div class="settingsText" data-i18n="ground_vehicles">Ground vehicles</div>
               </div>
               <div class="settingsOptionContainer" data-i18n-title="non_icao_targets_tooltip"
                 title="Displays aircraft that do not have a standard ICAO code or whose airframe structure is unknown.">
                 <div class="settingsCheckbox" id="blockedmlat_filter"></div>
-                <div class="settingsText" data-i18n="non_icao_targets">Non-ICAO targets (radar track / airframe unknown) </div>
+                <div class="settingsText" data-i18n="non_icao_targets">Non-ICAO targets (radar track / airframe unknown)
+                </div>
               </div>
             </div>
             <br>
-            <button class="formButton category-reset-btn" data-category="filters" data-i18n-title="reset_to_default" title="Reset to default" data-i18n="reset_to_default">Reset to
+            <button class="formButton category-reset-btn" data-category="filters" data-i18n-title="reset_to_default"
+              title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
           <!-- FIN CATEGORÍA FILTERS -->
@@ -908,7 +953,8 @@
             <div class="settings-category-title" data-i18n="data">DATA</div>
             <div id="category-data-container"></div>
             <br>
-            <button class="formButton category-reset-btn" data-category="data" data-i18n-title="reset_to_default" title="Reset to default" data-i18n="reset_to_default">Reset to
+            <button class="formButton category-reset-btn" data-category="data" data-i18n-title="reset_to_default"
+              title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
           <!-- FIN CATEGORÍA DATA -->
@@ -918,7 +964,8 @@
             <div class="settings-category-title" data-i18n="system">SYSTEM</div>
             <div id="category-system-container"></div>
             <br>
-            <button class="formButton category-reset-btn" data-category="system" data-i18n-title="reset_to_default" title="Reset to default" data-i18n="reset_to_default">Reset to
+            <button class="formButton category-reset-btn" data-category="system" data-i18n-title="reset_to_default"
+              title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
           <!-- FIN CATEGORÍA SYSTEM -->
@@ -928,7 +975,8 @@
             <div class="settings-category-title" data-i18n="information">INFORMATION</div>
             <div id="category-info-container"></div>
             <br>
-            <button class="formButton category-reset-btn" data-category="info" data-i18n-title="reset_to_default" title="Reset to default" data-i18n="reset_to_default">Reset to
+            <button class="formButton category-reset-btn" data-category="info" data-i18n-title="reset_to_default"
+              title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
           <!-- FIN CATEGORÍA INFORMATION -->
@@ -947,13 +995,15 @@
       <!-- INICIO NAVBAR -->
       <div id="navbar">
         <div id="right_controls">
-          <div id="utc_clock" data-i18n-title="utc_tooltip" title="Current UTC time - Universal Time Coordinated.">00:00 <span data-i18n="utc">UTC</span></div>
+          <div id="utc_clock" data-i18n-title="utc_tooltip" title="Current UTC time - Universal Time Coordinated.">00:00
+            <span data-i18n="utc">UTC</span>
+          </div>
           <div id="zoom_indicator" class="dateTime" data-i18n-title="zoom_tooltip" title="Zoom">100%</div>
           <div id="tab-search-navbar" data-i18n-title="search_tooltip"
             title="Use decimal coordinates (lat,lon) to search airports. Use ICAO24 hex or callsign to search flights.">
             <form id="search_form">
-              <input id="search_input" name="searchBox" type="text" data-i18n="search_placeholder" placeholder="Search flights, airports..."
-                maxlength="128">
+              <input id="search_input" name="searchBox" type="text" data-i18n="search_placeholder"
+                placeholder="Search flights, airports..." maxlength="128">
               <button type="submit" id="search_submit_btn">
                 <svg viewBox="0 0 24 24">
                   <path
@@ -963,8 +1013,8 @@
             </form>
           </div>
           <div id="button_container_closed" style="display: block; position: relative;">
-            <button id="toggle_sidebar_button_closed" class="show_sidebar sidebar_button" data-i18n-title="open_sidebar" title="Open Sidebar"
-              style="background: none; border: none; padding: 6px; cursor: pointer;">
+            <button id="toggle_sidebar_button_closed" class="show_sidebar sidebar_button" data-i18n-title="open_sidebar"
+              title="Open Sidebar" style="background: none; border: none; padding: 6px; cursor: pointer;">
               <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="34" height="34" viewBox="0 0 50 50">
                 <path
                   d="M 5 8 A 2.0002 2.0002 0 1 0 5 12 L 45 12 A 2.0002 2.0002 0 1 0 45 8 L 5 8 z M 5 23 A 2.0002 2.0002 0 1 0 5 27 L 45 27 A 2.0002 2.0002 0 1 0 45 23 L 5 23 z M 5 38 A 2.0002 2.0002 0 1 0 5 42 L 45 42 A 2.0002 2.0002 0 1 0 45 38 L 5 38 z">
@@ -975,28 +1025,35 @@
         </div>
       </div>
       <!-- FIN NAVBAR -->
-      
+
       <!-- INICIO TIRA DE OPCIONES LATERAL -->
       <div id="header_side" class="infoHeading">
         <div class="buttonContainer">
           <!-- INICIO OPCIONES DE AERONAVES -->
           <div id="aircraft_dropdown" class="dropdown dropdown-left">
-            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" data-i18n-title="aircraft_tools_tooltip"
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              data-i18n-title="aircraft_tools_tooltip"
               title="Aircraft tools - Open aircraft filtering and tracking options."><i
                 class="fa-solid fa-plane-up fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
               <li class="dropdown-menu-title" data-i18n="aircraft_tools">Aircraft tools</li>
-              <li><a id="V" data-i18n-title="current_view_tooltip" title="Show only aircraft currently visible on the map."
-                  onclick="toggleTableInView();" data-i18n="current_view">Current view</a></li>
-              <li><a id="M" data-i18n-title="multi_select_tooltip" title="Enable selecting multiple aircraft at the same time."
-                  onclick="toggleMultiSelect();" data-i18n="multi_select">Multi-select</a></li>
-              <li><a id="P" data-i18n-title="persistence_tooltip" title="Keep historical positions visible for a short period."
-                  onclick="togglePersistence();" data-i18n="persistence">Persistence</a></li>
+              <li><a id="V" data-i18n-title="current_view_tooltip"
+                  title="Show only aircraft currently visible on the map." onclick="toggleTableInView();"
+                  data-i18n="current_view">Current view</a></li>
+              <li><a id="M" data-i18n-title="multi_select_tooltip"
+                  title="Enable selecting multiple aircraft at the same time." onclick="toggleMultiSelect();"
+                  data-i18n="multi_select">Multi-select</a></li>
+              <li><a id="P" data-i18n-title="persistence_tooltip"
+                  title="Keep historical positions visible for a short period." onclick="togglePersistence();"
+                  data-i18n="persistence">Persistence</a></li>
               <li><a id="I" data-i18n-title="isolate_tooltip" title="Show only the selected aircraft and hide the rest."
                   onclick="toggleIsolation();" data-i18n="isolate">Isolate</a></li>
-              <li><a id="U" data-i18n-title="military_only_tooltip" title="Display only aircraft identified as military." onclick="toggleMilitary();" data-i18n="military_only">Military
+              <li><a id="U" data-i18n-title="military_only_tooltip"
+                  title="Display only aircraft identified as military." onclick="toggleMilitary();"
+                  data-i18n="military_only">Military
                   only</a></li>
-              <li><a id="F" data-i18n-title="follow_tooltip" title="Keep the selected aircraft centered on the map." onclick="toggleFollow();" data-i18n="follow">Follow</a>
+              <li><a id="F" data-i18n-title="follow_tooltip" title="Keep the selected aircraft centered on the map."
+                  onclick="toggleFollow();" data-i18n="follow">Follow</a>
               </li>
             </ul>
           </div>
@@ -1004,15 +1061,19 @@
 
           <!-- INICIO OPCIONES DE MEDICIÓN -->
           <div id="measurement_dropdown" class="dropdown dropdown-left">
-            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" data-i18n-title="measurement_tools_tooltip"
-              title="Measurement tools - Open measurement options."><i class="fa-solid fa-ruler fa-xl"></i></div>
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              data-i18n-title="measurement_tools_tooltip" title="Measurement tools - Open measurement options."><i
+                class="fa-solid fa-ruler fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
               <li class="dropdown-menu-title" data-i18n="measurement_tools">Measurement tools</li>
               <li><a id="D" data-i18n-title="aircraft_aircraft_tooltip" title="Measure distance between two aircraft."
                   onclick="toggleDistance();" data-i18n="aircraft_aircraft">Aircraft-aircraft</a></li>
-              <li><a id="TA" data-i18n-title="ground_point_aircraft_tooltip" title="Measure distance from a ground point to an aircraft."
-                  onclick="onTACycleClick();" data-i18n="ground_point_aircraft">Ground point-aircraft</a></li>
-              <li><a id="TT" data-i18n-title="ground_point_ground_point_tooltip" title="Measure distance between two ground points." onclick="onTTCycleClick();" data-i18n="ground_point_ground_point">Ground
+              <li><a id="TA" data-i18n-title="ground_point_aircraft_tooltip"
+                  title="Measure distance from a ground point to an aircraft." onclick="onTACycleClick();"
+                  data-i18n="ground_point_aircraft">Ground point-aircraft</a></li>
+              <li><a id="TT" data-i18n-title="ground_point_ground_point_tooltip"
+                  title="Measure distance between two ground points." onclick="onTTCycleClick();"
+                  data-i18n="ground_point_ground_point">Ground
                   point-ground point</a></li>
             </ul>
           </div>
@@ -1020,13 +1081,16 @@
 
           <!-- INICIO OPCIONES DE TRAZAS -->
           <div id="track_dropdown" class="dropdown dropdown-left">
-            <div tabindex="0" role="button" class="btn  btn-neutral m-1 w-9 truncate bg-base-color text-white" data-i18n-title="track_tools_tooltip"
-              title="Track tools - Open track display options."><i class="fa-solid fa-route fa-xl"></i></div>
+            <div tabindex="0" role="button" class="btn  btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              data-i18n-title="track_tools_tooltip" title="Track tools - Open track display options."><i
+                class="fa-solid fa-route fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
               <li class="dropdown-menu-title" data-i18n="track_tools">Track tools</li>
-              <li><a id="T" data-i18n-title="all_tracks_tooltip" title="Display tracks for all visible aircraft." onclick="selectAllPlanes();" data-i18n="all_tracks">All tracks</a>
+              <li><a id="T" data-i18n-title="all_tracks_tooltip" title="Display tracks for all visible aircraft."
+                  onclick="selectAllPlanes();" data-i18n="all_tracks">All tracks</a>
               </li>
-              <li><a id="K" data-i18n-title="track_labels_tooltip" title="Show or hide labels on aircraft tracks." onclick="toggleTrackLabels();" data-i18n="track_labels">Track
+              <li><a id="K" data-i18n-title="track_labels_tooltip" title="Show or hide labels on aircraft tracks."
+                  onclick="toggleTrackLabels();" data-i18n="track_labels">Track
                   labels</a></li>
             </ul>
           </div>
@@ -1034,12 +1098,15 @@
 
           <!-- INICIO OPCIONES DE ETIQUETAS -->
           <div id="label_dropdown" class="dropdown dropdown-left">
-            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" data-i18n-title="label_tools_tooltip"
-              title="Label tools - Open label visibility options."><i class="fa-solid fa-tags fa-xl"></i></div>
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              data-i18n-title="label_tools_tooltip" title="Label tools - Open label visibility options."><i
+                class="fa-solid fa-tags fa-xl"></i></div>
             <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
               <li class="dropdown-menu-title" data-i18n="label_tools">Label tools</li>
-              <li><a id="L" data-i18n-title="labels_tooltip" title="Show or hide primary aircraft labels." onclick="toggleLabels();" data-i18n="labels">Labels</a></li>
-              <li><a id="O" data-i18n-title="label_details_tooltip" title="Show or hide extended label information." onclick="toggleExtendedLabels();" data-i18n="label_details">Label
+              <li><a id="L" data-i18n-title="labels_tooltip" title="Show or hide primary aircraft labels."
+                  onclick="toggleLabels();" data-i18n="labels">Labels</a></li>
+              <li><a id="O" data-i18n-title="label_details_tooltip" title="Show or hide extended label information."
+                  onclick="toggleExtendedLabels();" data-i18n="label_details">Label
                   details</a></li>
             </ul>
           </div>
@@ -1047,8 +1114,8 @@
 
           <!-- INICIO EXPANDIR/OCULTAR SIDEBAR DERECHO -->
           <div id="expand_sidebar_control">
-            <button id="expand_sidebar_button" class="sidebar_button" title="Expand Sidebar" data-i18n-title="expand_sidebar"
-              style="display: none;"></button>
+            <button id="expand_sidebar_button" class="sidebar_button" title="Expand Sidebar"
+              data-i18n-title="expand_sidebar" style="display: none;"></button>
           </div>
           <!-- FIN EXPANDIR/OCULTAR SIDEBAR DERECHO -->
 
@@ -1058,32 +1125,34 @@
           </div>
 
           <!-- INICIO OPCIONES Y CONFIGURACIONES -->
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" data-i18n-title="settings_tooltip"
-            title="Open application preferences and display options." id="settingsCog"><i
-              class="fa-solid fa-gear fa-xl"></i>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+            data-i18n-title="settings_tooltip" title="Open application preferences and display options."
+            id="settingsCog"><i class="fa-solid fa-gear fa-xl"></i>
           </div>
           <!-- FIN OPCIONES Y CONFIGURACIONES -->
 
           <!-- INICIO OPCIÓN PARA RECENTRAR EL MAPA -->
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="H" data-i18n-title="recenter_tooltip"
-            title="Recenter the map and restore the default view." onclick="resetMap();"><i
-              class="fa-solid fa-location-dot fa-xl"></i>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="H"
+            data-i18n-title="recenter_tooltip" title="Recenter the map and restore the default view."
+            onclick="resetMap();"><i class="fa-solid fa-location-dot fa-xl"></i>
           </div>
           <!-- FIN OPCIÓN PARA RECENTRAR EL MAPA -->
 
           <!-- INICIO OPCIÓN DE REPLAY -->
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="RP" data-i18n-title="replay_tooltip"
-            title="Open playback controls for historical flights." onclick="showReplayBar();"><img
-              src="images/replay.png" class="header-icon">
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="RP"
+            data-i18n-title="replay_tooltip" title="Open playback controls for historical flights."
+            onclick="showReplayBar();"><img src="images/replay.png" class="header-icon">
           </div>
           <!-- FIN OPCIÓN DE REPLAY -->
 
           <!-- INICIO OPCIONES DE ZOOM -->
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZI" data-i18n-title="zoom_in_tooltip"
-            title="Zoom In - Increase map zoom level." onclick="zoomInMap();"> <i class="fa-solid fa-plus fa-xl"></i>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZI"
+            data-i18n-title="zoom_in_tooltip" title="Zoom In - Increase map zoom level." onclick="zoomInMap();"> <i
+              class="fa-solid fa-plus fa-xl"></i>
           </div>
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZO" data-i18n-title="zoom_out_tooltip"
-            title="Zoom Out - Decrease map zoom level." onclick="zoomOutMap();"> <i class="fa-solid fa-minus fa-xl"></i>
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZO"
+            data-i18n-title="zoom_out_tooltip" title="Zoom Out - Decrease map zoom level." onclick="zoomOutMap();"> <i
+              class="fa-solid fa-minus fa-xl"></i>
           </div>
           <!-- FIN OPCIONES DE ZOOM -->
         </div>
@@ -1124,8 +1193,8 @@
       <!-- INICIO ENCABEZADO -->
       <div class="header_sidebar">
         <div id="sidebar_close_button_container" style="position: absolute; right: 8px; top: -3px; z-index: 1200;">
-          <button id="toggle_sidebar_button" class="show_sidebar sidebar_button" data-i18n-title="toggle_sidebar" title="Toggle Sidebar"
-            style="background: none; border: none; padding: 6px; cursor: pointer;">
+          <button id="toggle_sidebar_button" class="show_sidebar sidebar_button" data-i18n-title="toggle_sidebar"
+            title="Toggle Sidebar" style="background: none; border: none; padding: 6px; cursor: pointer;">
             <svg id="hamburger-menu" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="34" height="34"
               viewBox="0 0 50 50">
               <path
@@ -1134,8 +1203,9 @@
             </svg>
           </button>
         </div>
-      </div> 
-      <div id="splitter" class="ui-resizable-handle ui-resizable-w" style="display: none;" data-i18n-title="control_sidebar_width" title="Control the width of the sidebar."></div>
+      </div>
+      <div id="splitter" class="ui-resizable-handle ui-resizable-w" style="display: none;"
+        data-i18n-title="control_sidebar_width" title="Control the width of the sidebar."></div>
       <!-- FIN ENCABEZADO -->
 
       <div id="sidebar_canvas">
@@ -1144,8 +1214,8 @@
           <table style="width: 100%">
             <tr>
               <td>
-                <button id="shrink_sidebar_button" class="shrink_sidebar hidden sidebar_button" data-i18n-title="show_map"
-                  title="Show Map"></button>
+                <button id="shrink_sidebar_button" class="shrink_sidebar hidden sidebar_button"
+                  data-i18n-title="show_map" title="Show Map"></button>
               </td>
             </tr>
             <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
@@ -1153,8 +1223,8 @@
             <tr id='aggregator_header' class="infoblock_row hidden">
               <td style="text-align: center">
                 <div>
-                  <span class="largeText" data-i18n="improve_coverage">Improve Coverage:<br><a class="largeText" target="_blank"
-                      href="https://aggregator.com/how-to-feed/">aggregator.com</a></span>
+                  <span class="largeText" data-i18n="improve_coverage">Improve Coverage:<br><a class="largeText"
+                      target="_blank" href="https://aggregator.com/how-to-feed/">aggregator.com</a></span>
                 </div>
                 <div class="rSpacer"></div>
                 <div class="rSpacer"></div>
@@ -1163,7 +1233,8 @@
                   <span class="largeText">
                     <a class="largeText" target="_blank" href="https://aggregator.com/faq/" data-i18n="faq">FAQ</a>
                     &emsp;&emsp;
-                    <a class="largeText" target="_blank" href="https://aggregator.com/map-help/" data-i18n="map_help">Map Help</a>
+                    <a class="largeText" target="_blank" href="https://aggregator.com/map-help/"
+                      data-i18n="map_help">Map Help</a>
                   </span>
                 </div>
                 <div class="rSpacer">
@@ -1173,7 +1244,8 @@
             <tr id="imageConfigHeader" class="infoblock_row hidden">
               <td style="text-align: center">
                 <div>
-                  <span class="largeText"><a id="imageConfigLink" class="largeText" target="_blank" href="/" data-i18n="adsb_feeder_config">ADSB Feeder
+                  <span class="largeText"><a id="imageConfigLink" class="largeText" target="_blank" href="/"
+                      data-i18n="adsb_feeder_config">ADSB Feeder
                       Image Config</a></span>
                 </div>
               </td>
@@ -1196,17 +1268,20 @@
               <td>
                 <table style="width: 100%">
                   <tr class="infoblock_heading">
-                    <td style="width: 50%"><span class="infoBlockTitleText" data-i18n="total_aircraft">Total Aircraft:</span> <span
-                        id="dump1090_total_ac">n/a</span></td>
-                    <td id="dump1090_message_rate_td"><span class="infoBlockTitleText" data-i18n="messages">Messages:</span> <span
-                        id="dump1090_message_rate">n/a</span data-i18n="per_sec">/sec</td>
+                    <td style="width: 50%"><span class="infoBlockTitleText" data-i18n="total_aircraft">Total
+                        Aircraft:</span> <span id="dump1090_total_ac">n/a</span></td>
+                    <td id="dump1090_message_rate_td"><span class="infoBlockTitleText"
+                        data-i18n="messages">Messages:</span> <span id="dump1090_message_rate">n/a</span
+                        data-i18n="per_sec">/sec</td>
                   </tr>
                   <tr class="infoblock_body">
-                    <td style="width: 50%"><span id="with_positions" class="infoBlockTitleText" data-i18n="with_position">With Position:</span>
+                    <td style="width: 50%"><span id="with_positions" class="infoBlockTitleText"
+                        data-i18n="with_position">With Position:</span>
                       <span id="dump1090_total_ac_positions">n/a</span>
                     </td>
-                    <td id="dump1090_total_history_td"><span class="infoBlockTitleText" data-i18n="history">History:</span> <span
-                        id="dump1090_total_history">n/a</span data-i18n="positions"> positions</td>
+                    <td id="dump1090_total_history_td"><span class="infoBlockTitleText"
+                        data-i18n="history">History:</span> <span id="dump1090_total_history">n/a</span
+                        data-i18n="positions"> positions</td>
                   </tr>
                 </table>
                 <table style="width: 100%" id="infoblock_altimeter" class="hidden">
@@ -1217,8 +1292,10 @@
                         <span> <input id="altimeter_input" type="number" step="0.01" value="29.92"
                             class="searchInput"></span>
                         <span> <button class="formButton" type="submit" data-i18n="set">Set</button></span>
-                        <span> <button class="formButton" type="button" id="altimeter_set_standard" data-i18n="standard">Standard</button>
-                          <span> <button class="formButton" type="button" disabled id="altimeter_set_selected" data-i18n="from_plane">From
+                        <span> <button class="formButton" type="button" id="altimeter_set_standard"
+                            data-i18n="standard">Standard</button>
+                          <span> <button class="formButton" type="button" disabled id="altimeter_set_selected"
+                              data-i18n="from_plane">From
                               Plane</button>
                       </form>
                     </td>
@@ -1228,14 +1305,18 @@
             </tr>
           </table>
           <!-- FIN TÍTULO Y DATOS GENERALES -->
-          
+
           <!-- INICIO SELECTOR DE FILTROS Y COLUMNAS -->
           <div id="tabs" style="min-height: 10px; overflow: auto">
             <ul>
-              <li data-i18n-title="filter_flights_tooltip" title="Filter flights by specific criteria."><a href="#tab-filters" data-i18n="filters">Filters</a></li>
-              <li data-i18n-title="select_columns_tooltip" title="Select which columns to display in the aircraft table."><a href="#tab-columns" data-i18n="columns">Columns</a></li>
+              <li data-i18n-title="filter_flights_tooltip" title="Filter flights by specific criteria."><a
+                  href="#tab-filters" data-i18n="filters">Filters</a></li>
+              <li data-i18n-title="select_columns_tooltip"
+                title="Select which columns to display in the aircraft table."><a href="#tab-columns"
+                  data-i18n="columns">Columns</a></li>
               <li id="reset-sidebar-tab" class="reset-sidebar-tab-item">
-                <a href="#" id="reset-sidebar-link" data-i18n-title="restore_sidebar_tooltip" title="Restore sidebar to default width" data-i18n="restore">Restore</a>
+                <a href="#" id="reset-sidebar-link" data-i18n-title="restore_sidebar_tooltip"
+                  title="Restore sidebar to default width" data-i18n="restore">Restore</a>
               </li>
             </ul>
 
@@ -1277,7 +1358,8 @@
                           <tr>
                             <td>
                               <button class="formButton" type="submit" data-i18n="filter">Filter</button>
-                              <button class="formButton" id="source_filter_reset_button" data-i18n="reset">Reset</button>
+                              <button class="formButton" id="source_filter_reset_button"
+                                data-i18n="reset">Reset</button>
                             </td>
                           </tr>
                         </table>
@@ -1340,7 +1422,8 @@
               <h4 data-i18n="notable_aircraft">Notable aircraft</h4>
               <div>
                 <span class="starred-count" id="starred-count">0</span>
-                <button id="clear-all-starred-btn" class="starred-count" data-i18n-title="clear_all_notable" title="Clear all notable aircraft" style="padding: 2px 8px; font-size: 11px;">✖</button>
+                <button id="clear-all-starred-btn" class="starred-count" data-i18n-title="clear_all_notable"
+                  title="Clear all notable aircraft" style="padding: 2px 8px; font-size: 11px;">✖</button>
               </div>
             </div>
             <div id="starred-list-container" class="starred-list">
@@ -1513,38 +1596,120 @@
   <script>
     (function () {
       const TITLE_CLASS = 'layer-panel-title';
-      const TITLE_TEXT = 'Layer tools';
+
+      function getLayerToolsTitle() {
+        // Intentar obtener la traducción de forma segura
+        try {
+          if (typeof window.translate !== 'undefined' && window.translate && typeof window.translate.t === 'function') {
+            const translated = window.translate.t('layer_tools_title');
+            if (translated && translated !== 'layer_tools_title') {
+              return translated;
+            }
+          }
+        } catch (e) {
+          // Si hay error, usar fallback
+          console.warn('Error obteniendo traducción para layer_tools_title:', e);
+        }
+
+        try {
+          if (typeof window.t === 'function') {
+            const translated = window.t('layer_tools_title');
+            if (translated && translated !== 'layer_tools_title') {
+              return translated;
+            }
+          }
+        } catch (e) {
+          console.warn('Error obteniendo traducción para layer_tools_title (window.t):', e);
+        }
+
+        return 'Layer tools'; // Fallback en inglés
+      }
 
       function insertTitleIntoPanel(panel) {
         if (!panel) return;
-        if (panel.querySelector(`:scope > .${TITLE_CLASS}`)) return;
-        const title = document.createElement('div');
-        title.className = TITLE_CLASS;
-        title.textContent = TITLE_TEXT;
-        panel.prepend(title);
+
+        // Buscar o crear el título
+        let titleEl = panel.querySelector(`:scope > .${TITLE_CLASS}`);
+        if (!titleEl) {
+          titleEl = document.createElement('div');
+          titleEl.className = TITLE_CLASS;
+          panel.prepend(titleEl);
+        }
+
+        // Actualizar el texto con la traducción actual
+        const titleText = getLayerToolsTitle();
+        if (titleEl.textContent !== titleText) {
+          titleEl.textContent = titleText;
+        }
       }
 
       function scanForPanels() {
-        document.querySelectorAll('.layer-switcher').forEach(ls => {
-          const panel = ls.querySelector('.panel');
-          if (panel) insertTitleIntoPanel(panel);
-          // ensure we react when OpenLayers injects/removes panel content
-          if (window.MutationObserver && !ls.__layerTitleObserver) {
-            ls.__layerTitleObserver = new MutationObserver(() => insertTitleIntoPanel(ls.querySelector('.panel')));
-            ls.__layerTitleObserver.observe(ls, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
-          }
-        });
+        try {
+          document.querySelectorAll('.layer-switcher').forEach(ls => {
+            const panel = ls.querySelector('.panel');
+            if (panel) insertTitleIntoPanel(panel);
+
+            if (window.MutationObserver && !ls.__layerTitleObserver) {
+              ls.__layerTitleObserver = new MutationObserver(() => {
+                const panel = ls.querySelector('.panel');
+                if (panel) insertTitleIntoPanel(panel);
+              });
+              ls.__layerTitleObserver.observe(ls, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['class', 'style']
+              });
+            }
+          });
+        } catch (e) {
+          console.warn('Error en scanForPanels:', e);
+        }
       }
 
-      document.addEventListener('DOMContentLoaded', () => {
-        scanForPanels();
-        if (window.MutationObserver) {
-          const mo = new MutationObserver(scanForPanels);
-          mo.observe(document.body, { childList: true, subtree: true });
-          const layerSelect = document.getElementById('layer-select');
-          if (layerSelect) new MutationObserver(scanForPanels).observe(layerSelect, { attributes: true, attributeFilter: ['class', 'style'] });
+      function updateLayerToolsTitle() {
+        try {
+          document.querySelectorAll('.layer-switcher .panel .layer-panel-title').forEach(el => {
+            const titleText = getLayerToolsTitle();
+            if (el.textContent !== titleText) {
+              el.textContent = titleText;
+            }
+          });
+        } catch (e) {
+          console.warn('Error actualizando títulos de layer tools:', e);
         }
+      }
+
+      // Exponer función
+      window.updateLayerToolsTitle = updateLayerToolsTitle;
+
+      // Escuchar evento de cambio de idioma
+      document.addEventListener('languageChanged', function () {
+        setTimeout(function () {
+          if (typeof window.updateLayerToolsTitle === 'function') {
+            window.updateLayerToolsTitle();
+          }
+        }, 100);
       });
+
+      // Inicializar cuando el DOM esté listo
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+          // Esperar un poco a que el sistema de traducción esté listo
+          setTimeout(scanForPanels, 100);
+        });
+      } else {
+        setTimeout(scanForPanels, 100);
+      }
+
+      // También ejecutar después de que todo el contenido esté cargado
+      if (document.readyState === 'complete') {
+        setTimeout(scanForPanels, 200);
+      } else {
+        window.addEventListener('load', function () {
+          setTimeout(scanForPanels, 200);
+        });
+      }
     })();
   </script>
 

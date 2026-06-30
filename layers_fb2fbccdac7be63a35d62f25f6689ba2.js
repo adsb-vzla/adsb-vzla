@@ -649,7 +649,7 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
-    
+
     //}
 
     //if (offlineMapDetail > 0) {
@@ -848,7 +848,7 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
-    
+
     //}
 
 
@@ -2132,6 +2132,51 @@ function createBaseLayers() {
             visible: true,
         }));
     }
+
+    // *********************************************
+    // ** INICIO TRADUCIR TODAS LAS CAPAS CREADAS **
+    // *********************************************
+    function translateLayersRecursive(layerCollection) {
+        if (!layerCollection || typeof layerCollection.forEach !== 'function') {
+            return;
+        }
+
+        layerCollection.forEach(layer => {
+            if (!layer) return;
+
+            // Verificar si es un grupo de capas (más seguro)
+            // Usamos get('layers') para identificar grupos en lugar de instanceof
+            const subLayers = layer.getLayers ? layer.getLayers() : null;
+
+            if (subLayers && typeof subLayers.forEach === 'function') {
+                // Es un grupo de capas
+                const groupName = layer.get('name');
+                if (groupName && window.getLayerTitle) {
+                    const translated = window.getLayerTitle('group_' + groupName, layer.get('title'));
+                    if (translated !== layer.get('title')) {
+                        layer.set('title', translated);
+                    }
+                }
+                // Recursivamente traducir capas hijas
+                translateLayersRecursive(subLayers);
+            } else if (layer.get && typeof layer.get === 'function') {
+                // Es una capa individual
+                const name = layer.get('name');
+                if (name && window.getLayerTitle) {
+                    const translated = window.getLayerTitle(name, layer.get('title'));
+                    if (translated !== layer.get('title')) {
+                        layer.set('title', translated);
+                    }
+                }
+            }
+        });
+    }
+
+    // Aplicar traducción inicial a todas las capas
+    translateLayersRecursive(layers);
+    // *********************************************
+    // *** FIN TRADUCIR TODAS LAS CAPAS CREADAS ****
+    // *********************************************
 
     return layers_group;
 }
