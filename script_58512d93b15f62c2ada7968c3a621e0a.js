@@ -2136,7 +2136,7 @@ function updateZoomIndicator() {
     const factor = Math.pow(2, z - zoomIndicatorBaseline);
     const pct = Math.round(100 * factor);
 
-    el.textContent = pct + '%';
+    el.textContent = 'Zoom: ' + pct + '%';
 
     let tooltipText = 'Current zoom level: {zoom} ({pct}% relative to base zoom {baseline})';
 

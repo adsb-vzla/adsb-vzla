@@ -68,7 +68,7 @@ body {
 /* Reloj UTC */
 #utc_clock {
     color: white;
-    font-size: calc(14px * var(--SCALE));
+    font-size: calc(16px * var(--SCALE));
     font-weight: bold;
 }
 
@@ -797,7 +797,7 @@ input.error {
 /* new css */
 .dateTime {
     font-weight: bold;
-    font-size: calc(12px * var(--SCALE));
+    font-size: calc(16px * var(--SCALE));
     line-height: calc(26px * var(--SCALE));
     color: #FFFFFF;
     color: rgb(255, 255, 255);
@@ -1395,10 +1395,13 @@ table.infoSectionTable tr td {
 
 #altitude_chart_image {
     display: block;
-    width: 100%;
+    position: relative;
+    width: 70%;
     height: 6rem;
     max-width: 100%;
     background-color: transparent;
+    left: 17rem;
+    right: 17rem;
 }
 
 
