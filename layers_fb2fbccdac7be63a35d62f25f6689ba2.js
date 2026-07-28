@@ -1350,6 +1350,7 @@ function createBaseLayers() {
     }));
 
 
+
     if (1) {
         world.push(new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -1974,7 +1975,16 @@ function createBaseLayers() {
 
     // Taken from https://www.ais.pansa.pl/mil/pliki/EP_ENR_2_4_en.pdf
     //europe.push(createGeoJsonLayer('PL AWACS Orbits', 'plawacsorbits', 'geojson/PL_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
-
+    world.push(
+        createGeoJsonLayer(
+            'FIR Maiquetía',
+            'fir_svzm',
+            'geojson/fir_svzm.geojson',
+            'rgba(77,163,255,0.15)',
+            '#4DA3FF',
+            true
+        )
+    );
     // Taken from https://english.defensie.nl/binaries/defence/documenten/publications/2022/12/14/milaip-01-23-part-1-gen-part-2-enr/MILAIP_01_2023split_GEN_ENR.pdf
     //europe.push(createGeoJsonLayer('NL AWACS Orbits', 'nlawacsorbits', 'geojson/NL_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
 
