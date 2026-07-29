@@ -473,12 +473,13 @@ function updateDistanceLine() {
 
         let textContainer = document.getElementById('dist-text-content');
         if (textContainer) {
-            // textContainer.innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
             let distLabel = getTranslatedText('dist_label', 'Dist:');
             let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
-            let nm = getTranslatedText('nm', 'NM');
-            let ft = getTranslatedText('ft', 'ft');
-            textContainer.innerHTML = `${distLabel} ${distance.toFixed(2)} ${nm}<br>${altDiffLabel} ${altDiff} ${ft}`;
+            const distM = distance * 1852;
+            const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
+            const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
+
+            textContainer.innerHTML = `${distLabel} ${distText}<br>${altDiffLabel} ${altText}`;
         }
 
         distanceOverlay.setPosition(midPointProj);
@@ -710,14 +711,13 @@ function updateDistanceLine() {
 
             const textContainer = ov.getElement().querySelector('.pair-text-content');
             if (textContainer) {
-                // textContainer.innerHTML = `Dist: ${distance.toFixed(2)} NM<br>Alt Diff: ${altDiff} ft`;
-                // if (isHidden) textContainer.style.display = 'none';
-                // else textContainer.style.display = 'block';
                 let distLabel = getTranslatedText('dist_label', 'Dist:');
                 let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
-                let nm = getTranslatedText('nm', 'NM');
-                let ft = getTranslatedText('ft', 'ft');
-                textContainer.innerHTML = `${distLabel} ${distance.toFixed(2)} ${nm}<br>${altDiffLabel} ${altDiff} ${ft}`;
+                const distM = distance * 1852;
+                const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
+                const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
+
+                textContainer.innerHTML = `${distLabel} ${distText}<br>${altDiffLabel} ${altText}`;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';
             }
@@ -6581,6 +6581,9 @@ function initMap() {
             }
             remakeTrails();
             refreshSelected();
+            if (distanceBetweenPlanesMode) {
+                updateDistanceLine();
+            }
         }
     });
     // *************************************************************************
