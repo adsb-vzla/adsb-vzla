@@ -13592,8 +13592,8 @@ function showReplayBar() {
         jQuery("#replayBar").show();
         jQuery("#replayBar").css('display', 'grid');
         jQuery('#replayBar').height('100px');
-        jQuery('#map_canvas').height('calc(100% - 100px)');
-        jQuery('#sidebar_canvas').height('calc(100% - 110px)');
+        jQuery('#map_canvas').height('calc(100% - 110px)');
+        jQuery('#sidebar_canvas').height('calc(100% - 100px)');
         updateReplayBarPosition();
         if (!replay) {
             replay = replayDefaults(new Date());
