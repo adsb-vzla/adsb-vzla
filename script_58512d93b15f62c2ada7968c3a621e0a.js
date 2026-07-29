@@ -333,17 +333,20 @@ function updateDistanceLine() {
         if (!distanceOverlay) {
             let element = document.createElement('div');
             element.id = 'distance-label-tag';
-            element.style.background = 'rgba(255, 255, 255, 0.9)';
+            element.style.background = 'rgba(0,0,0,0.40)';
             element.style.border = '1px solid black';
             element.style.padding = '5px';
             element.style.fontSize = '12px';
-            element.style.color = 'black';
+            element.style.fontWeight = '600'
+            element.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000';
+            element.style.color = 'white';
+            
             element.style.pointerEvents = 'auto';
             element.style.borderRadius = '4px';
 
             element.innerHTML = `
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                    <i id="dist-toggle-btn" class="fa-solid fa-eye-slash" style="cursor: pointer; color: #444;"></i>
+                    <i id="dist-toggle-btn" class="fa-solid fa-eye-slash" style="cursor: pointer; color: white;"></i>
                     <i id="dist-close-btn" class="fa-solid fa-xmark" style="cursor: pointer; color: #c00;"></i>
                 </div>
                 <div id="dist-text-content"></div>
