@@ -1849,7 +1849,7 @@ html .ui-button.ui-state-disabled:active {
     grid-area: dateLocal;
     font-weight: bold;
     white-space: nowrap;
-    text-align: left;
+    text-align: center;
     align-self: end;
 }
 
@@ -1881,8 +1881,7 @@ html .ui-button.ui-state-disabled:active {
     grid-area: speedHint;
     font-weight: bold;
     white-space: nowrap;
-    text-align: right;
-    justify-self: end;
+    text-align: center;
     align-self: end;
 }
 
@@ -1983,7 +1982,7 @@ html .ui-button.ui-state-disabled:active {
 #minuteSelect .ui-slider-handle,
 #replaySpeedSelect .ui-slider-handle {
     height: var(--replay-handle-size) !important;
-    width: 35px !important;
+    width: 30px !important;
     top: 50% !important;
     transform: translate(-50%, -50%) !important;
     margin: 0 !important;
@@ -1994,6 +1993,10 @@ html .ui-button.ui-state-disabled:active {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.22);
     border-radius: 0.5rem;
     text-align: center;
+}
+
+#replaySpeedSelect .ui-slider-handle {
+    width: 40px !important;
 }
 
 .ui-slider .ui-slider-handle {

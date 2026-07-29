@@ -362,12 +362,14 @@
             // *** REPLAY ***
             'play': 'Play',
             'pause': 'Pause',
-            'date_label': 'Date:',
-            'utc_label': 'UTC:',
+            'date_label': 'Date',
+            // 'utc_label': 'UTC:',
+            'playback_label': 'Playback',
             'hours_label': 'Hours',
             'minutes_label': 'Minutes',
-            'speed_label': 'Speed:',
+            'speed_label': 'Speed',
             'loading': 'Loading...',
+            'replay_placeholder': 'Select a date to replay...',
 
             // *** SIDEBAR_CONTAINER ***
             'toggle_sidebar': 'Toggle Sidebar',
@@ -894,12 +896,14 @@
             // *** REPLAY ***
             'play': 'Reproducir',
             'pause': 'Pausar',
-            'date_label': 'Fecha:',
-            'utc_label': 'UTC:',
+            'date_label': 'Fecha',
+            // 'utc_label': 'UTC:',
+            'playback_label': 'Reproducción',
             'hours_label': 'Horas',
             'minutes_label': 'Minutos',
-            'speed_label': 'Velocidad:',
+            'speed_label': 'Velocidad',
             'loading': 'Cargando...',
+            'replay_placeholder': 'Seleccione una fecha para reproducir...',
 
             // *** SIDEBAR_CONTAINER ***
             'toggle_sidebar': 'Alternar barra lateral',

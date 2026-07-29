@@ -1170,13 +1170,14 @@
       <div id="replayBar">
         <button id="replayPlay" data-i18n="play">Play</button>
 
-        <p id="replayDateHintLocal" data-i18n="date_label">Date:</p>
-        <p id="replayTimeHint" data-i18n="utc_label">UTC:</p>
+        <p id="replayDateHintLocal" data-i18n="playback_label">Playback</p>
+        <!-- <p id="replayTimeHint" data-i18n="utc_label">UTC:</p> -->
+        <p id="replayTimeHint" data-i18n="date_label">Date</p>
         <p id="replayHoursHint" data-i18n="hours_label">Hours</p>
         <p id="replayMinutesHint" data-i18n="minutes_label">Minutes</p>
-        <p id="replaySpeedHint" data-i18n="speed_label">Speed:</p>
+        <p id="replaySpeedHint" data-i18n="speed_label">Speed</p>
 
-        <input type="text" class="datepicker" id="replayDatepicker">
+        <input type="text" class="datepicker" id="replayDatepicker" placeholder="Select a date to replay..." data-i18n="replay_placeholder">
 
         <p id="hourSelect"></p>
         <p id="minuteSelect"></p>

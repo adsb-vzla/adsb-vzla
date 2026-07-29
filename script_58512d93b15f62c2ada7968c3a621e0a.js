@@ -13164,14 +13164,14 @@ function setReplayTimeHint(date) {
         dateLabel = window.t('date_label') || dateLabel;
         utcLabel = window.t('utc_label') || utcLabel;
     }
-    if (true || utcTimesHistoric) {
-        jQuery("#replayDateHintLocal").html(TIMEZONE + " " + dateLabel + " " + lDateString(date));
-        jQuery("#replayDateHint").html("" + zDateString(date));
-        jQuery("#replayTimeHint").html(utcLabel + " " + zuluTime(date) + ' / ' + TIMEZONE + ":" + NBSP + localTime(date));
-    } else {
-        jQuery("#replayDateHintLocal").html("");
-        jQuery("#replayDateHint").html(dateLabel + " " + lDateString(date));
-    }
+    // if (true || utcTimesHistoric) {
+    //     jQuery("#replayDateHintLocal").html(TIMEZONE + " " + dateLabel + " " + lDateString(date));
+    //     jQuery("#replayDateHint").html("" + zDateString(date));
+    //     jQuery("#replayTimeHint").html(utcLabel + " " + zuluTime(date) + ' / ' + TIMEZONE + ":" + NBSP + localTime(date));
+    // } else {
+    //     jQuery("#replayDateHintLocal").html("");
+    //     jQuery("#replayDateHint").html(dateLabel + " " + lDateString(date));
+    // }
 }
 // **********************************************************
 // **** FIN MOSTRAR FECHA, HORAS Y MINUTOS EN EL REPLAY *****
@@ -13658,29 +13658,36 @@ function showReplayBar() {
             max: Math.pow(1000, 1 / slideBase),
             slide: function (event, ui) {
                 replay.speed = Math.pow(ui.value, slideBase).toFixed(1);
-
-                let speedLabel = 'Speed: ';
-                if (typeof window.translate !== 'undefined' && window.translate.t) {
-                    speedLabel = window.translate.t('speed_label') || speedLabel;
-                } else if (typeof window.t === 'function') {
-                    speedLabel = window.t('speed_label') || speedLabel;
-                }
-
-                jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
+                updateSliderTip(ui.handle, replay.speed, "x");
             },
+            //     let speedLabel = 'Speed: ';
+            //     if (typeof window.translate !== 'undefined' && window.translate.t) {
+            //         speedLabel = window.translate.t('speed_label') || speedLabel;
+            //     } else if (typeof window.t === 'function') {
+            //         speedLabel = window.t('speed_label') || speedLabel;
+            //     }
+
+            //     jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
+            // // },
             change: function (event, ui) {
+                updateSliderTip(jQuery(this).find('.ui-slider-handle'), replay.speed, "x");
                 replayStep();
             },
         });
 
-        let speedLabel = 'Speed: ';
+        setupSliderDecorations('#replaySpeedSelect', '1x', '1000x');
+        updateSliderTip(jQuery('#replaySpeedSelect').find('.ui-slider-handle'), replay.speed, "x");
+
+        let speedLabel = 'Speed ';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
             speedLabel = window.translate.t('speed_label') || speedLabel;
         } else if (typeof window.t === 'function') {
             speedLabel = window.t('speed_label') || speedLabel;
         }
 
-        jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
+        jQuery('#replaySpeedHint').text(speedLabel);
+
+        // jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
 
         jQuery("#selected_showTrace_hide").hide();
     }
