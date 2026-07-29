@@ -479,8 +479,12 @@ function updateDistanceLine() {
             let distLabel = getTranslatedText('dist_label', 'Dist:');
             let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
             const distM = distance * 1852;
-            const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
-            const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
+            // const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
+            // const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
+            const distText = showLabelUnits ? format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM') : format_distance_brief(distM, DisplayUnits);
+            const altValue = Math.round(convert_altitude(altDiff, DisplayUnits));
+            const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
+            const altText = altValue + altUnit;
 
             textContainer.innerHTML = `${distLabel} ${distText}<br>${altDiffLabel} ${altText}`;
         }
@@ -717,9 +721,14 @@ function updateDistanceLine() {
                 let distLabel = getTranslatedText('dist_label', 'Dist:');
                 let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
                 const distM = distance * 1852;
-                const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
-                const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
+                // const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
+                // const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
 
+                const distText = showLabelUnits ? format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM') : format_distance_brief(distM, DisplayUnits);
+                const altValue = Math.round(convert_altitude(altDiff, DisplayUnits));
+                const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
+                const altText = altValue + altUnit;
+                
                 textContainer.innerHTML = `${distLabel} ${distText}<br>${altDiffLabel} ${altText}`;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';
@@ -1565,8 +1574,11 @@ function updateDistanceToGroundOverlay() {
         const textContainer = ov.getElement().querySelector('.ta-text-content');
         if (textContainer) {
             // textContainer.innerHTML = `Distance: ${slantText}`;
+            // let distanceLabel = getTranslatedText('distance_label', 'Distance:');
             let distanceLabel = getTranslatedText('distance_label', 'Distance:');
-            textContainer.innerHTML = `${distanceLabel} ${slantText}`;
+            const distanceText = showLabelUnits ? slantText : format_distance_brief(slantM, DisplayUnits);
+            // textContainer.innerHTML = `${distanceLabel} ${slantText}`;
+            textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
         }
 
         const isHidden = groundPlaneHiddenState.get(key) || false;
@@ -1803,7 +1815,8 @@ function updateGroundToGroundOverlay() {
         if (textContainer) {
             // textContainer.innerHTML = `Distance: ${distText}`;
             let distanceLabel = getTranslatedText('distance_label', 'Distance:');
-            textContainer.innerHTML = `${distanceLabel} ${distText}`;
+            const distanceText = showLabelUnits ? distText : format_distance_brief(distM, DisplayUnits);
+            textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
         }
 
         const isHidden = ggHiddenState.get(key) || false;
