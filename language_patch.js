@@ -6,6 +6,8 @@
     // *****************************************
     const translations = {
         en: {
+            'copyright_text': 'ADS-B VENEZUELA / EANSA — Powered by <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer">tar1090</a>. All rights reserved.',
+
             // *** HEAD ***
             'meta_description': 'ADS‑B Venezuela - Air traffic monitoring in Venezuela',
 
@@ -469,14 +471,13 @@
             'distance_label': 'Distance:',
             // *** Aeronave-Aeronave ***
             '1_aircraft_1_aircraft': '1 Aircraft - 1 Aircraft Mode',
-            'select_aircraft_a': 'Select aircraft A (first aircraft)',
-            'select_aircraft_b': 'Select aircraft B (second aircraft)',
-            'select_valid_aircraft': 'Please select a valid aircraft with position data.',
-            'same_aircraft_error': 'You cannot select the same aircraft. Please select a different aircraft for B.',
             'select_aircraft_valid_position': 'Select an aircraft with a valid position.',
             'select_aircraft_complete_pair': 'Select an aircraft to complete the pair.',
             'pairs_mode': 'Pairs Mode',
             // 'click_two_aircraft_measure': 'Click on two aircraft to measure the distance.',
+            'distance_select_plane_a': 'Click on an aircraft to mark point A.',
+            'distance_select_plane_b': 'Click on another aircraft to mark point B.',
+            'distance_invalid_aircraft': 'Select an aircraft.',
             'click_two_aircraft_sequence': 'Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.',
             'first_selected': 'First selected. Click another aircraft to form a pair, or click this aircraft again to anchor it.',
             'anchor_aircraft': 'Anchor aircraft. Now click on B aircraft to create pairs with A. Click A again to unanchor.',
@@ -484,6 +485,7 @@
             'independent_pair_added': 'Independent pair added.',
             'anchor_disabled': 'Anchor disabled.',
             'pair_added': 'Pair added.',
+            'anchor_lost': 'Anchor aircraft lost signal. Select a new anchor or click on two aircraft to form pairs.',
             // *** Tierra-Aeronave ***
             'ta_click_map_point_a': 'Click on the map to mark point A.',
             'ta_click_map_single_point_a': 'Click on the map to mark a single point A.',
@@ -544,6 +546,8 @@
             'layer_weather_radar': 'Weather / Radar',
         },
         es: {
+            'copyright_text': 'ADS-B VENEZUELA / EANSA — Desarrollado sobre <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer">tar1090</a>. Todos los derechos reservados.',
+
             // *** HEAD ***
             'meta_description': 'ADS‑B Venezuela - Monitoreo de tráfico aéreo en Venezuela',
 
@@ -1011,6 +1015,9 @@
             'select_aircraft_complete_pair': 'Selecciona una aeronave para completar el par.',
             'pairs_mode': 'Modo Pares',
             // 'click_two_aircraft_measure': 'Haz clic en dos aeronaves para medir la distancia.',
+            'distance_select_plane_a': 'Haz clic en una aeronave para marcar el punto A.',
+            'distance_select_plane_b': 'Haz clic en otra aeronave para marcar el punto B.',
+            'distance_invalid_aircraft': 'Selecciona una aeronave.',
             'click_two_aircraft_sequence': 'Haz clic en dos aeronaves en secuencia para crear pares independientes (A-B, C-D), o haz clic dos veces en una aeronave para anclarla y luego selecciona múltiples puntos B.',
             'first_selected': 'Primero seleccionado. Haga clic en otro avión para formar un par, o haga clic en este avión nuevamente para anclarlo.',
             'anchor_aircraft': 'Avión anclado. Ahora haga clic en un avión B para crear pares con A. Haga clic en A nuevamente para desanclar.',
@@ -1018,6 +1025,7 @@
             'independent_pair_added': 'Par independiente añadido.',
             'anchor_disabled': 'Anclaje desactivado.',
             'pair_added': 'Par añadido.',
+            'anchor_lost': 'El avión ancla ha perdido señal. Selecciona un nuevo ancla o haz clic en dos aviones para formar pares.',
             // *** Tierra-Aeronave ***
             'ta_click_map_point_a': 'Haz clic en el mapa para marcar el punto A.',
             'ta_click_map_single_point_a': 'Haz clic en el mapa para marcar un único punto A.',
@@ -1143,6 +1151,11 @@
             return true;
         }
         return false;
+    }
+
+    function t_html(key) {
+        const translation = translations[currentLang]?.[key];
+        return translation !== undefined ? translation : key;
     }
 
     document.addEventListener('languageChanged', function (e) {
@@ -1276,9 +1289,12 @@
     // ****************************************************
     // ** INICIO INICIALIZACIÓN DE FUNCIÓN DE TRADUCCIÓN **
     // ****************************************************
-    function getTranslatedText(key, fallback) {
+    function getTranslatedText(key, fallback, allowHtml = false) {
         const translation = translations[currentLang]?.[key];
-        return translation !== undefined ? translation : (fallback || key);
+        if (translation !== undefined) {
+            return translation;
+        }
+        return fallback || key;
     }
 
     window.getTranslatedText = getTranslatedText;

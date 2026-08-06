@@ -736,7 +736,7 @@ function updateDistanceLine() {
                 const altValue = Math.round(convert_altitude(altDiff, DisplayUnits));
                 const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
                 const altText = altValue + altUnit;
-                
+
                 textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}`;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';
@@ -1151,9 +1151,9 @@ function updateDistanceToGroundOverlay() {
                 el.style.padding = '5px';
                 el.style.fontSize = '12px';
                 el.style.fontWeight = '600',
-                el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
-                el.style.color = 'white',
-                el.style.pointerEvents = 'auto';
+                    el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
+                    el.style.color = 'white',
+                    el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
                 el.innerHTML = `
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
@@ -1448,9 +1448,9 @@ function updateDistanceToGroundOverlay() {
             el.style.padding = '5px';
             el.style.fontSize = '12px';
             el.style.fontWeight = '600',
-            el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
-            el.style.color = 'white',
-            el.style.pointerEvents = 'auto';
+                el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
+                el.style.color = 'white',
+                el.style.pointerEvents = 'auto';
             el.style.borderRadius = '4px';
 
             el.innerHTML = `
@@ -1690,9 +1690,9 @@ function updateGroundToGroundOverlay() {
             el.style.padding = '5px';
             el.style.fontSize = '12px';
             el.style.fontWeight = '600',
-            el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
-            el.style.color = 'white',
-            el.style.pointerEvents = 'auto';
+                el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
+                el.style.color = 'white',
+                el.style.pointerEvents = 'auto';
             el.style.borderRadius = '4px';
 
             el.innerHTML = `
@@ -1968,6 +1968,22 @@ function updateDistanceGuideContent() {
             const step1 = ggStep1Message();
             newText = `<center>${pre}</center><br><center>${step1}</center>`;
         } else if (distanceBetweenPlanesMode) {
+            // let modeText = '';
+            // switch (planeDistanceModeType) {
+            //     case '1A1B':
+            //         modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+            //         break;
+            //     case 'pairs':
+            //         modeText = getTranslatedText('pairs_mode', 'Pairs Mode');
+            //         break;
+            //     default:
+            //         modeText = planeDistanceModeType || '1A1B';
+            //         break;
+            // }
+            // const clickMsg = getTranslatedText('click_two_aircraft_measure', 'Click on two aircraft to measure the distance.');
+            // newText = `<center>${modeText}</center><br>${clickMsg}`;
+            // --- INICIO CAMBIOS ---
+            // Verificar en qué paso estamos basado en el estado actual
             let modeText = '';
             switch (planeDistanceModeType) {
                 case '1A1B':
@@ -1980,8 +1996,23 @@ function updateDistanceGuideContent() {
                     modeText = planeDistanceModeType || '1A1B';
                     break;
             }
-            const clickMsg = getTranslatedText('click_two_aircraft_measure', 'Click on two aircraft to measure the distance.');
-            newText = `<center>${modeText}</center><br>${clickMsg}`;
+            const invalidMsg = getTranslatedText('distance_invalid_aircraft', 'Please select a valid aircraft with position.');
+            const currentText = guideEl.innerHTML;
+            if (currentText.includes(invalidMsg) || currentText.includes('Please select a valid aircraft')) {
+                return;
+            }
+            if (selectedPlanesForDistance.length >= 2) {
+                return;
+            }
+            // Determinar el mensaje según cuántos aviones están seleccionados
+            if (selectedPlanesForDistance.length === 0) {
+                const step1Msg = getTranslatedText('distance_select_plane_a', 'Click on an aircraft to mark point A.');
+                newText = `<center>${modeText}</center><br>${step1Msg}`;
+            } else if (selectedPlanesForDistance.length === 1) {
+                const step2Msg = getTranslatedText('distance_select_plane_b', 'Click on another aircraft to mark point B.');
+                newText = `<center>${modeText}</center><br>${step2Msg}`;
+            }
+            // --- FIN CAMBIOS ---
         } else {
             return;
         }
@@ -5923,21 +5954,68 @@ function ol_map_init() {
         if (distanceBetweenPlanesMode && planeHex) {
 
             // Modo 1A1B: seleccionar dos aviones
+            // if (planeDistanceModeType === '1A1B') {
+            //     if (selectedPlanesForDistance.length >= 2) {
+            //         resetDistanceCalculation();
+            //     }
+
+            //     let plane = g.planes[planeHex];
+            //     if (plane && plane.position && plane.altitude !== null) {
+            //         selectedPlanesForDistance.push({ hex: planeHex, coords: plane.position, altitude: plane.altitude });
+
+            //         if (selectedPlanesForDistance.length === 2) {
+            //             updateDistanceLine();
+            //             if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
+            //             distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
+            //         }
+            //     }
+            // Modo 1A1B: seleccionar dos aviones
             if (planeDistanceModeType === '1A1B') {
+                // --- INICIO CAMBIOS ---
+                // Si ya hay 2 seleccionados, reiniciar
                 if (selectedPlanesForDistance.length >= 2) {
                     resetDistanceCalculation();
+                    // Mostrar mensaje paso 1
+                    let modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+                    let step1Msg = getTranslatedText('distance_select_plane_a', 'Click on an aircraft to mark point A.');
+                    showDistanceGuide(`<center>${modeText}</center><br>${step1Msg}`);
                 }
 
                 let plane = g.planes[planeHex];
                 if (plane && plane.position && plane.altitude !== null) {
                     selectedPlanesForDistance.push({ hex: planeHex, coords: plane.position, altitude: plane.altitude });
 
-                    if (selectedPlanesForDistance.length === 2) {
+                    // Actualizar mensaje según el paso
+                    if (selectedPlanesForDistance.length === 1) {
+                        // Paso 1 completado -> mostrar paso 2
+                        let modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+                        let step2Msg = getTranslatedText('distance_select_plane_b', 'Click on another aircraft to mark point B.');
+                        showDistanceGuide(`<center>${step2Msg}</center>`);
+                    } else if (selectedPlanesForDistance.length === 2) {
+                        // Paso 2 completado -> mostrar distancia
+                        hideDistanceGuide();
                         updateDistanceLine();
                         if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
                         distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
                     }
+                } else {
+                    // --- INICIO: ALERTA SI NO ES UN AVIÓN VÁLIDO ---
+                    let invalidMsg = getTranslatedText('distance_invalid_aircraft', 'Please select a valid aircraft with position.');
+                    showDistanceGuide(invalidMsg);
+                    // Restaurar mensaje anterior después de 2 segundos
+                    // setTimeout(() => {
+                    //     if (selectedPlanesForDistance.length === 0) {
+                    //         let modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+                    //         let step1Msg = getTranslatedText('distance_select_plane_a', 'Click on an aircraft to mark point A.');
+                    //         showDistanceGuide(`<center>${modeText}</center><br>${step1Msg}`);
+                    //     } else if (selectedPlanesForDistance.length === 1) {
+                    //         let step2Msg = getTranslatedText('distance_select_plane_b', 'Click on another aircraft to mark point B.');
+                    //         showDistanceGuide(`<center>${step2Msg}</center>`);
+                    //     }
+                    // }, 2000);
+                    // --- FIN: ALERTA ---
                 }
+                // --- FIN CAMBIOS ---
 
                 // Modo 'pairs': permite pares independientes (A-B, C-D) y anchor A->B,C...
             } else if (planeDistanceModeType === 'pairs') {
@@ -6002,6 +6080,24 @@ function ol_map_init() {
                 }
             }
         }
+
+        else if (distanceBetweenPlanesMode && !planeHex) {
+            // Mostrar el mismo mensaje de error que cuando se selecciona un avión inválido
+            let invalidMsg = getTranslatedText('distance_invalid_aircraft', 'Please select a valid aircraft with position.');
+            showDistanceGuide(invalidMsg);
+
+            // setTimeout(() => {
+            //     if (selectedPlanesForDistance.length === 0) {
+            //         let modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+            //         let step1Msg = getTranslatedText('distance_select_plane_a', 'Click on an aircraft to mark point A.');
+            //         showDistanceGuide(`<center>${modeText}</center><br>${step1Msg}`);
+            //     } else if (selectedPlanesForDistance.length === 1) {
+            //         let step2Msg = getTranslatedText('distance_select_plane_b', 'Click on another aircraft to mark point B.');
+            //         showDistanceGuide(`<center>${step2Msg}</center>`);
+            //     }
+            // }, 2000);
+        }
+
         // 2. Comportamiento normal de selección de avión 
         else if (planeHex) {
             selectPlaneByHex(planeHex, { noDeselect: dblclick, follow: dblclick });
@@ -9143,6 +9239,22 @@ function toggleDistance() {
         selectedPlanesForDistance = [];
         selectedPlaneA = null;
         resetDistanceCalculation();
+        // let modeText = '';
+        // switch (planeDistanceModeType) {
+        //     case '1A1B':
+        //         modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+        //         break;
+        //     case 'pairs':
+        //         modeText = getTranslatedText('pairs_mode', 'Pairs Mode');
+        //         break;
+        //     default:
+        //         modeText = planeDistanceModeType;
+        //         break;
+        // }
+        // let clickMsg = getTranslatedText('click_two_aircraft_measure', 'Click on two aircraft to measure the distance.');
+        // // showDistanceGuide(`<center>${planeDistanceModeType} Mode</center><br>Click on two aircraft to measure the distance.`);
+        // showDistanceGuide(`<center>${modeText}</center><br>${clickMsg}`);
+
         let modeText = '';
         switch (planeDistanceModeType) {
             case '1A1B':
@@ -9155,9 +9267,10 @@ function toggleDistance() {
                 modeText = planeDistanceModeType;
                 break;
         }
-        let clickMsg = getTranslatedText('click_two_aircraft_measure', 'Click on two aircraft to measure the distance.');
-        // showDistanceGuide(`<center>${planeDistanceModeType} Mode</center><br>Click on two aircraft to measure the distance.`);
-        showDistanceGuide(`<center>${modeText}</center><br>${clickMsg}`);
+        // Cambiar el mensaje para mostrar el paso 1 (seleccionar avión A)
+        let step1Msg = getTranslatedText('distance_select_plane_a', 'Click on an aircraft to mark point A.');
+        showDistanceGuide(`<center>${modeText}</center><br>${step1Msg}`);
+
         buttonActive('#D', true);
         return;
     }
@@ -9171,7 +9284,7 @@ function toggleDistance() {
         if (planeDistanceModeType === 'pairs') {
             let pairsMode = getTranslatedText('pairs_mode', 'Pairs Mode');
             let pairsMsg = getTranslatedText('click_two_aircraft_sequence', 'Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.');
-            showDistanceGuide(`<center>${pairsMode}</center><br>${pairsMsg}`);
+            showDistanceGuide(`<center>${pairsMode}</center><br><center>${pairsMsg}</center>`);
             // showDistanceGuide('<center>Pairs Mode</center><br>Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.');
         } else {
             // showDistanceGuide(`<center>Mode ${planeDistanceModeType}</center>`);
@@ -14835,6 +14948,7 @@ function resetDistanceCalculation() {
     pairMap && pairMap.clear();
     pairOrder = [];
     pairBuffer = [];
+
 }
 
 function DistanceBetweenPlanes() {
