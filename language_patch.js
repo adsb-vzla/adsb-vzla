@@ -538,21 +538,6 @@
             'layer_terrain_topography': 'Terrain / Topography',
             'layer_waypoints_fixes': 'Waypoints / Fixes',
             'layer_weather_radar': 'Weather / Radar',
-
-            // *** ETIQUETAS (LABEL/LABEL DETAILS) ***
-            'label_callsign': 'Callsign',
-            'label_registration': 'Registration',
-            'label_hex': 'Hex',
-            'label_altitude': 'Alt',
-            'label_squawk': 'Squawk',
-            'label_emergency': 'EMERGENCY',
-            'label_nordo': 'NORDO',
-            'label_hijack': 'HIJACK',
-            'label_wind': 'Wind',
-            'label_direction': 'Dir',
-            'label_speed': 'Speed',
-            'label_type': 'Type',
-            'label_route': 'Route'
         },
         es: {
             // *** HEAD ***
@@ -1087,21 +1072,6 @@
             'layer_terrain_topography': 'Terreno / Topografía',
             'layer_waypoints_fixes': 'Puntos de Navegación / Fijos',
             'layer_weather_radar': 'Clima / Radar',
-
-            // *** ETIQUETAS (LABEL/LABEL DETAILS) ***
-            'label_callsign': 'Indicativo',
-            'label_registration': 'Matrícula',
-            'label_hex': 'Hex',
-            'label_altitude': 'Alt',
-            'label_squawk': 'Squawk',
-            'label_emergency': 'EMERGENCIA',
-            'label_nordo': 'SIN RADIO',
-            'label_hijack': 'SECUESTRO',
-            'label_wind': 'Viento',
-            'label_direction': 'Dir',
-            'label_speed': 'Vel',
-            'label_type': 'Tipo',
-            'label_route': 'Ruta'
         }
     };
     // *****************************************
