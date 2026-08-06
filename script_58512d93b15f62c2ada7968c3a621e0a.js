@@ -334,19 +334,18 @@ function updateDistanceLine() {
         if (!distanceOverlay) {
             let element = document.createElement('div');
             element.id = 'distance-label-tag';
-            element.style.background = 'rgba(0,0,0,0.40)';
+            element.style.background = 'rgba(0,0,0,0.5)';
             element.style.border = '1px solid black';
             element.style.padding = '5px';
             element.style.fontSize = '12px';
             element.style.fontWeight = '600'
             element.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000';
             element.style.color = 'white';
-            
             element.style.pointerEvents = 'auto';
             element.style.borderRadius = '4px';
 
             element.innerHTML = `
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
                     <i id="dist-toggle-btn" class="fa-solid fa-eye-slash" style="cursor: pointer; color: white;"></i>
                     <i id="dist-close-btn" class="fa-solid fa-xmark" style="cursor: pointer; color: #c00;"></i>
                 </div>
@@ -477,8 +476,10 @@ function updateDistanceLine() {
 
         let textContainer = document.getElementById('dist-text-content');
         if (textContainer) {
-            let distLabel = getTranslatedText('dist_label', 'Dist:');
-            let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
+            // let distLabel = getTranslatedText('dist_label', 'Dist:');
+            const distIconHTML = '⟷';
+            const altDiffIconHTML = '↕';
+            // let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
             const distM = distance * 1852;
             // const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
             // const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
@@ -487,7 +488,7 @@ function updateDistanceLine() {
             const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
             const altText = altValue + altUnit;
 
-            textContainer.innerHTML = `${distLabel} ${distText}<br>${altDiffLabel} ${altText}`;
+            textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}`;
         }
 
         distanceOverlay.setPosition(midPointProj);
@@ -527,16 +528,18 @@ function updateDistanceLine() {
                 if (!ov) {
                     const el = document.createElement('div');
                     el.id = `distance-label-${key.replace(/\|/g, '_')}`;
-                    el.style.background = 'rgba(255,255,255,0.9)';
+                    el.style.background = 'rgba(0,0,0,0.5)';
                     el.style.border = '1px solid black';
                     el.style.padding = '5px';
                     el.style.fontSize = '12px';
-                    el.style.color = 'black';
+                    el.style.fontWeight = '600'
+                    el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000';
+                    el.style.color = 'white';
                     el.style.pointerEvents = 'auto';
                     el.style.borderRadius = '4px';
                     el.innerHTML = `
-                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                        <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: #444;"></i>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                        <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: white;"></i>
                         <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;"></i>
                     </div>
                     <div class="pair-text-content"></div>
@@ -658,16 +661,18 @@ function updateDistanceLine() {
             if (!ov) {
                 const el = document.createElement('div');
                 el.id = `distance-label-${key.replace(/\|/g, '_')}`;
-                el.style.background = 'rgba(255,255,255,0.9)';
+                el.style.background = 'rgba(0,0,0,0.5)';
                 el.style.border = '1px solid black';
                 el.style.padding = '5px';
                 el.style.fontSize = '12px';
-                el.style.color = 'black';
+                el.style.fontWeight = '600'
+                el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000';
+                el.style.color = 'white';
                 el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
                 el.innerHTML = `
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                    <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: #444;"></i>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                    <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: white;"></i>
                     <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;"></i>
                 </div>
                 <div class="pair-text-content"></div>
@@ -719,8 +724,10 @@ function updateDistanceLine() {
 
             const textContainer = ov.getElement().querySelector('.pair-text-content');
             if (textContainer) {
-                let distLabel = getTranslatedText('dist_label', 'Dist:');
-                let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
+                // let distLabel = getTranslatedText('dist_label', 'Dist:');
+                // let altDiffLabel = getTranslatedText('alt_diff_label', 'Alt Diff:');
+                const distIconHTML = '⟷';
+                const altDiffIconHTML = '↕';
                 const distM = distance * 1852;
                 // const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
                 // const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
@@ -730,7 +737,7 @@ function updateDistanceLine() {
                 const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
                 const altText = altValue + altUnit;
                 
-                textContainer.innerHTML = `${distLabel} ${distText}<br>${altDiffLabel} ${altText}`;
+                textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}`;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';
             }
@@ -1139,16 +1146,18 @@ function updateDistanceToGroundOverlay() {
             if (!ov) {
                 const el = document.createElement('div');
                 el.id = `ta-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
-                el.style.background = 'rgba(255, 255, 255, 0.9)';
+                el.style.background = 'rgba(0,0,0,0.5)';
                 el.style.border = '1px solid black';
                 el.style.padding = '5px';
                 el.style.fontSize = '12px';
-                el.style.color = 'black';
+                el.style.fontWeight = '600',
+                el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
+                el.style.color = 'white',
                 el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
                 el.innerHTML = `
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: #444;"></i>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: white;"></i>
                 <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;"></i>
             </div>
             <div class="ta-text-content"></div>
@@ -1434,17 +1443,19 @@ function updateDistanceToGroundOverlay() {
         if (!ov) {
             const el = document.createElement('div');
             el.id = `ta-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
-            el.style.background = 'rgba(255, 255, 255, 0.9)';
+            el.style.background = 'rgba(0,0,0,0.5)';
             el.style.border = '1px solid black';
             el.style.padding = '5px';
             el.style.fontSize = '12px';
-            el.style.color = 'black';
+            el.style.fontWeight = '600',
+            el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
+            el.style.color = 'white',
             el.style.pointerEvents = 'auto';
             el.style.borderRadius = '4px';
 
             el.innerHTML = `
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-            <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: #444;"></i>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+            <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: white;"></i>
             <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;"></i>
         </div>
         <div class="ta-text-content"></div>
@@ -1576,10 +1587,12 @@ function updateDistanceToGroundOverlay() {
         if (textContainer) {
             // textContainer.innerHTML = `Distance: ${slantText}`;
             // let distanceLabel = getTranslatedText('distance_label', 'Distance:');
-            let distanceLabel = getTranslatedText('distance_label', 'Distance:');
+            // let distanceLabel = getTranslatedText('distance_label', 'Distance:');
+            const iconHTML = '⟷';
             const distanceText = showLabelUnits ? slantText : format_distance_brief(slantM, DisplayUnits);
             // textContainer.innerHTML = `${distanceLabel} ${slantText}`;
-            textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
+            // textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
+            textContainer.innerHTML = `${iconHTML} ${distanceText}`;
         }
 
         const isHidden = groundPlaneHiddenState.get(key) || false;
@@ -1672,17 +1685,19 @@ function updateGroundToGroundOverlay() {
         if (!ov) {
             const el = document.createElement('div');
             el.id = `gg-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
-            el.style.background = 'rgba(255, 255, 255, 0.9)';
+            el.style.background = 'rgba(0,0,0,0.5)';
             el.style.border = '1px solid black';
             el.style.padding = '5px';
             el.style.fontSize = '12px';
-            el.style.color = 'black';
+            el.style.fontWeight = '600',
+            el.style.textShadow = '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
+            el.style.color = 'white',
             el.style.pointerEvents = 'auto';
             el.style.borderRadius = '4px';
 
             el.innerHTML = `
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid #ccc; padding-bottom: 2px;">
-                    <i class="fa-solid fa-eye-slash gg-toggle-btn" style="cursor: pointer; color: #444;"></i>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                    <i class="fa-solid fa-eye-slash gg-toggle-btn" style="cursor: pointer; color: white;"></i>
                     <i class="fa-solid fa-xmark gg-close-btn" style="cursor: pointer; color: #c00;"></i>
                 </div>
                 <div class="gg-text-content"></div>
@@ -1815,9 +1830,11 @@ function updateGroundToGroundOverlay() {
         const textContainer = ov.getElement().querySelector('.gg-text-content');
         if (textContainer) {
             // textContainer.innerHTML = `Distance: ${distText}`;
-            let distanceLabel = getTranslatedText('distance_label', 'Distance:');
+            // let distanceLabel = getTranslatedText('distance_label', 'Distance:');
+            const iconHTML = '⟷';
             const distanceText = showLabelUnits ? distText : format_distance_brief(distM, DisplayUnits);
-            textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
+            // textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
+            textContainer.innerHTML = `${iconHTML} ${distanceText}`;
         }
 
         const isHidden = ggHiddenState.get(key) || false;
@@ -1993,11 +2010,13 @@ function showDistanceGuide(text) {
             top: '50px',
             left: '50%',
             transform: 'translateX(-50%)',
-            background: 'rgba(255,255,255,0.9)',
+            background: 'rgba(0,0,0,0.5)',
             border: '1px solid #000',
             padding: '6px 8px',
             fontSize: '12px',
-            color: '#000',
+            fontWeight: '600',
+            textShadow: '1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000',
+            color: 'white',
             pointerEvents: 'none',
             borderRadius: '4px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
