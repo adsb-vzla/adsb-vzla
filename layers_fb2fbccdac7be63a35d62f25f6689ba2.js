@@ -19,6 +19,7 @@ function createBaseLayers() {
     });
 
     let world = new ol.Collection();
+    let fir = new ol.Collection();
     let us = new ol.Collection();
     let europe = new ol.Collection();
     let ifrhigh = new ol.Collection();
@@ -1975,11 +1976,81 @@ function createBaseLayers() {
 
     // Taken from https://www.ais.pansa.pl/mil/pliki/EP_ENR_2_4_en.pdf
     //europe.push(createGeoJsonLayer('PL AWACS Orbits', 'plawacsorbits', 'geojson/PL_Mil_AWACS_Orbits.geojson', 'rgba(252, 186, 3, 0.3)', 'rgba(252, 186, 3, 1)', false));
-    world.push(
+    fir.push(
         createGeoJsonLayer(
             'FIR Maiquetía',
             'fir_svzm',
             'geojson/fir_svzm.geojson',
+            'rgba(77,163,255,0.15)',
+            '#4DA3FF',
+            true
+        )
+    );
+    fir.push(
+        createGeoJsonLayer(
+            'FIR Baranquilla',
+            'fir_skec',
+            'geojson/fir_skec.geojson',
+            'rgba(77,163,255,0.15)',
+            '#4DA3FF',
+            true
+        )
+    );
+    fir.push(
+        createGeoJsonLayer(
+            'FIR Bogotá',
+            'fir_sked', 
+            'geojson/fir_sked.geojson',
+            'rgba(77,163,255,0.15)',
+            '#4DA3FF',
+            true
+        )
+    );
+    fir.push(
+        createGeoJsonLayer(
+            'FIR Curazao',
+            'fir_tncf',
+            'geojson/fir_tncf.geojson',
+            'rgba(77,163,255,0.15)',
+            '#4DA3FF',
+            true
+        )
+    );
+    fir.push(
+        createGeoJsonLayer(
+            'FIR Puerto Rico',
+            'fir_tjzs',
+            'geojson/fir_tjzs.geojson',
+            'rgba(77,163,255,0.15)',
+            '#4DA3FF',
+            true
+        )
+    );
+    fir.push(
+        createGeoJsonLayer(
+            'FIR Piarco',
+            'fir_ttzp',
+            'geojson/fir_ttzp.geojson',
+            'rgba(77,163,255,0.15)',
+            '#4DA3FF',
+            true
+        )
+    );
+    fir.push(
+        createGeoJsonLayer(
+            'FIR Georgetown',
+            'fir_sygc',
+            'geojson/fir_sygc.geojson',
+            'rgba(77,163,255,0.15)',
+            '#4DA3FF',
+            true
+        )
+    );
+    fir.push(
+        createGeoJsonLayer(
+            'FIR Amazonica',
+            'fir_sbaz',
+            'geojson/fir_sbaz.geojson',
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
             true
@@ -2140,6 +2211,14 @@ function createBaseLayers() {
             layers: new ol.Collection(vfr.getArray().reverse()),
             fold: 'close',
             visible: true,
+        }));
+    }
+    if (fir.getLength() > 0) {
+        layers.push(new ol.layer.Group({
+            name: 'fir',
+            title: 'FIR',
+            layers: new ol.Collection(fir.getArray().reverse()),
+            fold: 'close',
         }));
     }
 

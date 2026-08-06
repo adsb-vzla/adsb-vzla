@@ -131,6 +131,7 @@ let ggMissingSince = new Map();
 let ggRemoved = new Set();
 let ggPairMap = new Map();
 let ggPairOrder = [];
+const firData = {};
 // **************************************************
 // ***** FIN VARIABLES DISTANCIA TIERRA-TIERRA ******
 // **************************************************
@@ -7037,6 +7038,9 @@ function refreshSelected() {
             buttonActive('#F', FollowSelected);
         }
         somethingSelected = false;
+        // Limpiamos la celda del FIR si no hay avión seleccionado
+        jQuery('#selected_fir_value').updateText('n/a');
+        jQuery('#selected_fir_value_sidebar').updateText('n/a');
         return;
     }
     somethingSelected = true;
@@ -7302,13 +7306,21 @@ function refreshSelected() {
 
     if (selected.position == null) {
         jQuery('#selected_position').updateText('n/a');
+        // Si no hay posición disponible, mostramos n/a en el FIR
+        jQuery('#selected_fir_value').updateText('n/a');
+        jQuery('#selected_fir_value_sidebar').updateText('n/a');
     } else {
-
         if (selected.seen_pos > -1) {
             jQuery('#selected_position').updateText(format_latlng(selected.position));
         } else {
             jQuery('#selected_position').updateText(format_latlng(selected.position));
         }
+
+        // --- CONSULTA DEL FIR DE LA AERONAVE SELECCIONADA ---
+        const firActual = getFIRFromCoordinates(selected.position[1], selected.position[0]);
+        jQuery('#selected_fir_value').updateText(firActual);
+        jQuery('#selected_fir_value_sidebar').updateText(firActual);
+        // ---------------------------------------------------
     }
     let sitedist;
     if (selected.position && SitePosition) {
@@ -7531,6 +7543,19 @@ function refreshHighlighted() {
     jQuery('#highlighted_pf_route').text((highlighted.pfRoute ? highlighted.pfRoute : highlighted.icao.toUpperCase()));
 
     jQuery('#highlighted_rssi').text(highlighted.rssi != null ? highlighted.rssi.toFixed(1) + ' dBFS' : "n/a");
+    // Mostrar FIR en el infoblock destacado si hay posición
+    if (highlighted.position && highlighted.position.length >= 2) {
+        try {
+            const firName = getFIRFromCoordinates(highlighted.position[1], highlighted.position[0]);
+            jQuery('#selected_fir_value').updateText(firName);
+            jQuery('#selected_fir_value_sidebar').updateText(firName);
+        } catch (e) {
+            jQuery('#selected_fir_value').updateText('n/a');
+        }
+    } else {
+        jQuery('#selected_fir_value').updateText('n/a');
+        jQuery('#selected_fir_value_sidebar').updateText('n/a');
+    }
 }
 
 function removeHighlight() {
@@ -15243,3 +15268,68 @@ if (typeof toggleStarredList === 'undefined') {
 // *******************************************************************************
 // ** FIN FUNCIÓN PARA MOVER SETTINGS_INFOBLOCK COMO VENTANA POR LA PANTALLA **
 // *******************************************************************************
+
+// *******************************************************************************************
+// ***** INICIO UBICACION DE AERONAVE MEDIANTE FIR *******
+// *******************************************************************************************
+const firFiles = {
+    "Fir Amazonica": "geojson/fir_sbaz.geojson",
+    "Fir Maiquetia": "geojson/fir_svzm.geojson",
+    "Fir Georgetown": "geojson/fir_svgc.geojson",
+    "Fir Piarco": "geojson/fir_ttzp.geojson",
+    "Fir San Juan": "geojson/fir_tjzs.geojson",
+    "Fir Barranquilla": "geojson/fir_skec.geojson",
+    "Fir Bogota": "geojson/fir_sked.geojson",
+    "Fir Curacao": "geojson/fir_tncf.geojson",
+}
+
+function loadAllFIRs() {
+    const promises = [];
+
+    for (const [firName, filePath] of Object.entries(firFiles)) {
+        const promise = fetch(filePath)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error cargando ${filePath}`);
+                }
+                return response.json();
+            })
+            .then(geojson => {
+                firData[firName] = geojson;
+                console.log(`Cargado correctamente: ${firName}`);
+            })
+            .catch(error => console.error(error));
+
+        promises.push(promise);
+    }
+
+    // Opcional: Notificar cuando todos los FIRs estén cargados en memoria
+    Promise.all(promises).then(() => {
+        console.log("Todos los FIRs han sido cargados con éxito.");
+    });
+}
+
+// Ejecutar la carga al iniciar
+loadAllFIRs();
+
+function getFIRFromCoordinates(lat, lon) {
+    if (lat == null || lon == null) return "Sin posición";
+
+    // Turf requiere las coordenadas en formato [Longitud, Latitud]
+    const pt = turf.point([lon, lat]);
+
+    // Recorremos cada FIR cargado en memoria
+    for (const [firName, geojson] of Object.entries(firData)) {
+        if (!geojson || !geojson.features) continue;
+
+        for (const feature of geojson.features) {
+            // Evaluamos si el punto cae dentro del polígono
+            if (turf.booleanPointInPolygon(pt, feature)) {
+                // Retorna el nombre que le dimos en el objeto firFiles
+                return firName;
+            }
+        }
+    }
+
+    return "Fuera de FIR conocido";
+}

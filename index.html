@@ -58,6 +58,10 @@
               title="Reported flight origin and destination according to adsb.lol">Route: </span></div>
           <div class="infoData"><span id="highlighted_route">n/a</span></div>
         </div>
+        <div>
+          <div id="selected_fir_row" class="infoHeading">FIR:</div>
+          <div class="infoData"><span id="selected_fir_value">n/a</span></div>
+        </div>
         <div class="rSpacer">
         </div>
         <div>
@@ -298,6 +302,12 @@
                 <div class="infoData">
                   <span id="selected_route">n/a</span>
                 </div>
+              </td>
+            </tr>
+            <tr id="selected_fir_row_sidebar">
+              <td>
+                <div class="infoHeading">FIR:</div>
+                <div class="infoData"><span id="selected_fir_value_sidebar">n/a</span></div>
               </td>
             </tr>
             <tr data-i18n-title="photo_link_tooltip" id="photoLinkRow" class="hidden">
@@ -1485,6 +1495,8 @@
   <script src="planeObject_40f13c77d2cbc3688d222c0622565c69.js"></script>
   <script src="script_58512d93b15f62c2ada7968c3a621e0a.js"></script>
 
+  <!-- TURF.JS -->
+  <script src="libs/turf.min.js"></script>
   <script>
     (function () {
       function updateToggleButtons() {

@@ -1,0 +1,38 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "FIR Curacao",
+        "icao": "TNCF",
+        "type": "FIR",
+        "country": "CW",
+        "upper": "UNL",
+        "lower": "SFC",
+        "description": "Curacao Flight Information Region",
+        "oceanic": 0,
+        "region": "AMAS",
+        "division": "VATCAR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [ -70.500492, 12.499675 ],
+            [ -71.417161, 12.499672 ],
+            [ -74.000506, 14.333008 ],
+            [ -74.0, 16.0 ],
+            [ -73.0, 17.0 ],
+            [ -71.666667, 17.0 ],
+            [ -71.666667, 16.0 ],
+            [ -68.0, 16.0 ],
+            [ -67.066667, 15.683333 ],
+            [ -67.966667, 11.4 ],
+            [ -70.500492, 12.499675 ]
+          ]
+        ]
+      }
+    }
+  ]
+}

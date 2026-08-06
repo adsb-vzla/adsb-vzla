@@ -1,0 +1,45 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "FIR San Juan",
+        "icao": "TJZS",
+        "type": "FIR",
+        "country": "PR",
+        "upper": "UNL",
+        "lower": "SFC",
+        "description": "San Juan Flight Information Region",
+        "oceanic": 0,
+        "region": "AMAS",
+        "division": "VATCAR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [ -69.15, 19.65 ],
+            [ -68.337565, 20.511048 ],
+            [ -67.650556, 21.239167 ],
+            [ -66.745, 22.0 ],
+            [ -65.134722, 22.096944 ],
+            [ -64.0, 22.0 ],
+            [ -63.4, 21.436667 ],
+            [ -61.9, 20.0 ],
+            [ -61.5, 18.0 ],
+            [ -62.0, 18.0 ],
+            [ -63.0, 17.366667 ],
+            [ -63.0, 15.333333 ],
+            [ -63.25, 15.0 ],
+            [ -65.0, 15.0 ],
+            [ -67.066667, 15.683333 ],
+            [ -68.0, 16.0 ],
+            [ -68.0, 19.0 ],
+            [ -69.15, 19.65 ]
+          ]
+        ]
+      }
+    }
+  ]
+}
