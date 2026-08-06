@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "FIR Piarco",
+        "icao": "TTZP",
+        "type": "FIR",
+        "country": "TT",
+        "upper": "UNL",
+        "lower": "SFC",
+        "description": "Piarco Flight Information Region",
+        "oceanic": 0,
+        "region": "AMAS",
+        "division": "VATCAR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [ -65.0, 15.0 ],
+            [ -63.25, 15.0 ],
+            [ -63.0, 15.333333 ],
+            [ -63.0, 17.366667 ],
+            [ -62.0, 18.0 ],
+            [ -57.0, 18.0 ],
+            [ -57.0, 8.916667 ],
+            [ -59.95, 8.916667 ],
+            [ -61.465833, 9.989722 ],
+            [ -61.927778, 9.989722 ],
+            [ -62.057778, 10.085 ],
+            [ -61.783333, 10.733333 ],
+            [ -62.5, 11.0 ],
+            [ -65.0, 15.0 ]
+          ]
+        ]
+      }
+    }
+  ]
+}
