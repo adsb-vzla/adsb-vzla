@@ -9384,14 +9384,16 @@ function invertMap(evt) {
 
         const svg = jQuery('svg', data).prop('outerHTML');
 
-        return 'url("data:image/svg+xml;base64,' + global.btoa(svg) + '")';
+        // return 'url("data:image/svg+xml;base64,' + global.btoa(svg) + '")';
+        return 'data:image/svg+xml;base64,' + global.btoa(svg);
     }
 
     function loadLegend() {
         let baseLegend = (DisplayUnits === 'metric') ? 'images/alt_legend_m.svg' : 'images/alt_legend_ft.svg';
 
         jQuery.get(baseLegend, function (data) {
-            jQuery('#altitude_chart_button').css("background-image", createLegendUrl(data));
+            // jQuery('#altitude_chart_image').css("background-image", createLegendUrl(data));
+            jQuery('#altitude_chart_image').attr('src', createLegendUrl(data));
             jQuery('#altitude_chart').show();
         });
     }
