@@ -310,6 +310,23 @@ let badDot;
 let badDotMlat;
 let showingReplayBar = false;
 
+
+// =============================================
+// FUNCIÓN PARA FORMATEAR RUMBO (TRACK)
+// =============================================
+function formatTrackDisplay(track) {
+    if (track === null || track === undefined || isNaN(track)) {
+        return '---°';
+    }
+    // Redondear a 1 decimal y asegurar formato de 3 dígitos
+    const rounded = Math.round(track * 10) / 10;
+    return rounded.toFixed(1) + '°';
+}
+
+// Exponer globalmente
+window.formatTrackDisplay = formatTrackDisplay;
+
+
 // **************************************************
 // ******** INICIO FUNCIÓN DE HAVERSINE *************
 // **************************************************
@@ -493,7 +510,17 @@ function updateDistanceLine() {
             const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
             const altText = altValue + altUnit;
 
-            textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}`;
+            // --- OBTENER RUMBOS ---
+            const track1 = plane1.track;
+            const track2 = plane2.track;
+            const track1Str = formatTrackDisplay(track1);
+            const track2Str = formatTrackDisplay(track2);
+
+            const trackIcon1 = '✈ A';
+            const trackIcon2 = '✈ B';
+
+            textContainer.innerHTML = `
+            ${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>${trackIcon1} ${track1Str} ${trackIcon2} ${track2Str}`;
         }
 
         distanceOverlay.setPosition(midPointProj);
@@ -742,7 +769,17 @@ function updateDistanceLine() {
                 const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
                 const altText = altValue + altUnit;
 
-                textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}`;
+                const planeA = g.planes[hexA];
+                const planeB = g.planes[hexB];
+                const trackA = planeA ? planeA.track : null;
+                const trackB = planeB ? planeB.track : null;
+                const trackAStr = formatTrackDisplay(trackA);
+                const trackBStr = formatTrackDisplay(trackB);
+
+                const trackIconA = '✈ A';
+                const trackIconB = '✈ B';
+
+                textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>${trackIconA} ${trackAStr} ${trackIconB} ${trackBStr}`;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';
             }
@@ -1595,9 +1632,15 @@ function updateDistanceToGroundOverlay() {
             // let distanceLabel = getTranslatedText('distance_label', 'Distance:');
             const iconHTML = '⟷';
             const distanceText = showLabelUnits ? slantText : format_distance_brief(slantM, DisplayUnits);
+
+            const plane = g.planes[hex];
+            const track = plane ? plane.track : null;
+            const trackStr = formatTrackDisplay(track);
+            const trackIcon = '✈';
+
             // textContainer.innerHTML = `${distanceLabel} ${slantText}`;
             // textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
-            textContainer.innerHTML = `${iconHTML} ${distanceText}`;
+            textContainer.innerHTML = `${iconHTML} ${distanceText} ${trackIcon} ${trackStr}`;
         }
 
         const isHidden = groundPlaneHiddenState.get(key) || false;
