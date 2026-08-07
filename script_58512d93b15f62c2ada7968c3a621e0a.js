@@ -51,7 +51,7 @@ let followPos = [];
 let replayEditLock = false;
 let replayPendingJump = false;
 let replayHourValue = 0;
-let replayMinuteValue = 0;  
+let replayMinuteValue = 0;
 // **************************************************
 // ** INICIO VARIABLES DISTANCIA AERONAVE-AERONAVE **
 // **************************************************
@@ -543,6 +543,42 @@ function updateDistanceLine() {
             const missingA = !planeA || !planeA.position;
             const missingB = !planeB || !planeB.position;
             const isStale = missingA || missingB || (planeA && planeA.seen > 15) || (planeB && planeB.seen > 15);
+
+            if (missingA && selectedPlaneA === hexA) {
+                selectedPlaneA = null;
+                // Mostrar mensaje de anchor disabled
+                showDistanceGuide(getTranslatedText('anchor_disabled', 'Anchor disabled.'));
+
+                // Eliminar todos los pares que usen este ancla
+                const keysToRemove = [];
+                for (const [k, v] of pairMap) {
+                    if (v.a === hexA) {
+                        keysToRemove.push(k);
+                    }
+                }
+
+                for (const k of keysToRemove) {
+                    pairMap.delete(k);
+                    pairOrder = pairOrder.filter(po => po !== k);
+                    // Eliminar líneas y overlays de estos pares
+                    const feat = distanceLineFeaturesMap.get(k);
+                    if (feat) {
+                        distanceLineLayer.getSource().removeFeature(feat);
+                        distanceLineFeaturesMap.delete(k);
+                    }
+                    const ov = distanceOverlaysMap.get(k);
+                    if (ov) {
+                        OLMap && OLMap.removeOverlay(ov);
+                        distanceOverlaysMap.delete(k);
+                    }
+                    pairHiddenState.delete(k);
+                }
+                // Si no hay más pares, resetear el buffer
+                if (pairMap.size === 0) {
+                    pairBuffer = [];
+                }
+                continue;
+            }
 
             if (ppRemoved.has(key)) {
                 // skip until revived
@@ -6065,6 +6101,17 @@ function ol_map_init() {
                     pairOrder.push(key);
                     // showDistanceGuide('Pair added.');
                     showDistanceGuide(getTranslatedText('pair_added', 'Pair added.'));
+                    setTimeout(() => {
+                        const guideEl = document.getElementById('distance-guide-element');
+                        if (guideEl) {
+                            const currentText = guideEl.innerHTML;
+                            // Solo ocultar si sigue siendo el mensaje de "Pair added"
+                            if (currentText === getTranslatedText('pair_added', 'Pair added.') ||
+                                currentText.includes('Pair added')) {
+                                guideEl.style.display = 'none';
+                            }
+                        }
+                    }, 3000);
                     updateDistanceLine();
                     if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
                     distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
@@ -6100,6 +6147,16 @@ function ol_map_init() {
                     pairBuffer = [];
                     // showDistanceGuide('Independent pair added.');
                     showDistanceGuide(getTranslatedText('independent_pair_added', 'Independent pair added.'));
+                    setTimeout(() => {
+                        const guideEl = document.getElementById('distance-guide-element');
+                        if (guideEl) {
+                            const currentText = guideEl.innerHTML;
+                            if (currentText === getTranslatedText('independent_pair_added', 'Independent pair added.') ||
+                                currentText.includes('Independent pair added')) {
+                                guideEl.style.display = 'none';
+                            }
+                        }
+                    }, 3000);
                     updateDistanceLine();
                     if (distanceUpdateInterval) clearInterval(distanceUpdateInterval);
                     distanceUpdateInterval = setInterval(updateDistanceLine, 1000);
@@ -13384,31 +13441,31 @@ function setReplayTimeHint(date) {
 // }
 function replayOnInputChange() {
     clearTimeout(refreshId);
-    
+
     const hourInput = document.getElementById('replayHourInput');
     const minuteInput = document.getElementById('replayMinuteInput');
-    
+
     if (!hourInput || !minuteInput) return;
-    
+
     // Solo si no están en edición activa
     if (document.activeElement === hourInput || document.activeElement === minuteInput) {
         return;
     }
-    
+
     let hours = parseInt(hourInput.value);
     let minutes = parseInt(minuteInput.value);
-    
+
     if (isNaN(hours)) hours = 0;
     if (isNaN(minutes)) minutes = 0;
-    
+
     hours = Math.max(0, Math.min(23, hours));
     minutes = Math.max(0, Math.min(59, minutes));
-    
+
     let date = new Date(replay.dateText);
     date.setUTCHours(hours);
     date.setUTCMinutes(minutes);
     date.setUTCSeconds(0);
-    
+
     setReplayTimeHint(date);
 }
 
@@ -13419,17 +13476,17 @@ function replayJump() {
         replayPendingJump = true;
         return;
     }
-    
+
     if (!showingReplayBar) return;
     if (!replayJumpEnabled) return;
-    
+
     // Obtener valores actuales de los inputs (si existen)
     const hourInput = document.getElementById('replayHourInput');
     const minuteInput = document.getElementById('replayMinuteInput');
-    
+
     let hours = replay.hours;
     let minutes = replay.minutes;
-    
+
     if (hourInput) {
         let raw = hourInput.value.replace(/[^0-9]/g, '');
         let val = parseInt(raw);
@@ -13437,7 +13494,7 @@ function replayJump() {
             hours = val;
         }
     }
-    
+
     if (minuteInput) {
         let raw = minuteInput.value.replace(/[^0-9]/g, '');
         let val = parseInt(raw);
@@ -13445,19 +13502,19 @@ function replayJump() {
             minutes = val;
         }
     }
-    
+
     let date = new Date(replay.dateText);
     date.setUTCHours(hours);
     date.setUTCMinutes(minutes);
     date.setUTCSeconds(0);
-    
+
     let ts = new Date(replay.ts.getTime());
-    
+
     // Diff menor a 10 segundos -> no hacer nada
     if (Math.abs(date.getTime() - ts.getTime()) < 10000) {
         return;
     }
-    
+
     console.log('jump: ' + date.toUTCString());
     replayClear();
     loadReplay(date);
@@ -13491,7 +13548,7 @@ function replaySetTimeHint(arg) {
         hourInput.value = String(val).padStart(2, '0');
         hourInput.style.color = '#e9edf7';
     }
-    
+
     const minuteInput = document.getElementById('replayMinuteInput');
     if (minuteInput && document.activeElement !== minuteInput && !replayEditLock) {
         const val = replay.ts.getUTCMinutes();
@@ -13923,7 +13980,7 @@ function showReplayBar() {
             hourContainer.style.display = 'flex';
             hourContainer.style.alignItems = 'center';
             hourContainer.style.gap = '4px';
-            
+
             const hourInput = document.createElement('input');
             hourInput.type = 'text';  // Cambiar a text para mejor control
             hourInput.id = 'replayHourInput';
@@ -13933,31 +13990,31 @@ function showReplayBar() {
             hourInput.value = String(replay.ts.getUTCHours()).padStart(2, '0');
             hourInput.className = 'replay-number-input';
             hourInput.setAttribute('aria-label', 'Hour');
-            
+
             const hourLabel = document.createElement('span');
             hourLabel.className = 'replay-input-label';
             hourLabel.textContent = 'h';
-            
+
             // --- Eventos del input de horas ---
             let hourValid = true;
-            
-            hourInput.addEventListener('focus', function() {
+
+            hourInput.addEventListener('focus', function () {
                 replayEditLock = true;
                 if (replay && replay.playing) {
                     playReplay(false);
                 }
                 this.select();
             });
-            
-            hourInput.addEventListener('input', function() {
+
+            hourInput.addEventListener('input', function () {
                 // Permitir escritura libre sin interrupciones
                 let raw = this.value.replace(/[^0-9]/g, '');
-                
+
                 // Limitar a 2 dígitos
                 if (raw.length > 2) {
                     raw = raw.slice(0, 2);
                 }
-                
+
                 // Si está vacío, mostrar placeholder visual pero no hacer nada
                 if (raw === '') {
                     this.value = '';
@@ -13966,13 +14023,13 @@ function showReplayBar() {
                     this.style.color = '#ff6b6b';
                     return;
                 }
-                
+
                 let val = parseInt(raw);
                 if (!isNaN(val)) {
                     // Guardar el valor aunque sea parcial (ej: "1" mientras escriben "15")
                     replayHourValue = val;
                     this.value = raw;
-                    
+
                     // Solo marcar como inválido si el valor parcial es > 23
                     if (val > 23) {
                         hourValid = false;
@@ -13985,13 +14042,13 @@ function showReplayBar() {
                     }
                 }
             });
-            
-            hourInput.addEventListener('blur', function() {
+
+            hourInput.addEventListener('blur', function () {
                 replayEditLock = false;
-                
+
                 let raw = this.value.replace(/[^0-9]/g, '');
                 let val = parseInt(raw);
-                
+
                 // Si está vacío o inválido, restaurar el valor anterior
                 if (isNaN(val) || raw === '') {
                     val = replay.ts.getUTCHours();
@@ -14008,15 +14065,15 @@ function showReplayBar() {
                     replay.hours = val;
                     hourValid = true;
                 }
-                
+
                 // Ejecutar el salto solo si no estamos editando minutos
-                if (!document.getElementById('replayMinuteInput') || 
+                if (!document.getElementById('replayMinuteInput') ||
                     document.activeElement !== document.getElementById('replayMinuteInput')) {
                     replayJump();
                 }
             });
-            
-            hourInput.addEventListener('keydown', function(e) {
+
+            hourInput.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') {
                     this.blur();
                     e.preventDefault();
@@ -14031,14 +14088,14 @@ function showReplayBar() {
                     // No ejecutar jump aquí, blur lo hará
                 }
             });
-            
+
             hourContainer.appendChild(hourInput);
             hourContainer.appendChild(hourLabel);
-            
+
             // Guardar referencia para acceso global
             window.replayHourInput = hourInput;
         }
-        
+
         // --- INPUT DE MINUTOS ---
         const minuteContainer = document.getElementById('minuteSelect');
         if (minuteContainer) {
@@ -14046,7 +14103,7 @@ function showReplayBar() {
             minuteContainer.style.display = 'flex';
             minuteContainer.style.alignItems = 'center';
             minuteContainer.style.gap = '4px';
-            
+
             const minuteInput = document.createElement('input');
             minuteInput.type = 'text';
             minuteInput.id = 'replayMinuteInput';
@@ -14056,28 +14113,28 @@ function showReplayBar() {
             minuteInput.value = String(replay.ts.getUTCMinutes()).padStart(2, '0');
             minuteInput.className = 'replay-number-input';
             minuteInput.setAttribute('aria-label', 'Minute');
-            
+
             const minuteLabel = document.createElement('span');
             minuteLabel.className = 'replay-input-label';
             minuteLabel.textContent = 'm';
-            
+
             let minuteValid = true;
-            
-            minuteInput.addEventListener('focus', function() {
+
+            minuteInput.addEventListener('focus', function () {
                 replayEditLock = true;
                 if (replay && replay.playing) {
                     playReplay(false);
                 }
                 this.select();
             });
-            
-            minuteInput.addEventListener('input', function() {
+
+            minuteInput.addEventListener('input', function () {
                 let raw = this.value.replace(/[^0-9]/g, '');
-                
+
                 if (raw.length > 2) {
                     raw = raw.slice(0, 2);
                 }
-                
+
                 if (raw === '') {
                     this.value = '';
                     replayMinuteValue = -1;
@@ -14085,12 +14142,12 @@ function showReplayBar() {
                     this.style.color = '#ff6b6b';
                     return;
                 }
-                
+
                 let val = parseInt(raw);
                 if (!isNaN(val)) {
                     replayMinuteValue = val;
                     this.value = raw;
-                    
+
                     if (val > 59) {
                         minuteValid = false;
                         this.style.color = '#ff6b6b';
@@ -14101,13 +14158,13 @@ function showReplayBar() {
                     }
                 }
             });
-            
-            minuteInput.addEventListener('blur', function() {
+
+            minuteInput.addEventListener('blur', function () {
                 replayEditLock = false;
-                
+
                 let raw = this.value.replace(/[^0-9]/g, '');
                 let val = parseInt(raw);
-                
+
                 if (isNaN(val) || raw === '') {
                     val = replay.ts.getUTCMinutes();
                     this.value = String(val).padStart(2, '0');
@@ -14122,12 +14179,12 @@ function showReplayBar() {
                     replay.minutes = val;
                     minuteValid = true;
                 }
-                
+
                 // Ejecutar el salto
                 replayJump();
             });
-            
-            minuteInput.addEventListener('keydown', function(e) {
+
+            minuteInput.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') {
                     this.blur();
                     e.preventDefault();
@@ -14141,10 +14198,10 @@ function showReplayBar() {
                     e.preventDefault();
                 }
             });
-            
+
             minuteContainer.appendChild(minuteInput);
             minuteContainer.appendChild(minuteLabel);
-            
+
             window.replayMinuteInput = minuteInput;
         }
 
