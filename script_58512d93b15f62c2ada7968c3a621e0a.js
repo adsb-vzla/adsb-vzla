@@ -47,6 +47,11 @@ let SelectedAllPlanes = false;
 let HighlightedPlane = null;
 let FollowSelected = false;
 let followPos = [];
+
+let replayEditLock = false;
+let replayPendingJump = false;
+let replayHourValue = 0;
+let replayMinuteValue = 0;  
 // **************************************************
 // ** INICIO VARIABLES DISTANCIA AERONAVE-AERONAVE **
 // **************************************************
@@ -1982,8 +1987,6 @@ function updateDistanceGuideContent() {
             // }
             // const clickMsg = getTranslatedText('click_two_aircraft_measure', 'Click on two aircraft to measure the distance.');
             // newText = `<center>${modeText}</center><br>${clickMsg}`;
-            // --- INICIO CAMBIOS ---
-            // Verificar en qué paso estamos basado en el estado actual
             let modeText = '';
             switch (planeDistanceModeType) {
                 case '1A1B':
@@ -2012,7 +2015,6 @@ function updateDistanceGuideContent() {
                 const step2Msg = getTranslatedText('distance_select_plane_b', 'Click on another aircraft to mark point B.');
                 newText = `<center>${modeText}</center><br>${step2Msg}`;
             }
-            // --- FIN CAMBIOS ---
         } else {
             return;
         }
@@ -3293,7 +3295,6 @@ function replaySpeedChange(arg) {
 // ***** INICIO OBTENER TEXTO TRADUCIDO ****
 // *****************************************
 function getTranslatedText(key, fallback) {
-    // Usar directamente el sistema de traducción global sin llamarse a sí misma
     if (typeof window.translate !== 'undefined' && window.translate.t) {
         const translated = window.translate.t(key);
         if (translated !== key) return translated;
@@ -3303,10 +3304,6 @@ function getTranslatedText(key, fallback) {
         const translated = window.t(key);
         if (translated !== key) return translated;
     }
-
-    // Si tenemos la función global getTranslatedText, usarla (pero evitando recursión)
-    // NOTA: No podemos usar window.getTranslatedText aquí porque es esta misma función
-    // La función global ya está expuesta por language_patch.js
 
     return fallback || key;
 }
@@ -6002,20 +5999,7 @@ function ol_map_init() {
                     // --- INICIO: ALERTA SI NO ES UN AVIÓN VÁLIDO ---
                     let invalidMsg = getTranslatedText('distance_invalid_aircraft', 'Please select a valid aircraft with position.');
                     showDistanceGuide(invalidMsg);
-                    // Restaurar mensaje anterior después de 2 segundos
-                    // setTimeout(() => {
-                    //     if (selectedPlanesForDistance.length === 0) {
-                    //         let modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
-                    //         let step1Msg = getTranslatedText('distance_select_plane_a', 'Click on an aircraft to mark point A.');
-                    //         showDistanceGuide(`<center>${modeText}</center><br>${step1Msg}`);
-                    //     } else if (selectedPlanesForDistance.length === 1) {
-                    //         let step2Msg = getTranslatedText('distance_select_plane_b', 'Click on another aircraft to mark point B.');
-                    //         showDistanceGuide(`<center>${step2Msg}</center>`);
-                    //     }
-                    // }, 2000);
-                    // --- FIN: ALERTA ---
                 }
-                // --- FIN CAMBIOS ---
 
                 // Modo 'pairs': permite pares independientes (A-B, C-D) y anchor A->B,C...
             } else if (planeDistanceModeType === 'pairs') {
@@ -6085,17 +6069,6 @@ function ol_map_init() {
             // Mostrar el mismo mensaje de error que cuando se selecciona un avión inválido
             let invalidMsg = getTranslatedText('distance_invalid_aircraft', 'Please select a valid aircraft with position.');
             showDistanceGuide(invalidMsg);
-
-            // setTimeout(() => {
-            //     if (selectedPlanesForDistance.length === 0) {
-            //         let modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
-            //         let step1Msg = getTranslatedText('distance_select_plane_a', 'Click on an aircraft to mark point A.');
-            //         showDistanceGuide(`<center>${modeText}</center><br>${step1Msg}`);
-            //     } else if (selectedPlanesForDistance.length === 1) {
-            //         let step2Msg = getTranslatedText('distance_select_plane_b', 'Click on another aircraft to mark point B.');
-            //         showDistanceGuide(`<center>${step2Msg}</center>`);
-            //     }
-            // }, 2000);
         }
 
         // 2. Comportamiento normal de selección de avión 
@@ -13353,41 +13326,97 @@ function setReplayTimeHint(date) {
 // **** FIN MOSTRAR FECHA, HORAS Y MINUTOS EN EL REPLAY *****
 // **********************************************************
 
-function replayOnSliderMove() {
+// function replayOnSliderMove() {
+//     clearTimeout(refreshId);
+
+//     let date = new Date(replay.dateText);
+//     date.setUTCHours(Number(replay.hours));
+//     date.setUTCMinutes(Number(replay.minutes));
+//     replay.seconds = 0;
+//     date.setUTCSeconds(Number(replay.seconds));
+
+//     setReplayTimeHint(date);
+// }
+function replayOnInputChange() {
     clearTimeout(refreshId);
-
+    
+    const hourInput = document.getElementById('replayHourInput');
+    const minuteInput = document.getElementById('replayMinuteInput');
+    
+    if (!hourInput || !minuteInput) return;
+    
+    // Solo si no están en edición activa
+    if (document.activeElement === hourInput || document.activeElement === minuteInput) {
+        return;
+    }
+    
+    let hours = parseInt(hourInput.value);
+    let minutes = parseInt(minuteInput.value);
+    
+    if (isNaN(hours)) hours = 0;
+    if (isNaN(minutes)) minutes = 0;
+    
+    hours = Math.max(0, Math.min(23, hours));
+    minutes = Math.max(0, Math.min(59, minutes));
+    
     let date = new Date(replay.dateText);
-    date.setUTCHours(Number(replay.hours));
-    date.setUTCMinutes(Number(replay.minutes));
-    replay.seconds = 0;
-    date.setUTCSeconds(Number(replay.seconds));
-
+    date.setUTCHours(hours);
+    date.setUTCMinutes(minutes);
+    date.setUTCSeconds(0);
+    
     setReplayTimeHint(date);
 }
+
 let replayJumpEnabled = true;
 function replayJump() {
-    if (!showingReplayBar)
+    // NO ejecutar si estamos en modo edición
+    if (replayEditLock) {
+        replayPendingJump = true;
         return;
-    if (!replayJumpEnabled)
-        return;
+    }
+    
+    if (!showingReplayBar) return;
+    if (!replayJumpEnabled) return;
+    
+    // Obtener valores actuales de los inputs (si existen)
+    const hourInput = document.getElementById('replayHourInput');
+    const minuteInput = document.getElementById('replayMinuteInput');
+    
+    let hours = replay.hours;
+    let minutes = replay.minutes;
+    
+    if (hourInput) {
+        let raw = hourInput.value.replace(/[^0-9]/g, '');
+        let val = parseInt(raw);
+        if (!isNaN(val) && raw !== '' && val >= 0 && val <= 23) {
+            hours = val;
+        }
+    }
+    
+    if (minuteInput) {
+        let raw = minuteInput.value.replace(/[^0-9]/g, '');
+        let val = parseInt(raw);
+        if (!isNaN(val) && raw !== '' && val >= 0 && val <= 59) {
+            minutes = val;
+        }
+    }
+    
     let date = new Date(replay.dateText);
-    date.setUTCHours(Number(replay.hours));
-    date.setUTCMinutes(Number(replay.minutes));
-    date.setUTCSeconds(Number(replay.seconds));
-
+    date.setUTCHours(hours);
+    date.setUTCMinutes(minutes);
+    date.setUTCSeconds(0);
+    
     let ts = new Date(replay.ts.getTime());
-
-    // diff less 10 seconds
+    
+    // Diff menor a 10 segundos -> no hacer nada
     if (Math.abs(date.getTime() - ts.getTime()) < 10000) {
         return;
     }
-    //console.log(replay.minutes.toString() + ' ' + ts.toString() + ' ' + (date.getTime() - ts.getTime()).toString());
-
-    //console.trace();
+    
     console.log('jump: ' + date.toUTCString());
-
     replayClear();
     loadReplay(date);
+    replayPendingJump = false;
 }
 function replaySetTimeHint(arg) {
     replayJumpEnabled = false;
@@ -13405,12 +13434,28 @@ function replaySetTimeHint(arg) {
     }
 
 
-    let hours = replay.ts.getUTCHours();
-    jQuery('#hourSelect').slider("option", "value", hours);
+    // let hours = replay.ts.getUTCHours();
+    // jQuery('#hourSelect').slider("option", "value", hours);
 
-    let minutes = replay.ts.getUTCMinutes();
-    jQuery('#minuteSelect').slider("option", "value", minutes);
+    // let minutes = replay.ts.getUTCMinutes();
+    // jQuery('#minuteSelect').slider("option", "value", minutes);
+
+    const hourInput = document.getElementById('replayHourInput');
+    if (hourInput && document.activeElement !== hourInput && !replayEditLock) {
+        const val = replay.ts.getUTCHours();
+        hourInput.value = String(val).padStart(2, '0');
+        hourInput.style.color = '#e9edf7';
+    }
+    
+    const minuteInput = document.getElementById('replayMinuteInput');
+    if (minuteInput && document.activeElement !== minuteInput && !replayEditLock) {
+        const val = replay.ts.getUTCMinutes();
+        minuteInput.value = String(val).padStart(2, '0');
+        minuteInput.style.color = '#e9edf7';
+    }
+
     replayJumpEnabled = true;
+
 }
 
 function replayStep(arg) {
@@ -13796,35 +13841,267 @@ function showReplayBar() {
 
         jQuery("#replayDatepicker").datepicker(datepickerOptions);
 
-        jQuery('#hourSelect').slider({
-            step: 1, min: 0, max: 23,
-            slide: function (event, ui) {
-                replay.hours = ui.value;
-                updateSliderTip(ui.handle, ui.value, "h");
-                replayOnSliderMove();
-            },
-            change: function (event, ui) {
-                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "h");
+        // jQuery('#hourSelect').slider({
+        //     step: 1, min: 0, max: 23,
+        //     slide: function (event, ui) {
+        //         replay.hours = ui.value;
+        //         updateSliderTip(ui.handle, ui.value, "h");
+        //         replayOnSliderMove();
+        //     },
+        //     change: function (event, ui) {
+        //         updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "h");
+        //         replayJump();
+        //     }
+        // });
+
+        // setupSliderDecorations('#hourSelect', '00h', '23h');
+
+        // jQuery('#minuteSelect').slider({
+        //     step: 1, min: 0, max: 59,
+        //     slide: function (event, ui) {
+        //         replay.minutes = ui.value;
+        //         updateSliderTip(ui.handle, ui.value, "m");
+        //         replayOnSliderMove();
+        //     },
+        //     change: function (event, ui) {
+        //         updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "m");
+        //         replayJump();
+        //     }
+        // });
+
+        // setupSliderDecorations('#minuteSelect', '00m', '59m');
+
+        // --- INPUT DE HORAS ---
+        const hourContainer = document.getElementById('hourSelect');
+        if (hourContainer) {
+            hourContainer.innerHTML = '';
+            hourContainer.style.display = 'flex';
+            hourContainer.style.alignItems = 'center';
+            hourContainer.style.gap = '4px';
+            
+            const hourInput = document.createElement('input');
+            hourInput.type = 'text';  // Cambiar a text para mejor control
+            hourInput.id = 'replayHourInput';
+            hourInput.inputMode = 'numeric';
+            hourInput.pattern = '[0-9]*';
+            hourInput.maxLength = 2;
+            hourInput.value = String(replay.ts.getUTCHours()).padStart(2, '0');
+            hourInput.className = 'replay-number-input';
+            hourInput.setAttribute('aria-label', 'Hour');
+            
+            const hourLabel = document.createElement('span');
+            hourLabel.className = 'replay-input-label';
+            hourLabel.textContent = 'h';
+            
+            // --- Eventos del input de horas ---
+            let hourValid = true;
+            
+            hourInput.addEventListener('focus', function() {
+                replayEditLock = true;
+                if (replay && replay.playing) {
+                    playReplay(false);
+                }
+                this.select();
+            });
+            
+            hourInput.addEventListener('input', function() {
+                // Permitir escritura libre sin interrupciones
+                let raw = this.value.replace(/[^0-9]/g, '');
+                
+                // Limitar a 2 dígitos
+                if (raw.length > 2) {
+                    raw = raw.slice(0, 2);
+                }
+                
+                // Si está vacío, mostrar placeholder visual pero no hacer nada
+                if (raw === '') {
+                    this.value = '';
+                    replayHourValue = -1; // Valor inválido temporal
+                    hourValid = false;
+                    this.style.color = '#ff6b6b';
+                    return;
+                }
+                
+                let val = parseInt(raw);
+                if (!isNaN(val)) {
+                    // Guardar el valor aunque sea parcial (ej: "1" mientras escriben "15")
+                    replayHourValue = val;
+                    this.value = raw;
+                    
+                    // Solo marcar como inválido si el valor parcial es > 23
+                    if (val > 23) {
+                        hourValid = false;
+                        this.style.color = '#ff6b6b';
+                    } else {
+                        hourValid = true;
+                        this.style.color = '#e9edf7';
+                        // Solo actualizar replay.hours si el valor es válido
+                        replay.hours = val;
+                    }
+                }
+            });
+            
+            hourInput.addEventListener('blur', function() {
+                replayEditLock = false;
+                
+                let raw = this.value.replace(/[^0-9]/g, '');
+                let val = parseInt(raw);
+                
+                // Si está vacío o inválido, restaurar el valor anterior
+                if (isNaN(val) || raw === '') {
+                    val = replay.ts.getUTCHours();
+                    this.value = String(val).padStart(2, '0');
+                    this.style.color = '#e9edf7';
+                    replay.hours = val;
+                    hourValid = true;
+                } else {
+                    // Validar rango y corregir si es necesario
+                    if (val < 0) val = 0;
+                    if (val > 23) val = 23;
+                    this.value = String(val).padStart(2, '0');
+                    this.style.color = '#e9edf7';
+                    replay.hours = val;
+                    hourValid = true;
+                }
+                
+                // Ejecutar el salto solo si no estamos editando minutos
+                if (!document.getElementById('replayMinuteInput') || 
+                    document.activeElement !== document.getElementById('replayMinuteInput')) {
+                    replayJump();
+                }
+            });
+            
+            hourInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    this.blur();
+                    e.preventDefault();
+                }
+                if (e.key === 'Escape') {
+                    const originalHour = replay.ts.getUTCHours();
+                    this.value = String(originalHour).padStart(2, '0');
+                    replay.hours = originalHour;
+                    this.style.color = '#e9edf7';
+                    this.blur();
+                    e.preventDefault();
+                    // No ejecutar jump aquí, blur lo hará
+                }
+            });
+            
+            hourContainer.appendChild(hourInput);
+            hourContainer.appendChild(hourLabel);
+            
+            // Guardar referencia para acceso global
+            window.replayHourInput = hourInput;
+        }
+        
+        // --- INPUT DE MINUTOS ---
+        const minuteContainer = document.getElementById('minuteSelect');
+        if (minuteContainer) {
+            minuteContainer.innerHTML = '';
+            minuteContainer.style.display = 'flex';
+            minuteContainer.style.alignItems = 'center';
+            minuteContainer.style.gap = '4px';
+            
+            const minuteInput = document.createElement('input');
+            minuteInput.type = 'text';
+            minuteInput.id = 'replayMinuteInput';
+            minuteInput.inputMode = 'numeric';
+            minuteInput.pattern = '[0-9]*';
+            minuteInput.maxLength = 2;
+            minuteInput.value = String(replay.ts.getUTCMinutes()).padStart(2, '0');
+            minuteInput.className = 'replay-number-input';
+            minuteInput.setAttribute('aria-label', 'Minute');
+            
+            const minuteLabel = document.createElement('span');
+            minuteLabel.className = 'replay-input-label';
+            minuteLabel.textContent = 'm';
+            
+            let minuteValid = true;
+            
+            minuteInput.addEventListener('focus', function() {
+                replayEditLock = true;
+                if (replay && replay.playing) {
+                    playReplay(false);
+                }
+                this.select();
+            });
+            
+            minuteInput.addEventListener('input', function() {
+                let raw = this.value.replace(/[^0-9]/g, '');
+                
+                if (raw.length > 2) {
+                    raw = raw.slice(0, 2);
+                }
+                
+                if (raw === '') {
+                    this.value = '';
+                    replayMinuteValue = -1;
+                    minuteValid = false;
+                    this.style.color = '#ff6b6b';
+                    return;
+                }
+                
+                let val = parseInt(raw);
+                if (!isNaN(val)) {
+                    replayMinuteValue = val;
+                    this.value = raw;
+                    
+                    if (val > 59) {
+                        minuteValid = false;
+                        this.style.color = '#ff6b6b';
+                    } else {
+                        minuteValid = true;
+                        this.style.color = '#e9edf7';
+                        replay.minutes = val;
+                    }
+                }
+            });
+            
+            minuteInput.addEventListener('blur', function() {
+                replayEditLock = false;
+                
+                let raw = this.value.replace(/[^0-9]/g, '');
+                let val = parseInt(raw);
+                
+                if (isNaN(val) || raw === '') {
+                    val = replay.ts.getUTCMinutes();
+                    this.value = String(val).padStart(2, '0');
+                    this.style.color = '#e9edf7';
+                    replay.minutes = val;
+                    minuteValid = true;
+                } else {
+                    if (val < 0) val = 0;
+                    if (val > 59) val = 59;
+                    this.value = String(val).padStart(2, '0');
+                    this.style.color = '#e9edf7';
+                    replay.minutes = val;
+                    minuteValid = true;
+                }
+                
+                // Ejecutar el salto
                 replayJump();
-            }
-        });
-
-        setupSliderDecorations('#hourSelect', '00h', '23h');
-
-        jQuery('#minuteSelect').slider({
-            step: 1, min: 0, max: 59,
-            slide: function (event, ui) {
-                replay.minutes = ui.value;
-                updateSliderTip(ui.handle, ui.value, "m");
-                replayOnSliderMove();
-            },
-            change: function (event, ui) {
-                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "m");
-                replayJump();
-            }
-        });
-
-        setupSliderDecorations('#minuteSelect', '00m', '59m');
+            });
+            
+            minuteInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    this.blur();
+                    e.preventDefault();
+                }
+                if (e.key === 'Escape') {
+                    const originalMinute = replay.ts.getUTCMinutes();
+                    this.value = String(originalMinute).padStart(2, '0');
+                    replay.minutes = originalMinute;
+                    this.style.color = '#e9edf7';
+                    this.blur();
+                    e.preventDefault();
+                }
+            });
+            
+            minuteContainer.appendChild(minuteInput);
+            minuteContainer.appendChild(minuteLabel);
+            
+            window.replayMinuteInput = minuteInput;
+        }
 
         const slideBase = 3.0;
         jQuery('#replaySpeedSelect').slider({
