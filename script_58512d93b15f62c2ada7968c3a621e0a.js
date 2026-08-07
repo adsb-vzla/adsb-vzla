@@ -5894,7 +5894,8 @@ function ol_map_init() {
                 const lonlat = ol.proj.toLonLat(evtCoords);
                 if (distanceToGroundModeType === 'nA_nB') {
                     if (taPendingGround && !taPendingPlaneHex) {
-                        showDistanceGuide('Select an aircraft to complete the pair.');
+                        let completePair = getTranslatedText('select_aircraft_complete_pair', 'Select an aircraft to complete the pair.');
+                        showDistanceGuide(completePair);
                         evt.stopPropagation();
                         return;
                     }
