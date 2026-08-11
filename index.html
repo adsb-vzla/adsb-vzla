@@ -937,7 +937,7 @@
 
           <!-- INICIO CATEGORÍA FILTERS -->
           <div id="category-filters" class="settings-category">
-            <div class="settings-category-title" data-i18n="filters">FILTERS</div>
+            <div class="settings-category-title" data-i18n="filters_category">FILTERS</div>
             <div id="category-filters-container">
               <div class="settingsOptionContainer" data-i18n-title="ground_vehicles_tooltip"
                 title="Displays ground service vehicles that emit ADS-B signal.">
@@ -1166,6 +1166,12 @@
               class="fa-solid fa-minus fa-xl"></i>
           </div>
           <!-- FIN OPCIONES DE ZOOM -->
+          
+          <!-- INICIO OPCIÓN DE ELEVACIÓN -->
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="E"
+            data-i18n-title="elevation_tooltip" title="Display the elevation of the existing terrain between two points." onclick="toggleElevationMode();"><i class="fa-solid fa-mountain-sun"></i></i>
+          </div>
+          <!-- FIN OPCIÓN DE ELEVACIÓN -->
         </div>
       </div>
       <!-- FIN TIRA DE OPCIONES LATERAL -->
@@ -1188,7 +1194,8 @@
         <p id="replayMinutesHint" data-i18n="minutes_label">Minutes</p>
         <p id="replaySpeedHint" data-i18n="speed_label">Speed</p>
 
-        <input type="text" class="datepicker" id="replayDatepicker" placeholder="Select a date to replay..." data-i18n="replay_placeholder">
+        <input type="text" class="datepicker" id="replayDatepicker" placeholder="Select a date to replay..."
+          data-i18n="replay_placeholder">
 
         <p id="hourSelect"></p>
         <p id="minuteSelect"></p>
@@ -1199,6 +1206,11 @@
       <!-- FIN REPLAY -->
     </div>
     <!-- FIN CONTENEDOR DEL MAPA -->
+
+    <div id="panorama-overlay" class="panorama-overlay hidden">
+      <button id="panorama-close" class="panorama-close" type="button">-</button>
+      <div id="panorama-container"></div>
+    </div>
 
     <!-- INICIO MENÚ LATERAL DERECHO -->
     <div id="sidebar_container" style="display: none; height: 100%; position: relative;">
@@ -1446,7 +1458,8 @@
         </div>
       </div>
       <br>
-      <div data-i18n-html="copyright_text" style="text-align: end; margin: auto 1rem 1rem 1rem;">ADS-B VENEZUELA / EANSA — Powered by <a href="https://github.com/wiedehopf/tar1090">tar1090</a>. All rights reserved.</div>
+      <div data-i18n-html="copyright_text" style="text-align: end; margin: auto 1rem 1rem 1rem;">ADS-B VENEZUELA / EANSA
+        — Powered by <a href="https://github.com/wiedehopf/tar1090">tar1090</a>. All rights reserved.</div>
     </div>
     <!-- FIN MENÚ LATERAL DERECHO -->
   </div>
@@ -1493,6 +1506,8 @@
   <script src="layers_fb2fbccdac7be63a35d62f25f6689ba2.js"></script>
   <script src="geomag2020.js"></script>
   <script src="markers_c269fed24b04a113d1e23fbf5121e9c5.js"></script>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
 
   <!-- JS_ANCHOR3 -->
   <script src="planeObject_40f13c77d2cbc3688d222c0622565c69.js"></script>

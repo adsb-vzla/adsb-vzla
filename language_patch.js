@@ -216,7 +216,7 @@
             // *** Nombres de las categorías ***
             'units': 'UNITS',
             'display': 'DISPLAY',
-            'filters': 'FILTERS',
+            'filters_category': 'FILTERS',
             'data': 'DATA',
             'system': 'SYSTEM',
             'information': 'INFORMATION',
@@ -240,6 +240,8 @@
             'non_icao_targets_tooltip': 'Displays aircraft that do not have a standard ICAO code or whose airframe structure is unknown.',
             'hide_aircraft_functions': 'Hide aircraft functions',
             'hide_aircraft_functions_tooltip': 'Hides the aircraft action dropdown and disables aircraft-specific controls (selection, follow, infoblock, and related functions).',
+            'hide_elevation_function': 'Hide elevation function',
+            'hide_elevation_function_tooltip': 'Hide the feature for drawing the elevation profile between two points.',
             'hide_distance_functions': 'Hide distance functions',
             'hide_distance_functions_tooltip': 'Hides the measurement dropdown and disables all distance tools (aircraft-aircraft, ground-aircraft, ground-ground).',
             'hide_label_functions': 'Hide label functions',
@@ -360,6 +362,18 @@
             'replay_tooltip': 'Open playback controls for historical flights.',
             'zoom_in_tooltip': 'Zoom In - Increase map zoom level.',
             'zoom_out_tooltip': 'Zoom Out - Decrease map zoom level.',
+
+            // *** PANORAMA-OVERLAY ***
+            'elevation_tooltip': 'Display the elevation of the existing terrain between two points.',
+            'wait_for_elevation': 'Wait for the elevation to finish rendering...',
+            'building_elevation': 'Building elevation...',
+            'no_data': 'No significant data to draw from.',
+            'data_error': 'Batch elevation error:',
+            'elevation_mark_point_a': 'Click on the map to mark point A.',
+            'elevation_mark_point_b': 'Now, click on the map again to mark point B.',
+            'layer_group_elevation_tool': 'Elevation tool',
+            'layer_elev_points': 'A-B Ground points',
+            'layer_elev_line': 'A-B Line',
 
             // *** REPLAY ***
             'play': 'Play',
@@ -756,7 +770,7 @@
             // *** Nombres de las categorías ***
             'units': 'UNIDADES',
             'display': 'PANTALLA',
-            'filters': 'FILTROS',
+            'filters_category': 'FILTROS',
             'data': 'DATOS',
             'system': 'SISTEMA',
             'information': 'INFORMACIÓN',
@@ -780,6 +794,8 @@
             'non_icao_targets_tooltip': 'Muestra aeronaves que no tienen un código ICAO estándar o cuya estructura de fuselaje es desconocida.',
             'hide_aircraft_functions': 'Ocultar funciones de aeronaves',
             'hide_aircraft_functions_tooltip': 'Oculta el menú desplegable de acciones de aeronaves y deshabilita controles específicos (selección, seguimiento, bloque de información y funciones relacionadas).',
+            'hide_elevation_function': 'Ocultar función de elevación',
+            'hide_elevation_function_tooltip': 'Oculta la función para dibujar la elevación de terreno entre dos puntos.',
             'hide_distance_functions': 'Ocultar funciones de distancia',
             'hide_distance_functions_tooltip': 'Oculta el menú desplegable de medición y deshabilita todas las herramientas de distancia (aeronave-aeronave, punto en tierra-aeronave, punto en tierra-punto en tierra).',
             'hide_label_functions': 'Ocultar funciones de etiquetas',
@@ -900,6 +916,18 @@
             'replay_tooltip': 'Abrir controles de reproducción para vuelos históricos.',
             'zoom_in_tooltip': 'Acercar - Aumentar el nivel de zoom del mapa.',
             'zoom_out_tooltip': 'Alejar - Disminuir el nivel de zoom del mapa.',
+
+            // *** PANORAMA-OVERLAY ***
+            'elevation_tooltip': 'Mostrar la elevación del terreno existente entre dos puntos.',
+            'wait_for_elevation': 'Espere a que la elevación termine de dibujarse...',
+            'building_elevation': 'Generando elevación...',
+            'no_data': 'Sin datos de relieve para dibujar.',
+            'data_error': 'Error en batch elevation:',
+            'elevation_mark_point_a': 'Haz clic en el mapa para marcar el punto A.',
+            'elevation_mark_point_b': 'Ahora, haz clic en el mapa nuevamente para marcar el punto B.',
+            'layer_group_elevation_tool': 'Herramienta de elevación',
+            'layer_elev_points': 'Puntos A-B en tierra',
+            'layer_elev_line': 'Línea A-B',
 
             // *** REPLAY ***
             'play': 'Reproducir',
@@ -1145,6 +1173,14 @@
                 setTimeout(function () {
                     window.updateAllLanguage();
                 }, 150);
+            }
+
+            if (lastPanoramaData && lastPanoramaTotalNm != null) {
+                setTimeout(function () {
+                    if (typeof draw3DPanorama === 'function') {
+                        draw3DPanorama(lastPanoramaData, lastPanoramaTotalNm);
+                    }
+                }, 200);
             }
 
             document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
