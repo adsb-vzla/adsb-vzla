@@ -141,6 +141,23 @@ const firData = {};
 // ***** FIN VARIABLES DISTANCIA TIERRA-TIERRA ******
 // **************************************************
 
+// ***************************************
+// ***** INICIO VARIABLES ELEVACIÓN ******
+// ***************************************
+let elevationMode = false;
+let elevationPointSource = null;
+let elevationPointLayer = null;
+let elevationLineSource = null;
+let elevationLineLayer = null;
+let lastPanoramaData = null;
+let lastPanoramaTotalNm = null;
+let panoramaResizeObs = null;
+let elevationBusy = false;
+let elevationAnchor = null;
+// ************************************
+// ***** FIN VARIABLES ELEVACIÓN ******
+// ************************************
+
 // **************************************************
 // ****** INICIO VARIABLES INDICADOR DE ZOOM ********
 // **************************************************
@@ -342,6 +359,338 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
 }
 // **************************************************
 // ********** FIN FUNCIÓN DE HAVERSINE **************
+// **************************************************
+
+// *****************************************************
+// ********** INICIO FUNCIÓN DE ELEVACIÓN **************
+// *****************************************************
+const ELEV_CONFIG = {
+    samples: 20,
+    cgiUrl: `${window.location.origin}/cgi-bin/get_elevation.sh`
+};
+
+function showPanoramaOverlay() {
+    const el = document.getElementById('panorama-overlay');
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.classList.remove('minimized');
+
+    const btn = document.getElementById('panorama-close');
+    if (btn) btn.textContent = '×';
+
+    updatePanoramaOverlayBounds();
+}
+
+function updatePanoramaOverlayBounds() {
+    const overlay = document.getElementById('panorama-overlay');
+    const map = document.getElementById('map_container');
+    if (!overlay || !map) return;
+
+    if (map.style.display === 'none') {
+        overlay.classList.add('hidden');
+        return;
+    }
+
+    const mapRect = map.getBoundingClientRect();
+    let left = 10;
+    let right = 10;
+    let bottom = 10;
+
+    const info = document.getElementById('selected_infoblock');
+    if (info && info.offsetParent !== null) {
+        const r = info.getBoundingClientRect();
+        if (r.right > mapRect.left && r.left < mapRect.right) {
+            left = Math.max(left, (r.right - mapRect.left) + 10);
+        }
+    }
+
+    const replay = document.getElementById('replayBar');
+    if (replay && replay.offsetParent !== null && getComputedStyle(replay).display !== 'none') {
+        const r = replay.getBoundingClientRect();
+        if (r.top < mapRect.bottom && r.bottom > mapRect.top) {
+            bottom = Math.max(bottom, (mapRect.bottom - r.top) + 10);
+        }
+    }
+
+    overlay.style.left = left + 'px';
+    overlay.style.right = right + 'px';
+    overlay.style.bottom = bottom + 'px';
+}
+
+window.addEventListener('resize', updatePanoramaOverlayBounds);
+
+function togglePanoramaMinimize() {
+    const el = document.getElementById('panorama-overlay');
+    if (!el) return;
+    el.classList.toggle('minimized');
+    const btn = document.getElementById('panorama-close');
+    if (btn) btn.textContent = el.classList.contains('minimized') ? '+' : '-';
+}
+
+function hidePanoramaOverlay() {
+    const el = document.getElementById('panorama-overlay');
+    if (el) el.classList.add('hidden');
+    const c = document.getElementById('panorama-container');
+    if (c) c.innerHTML = '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('panorama-close');
+    if (btn) btn.addEventListener('click', togglePanoramaMinimize);
+});
+
+function elevFetchWithTimeout(url, ms = 8000) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(t));
+}
+
+function elevPLimit(concurrency) {
+    let active = 0;
+    const queue = [];
+    const next = () => {
+        if (active >= concurrency || queue.length === 0) return;
+        active++;
+        const { fn, resolve, reject } = queue.shift();
+        fn().then(resolve, reject).finally(() => {
+            active--;
+            next();
+        });
+    };
+    return (fn) => new Promise((resolve, reject) => {
+        queue.push({ fn, resolve, reject });
+        next();
+    });
+}
+
+function distanceNm(lat1, lon1, lat2, lon2) {
+    const R = 6371 / 1.852;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+function mToFt(m) {
+    return m * 3.28084;
+}
+
+function interpolateLine(lat1, lon1, lat2, lon2, t) {
+    return {
+        lat: lat1 + (lat2 - lat1) * t,
+        lon: lon1 + (lon2 - lon1) * t
+    };
+}
+
+const elevCache = new Map();
+
+function elevKey(lat, lon) {
+    return `${lat.toFixed(5)},${lon.toFixed(5)}`;
+}
+
+async function getElevationProfileLine(lat1, lon1, lat2, lon2) {
+    if (elevationBusy) {
+        showDistanceGuide(getTranslatedText('wait_for_elevation', 'Wait for the elevation to finish rendering...'));
+        return;
+    }
+    elevationBusy = true;
+    showDistanceGuide(getTranslatedText('building_elevation', 'Building elevation...'));
+
+    const urlBase = `${ELEV_CONFIG.cgiUrl}?lat1=${lat1}&lon1=${lon1}&lat2=${lat2}&lon2=${lon2}&samples=${ELEV_CONFIG.samples}`;
+
+    try {
+        const cacheKey = `${lat1.toFixed(5)},${lon1.toFixed(5)}|${lat2.toFixed(5)},${lon2.toFixed(5)}|${ELEV_CONFIG.samples}`;
+        const cached = elevCache.get(cacheKey);
+        if (cached) {
+            showPanoramaOverlay();
+            draw3DPanorama(cached.points, cached.totalNm);
+            return;
+        }
+
+        const res = await fetch(urlBase);
+        const data = await res.json();
+
+        if (!data.points || !data.points.length) {
+            console.warn(getTranslatedText('no_data', 'No significant data to draw from.'));
+            return;
+        }
+
+        for (const p of data.points) {
+            if (p.distNm == null && p.distKm != null) {
+                p.distNm = p.distKm / 1.852;
+            }
+        }
+
+        const totalNm = data.points[data.points.length - 1].distNm || distanceNm(lat1, lon1, lat2, lon2) / 1.852;
+        elevCache.set(cacheKey, { points: data.points, totalNm });
+
+        showPanoramaOverlay();
+        draw3DPanorama(data.points, totalNm);
+    } catch (e) {
+        console.error(getTranslatedText('data_error', 'Batch elevation error:'), e);
+    } finally {
+        elevationBusy = false;
+        hideDistanceGuide();
+    }
+}
+
+function draw3DPanorama(data, totalNm) {
+    lastPanoramaData = data;
+    lastPanoramaTotalNm = totalNm;
+    const container = document.getElementById('panorama-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const width = container.offsetWidth || 800;
+    const height = 220;
+    const margin = { top: 20, right: 20, bottom: 30, left: 50 };
+
+    const units = DisplayUnits || 'nautical';
+    
+    const unitConfig = {
+        'nautical': {
+            distMultiplier: 1,
+            distLabel: 'NM',
+            altMultiplier: 1,
+            altLabel: 'ft'
+        },
+        'metric': {
+            distMultiplier: 1.852,
+            distLabel: 'km',
+            altMultiplier: 0.3048,
+            altLabel: 'm'
+        },
+        'imperial': {
+            distMultiplier: 1.15078,
+            distLabel: 'mi',
+            altMultiplier: 1,
+            altLabel: 'ft'
+        }
+    };
+
+    const config = unitConfig[units] || unitConfig['nautical'];
+
+    const distTotal = totalNm * config.distMultiplier;
+    const altData = data.map(d => d3.max([0, mToFt(d.alt) * config.altMultiplier]));
+    const maxAlt = d3.max(altData) * 1.1;
+
+    const svg = d3.select("#panorama-container")
+        .append("svg")
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "none")
+        .style("width", "100%")
+        .style("height", "100%");
+
+    const x = d3.scaleLinear()
+        .domain([0, distTotal])
+        .range([margin.left, width - margin.right]);
+
+    const y = d3.scaleLinear()
+        .domain([0, maxAlt])
+        .range([height - margin.bottom, margin.top]);
+
+    const xAxis = d3.axisBottom(x)
+        .ticks(6)
+        .tickFormat(d => `${d.toFixed(0)} ${config.distLabel}`)
+        .tickSizeOuter(0)
+        .tickSizeInner(-(height - margin.top - margin.bottom));
+
+    const yAxis = d3.axisLeft(y)
+        .ticks(5)
+        .tickFormat(d => `${d.toFixed(0)} ${config.altLabel}`)
+        .tickSizeOuter(0)
+        .tickSizeInner(-(width - margin.left - margin.right));
+
+    const areaData = data.map((d, i) => ({
+        dist: d.distNm * config.distMultiplier,
+        alt: altData[i]
+    }));
+
+    const area = d3.area()
+        .x(d => x(d.dist))
+        .y0(y(0))
+        .y1(d => y(d.alt))
+        .curve(d3.curveLinear);
+
+    svg.append("path")
+        .datum(areaData)
+        .attr("fill", "rgba(100, 100, 100, 0.7)")
+        .attr("stroke", "#333")
+        .attr("stroke-width", 1)
+        .attr("d", area);
+
+    const xAxisGroup = svg.append("g")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(xAxis);
+
+    xAxisGroup.selectAll(".tick line")
+        .attr("stroke", "rgba(255, 255, 255, 0.3)")
+        .attr("stroke-dasharray", "4,4")
+        .attr("stroke-width", 1);
+
+    xAxisGroup.selectAll(".tick text")
+        .attr("fill", "rgba(255, 255, 255, 0.8)")
+        .attr("font-size", "10px");
+
+    const yAxisGroup = svg.append("g")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(yAxis);
+
+    yAxisGroup.selectAll(".tick line")
+        .attr("stroke", "rgba(255, 255, 255, 0.3)")
+        .attr("stroke-dasharray", "4,4")
+        .attr("stroke-width", 1);
+
+    yAxisGroup.selectAll(".tick text")
+        .attr("fill", "rgba(255, 255, 255, 0.8)")
+        .attr("font-size", "10px");
+
+    xAxisGroup.selectAll(".domain")
+        .attr("stroke", "rgba(255, 255, 255, 0.2)")
+        .attr("stroke-width", 1);
+
+    yAxisGroup.selectAll(".domain")
+        .attr("stroke", "rgba(255, 255, 255, 0.2)")
+        .attr("stroke-width", 1);
+
+    if (!panoramaResizeObs && window.ResizeObserver) {
+        panoramaResizeObs = new ResizeObserver(() => {
+            if (lastPanoramaData && lastPanoramaTotalNm != null) {
+                draw3DPanorama(lastPanoramaData, lastPanoramaTotalNm);
+            }
+        });
+        panoramaResizeObs.observe(container);
+    }
+}
+
+function toggleElevationMode() {
+    elevationMode = !elevationMode;
+    buttonActive('#E', elevationMode);
+
+    if (elevationMode) {
+        elevationAnchor = null;
+        showDistanceGuide(getTranslatedText('elevation_mark_point_a', 'Click on the map to mark point A.'));
+        hidePanoramaOverlay();
+
+        if (elevationPointSource) elevationPointSource.clear();
+        if (elevationLineSource) elevationLineSource.clear();
+        elevationPointLayer && elevationPointLayer.setVisible(true);
+        elevationLineLayer && elevationLineLayer.setVisible(false);
+    } else {
+        elevationAnchor = null;
+        hideDistanceGuide();
+        hidePanoramaOverlay();
+        elevationPointSource && elevationPointSource.clear();
+        elevationLineSource && elevationLineSource.clear();
+        elevationPointLayer && elevationPointLayer.setVisible(false);
+        elevationLineLayer && elevationLineLayer.setVisible(false);
+    }
+}
+// **************************************************
+// ********** FIN FUNCIÓN DE ELEVACIÓN **************
 // **************************************************
 
 // ***********************************************************
@@ -3981,6 +4330,18 @@ function earlyInitPage() {
         }
     });
     createToggle({
+        key: "hideElevationFunction",
+        display: 'hide_elevation_function',
+        displayKey: 'hide_elevation_function',
+        tooltip: 'hide_elevation_function_tooltip',
+        tooltipKey: 'hide_elevation_function_tooltip',
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#E").toggle(!state);
+        }
+    });
+    createToggle({
         key: "hideDistanceFunctions",
         display: 'hide_distance_functions',
         displayKey: 'hide_distance_functions',
@@ -5822,6 +6183,81 @@ function ol_map_init() {
             gotoTime(trailTS);
         }
 
+        // ********************************************
+        // ***** INICIO MANEJAR MODO DE ELEVACIÓN *****
+        // ********************************************
+        if (elevationMode) {
+            if (elevationBusy) {
+                showDistanceGuide(getTranslatedText('building_elevation', 'Building elevation...'));
+                evt.stopPropagation();
+                return;
+            }
+
+            const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
+            const lonlat = ol.proj.toLonLat(evtCoords);
+            const clicked = { lat: lonlat[1], lon: lonlat[0] };
+
+            if (!elevationAnchor) {
+                elevationAnchor = clicked;
+
+                if (elevationPointSource) {
+                    elevationPointSource.clear();
+                    const fA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([clicked.lon, clicked.lat])));
+                    fA.set('role', 'A');
+                    elevationPointSource.addFeature(fA);
+                    elevationPointLayer && elevationPointLayer.setVisible(true);
+                }
+
+                if (elevationLineSource) elevationLineSource.clear();
+                elevationLineLayer && elevationLineLayer.setVisible(false);
+
+                showDistanceGuide(getTranslatedText('elevation_mark_point_b', 'Click on the map to mark point B.'));
+                evt.stopPropagation();
+                return;
+            }
+
+            const a = elevationAnchor;
+            const b = clicked;
+
+            if (elevationPointSource) {
+                elevationPointSource.clear();
+
+                const fA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([a.lon, a.lat])));
+                fA.set('role', 'A');
+                elevationPointSource.addFeature(fA);
+
+                const fB = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([b.lon, b.lat])));
+                fB.set('role', 'B');
+                elevationPointSource.addFeature(fB);
+
+                elevationPointLayer && elevationPointLayer.setVisible(true);
+            }
+
+            if (elevationLineSource) {
+                elevationLineSource.clear();
+                elevationLineSource.addFeature(
+                    new ol.Feature(
+                        new ol.geom.LineString([
+                            ol.proj.fromLonLat([a.lon, a.lat]),
+                            ol.proj.fromLonLat([b.lon, b.lat])
+                        ])
+                    )
+                );
+                elevationLineLayer && elevationLineLayer.setVisible(true);
+            }
+
+            hideDistanceGuide();
+            getElevationProfileLine(a.lat, a.lon, b.lat, b.lon);
+
+            elevationAnchor = null;
+
+            evt.stopPropagation();
+            return;
+        }
+        // *****************************************
+        // ***** FIN MANEJAR MODO DE ELEVACIÓN *****
+        // *****************************************
+
         // ******************************************************
         // ** INICIO MANEJAR CAPAS Y ALERTAS (TIERRA-AERONAVE) **
         // ******************************************************
@@ -6373,7 +6809,7 @@ function initMap() {
             ggPointLayer = new ol.layer.Vector({
                 name: 'ggPoints',
                 type: 'overlay',
-                title: 'A-B ground points',
+                title: 'A-B Ground points',
                 source: ggPointSource,
                 zIndex: 245,
                 visible: true,
@@ -6611,8 +7047,8 @@ function initMap() {
                 layers: new ol.Collection([gGG, gGA, gAA])
             });
 
-            let vfrIndex = -1;
-            let siteCircleIndex = -1;
+            let vfrIndex = -2;
+            let siteCircleIndex = -2;
 
             layers.forEach((layer, index) => {
                 if (layer.get('title') === 'VFR') {
@@ -6623,10 +7059,10 @@ function initMap() {
                 }
             });
 
-            if (vfrIndex !== -1 && siteCircleIndex !== -1 && siteCircleIndex > vfrIndex) {
-                layers.insertAt(vfrIndex + 1, distanceRoot);
-            } else if (vfrIndex !== -1) {
-                layers.insertAt(vfrIndex + 1, distanceRoot);
+            if (vfrIndex !== -2 && siteCircleIndex !== -2 && siteCircleIndex > vfrIndex) {
+                layers.insertAt(vfrIndex + 2, distanceRoot);
+            } else if (vfrIndex !== -2) {
+                layers.insertAt(vfrIndex + 2, distanceRoot);
             } else {
                 layers.push(distanceRoot);
             }
@@ -6638,6 +7074,75 @@ function initMap() {
     // **************************************************************
     // *** FIN MENÚ DROPDOWN CON CAPAS DE FUNCIONES DE DISTANCIA ****
     // **************************************************************
+
+    // ****************************************************
+    // *** INICIO MENÚ DROPDOWN CON CAPAS DE ELEVACIÓN ****
+    // ****************************************************
+    if (!elevationPointSource) elevationPointSource = new ol.source.Vector();
+    elevationPointLayer = new ol.layer.Vector({
+        name: 'elev_points',
+        type: 'overlay',
+        title: 'A-B Ground points',
+        source: elevationPointSource,
+        zIndex: 262,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({ color: '#222' }),
+                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+            })
+        }),
+        visible: true
+    });
+
+    if (!elevationLineSource) elevationLineSource = new ol.source.Vector();
+    elevationLineLayer = new ol.layer.Vector({
+        name: 'elev_line',
+        type: 'overlay',
+        title: 'A-B Line',
+        source: elevationLineSource,
+        zIndex: 265,
+        style: new ol.style.Style({
+            stroke: new ol.style.Stroke({ color: '#00aaff', width: 2 })
+        }),
+        visible: true
+    });
+
+    const elevRoot = new ol.layer.Group({
+        name: 'elevation_tool',
+        title: 'Elevation tool',
+        type: 'overlay',
+        fold: 'close',
+        combine: false,
+        layers: new ol.Collection([
+            elevationPointLayer,
+            elevationLineLayer
+        ])
+    });
+
+    let FIRIndex = 0;
+    let distanceIndex = 0;
+
+    layers.forEach((layer, index) => {
+        if (layer.get && layer.get('title') === 'Distance tools') {
+            distanceIndex = index;
+        }
+        if (layer.get && layer.get('name') === 'FIR') {
+            FIRIndex = index;
+        }
+    });
+
+    if (distanceIndex !== 0) {
+        layers.insertAt(distanceIndex + 0, elevRoot);
+    } else if (FIRIndex !== 0) {
+        layers.insertAt(FIRIndex + 0, elevRoot);
+    } else {
+        layers.push(elevRoot);
+    }
+
+    // *************************************************
+    // *** FIN MENÚ DROPDOWN CON CAPAS DE ELEVACIÓN ****
+    // *************************************************
 
     ol_map_init();
 
@@ -8972,6 +9477,7 @@ function updateMapSize() {
     if (OLMap)
         OLMap.updateSize();
     updateReplayBarPosition();
+    updatePanoramaOverlayBounds();
 }
 
 function expandSidebar(e) {
@@ -9080,6 +9586,7 @@ function adjustInfoBlock() {
     }
 
     updateReplayBarPosition();
+    updatePanoramaOverlayBounds();
 }
 
 function updateReplayBarPosition() {
@@ -9199,6 +9706,10 @@ function onDisplayUnitsChanged(e) {
 
     remakeTrails();
     refreshSelected();
+
+    if (lastPanoramaData && lastPanoramaTotalNm != null) {
+        draw3DPanorama(lastPanoramaData, lastPanoramaTotalNm);
+    }
 }
 
 function onFilterByAltitude(e) {
@@ -14247,6 +14758,8 @@ function showReplayBar() {
 
         jQuery("#selected_showTrace_hide").hide();
     }
+
+    updatePanoramaOverlayBounds();
 };
 // *****************************************
 // ********* FIN MOSTRAR REPLAY ************
