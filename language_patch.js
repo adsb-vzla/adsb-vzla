@@ -6,7 +6,7 @@
     // *****************************************
     const translations = {
         en: {
-            'copyright_text': 'ADS-B VENEZUELA / EANSA — Powered by <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer">tar1090</a>. All rights reserved.',
+            'copyright_text': 'ADS-B VENEZUELA — Developed by EANSA. <br> <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer" style="color: gray;">tar1090</a>',
 
             // *** HEAD ***
             'meta_description': 'ADS‑B Venezuela - Air traffic monitoring in Venezuela',
@@ -546,7 +546,7 @@
             'layer_weather_radar': 'Weather / Radar',
         },
         es: {
-            'copyright_text': 'ADS-B VENEZUELA / EANSA — Desarrollado sobre <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer">tar1090</a>. Todos los derechos reservados.',
+            'copyright_text': 'ADS-B VENEZUELA — Desarrollado por EANSA. <br> <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer" style="color: gray;">tar1090</a>',
 
             // *** HEAD ***
             'meta_description': 'ADS‑B Venezuela - Monitoreo de tráfico aéreo en Venezuela',

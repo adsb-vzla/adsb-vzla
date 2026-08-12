@@ -1389,6 +1389,7 @@ table.infoSectionTable tr td {
     left: 0;
     right: 0;
     background-color: transparent !important;
+    display: none;
 }
 
 #altitude_chart_image {
