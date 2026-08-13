@@ -705,8 +705,8 @@ function updateDistanceLine() {
         if (!distanceOverlay) {
             let element = document.createElement('div');
             element.id = 'distance-label-tag';
-            element.style.background = 'rgba(0,0,0,0.5)';
-            element.style.border = '1px solid black';
+            element.style.background = 'rgba(0,0,0,0.4)';
+            // element.style.border = '1px solid black';
             element.style.padding = '5px';
             element.style.fontSize = '12px';
             element.style.fontWeight = '600'
@@ -716,7 +716,7 @@ function updateDistanceLine() {
             element.style.borderRadius = '4px';
 
             element.innerHTML = `
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                     <i id="dist-toggle-btn" class="fa-solid fa-eye-slash" style="cursor: pointer; color: white;"></i>
                     <i id="dist-close-btn" class="fa-solid fa-xmark" style="cursor: pointer; color: #c00;"></i>
                 </div>
@@ -959,8 +959,8 @@ function updateDistanceLine() {
                 if (!ov) {
                     const el = document.createElement('div');
                     el.id = `distance-label-${key.replace(/\|/g, '_')}`;
-                    el.style.background = 'rgba(0,0,0,0.5)';
-                    el.style.border = '1px solid black';
+                    el.style.background = 'rgba(0,0,0,0.4)';
+                    // el.style.border = '1px solid black';
                     el.style.padding = '5px';
                     el.style.fontSize = '12px';
                     el.style.fontWeight = '600'
@@ -969,7 +969,7 @@ function updateDistanceLine() {
                     el.style.pointerEvents = 'auto';
                     el.style.borderRadius = '4px';
                     el.innerHTML = `
-                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                         <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: white;"></i>
                         <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;"></i>
                     </div>
@@ -1092,8 +1092,8 @@ function updateDistanceLine() {
             if (!ov) {
                 const el = document.createElement('div');
                 el.id = `distance-label-${key.replace(/\|/g, '_')}`;
-                el.style.background = 'rgba(0,0,0,0.5)';
-                el.style.border = '1px solid black';
+                el.style.background = 'rgba(0,0,0,0.4)';
+                // el.style.border = '1px solid black';
                 el.style.padding = '5px';
                 el.style.fontSize = '12px';
                 el.style.fontWeight = '600'
@@ -1102,7 +1102,7 @@ function updateDistanceLine() {
                 el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
                 el.innerHTML = `
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                     <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: white;"></i>
                     <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;"></i>
                 </div>
@@ -1601,8 +1601,8 @@ function updateDistanceToGroundOverlay() {
             if (!ov) {
                 const el = document.createElement('div');
                 el.id = `ta-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
-                el.style.background = 'rgba(0,0,0,0.5)';
-                el.style.border = '1px solid black';
+                el.style.background = 'rgba(0,0,0,0.4)';
+                // el.style.border = '1px solid black';
                 el.style.padding = '5px';
                 el.style.fontSize = '12px';
                 el.style.fontWeight = '600',
@@ -1611,7 +1611,7 @@ function updateDistanceToGroundOverlay() {
                     el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
                 el.innerHTML = `
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                 <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: white;"></i>
                 <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;"></i>
             </div>
@@ -1898,8 +1898,8 @@ function updateDistanceToGroundOverlay() {
         if (!ov) {
             const el = document.createElement('div');
             el.id = `ta-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
-            el.style.background = 'rgba(0,0,0,0.5)';
-            el.style.border = '1px solid black';
+            el.style.background = 'rgba(0,0,0,0.4)';
+            // el.style.border = '1px solid black';
             el.style.padding = '5px';
             el.style.fontSize = '12px';
             el.style.fontWeight = '600',
@@ -1909,7 +1909,7 @@ function updateDistanceToGroundOverlay() {
             el.style.borderRadius = '4px';
 
             el.innerHTML = `
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
             <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: white;"></i>
             <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;"></i>
         </div>
@@ -2146,8 +2146,8 @@ function updateGroundToGroundOverlay() {
         if (!ov) {
             const el = document.createElement('div');
             el.id = `gg-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
-            el.style.background = 'rgba(0,0,0,0.5)';
-            el.style.border = '1px solid black';
+            el.style.background = 'rgba(0,0,0,0.4)';
+            // el.style.border = '1px solid black';
             el.style.padding = '5px';
             el.style.fontSize = '12px';
             el.style.fontWeight = '600',
@@ -2157,7 +2157,7 @@ function updateGroundToGroundOverlay() {
             el.style.borderRadius = '4px';
 
             el.innerHTML = `
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                     <i class="fa-solid fa-eye-slash gg-toggle-btn" style="cursor: pointer; color: white;"></i>
                     <i class="fa-solid fa-xmark gg-close-btn" style="cursor: pointer; color: #c00;"></i>
                 </div>
@@ -2499,7 +2499,7 @@ function showDistanceGuide(text) {
             top: '50px',
             left: '50%',
             transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.5)',
+            background: 'rgba(0,0,0,0.4)',
             border: '1px solid #000',
             padding: '6px 8px',
             fontSize: '12px',
