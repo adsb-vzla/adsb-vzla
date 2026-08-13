@@ -3799,34 +3799,50 @@ function createToggle(options) {
 function initPage() {
 
     if (globeIndex) {
-        function setGlobeTableLimit() {
-            let mult = 1 + 4 * toggles['moreTableLines1'].state + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
+        // function setGlobeTableLimit() {
+        //     let mult = 1 + 4 * toggles['moreTableLines1'].state + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
+        //     globeTableLimit = globeTableLimitBase * mult;
+        //     if (toggles['allTableLines'] && toggles['allTableLines'].state)
+        //         globeTableLimit = 1e9;
+        //     if (onMobile)
+        //         globeTableLimit /= 2;
+        // };
+        window.setGlobeTableLimit = function() {
+            let mult = 1 + 4 * (toggles['moreTableLines1'] ? toggles['moreTableLines1'].state : 0) + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
             globeTableLimit = globeTableLimitBase * mult;
             if (toggles['allTableLines'] && toggles['allTableLines'].state)
                 globeTableLimit = 1e9;
             if (onMobile)
                 globeTableLimit /= 2;
+            
+            // Refrescar la tabla
+            if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.refresh) {
+                TAR.planeMan.refresh();
+            }
         };
         new Toggle({
             key: "moreTableLines1",
             display: "More Table Lines",
-            container: "#sidebar-table",
+            // container: "#sidebar-table",
+            container: null,
             init: false,
-            setState: setGlobeTableLimit,
+            setState: window.setGlobeTableLimit,
         });
         new Toggle({
             key: "moreTableLines2",
             display: "Even More Table Lines",
-            container: "#sidebar-table",
+            // container: "#sidebar-table",
+            container: null,
             init: false,
-            setState: setGlobeTableLimit,
+            setState: window.setGlobeTableLimit,
         });
         new Toggle({
             key: "allTableLines",
             display: "All Table Lines",
-            container: "#sidebar-table",
+            // container: "#sidebar-table",
+            container: null,
             init: false,
-            setState: setGlobeTableLimit,
+            setState: window.setGlobeTableLimit,
         });
     }
 
@@ -9069,9 +9085,32 @@ function refreshFeatures() {
             </div>
         `;
 
+        const tableOptionsHtml = `
+            <div class="column-category" id="column-category-table-options">
+                <div class="column-category-title" data-i18n="table_display_options">
+                    Table display options
+                </div>
+                <div class="columns-grid" id="table-options-grid">
+                    <li class="ui-state-default" id="table-option-more1" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
+                        <div class="settingsCheckbox" id="moreTableLines1_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
+                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="more_table_lines">More Table Lines</span>
+                    </li>
+                    <li class="ui-state-default" id="table-option-more2" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
+                        <div class="settingsCheckbox" id="moreTableLines2_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
+                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="even_more_table_lines">Even More Table Lines</span>
+                    </li>
+                    <li class="ui-state-default" id="table-option-all" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
+                        <div class="settingsCheckbox" id="allTableLines_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
+                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="all_table_lines">All Table Lines</span>
+                    </li>
+                </div>
+            </div>
+        `;
+
         container.append(restoreButtonHtml);
         container.append(activeCategoryHtml);
         container.append(inactiveCategoryHtml);
+        container.append(tableOptionsHtml);
 
         // *****************************************
         // *** FIN CREAR COLUMNAS SELECCIONABLES ***
@@ -9236,6 +9275,75 @@ function refreshFeatures() {
         // **************************************************************
         // **** FIN ACTUALIZAR ORDEN DE COLUMNAS ACTIVAS/INACTIVAS ******
         // **************************************************************
+
+
+
+
+
+
+
+
+
+        // --- INICIO: INICIALIZAR CHECKBOXES DE TABLA CON RETRASO ---
+        function initTableOptions() {
+            // Verificar si los toggles ya existen
+            if (typeof toggles === 'undefined' || !toggles['moreTableLines1']) {
+                // Si no existen, esperar 100ms y reintentar
+                setTimeout(initTableOptions, 100);
+                return;
+            }
+
+            function initTableOptionCheckbox(toggleKey, checkboxId) {
+                const $checkbox = jQuery(`#${checkboxId}`);
+                if (!$checkbox.length) return;
+
+                const toggle = toggles[toggleKey];
+                if (!toggle) return;
+
+                // Establecer estado inicial
+                if (toggle.state) {
+                    $checkbox.addClass('settingsCheckboxChecked');
+                }
+
+                // Remover event listeners previos para evitar duplicados
+                $checkbox.off('click.tableOption');
+
+                $checkbox.on('click.tableOption', function (e) {
+                    e.stopPropagation();
+                    toggle.toggle();
+                    const isChecked = toggle.state;
+                    if (isChecked) {
+                        $checkbox.addClass('settingsCheckboxChecked');
+                    } else {
+                        $checkbox.removeClass('settingsCheckboxChecked');
+                    }
+                    // Forzar actualización de la tabla
+                    if (typeof setGlobeTableLimit === 'function') {
+                        setGlobeTableLimit();
+                    }
+                    if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.refresh) {
+                        TAR.planeMan.refresh();
+                    }
+                });
+
+                // También permitir clic en el texto
+                const $li = $checkbox.closest('li');
+                const $text = $li.find('.settingsText');
+                $text.off('click.tableOption').on('click.tableOption', function (e) {
+                    e.stopPropagation();
+                    $checkbox.trigger('click.tableOption');
+                });
+            }
+
+            // Inicializar los tres checkboxes
+            initTableOptionCheckbox('moreTableLines1', 'moreTableLines1_checkbox');
+            initTableOptionCheckbox('moreTableLines2', 'moreTableLines2_checkbox');
+            initTableOptionCheckbox('allTableLines', 'allTableLines_checkbox');
+        }
+
+        // Iniciar la inicialización con un pequeño retraso
+        setTimeout(initTableOptions, 50);
+        // --- FIN: INICIALIZAR CHECKBOXES DE TABLA ---
     }
 
     // ***************************************************************
