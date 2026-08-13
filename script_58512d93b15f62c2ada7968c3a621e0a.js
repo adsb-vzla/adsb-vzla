@@ -549,7 +549,7 @@ function draw3DPanorama(data, totalNm) {
     const margin = { top: 20, right: 20, bottom: 30, left: 50 };
 
     const units = DisplayUnits || 'nautical';
-    
+
     const unitConfig = {
         'nautical': {
             distMultiplier: 1,
@@ -867,9 +867,23 @@ function updateDistanceLine() {
 
             const trackIcon1 = '✈ A';
             const trackIcon2 = '✈ B';
+            const trackIcon3 = '✈ A - B';
+
+            // Calcular la diferencia de rumbo
+            let trackDiffStr = '---°';
+            if (track1 !== null && track1 !== undefined && !isNaN(track1) &&
+                track2 !== null && track2 !== undefined && !isNaN(track2)) {
+                let trackDiff = Math.abs(track1 - track2);
+                trackDiff = trackDiff % 360;
+                if (trackDiff > 180) {
+                    trackDiff = 360 - trackDiff;
+                }
+                trackDiffStr = `${trackDiff.toFixed(1)}°`;
+            }
 
             textContainer.innerHTML = `
-            ${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>${trackIcon1} ${track1Str} ${trackIcon2} ${track2Str}`;
+            ${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>
+            ${trackIcon1} ${track1Str} | ${trackIcon2} ${track2Str} | ${trackIcon3} ${trackDiffStr}`;
         }
 
         distanceOverlay.setPosition(midPointProj);
@@ -1163,8 +1177,22 @@ function updateDistanceLine() {
 
                 const trackIconA = '✈ A';
                 const trackIconB = '✈ B';
+                const trackIconC = '✈ A - B';
 
-                textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>${trackIconA} ${trackAStr} ${trackIconB} ${trackBStr}`;
+                // Calcular la diferencia de rumbo
+                let trackDiffStr = '---°';
+                if (trackA !== null && trackA !== undefined && !isNaN(trackA) &&
+                    trackB !== null && trackB !== undefined && !isNaN(trackB)) {
+                    let trackDiff = Math.abs(trackA - trackB);
+                    trackDiff = trackDiff % 360;
+                    if (trackDiff > 180) {
+                        trackDiff = 360 - trackDiff;
+                    }
+                    trackDiffStr = `${trackDiff.toFixed(1)}°`;
+                }
+
+                // Actualizar el HTML
+                textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>${trackIconA} ${trackAStr} | ${trackIconB} ${trackBStr} | ${trackIconC} ${trackDiffStr}`;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';
             }
