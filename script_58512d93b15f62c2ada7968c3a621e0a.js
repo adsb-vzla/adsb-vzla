@@ -16301,7 +16301,7 @@ if (typeof toggleStarredList === 'undefined') {
 const firFiles = {
     "Fir Amazonica": "geojson/fir_sbaz.geojson",
     "Fir Maiquetia": "geojson/fir_svzm.geojson",
-    "Fir Georgetown": "geojson/fir_svgc.geojson",
+    "Fir Georgetown": "geojson/fir_sygc.geojson",
     "Fir Piarco": "geojson/fir_ttzp.geojson",
     "Fir San Juan": "geojson/fir_tjzs.geojson",
     "Fir Barranquilla": "geojson/fir_skec.geojson",
