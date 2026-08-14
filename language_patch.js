@@ -465,6 +465,14 @@
             'unit_kt': 'kt',
             'unit_nm': 'NM',
 
+            'more_table_lines': 'More Table Lines',
+            'even_more_table_lines': 'Even More',
+            'all_table_lines': 'All Table Lines',
+            'more_table_lines_tooltip': 'Increase the number of aircraft displayed in the table.',
+            'even_more_table_lines_tooltip': 'Further increase the number of aircraft displayed in the table.',
+            'all_table_lines_tooltip': 'Show all aircraft in the table (may affect performance).',
+            'table_display_options': 'Table display options',
+
             'aircraft_list': 'Aircraft List',
 
             // *** starred-aircraft-section ***
@@ -1018,6 +1026,14 @@
             'unit_ft': 'ft',
             'unit_kt': 'kt',
             'unit_nm': 'MN',
+
+            'more_table_lines': 'Más líneas en tabla',
+            'even_more_table_lines': 'Aún más líneas',
+            'all_table_lines': 'Todas las líneas',
+            'more_table_lines_tooltip': 'Aumenta el número de aeronaves mostradas en la tabla.',
+            'even_more_table_lines_tooltip': 'Aumenta aún más el número de aeronaves mostradas en la tabla.',
+            'all_table_lines_tooltip': 'Mostrar todas las aeronaves en la tabla (puede afectar el rendimiento).',
+            'table_display_options': 'Opciones de visualización de tabla',
 
             'aircraft_list': 'Lista de Aeronaves',
 

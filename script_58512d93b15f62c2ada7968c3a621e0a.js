@@ -549,7 +549,7 @@ function draw3DPanorama(data, totalNm) {
     const margin = { top: 20, right: 20, bottom: 30, left: 50 };
 
     const units = DisplayUnits || 'nautical';
-    
+
     const unitConfig = {
         'nautical': {
             distMultiplier: 1,
@@ -705,8 +705,8 @@ function updateDistanceLine() {
         if (!distanceOverlay) {
             let element = document.createElement('div');
             element.id = 'distance-label-tag';
-            element.style.background = 'rgba(0,0,0,0.5)';
-            element.style.border = '1px solid black';
+            element.style.background = 'rgba(0,0,0,0.4)';
+            // element.style.border = '1px solid black';
             element.style.padding = '5px';
             element.style.fontSize = '12px';
             element.style.fontWeight = '600'
@@ -716,7 +716,7 @@ function updateDistanceLine() {
             element.style.borderRadius = '4px';
 
             element.innerHTML = `
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                     <i id="dist-toggle-btn" class="fa-solid fa-eye-slash" style="cursor: pointer; color: white;"></i>
                     <i id="dist-close-btn" class="fa-solid fa-xmark" style="cursor: pointer; color: #c00;"></i>
                 </div>
@@ -867,9 +867,23 @@ function updateDistanceLine() {
 
             const trackIcon1 = '✈ A';
             const trackIcon2 = '✈ B';
+            const trackIcon3 = '✈ A - B';
+
+            // Calcular la diferencia de rumbo
+            let trackDiffStr = '---°';
+            if (track1 !== null && track1 !== undefined && !isNaN(track1) &&
+                track2 !== null && track2 !== undefined && !isNaN(track2)) {
+                let trackDiff = Math.abs(track1 - track2);
+                trackDiff = trackDiff % 360;
+                if (trackDiff > 180) {
+                    trackDiff = 360 - trackDiff;
+                }
+                trackDiffStr = `${trackDiff.toFixed(1)}°`;
+            }
 
             textContainer.innerHTML = `
-            ${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>${trackIcon1} ${track1Str} ${trackIcon2} ${track2Str}`;
+            ${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>
+            ${trackIcon1} ${track1Str} | ${trackIcon2} ${track2Str} | ${trackIcon3} ${trackDiffStr}`;
         }
 
         distanceOverlay.setPosition(midPointProj);
@@ -945,8 +959,8 @@ function updateDistanceLine() {
                 if (!ov) {
                     const el = document.createElement('div');
                     el.id = `distance-label-${key.replace(/\|/g, '_')}`;
-                    el.style.background = 'rgba(0,0,0,0.5)';
-                    el.style.border = '1px solid black';
+                    el.style.background = 'rgba(0,0,0,0.4)';
+                    // el.style.border = '1px solid black';
                     el.style.padding = '5px';
                     el.style.fontSize = '12px';
                     el.style.fontWeight = '600'
@@ -955,7 +969,7 @@ function updateDistanceLine() {
                     el.style.pointerEvents = 'auto';
                     el.style.borderRadius = '4px';
                     el.innerHTML = `
-                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                         <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: white;"></i>
                         <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;"></i>
                     </div>
@@ -1078,8 +1092,8 @@ function updateDistanceLine() {
             if (!ov) {
                 const el = document.createElement('div');
                 el.id = `distance-label-${key.replace(/\|/g, '_')}`;
-                el.style.background = 'rgba(0,0,0,0.5)';
-                el.style.border = '1px solid black';
+                el.style.background = 'rgba(0,0,0,0.4)';
+                // el.style.border = '1px solid black';
                 el.style.padding = '5px';
                 el.style.fontSize = '12px';
                 el.style.fontWeight = '600'
@@ -1088,7 +1102,7 @@ function updateDistanceLine() {
                 el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
                 el.innerHTML = `
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                     <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: white;"></i>
                     <i class="fa-solid fa-xmark pair-close-btn" style="cursor: pointer; color: #c00;"></i>
                 </div>
@@ -1163,8 +1177,22 @@ function updateDistanceLine() {
 
                 const trackIconA = '✈ A';
                 const trackIconB = '✈ B';
+                const trackIconC = '✈ A - B';
 
-                textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>${trackIconA} ${trackAStr} ${trackIconB} ${trackBStr}`;
+                // Calcular la diferencia de rumbo
+                let trackDiffStr = '---°';
+                if (trackA !== null && trackA !== undefined && !isNaN(trackA) &&
+                    trackB !== null && trackB !== undefined && !isNaN(trackB)) {
+                    let trackDiff = Math.abs(trackA - trackB);
+                    trackDiff = trackDiff % 360;
+                    if (trackDiff > 180) {
+                        trackDiff = 360 - trackDiff;
+                    }
+                    trackDiffStr = `${trackDiff.toFixed(1)}°`;
+                }
+
+                // Actualizar el HTML
+                textContainer.innerHTML = `${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>${trackIconA} ${trackAStr} | ${trackIconB} ${trackBStr} | ${trackIconC} ${trackDiffStr}`;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';
             }
@@ -1573,8 +1601,8 @@ function updateDistanceToGroundOverlay() {
             if (!ov) {
                 const el = document.createElement('div');
                 el.id = `ta-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
-                el.style.background = 'rgba(0,0,0,0.5)';
-                el.style.border = '1px solid black';
+                el.style.background = 'rgba(0,0,0,0.4)';
+                // el.style.border = '1px solid black';
                 el.style.padding = '5px';
                 el.style.fontSize = '12px';
                 el.style.fontWeight = '600',
@@ -1583,7 +1611,7 @@ function updateDistanceToGroundOverlay() {
                     el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
                 el.innerHTML = `
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                 <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: white;"></i>
                 <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;"></i>
             </div>
@@ -1870,8 +1898,8 @@ function updateDistanceToGroundOverlay() {
         if (!ov) {
             const el = document.createElement('div');
             el.id = `ta-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
-            el.style.background = 'rgba(0,0,0,0.5)';
-            el.style.border = '1px solid black';
+            el.style.background = 'rgba(0,0,0,0.4)';
+            // el.style.border = '1px solid black';
             el.style.padding = '5px';
             el.style.fontSize = '12px';
             el.style.fontWeight = '600',
@@ -1881,7 +1909,7 @@ function updateDistanceToGroundOverlay() {
             el.style.borderRadius = '4px';
 
             el.innerHTML = `
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
             <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: white;"></i>
             <i class="fa-solid fa-xmark ta-close-btn" style="cursor: pointer; color: #c00;"></i>
         </div>
@@ -2118,8 +2146,8 @@ function updateGroundToGroundOverlay() {
         if (!ov) {
             const el = document.createElement('div');
             el.id = `gg-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
-            el.style.background = 'rgba(0,0,0,0.5)';
-            el.style.border = '1px solid black';
+            el.style.background = 'rgba(0,0,0,0.4)';
+            // el.style.border = '1px solid black';
             el.style.padding = '5px';
             el.style.fontSize = '12px';
             el.style.fontWeight = '600',
@@ -2129,7 +2157,7 @@ function updateGroundToGroundOverlay() {
             el.style.borderRadius = '4px';
 
             el.innerHTML = `
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; border-bottom: 1px solid black; padding-bottom: 2px;">
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                     <i class="fa-solid fa-eye-slash gg-toggle-btn" style="cursor: pointer; color: white;"></i>
                     <i class="fa-solid fa-xmark gg-close-btn" style="cursor: pointer; color: #c00;"></i>
                 </div>
@@ -2471,7 +2499,7 @@ function showDistanceGuide(text) {
             top: '50px',
             left: '50%',
             transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.5)',
+            background: 'rgba(0,0,0,0.4)',
             border: '1px solid #000',
             padding: '6px 8px',
             fontSize: '12px',
@@ -3771,34 +3799,50 @@ function createToggle(options) {
 function initPage() {
 
     if (globeIndex) {
-        function setGlobeTableLimit() {
-            let mult = 1 + 4 * toggles['moreTableLines1'].state + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
+        // function setGlobeTableLimit() {
+        //     let mult = 1 + 4 * toggles['moreTableLines1'].state + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
+        //     globeTableLimit = globeTableLimitBase * mult;
+        //     if (toggles['allTableLines'] && toggles['allTableLines'].state)
+        //         globeTableLimit = 1e9;
+        //     if (onMobile)
+        //         globeTableLimit /= 2;
+        // };
+        window.setGlobeTableLimit = function() {
+            let mult = 1 + 4 * (toggles['moreTableLines1'] ? toggles['moreTableLines1'].state : 0) + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
             globeTableLimit = globeTableLimitBase * mult;
             if (toggles['allTableLines'] && toggles['allTableLines'].state)
                 globeTableLimit = 1e9;
             if (onMobile)
                 globeTableLimit /= 2;
+            
+            // Refrescar la tabla
+            if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.refresh) {
+                TAR.planeMan.refresh();
+            }
         };
         new Toggle({
             key: "moreTableLines1",
             display: "More Table Lines",
-            container: "#sidebar-table",
+            // container: "#sidebar-table",
+            container: null,
             init: false,
-            setState: setGlobeTableLimit,
+            setState: window.setGlobeTableLimit,
         });
         new Toggle({
             key: "moreTableLines2",
             display: "Even More Table Lines",
-            container: "#sidebar-table",
+            // container: "#sidebar-table",
+            container: null,
             init: false,
-            setState: setGlobeTableLimit,
+            setState: window.setGlobeTableLimit,
         });
         new Toggle({
             key: "allTableLines",
             display: "All Table Lines",
-            container: "#sidebar-table",
+            // container: "#sidebar-table",
+            container: null,
             init: false,
-            setState: setGlobeTableLimit,
+            setState: window.setGlobeTableLimit,
         });
     }
 
@@ -9041,9 +9085,32 @@ function refreshFeatures() {
             </div>
         `;
 
+        const tableOptionsHtml = `
+            <div class="column-category" id="column-category-table-options">
+                <div class="column-category-title" data-i18n="table_display_options">
+                    Table display options
+                </div>
+                <div class="columns-grid" id="table-options-grid">
+                    <li class="ui-state-default" id="table-option-more1" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
+                        <div class="settingsCheckbox" id="moreTableLines1_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
+                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="more_table_lines">More Table Lines</span>
+                    </li>
+                    <li class="ui-state-default" id="table-option-more2" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
+                        <div class="settingsCheckbox" id="moreTableLines2_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
+                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="even_more_table_lines">Even More Table Lines</span>
+                    </li>
+                    <li class="ui-state-default" id="table-option-all" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
+                        <div class="settingsCheckbox" id="allTableLines_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
+                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="all_table_lines">All Table Lines</span>
+                    </li>
+                </div>
+            </div>
+        `;
+
         container.append(restoreButtonHtml);
         container.append(activeCategoryHtml);
         container.append(inactiveCategoryHtml);
+        container.append(tableOptionsHtml);
 
         // *****************************************
         // *** FIN CREAR COLUMNAS SELECCIONABLES ***
@@ -9208,6 +9275,75 @@ function refreshFeatures() {
         // **************************************************************
         // **** FIN ACTUALIZAR ORDEN DE COLUMNAS ACTIVAS/INACTIVAS ******
         // **************************************************************
+
+
+
+
+
+
+
+
+
+        // --- INICIO: INICIALIZAR CHECKBOXES DE TABLA CON RETRASO ---
+        function initTableOptions() {
+            // Verificar si los toggles ya existen
+            if (typeof toggles === 'undefined' || !toggles['moreTableLines1']) {
+                // Si no existen, esperar 100ms y reintentar
+                setTimeout(initTableOptions, 100);
+                return;
+            }
+
+            function initTableOptionCheckbox(toggleKey, checkboxId) {
+                const $checkbox = jQuery(`#${checkboxId}`);
+                if (!$checkbox.length) return;
+
+                const toggle = toggles[toggleKey];
+                if (!toggle) return;
+
+                // Establecer estado inicial
+                if (toggle.state) {
+                    $checkbox.addClass('settingsCheckboxChecked');
+                }
+
+                // Remover event listeners previos para evitar duplicados
+                $checkbox.off('click.tableOption');
+
+                $checkbox.on('click.tableOption', function (e) {
+                    e.stopPropagation();
+                    toggle.toggle();
+                    const isChecked = toggle.state;
+                    if (isChecked) {
+                        $checkbox.addClass('settingsCheckboxChecked');
+                    } else {
+                        $checkbox.removeClass('settingsCheckboxChecked');
+                    }
+                    // Forzar actualización de la tabla
+                    if (typeof setGlobeTableLimit === 'function') {
+                        setGlobeTableLimit();
+                    }
+                    if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.refresh) {
+                        TAR.planeMan.refresh();
+                    }
+                });
+
+                // También permitir clic en el texto
+                const $li = $checkbox.closest('li');
+                const $text = $li.find('.settingsText');
+                $text.off('click.tableOption').on('click.tableOption', function (e) {
+                    e.stopPropagation();
+                    $checkbox.trigger('click.tableOption');
+                });
+            }
+
+            // Inicializar los tres checkboxes
+            initTableOptionCheckbox('moreTableLines1', 'moreTableLines1_checkbox');
+            initTableOptionCheckbox('moreTableLines2', 'moreTableLines2_checkbox');
+            initTableOptionCheckbox('allTableLines', 'allTableLines_checkbox');
+        }
+
+        // Iniciar la inicialización con un pequeño retraso
+        setTimeout(initTableOptions, 50);
+        // --- FIN: INICIALIZAR CHECKBOXES DE TABLA ---
     }
 
     // ***************************************************************
