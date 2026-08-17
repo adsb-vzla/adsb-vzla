@@ -8467,8 +8467,8 @@ function refreshFeatures() {
     };
     cols.msgs = {
         text: 'Messages',
-        sort: function () { sortBy('msgs', compareNumeric, function (x) { return x.messages; }); },
-        value: function (plane) { return plane.messages; },
+        sort: function () { sortBy('msgs', compareNumeric, function (x) { return (x.messageCount ?? x.messages); }); },
+        value: function (plane) { return (plane.messageCount ?? plane.messages); },
         align: 'right'
     };
     cols.seen = {
