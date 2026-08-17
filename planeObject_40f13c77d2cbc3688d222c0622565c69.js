@@ -131,6 +131,7 @@ PlaneObject.prototype.setNull = function() {
 
     // Data packet numbers
     this.messages  = NaN;
+    this.messageCount = null;
     this.rssi      = null;
     this.msgs1090  = 0;
     this.msgs978   = 0;
@@ -192,6 +193,7 @@ function planeCloneState(target, source) {
     target.position_time = source.position_time;
     target.last = source.last;
     target.messages = source.messages;
+    target.messageCount = source.messageCount;
     target.rssi = source.rssi;
     target.msgs1090 = source.msgs1090;
     target.msgs978 = source.msgs978;
@@ -1553,6 +1555,13 @@ PlaneObject.prototype.updateData = function(now, last, data, init) {
     }
 
     // Update all of our data
+
+    if (data.messageCount != null) {
+        this.messageCount = data.messageCount;
+    }
+    if (data.messages != null) {
+        this.messages = data.messages;
+    }
 
     if (data.messages < this.messages && binCraft) this.messages -= 65536;
     const elapsed = now - this.last;
