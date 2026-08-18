@@ -321,57 +321,68 @@
         </div>
         <!-- INICIO INFORMACIÓN GENERAL DEL AVIÓN -->
 
-        <!-- *** HISTORIAL (ADS-B VZLA LO TIENE OCULTO) *** -->
-        <button id="show_trace" type="button" class="greyButton">History</button>
-          <div id="history_collapse" class="infoBlockSection" style="display: none">
-            <div class="identSmall" id="trace_date">UTC day:
-            </div>
-            <div class="rSpacer">
-            </div>
+        <!-- INICIO SECCIÓN HISTORIAL -->
+        <div class="sectionTitle" data-i18n-title="history_tooltip"
+          title="Show or hide history controls for flight playback.">
+          <div class="section-title-content">
+            <button class="section-toggle" data-target="history_block" aria-expanded="false"
+              aria-controls="history_block">
+              <span data-i18n="history_title">HISTORIAL</span>
+              <span class="section-toggle-icon">▶</span>
+            </button>
+          </div>
+        </div>
+        <div id="history_block" class="infoBlockSection hidden">
+          <div class="rSpacer"></div>
+          <!-- Fecha -->
+          <div class="identSmall" id="trace_date"><span data-i18n="history_utc_day">UTC day:</span></div>
+          <div class="rSpacer"></div>
+          <!-- Datepicker -->
+          <div class="datePickerHistory">
             <div>
-              <input id=histDatePicker class="identSmall datepicker" value="Pick a date">
+              <input id="histDatePicker" class="identSmall datepicker" data-i18n="history_pick_date">
             </div>
-            <div class="rSpacer">
-            </div>
+            <!-- <div class="rSpacer"></div> -->
+            <!-- Botones día anterior/siguiente -->
             <div>
-              <button class="formButton" id="trace_back_1d">previous</button>
-              <button class="formButton" id="trace_jump_1d">next</button>
+              <button class="formButton" id="trace_back_1d" data-i18n="previous_day">previous</button>
+              <button class="formButton" id="trace_jump_1d" data-i18n="next_day">next</button>
             </div>
-            <div class="rSpacer">
-            </div>
-            <div class="identSmall" id="leg_sel">
-            </div>
-            <div class="rSpacer">
-            </div>
+          </div>
+          <div class="rSpacer"></div>
+          <!-- Selector de tramo -->
+          <div class="legPickerHistory">
+            <div class="identSmall" id="leg_sel"><span data-i18n="history_legs_all">Legs: All</span></div>
+            <!-- <div class="rSpacer"></div> -->
+            <!-- Botones tramo anterior/siguiente -->
             <div>
-              <button class="formButton" id="leg_prev">previous</button>
-              <button class="formButton" id="leg_next">next</button>
+              <button class="formButton" id="leg_prev" data-i18n="previous_leg">previous</button>
+              <button class="formButton" id="leg_next" data-i18n="next_leg">next</button>
             </div>
-            <div class="rSpacer">
-            </div>
-            <div class="identSmall" id="trace_time">
-            </div>
-            <div class="rSpacer">
-            </div>
+          </div>
+          <div class="rSpacer"></div>
+          <!-- Tiempo -->
+          <div class="hourPickerHistory">
+            <div class="identSmall" id="trace_time"><span data-i18n="history_time_label">Time:</span></div>
+            <div class="rSpacer"></div>
+            <!-- Controles de velocidad -->
             <div>
-              <button class="formButton" id="tStop">stop</button>
+              <button class="formButton" id="tStop" data-i18n="stop">stop</button>
               <button class="formButton" id="t1x">1x</button>
               <button class="formButton" id="t5x">5x</button>
             </div>
-            <div class="rSpacer">
-            </div>
-            <div>
-              <button class="formButton" id="t10x">10x</button>
-              <button class="formButton" id="t20x">20x</button>
-              <button class="formButton" id="t40x">40x</button>
-            </div>
-            <div class="rSpacer">
-            </div>
-            <div>
-              Click on the trace line to start playback!
-            </div>
           </div>
-        <!-- *** FIN HISTORIAL *** -->
+          <div class="rSpacer"></div>
+          <div style="display: flex; flex-direction: row; justify-content: right; gap: 0.5rem;">
+            <button class="formButton" id="t10x">10x</button>
+            <button class="formButton" id="t20x">20x</button>
+            <button class="formButton" id="t40x">40x</button>
+          </div>
+          <div class="rSpacer"></div>
+          <!-- Mensaje de ayuda -->
+          <div data-i18n="click_trace_to_play">Click on the trace line to start playback!</div>
+        </div>
+        <!-- FIN SECCIÓN HISTORIAL -->
 
         <!-- INICIO SECCIÓN ESPACIAL -->
         <div class="sectionTitle" data-i18n-title="spatial_tooltip"
@@ -1229,10 +1240,12 @@
               class="fa-solid fa-minus fa-xl"></i>
           </div>
           <!-- FIN OPCIONES DE ZOOM -->
-          
+
           <!-- INICIO OPCIÓN DE ELEVACIÓN -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="E"
-            data-i18n-title="elevation_tooltip" title="Display the elevation of the existing terrain between two points." onclick="toggleElevationMode();"><i class="fa-solid fa-mountain-sun"></i></i>
+            data-i18n-title="elevation_tooltip"
+            title="Display the elevation of the existing terrain between two points." onclick="toggleElevationMode();">
+            <i class="fa-solid fa-mountain-sun"></i></i>
           </div>
           <!-- FIN OPCIÓN DE ELEVACIÓN -->
         </div>

@@ -12795,8 +12795,10 @@ function legShift(offset, plane) {
         traceOpts.showTime = null;
 
     if (!multiSelect && !plane.fullTrace) {
-        jQuery('#leg_sel').text('No Data available for\n' + traceDateString);
-        jQuery('#trace_time').text('UTC:\n');
+        let noDataText = getTranslatedText('history_no_data', 'No Data available for');
+        jQuery('#leg_sel').text(noDataText + ' ' + traceDateString);
+        jQuery('#trace_time').text(getTranslatedText('history_time_label', 'Time:') + '\n');
+        return;
     }
     if (!plane.fullTrace) {
         plane.processTrace();
@@ -12832,7 +12834,8 @@ function legShift(offset, plane) {
         legSel = -1;
 
     if (legSel == -1) {
-        jQuery('#leg_sel').text('Legs: All');
+        let legsAllText = getTranslatedText('history_legs_all', 'Legs: All');
+        jQuery('#leg_sel').text(legsAllText);
         traceOpts.legStart = null;
         traceOpts.legEnd = null;
         plane.processTrace();
@@ -12853,7 +12856,8 @@ function legShift(offset, plane) {
             count++;
         }
     }
-    jQuery('#leg_sel').text('Leg: ' + (legSel + 1));
+    let legLabel = getTranslatedText('history_leg_label', 'Leg:');
+    jQuery('#leg_sel').text(legLabel + ' ' + (legSel + 1));
     traceOpts.legStart = legStart;
     traceOpts.legEnd = legEnd;
     plane.processTrace();
@@ -12890,7 +12894,8 @@ function setTraceDate(options) {
 
 function shiftTrace(offset) {
     if (traceRate > 180) {
-        jQuery('#leg_sel').text('Slow down! ...');
+        let slowDownText = getTranslatedText('history_slow_down', 'Slow down! ...');
+        jQuery('#leg_sel').text(slowDownText);
         return;
     }
 
@@ -12900,14 +12905,17 @@ function shiftTrace(offset) {
     traceOpts.showTimeEnd = null;
     traceOpts.showTime = null;
 
-    jQuery('#leg_sel').text('Loading ...');
+    let loadingText = getTranslatedText('history_loading', 'Loading ...');
+    jQuery('#leg_sel').text(loadingText);
     if (!traceDate || offset == "today") {
         setTraceDate({ ts: new Date().getTime() });
     } else if (offset) {
         setTraceDate({ ts: traceDate.getTime() + offset * 86400 * 1000 });
     }
 
-    //jQuery('#trace_date').text('UTC day:\n' + traceDateString);
+    // jQuery('#trace_date').text('UTC day:\n' + traceDateString);
+    let utcDayText = getTranslatedText('history_utc_day', 'UTC day:');
+    jQuery('#trace_date').text(utcDayText + ' ' + traceDateString);
     jQuery("#histDatePicker").datepicker('setDate', traceDateString);
 
     for (let i in SelPlanes) {
@@ -15697,8 +15705,18 @@ function setSelectedIcao() {
         if (copiedIcao && (copiedIcao != selected.icao || new Date().getTime() - copyLinkTime > 2000)) {
             copiedIcao = null;
         }
-        let copy_link_text = (copiedIcao != null) ? "Copied" : ("Copy" + NBSP + "Link");
-        let icao_link = "<span  class=identSmall><a class='link identSmall' target=\"_blank\" href=\"" + shareLink +
+        // let copy_link_text = (copiedIcao != null) ? "Copied" : ("Copy" + NBSP + "Link");
+        // let icao_link = "<span  class=identSmall><a class='link identSmall' target=\"_blank\" href=\"" + shareLink +
+        //     "\" onclick=\"copyShareLink(); return false;\">" + copy_link_text + "</a></span>";
+        // hex_html = hex_html + NBSP + NBSP + NBSP + icao_link;
+        // Obtener el texto traducido
+        let copyLinkText = getTranslatedText('copy_link', 'Copy Link');
+        let copiedText = getTranslatedText('copied', 'Copied');
+
+        // Determinar qué texto mostrar
+        let copy_link_text = (copiedIcao != null) ? copiedText : copyLinkText;
+
+        let icao_link = "<span class=identSmall><a class='link identSmall' target=\"_blank\" href=\"" + shareLink +
             "\" onclick=\"copyShareLink(); return false;\">" + copy_link_text + "</a></span>";
         hex_html = hex_html + NBSP + NBSP + NBSP + icao_link;
     }

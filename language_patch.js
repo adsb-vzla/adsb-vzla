@@ -23,6 +23,13 @@
             'n/a': 'n/a',
 
             // *** SELECTED_INFOBLOCK ***
+
+            'copy_link': 'Copy Link',
+            'copied': 'Copied',
+            'copy_link_tooltip': 'Copy share link to clipboard',
+
+            'no_callsign': 'No callsign',
+
             // *** highlightedTitle infoBlockSection ***
             'mark_as_notable': 'Mark as notable',
             'remove_from_notable': 'Remove from notable',
@@ -71,6 +78,7 @@
             'route_tooltip': 'Reported flight origin and destination according to adsbdb.com',
             'photo_link_tooltip': 'Opens an external image or photo of the aircraft.',
             // *** Títulos de las secciones ***
+            'history_title': 'HISTORY',
             'spatial': 'SPATIAL',
             'signal': 'SIGNAL',
             'fms_sel': 'FMS SEL',
@@ -81,6 +89,22 @@
             'stuff': 'STUFF',
             'accuracy': 'ACCURACY',
             'export_kml': 'EXPORT KML',
+            // *** HISTORY ***
+            'history_tooltip': 'Show or hide history controls for flight playback.',
+            'history_utc_day': 'UTC day:',
+            'history_pick_date': 'Pick a date',
+            'history_legs_all': 'Legs: All',
+            'history_leg_label': 'Leg:',
+            'history_time_label': 'Time:',
+            'history_loading': 'Loading ...',
+            'history_no_data': 'No Data available for',
+            'history_slow_down': 'Slow down! ...',
+            'previous_day': 'previous',
+            'next_day': 'next',
+            'previous_leg': 'previous',
+            'next_leg': 'next',
+            'stop': 'stop',
+            'click_trace_to_play': 'Click on the trace line to start playback!',
             // *** SPATIAL ***
             'rid': 'rId:',
             'groundspeed': 'Groundspeed:',
@@ -585,6 +609,13 @@
             'n/a': 'n/d',
 
             // *** SELECTED_INFOBLOCK ***
+
+            'copy_link': 'Copiar enlace',
+            'copied': '¡Copiado!',
+            'copy_link_tooltip': 'Copiar enlace compartible al portapapeles',
+
+            'no_callsign': 'Sin indicativo',
+
             // *** highlightedTitle infoBlockSection ***
             'mark_as_notable': 'Marcar como destacado',
             'remove_from_notable': 'Quitar de destacados',
@@ -633,6 +664,7 @@
             'route_tooltip': 'Origen y destino del vuelo reportado según adsbdb.com',
             'photo_link_tooltip': 'Abre una imagen o foto externa de la aeronave.',
             // *** Títulos de las secciones ***
+            'history_title': 'HISTORIAL',
             'spatial': 'ESPACIAL',
             'signal': 'SEÑAL',
             'fms_sel': 'FMS (SELECCIÓN)',
@@ -643,6 +675,22 @@
             'stuff': 'VARIOS',
             'accuracy': 'PRECISIÓN',
             'export_kml': 'EXPORTAR KML',
+            // *** HISTORY ***
+            'history_tooltip': 'Mostrar u ocultar los controles de historial para reproducción de vuelos.',
+            'history_utc_day': 'Día UTC:',
+            'history_pick_date': 'Selecc. fecha',
+            'history_legs_all': 'Tramos: Todos',
+            'history_leg_label': 'Tramo:',
+            'history_time_label': 'Hora:',
+            'history_loading': 'Cargando ...',
+            'history_no_data': 'No hay datos disponibles para',
+            'history_slow_down': '¡Reduzca la velocidad! ...',
+            'previous_day': 'anterior',
+            'next_day': 'siguiente',
+            'previous_leg': 'anterior',
+            'next_leg': 'siguiente',
+            'stop': 'detener',
+            'click_trace_to_play': '¡Haz clic en la línea de ruta para iniciar la reproducción!',
             // *** SPATIAL ***
             'rid': 'rId:',
             'groundspeed': 'Vel. suelo:',

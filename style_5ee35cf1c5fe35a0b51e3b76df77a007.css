@@ -2922,3 +2922,24 @@ Estilos para los buscadores unificados
   height: 100%;
   display: block;
 }
+
+#histDatePicker,
+#leg_sel,
+#trace_time {
+    padding-top: 0.5rem;
+    text-align: center;
+}
+
+#leg_sel,
+#trace_time {
+    margin-left: 1rem;
+}
+
+.datePickerHistory,
+.legPickerHistory,
+.hourPickerHistory {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    
+}
