@@ -369,6 +369,9 @@ const ELEV_CONFIG = {
     cgiUrl: `${window.location.origin}/cgi-bin/get_elevation.sh`
 };
 
+// **************************************************
+// ********** MOSTRAR ORVERLAY DE ELEVACIÓN *********
+// **************************************************
 function showPanoramaOverlay() {
     const el = document.getElementById('panorama-overlay');
     if (!el) return;
@@ -376,57 +379,114 @@ function showPanoramaOverlay() {
     el.classList.remove('minimized');
 
     const btn = document.getElementById('panorama-close');
-    if (btn) btn.textContent = '×';
+    if (btn) btn.textContent = '-';
 
     updatePanoramaOverlayBounds();
+    setTimeout(updatePanoramaOverlayBounds, 50);
+    setTimeout(updatePanoramaOverlayBounds, 200);
 }
 
+// ******************************************************************************************
+// ********** DETERMINAR QUÉ ELEMENTOS SON VISIBLES PARA SABER CÓMO AJUSTAR OVERLAY *********
+// ******************************************************************************************
+function isVisibleElement(element) {
+    if (!element) return false;
+
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+
+    return style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        rect.width > 0 &&
+        rect.height > 0;
+}
+
+// ******************************************************************************************
+// ********** ACTUALIZAR TAMAÑO DEL OVERLAY SEGÚN LOS ELEMENTOS ABIERTOS A SU ALREDEDOR *****
+// ******************************************************************************************
 function updatePanoramaOverlayBounds() {
     const overlay = document.getElementById('panorama-overlay');
     const map = document.getElementById('map_container');
+
     if (!overlay || !map) return;
 
-    if (map.style.display === 'none') {
-        overlay.classList.add('hidden');
-        return;
-    }
-
     const mapRect = map.getBoundingClientRect();
-    let left = 10;
+
+    let left = 50;
     let right = 10;
     let bottom = 10;
 
-    const info = document.getElementById('selected_infoblock');
-    if (info && info.offsetParent !== null) {
-        const r = info.getBoundingClientRect();
-        if (r.right > mapRect.left && r.left < mapRect.right) {
-            left = Math.max(left, (r.right - mapRect.left) + 10);
+    const leftElements = [
+        document.getElementById('selected_infoblock')
+    ];
+
+    const rightElements = [
+        document.getElementById('header_side'),
+        document.getElementById('layer-select')
+    ];
+
+    for (const element of leftElements) {
+        if (!isVisibleElement(element)) continue;
+
+        const rect = element.getBoundingClientRect();
+
+        if (rect.right > mapRect.left && rect.left < mapRect.right) {
+            left = Math.max(
+                left,
+                rect.right - mapRect.left + 10
+            );
+        }
+    }
+
+    for (const element of rightElements) {
+        if (!isVisibleElement(element)) continue;
+
+        const rect = element.getBoundingClientRect();
+
+        if (rect.left < mapRect.right && rect.right > mapRect.left) {
+            right = Math.max(
+                right,
+                mapRect.right - rect.left + 10
+            );
         }
     }
 
     const replay = document.getElementById('replayBar');
-    if (replay && replay.offsetParent !== null && getComputedStyle(replay).display !== 'none') {
-        const r = replay.getBoundingClientRect();
-        if (r.top < mapRect.bottom && r.bottom > mapRect.top) {
-            bottom = Math.max(bottom, (mapRect.bottom - r.top) + 10);
+
+    if (isVisibleElement(replay)) {
+        const rect = replay.getBoundingClientRect();
+
+        if (rect.top < mapRect.bottom && rect.bottom > mapRect.top) {
+            bottom = Math.max(
+                bottom,
+                mapRect.bottom - rect.top + 10
+            );
         }
     }
 
-    overlay.style.left = left + 'px';
-    overlay.style.right = right + 'px';
-    overlay.style.bottom = bottom + 'px';
+    overlay.style.setProperty('left', `${left}px`, 'important');
+    overlay.style.setProperty('right', `${right}px`, 'important');
+    overlay.style.setProperty('bottom', `${bottom}px`, 'important');
+    overlay.style.setProperty('top', 'auto', 'important');
 }
 
 window.addEventListener('resize', updatePanoramaOverlayBounds);
 
+// **************************************
+// ********** MINIMIZAR OVERLAY *********
+// **************************************
 function togglePanoramaMinimize() {
     const el = document.getElementById('panorama-overlay');
     if (!el) return;
     el.classList.toggle('minimized');
     const btn = document.getElementById('panorama-close');
     if (btn) btn.textContent = el.classList.contains('minimized') ? '+' : '-';
+    setTimeout(updatePanoramaOverlayBounds, 50);
 }
 
+// ************************************
+// ********** OCULTAR OVERLAY *********
+// ************************************
 function hidePanoramaOverlay() {
     const el = document.getElementById('panorama-overlay');
     if (el) el.classList.add('hidden');
@@ -439,12 +499,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) btn.addEventListener('click', togglePanoramaMinimize);
 });
 
+// *********************************************************
+// ********** TIMEOUT PARA LA FUNCIÓN DE ELEVACIÓN *********
+// *********************************************************
 function elevFetchWithTimeout(url, ms = 8000) {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), ms);
     return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(t));
 }
 
+// ******************************************************************
+// ********** EVITAR CONCURRENCIA PAR NO SATURAR LA FUNCIÓN *********
+// ******************************************************************
 function elevPLimit(concurrency) {
     let active = 0;
     const queue = [];
@@ -463,6 +529,9 @@ function elevPLimit(concurrency) {
     });
 }
 
+// ************************************************************
+// ********** DETERMINAR DISTANCIA EN MILLAS NAÚTICAS *********
+// ************************************************************
 function distanceNm(lat1, lon1, lat2, lon2) {
     const R = 6371 / 1.852;
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -474,10 +543,16 @@ function distanceNm(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
+// ****************************************************
+// ********** TRANSFORMACIÓN DE METROS A PIES *********
+// ****************************************************
 function mToFt(m) {
     return m * 3.28084;
 }
 
+// *************************************************
+// ********** DIBUJAR LÍNEAS EN EL OVERLAY *********
+// *************************************************
 function interpolateLine(lat1, lon1, lat2, lon2, t) {
     return {
         lat: lat1 + (lat2 - lat1) * t,
@@ -491,6 +566,9 @@ function elevKey(lat, lon) {
     return `${lat.toFixed(5)},${lon.toFixed(5)}`;
 }
 
+// ****************************************
+// ********** CONSTRUIR ELEVACIÓN *********
+// ****************************************
 async function getElevationProfileLine(lat1, lon1, lat2, lon2) {
     if (elevationBusy) {
         showDistanceGuide(getTranslatedText('wait_for_elevation', 'Wait for the elevation to finish rendering...'));
@@ -537,6 +615,9 @@ async function getElevationProfileLine(lat1, lon1, lat2, lon2) {
     }
 }
 
+// **************************************************
+// ********** DIBUJAR PANORAMA DE ELEVACIÓN *********
+// **************************************************
 function draw3DPanorama(data, totalNm) {
     lastPanoramaData = data;
     lastPanoramaTotalNm = totalNm;
@@ -666,6 +747,9 @@ function draw3DPanorama(data, totalNm) {
     }
 }
 
+// *********************************************************
+// ********** MOSTRAR/OCULTAR FUNCIÓN DE ELEVACIÓN *********
+// *********************************************************
 function toggleElevationMode() {
     elevationMode = !elevationMode;
     buttonActive('#E', elevationMode);
@@ -5011,7 +5095,6 @@ function earlyInitPage() {
         }
     })
 
-    // Force map to redraw if sidebar container is resized - use a timer to debounce
     jQuery("#sidebar_container").on("resize", function () {
         clearTimeout(mapResizeTimeout);
         mapResizeTimeout = setTimeout(updateMapSize, 20);
@@ -7524,7 +7607,42 @@ function initMap() {
         }
     }, 100);
 
+    setTimeout(initPanoramaObserver, 500);
+
+    OLMap.on('change:size', function() {
+        setTimeout(updatePanoramaOverlayBounds, 50);
+    });
+
 }
+
+function initPanoramaObserver() {
+    const sidebar = document.getElementById('sidebar_container');
+    if (!sidebar) return;
+
+    // Observer para cambios de estilo del sidebar
+    const observer = new MutationObserver(() => {
+        updatePanoramaOverlayBounds();
+    });
+
+    observer.observe(sidebar, {
+        attributes: true,
+        attributeFilter: ['style', 'class']
+    });
+
+    // También observar cambios en el infoblock
+    const infoblock = document.getElementById('selected_infoblock');
+    if (infoblock) {
+        const infoObserver = new MutationObserver(() => {
+            setTimeout(updatePanoramaOverlayBounds, 50);
+        });
+        infoObserver.observe(infoblock, {
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+    }
+}
+
+
 
 // This looks for planes to reap out of the master g.planes variable
 let lastReap = 0;
@@ -9613,6 +9731,7 @@ function updateMapSize() {
     if (OLMap)
         OLMap.updateSize();
     updateReplayBarPosition();
+
     updatePanoramaOverlayBounds();
 }
 
@@ -9722,7 +9841,9 @@ function adjustInfoBlock() {
     }
 
     updateReplayBarPosition();
+
     updatePanoramaOverlayBounds();
+
 }
 
 function updateReplayBarPosition() {
@@ -14567,6 +14688,18 @@ function showReplayBar() {
         jQuery('#sidebar_canvas').height('100%');
         jQuery("#selected_showTrace_hide").show();
         restoreAltitudeChartPosition();
+
+        const panorama = document.getElementById('panorama-overlay');
+        const panoramaButton = document.getElementById('panorama-close');
+
+        if (panorama) {
+            panorama.classList.remove('minimized');
+        }
+
+        if (panoramaButton) {
+            panoramaButton.textContent = '-';
+        }
+
     } else {
         jQuery("#replayBar").show();
         jQuery("#replayBar").css('display', 'grid');
@@ -14901,9 +15034,22 @@ function showReplayBar() {
         // jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
 
         jQuery("#selected_showTrace_hide").hide();
+
+        const panorama = document.getElementById('panorama-overlay');
+        const panoramaButton = document.getElementById('panorama-close');
+
+        if (panorama && !panorama.classList.contains('hidden')) {
+            panorama.classList.add('minimized');
+        }
+
+        if (panoramaButton) {
+            panoramaButton.textContent = '+';
+        }
+        
     }
 
     updatePanoramaOverlayBounds();
+
 };
 // *****************************************
 // ********* FIN MOSTRAR REPLAY ************
