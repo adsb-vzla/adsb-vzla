@@ -1933,13 +1933,13 @@ function createBaseLayers() {
         world.push(rainviewerRadar);
     }
 
-    let createGeoJsonLayer = function (title, name, url, fill, stroke, showLabel = true) {
+    let createGeoJsonLayer = function (title, name, url, fill, stroke, showLabel = true, visible = false) {
         return new ol.layer.Vector({
             type: 'overlay',
             title: title,
             name: name,
             zIndex: 99,
-            visible: false,
+            visible: visible,
             source: new ol.source.Vector({
                 url: url,
                 transition: tileTransition,
@@ -1983,6 +1983,7 @@ function createBaseLayers() {
             'geojson/fir_svzm.geojson',
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
+            true,
             true
         )
     );
@@ -1993,6 +1994,7 @@ function createBaseLayers() {
             'geojson/fir_skec.geojson',
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
+            true,
             true
         )
     );
@@ -2003,6 +2005,7 @@ function createBaseLayers() {
             'geojson/fir_sked.geojson',
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
+            true,
             true
         )
     );
@@ -2013,6 +2016,7 @@ function createBaseLayers() {
             'geojson/fir_tncf.geojson',
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
+            true,
             true
         )
     );
@@ -2023,6 +2027,7 @@ function createBaseLayers() {
             'geojson/fir_tjzs.geojson',
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
+            true,
             true
         )
     );
@@ -2033,6 +2038,7 @@ function createBaseLayers() {
             'geojson/fir_ttzp.geojson',
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
+            true,
             true
         )
     );
@@ -2043,6 +2049,7 @@ function createBaseLayers() {
             'geojson/fir_sygc.geojson',
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
+            true,
             true
         )
     );
@@ -2053,6 +2060,7 @@ function createBaseLayers() {
             'geojson/fir_sbaz.geojson',
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
+            true,
             true
         )
     );

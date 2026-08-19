@@ -6,7 +6,7 @@
     // *****************************************
     const translations = {
         en: {
-            'copyright_text': 'ADS-B VENEZUELA / EANSA — Powered by <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer">tar1090</a>. All rights reserved.',
+            'copyright_text': 'ADS-B VENEZUELA — Developed by EANSA. <br> <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer" style="color: gray;">tar1090</a>',
 
             // *** HEAD ***
             'meta_description': 'ADS‑B Venezuela - Air traffic monitoring in Venezuela',
@@ -23,6 +23,13 @@
             'n/a': 'n/a',
 
             // *** SELECTED_INFOBLOCK ***
+
+            'copy_link': 'Copy Link',
+            'copied': 'Copied',
+            'copy_link_tooltip': 'Copy share link to clipboard',
+
+            'no_callsign': 'No callsign',
+
             // *** highlightedTitle infoBlockSection ***
             'mark_as_notable': 'Mark as notable',
             'remove_from_notable': 'Remove from notable',
@@ -71,6 +78,7 @@
             'route_tooltip': 'Reported flight origin and destination according to adsbdb.com',
             'photo_link_tooltip': 'Opens an external image or photo of the aircraft.',
             // *** Títulos de las secciones ***
+            'history_title': 'HISTORY',
             'spatial': 'SPATIAL',
             'signal': 'SIGNAL',
             'fms_sel': 'FMS SEL',
@@ -81,6 +89,22 @@
             'stuff': 'STUFF',
             'accuracy': 'ACCURACY',
             'export_kml': 'EXPORT KML',
+            // *** HISTORY ***
+            'history_tooltip': 'Show or hide history controls for flight playback.',
+            'history_utc_day': 'UTC day:',
+            'history_pick_date': 'Pick a date',
+            'history_legs_all': 'Legs: All',
+            'history_leg_label': 'Leg:',
+            'history_time_label': 'Time:',
+            'history_loading': 'Loading ...',
+            'history_no_data': 'No Data available for',
+            'history_slow_down': 'Slow down! ...',
+            'previous_day': 'previous',
+            'next_day': 'next',
+            'previous_leg': 'previous',
+            'next_leg': 'next',
+            'stop': 'stop',
+            'click_trace_to_play': 'Click on the trace line to start playback!',
             // *** SPATIAL ***
             'rid': 'rId:',
             'groundspeed': 'Groundspeed:',
@@ -465,6 +489,14 @@
             'unit_kt': 'kt',
             'unit_nm': 'NM',
 
+            'more_table_lines': 'More Table Lines',
+            'even_more_table_lines': 'Even More',
+            'all_table_lines': 'All Table Lines',
+            'more_table_lines_tooltip': 'Increase the number of aircraft displayed in the table.',
+            'even_more_table_lines_tooltip': 'Further increase the number of aircraft displayed in the table.',
+            'all_table_lines_tooltip': 'Show all aircraft in the table (may affect performance).',
+            'table_display_options': 'Table display options',
+
             'aircraft_list': 'Aircraft List',
 
             // *** starred-aircraft-section ***
@@ -560,7 +592,7 @@
             'layer_weather_radar': 'Weather / Radar',
         },
         es: {
-            'copyright_text': 'ADS-B VENEZUELA / EANSA — Desarrollado sobre <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer">tar1090</a>. Todos los derechos reservados.',
+            'copyright_text': 'ADS-B VENEZUELA — Desarrollado por EANSA. <br> <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer" style="color: gray;">tar1090</a>',
 
             // *** HEAD ***
             'meta_description': 'ADS‑B Venezuela - Monitoreo de tráfico aéreo en Venezuela',
@@ -577,6 +609,13 @@
             'n/a': 'n/d',
 
             // *** SELECTED_INFOBLOCK ***
+
+            'copy_link': 'Copiar enlace',
+            'copied': '¡Copiado!',
+            'copy_link_tooltip': 'Copiar enlace compartible al portapapeles',
+
+            'no_callsign': 'Sin indicativo',
+
             // *** highlightedTitle infoBlockSection ***
             'mark_as_notable': 'Marcar como destacado',
             'remove_from_notable': 'Quitar de destacados',
@@ -625,6 +664,7 @@
             'route_tooltip': 'Origen y destino del vuelo reportado según adsbdb.com',
             'photo_link_tooltip': 'Abre una imagen o foto externa de la aeronave.',
             // *** Títulos de las secciones ***
+            'history_title': 'HISTORIAL',
             'spatial': 'ESPACIAL',
             'signal': 'SEÑAL',
             'fms_sel': 'FMS (SELECCIÓN)',
@@ -635,6 +675,22 @@
             'stuff': 'VARIOS',
             'accuracy': 'PRECISIÓN',
             'export_kml': 'EXPORTAR KML',
+            // *** HISTORY ***
+            'history_tooltip': 'Mostrar u ocultar los controles de historial para reproducción de vuelos.',
+            'history_utc_day': 'Día UTC:',
+            'history_pick_date': 'Selecc. fecha',
+            'history_legs_all': 'Tramos: Todos',
+            'history_leg_label': 'Tramo:',
+            'history_time_label': 'Hora:',
+            'history_loading': 'Cargando ...',
+            'history_no_data': 'No hay datos disponibles para',
+            'history_slow_down': '¡Reduzca la velocidad! ...',
+            'previous_day': 'anterior',
+            'next_day': 'siguiente',
+            'previous_leg': 'anterior',
+            'next_leg': 'siguiente',
+            'stop': 'detener',
+            'click_trace_to_play': '¡Haz clic en la línea de ruta para iniciar la reproducción!',
             // *** SPATIAL ***
             'rid': 'rId:',
             'groundspeed': 'Vel. suelo:',
@@ -1018,6 +1074,14 @@
             'unit_ft': 'ft',
             'unit_kt': 'kt',
             'unit_nm': 'MN',
+
+            'more_table_lines': 'Más líneas en tabla',
+            'even_more_table_lines': 'Aún más líneas',
+            'all_table_lines': 'Todas las líneas',
+            'more_table_lines_tooltip': 'Aumenta el número de aeronaves mostradas en la tabla.',
+            'even_more_table_lines_tooltip': 'Aumenta aún más el número de aeronaves mostradas en la tabla.',
+            'all_table_lines_tooltip': 'Mostrar todas las aeronaves en la tabla (puede afectar el rendimiento).',
+            'table_display_options': 'Opciones de visualización de tabla',
 
             'aircraft_list': 'Lista de Aeronaves',
 

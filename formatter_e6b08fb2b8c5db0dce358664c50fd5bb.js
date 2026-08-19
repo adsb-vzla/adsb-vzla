@@ -503,6 +503,7 @@ function wqi(data) {
         ac.ias = u16[29];
         ac.rc  = u16[30];
 
+        ac.messageCount = u16[31];
         if (useMessageRate) {
             ac.messageRate = u16[31] / 10;
         } else {

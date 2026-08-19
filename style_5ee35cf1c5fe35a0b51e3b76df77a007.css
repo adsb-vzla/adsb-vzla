@@ -933,7 +933,7 @@ input.error {
 }
 
 #highlighted_infoblock {
-    background-color: #131313 !important;
+    background: rgba(0,0,0,0.6) !important;
     position: absolute;
     left: calc(40px * var(--SCALE));
     top: calc(60px * var(--SCALE));
@@ -947,7 +947,7 @@ input.error {
 }
 
 .highlightedTitle {
-    border-bottom: calc(2px * var(--SCALE)) solid var(--LIGHTER-BASE-COLOR);
+    /* border-bottom: calc(2px * var(--SCALE)) solid var(--LIGHTER-BASE-COLOR); */
     display: inline-block;
     width: 100%;
 }
@@ -1389,6 +1389,7 @@ table.infoSectionTable tr td {
     left: 0;
     right: 0;
     background-color: transparent !important;
+    display:none;
 }
 
 #altitude_chart_image {
