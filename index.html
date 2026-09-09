@@ -1248,6 +1248,13 @@
             <i class="fa-solid fa-mountain-sun"></i></i>
           </div>
           <!-- FIN OPCIÓN DE ELEVACIÓN -->
+
+          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="EA"
+            data-i18n-title="elevation_ground_aircraft_tooltip"
+            title="Display terrain elevation from a ground point to an aircraft."
+            onclick="startElevationGroundAircraft();">
+            <i class="fa-solid fa-panorama"></i>
+          </div>
         </div>
       </div>
       <!-- FIN TIRA DE OPCIONES LATERAL -->
@@ -1284,9 +1291,10 @@
 
       <div id="panorama-overlay" class="panorama-overlay hidden">
         <button id="panorama-close" class="panorama-close" type="button">-</button>
+        <div id="panorama-update-countdown" class="panorama-update-countdown"></div>
         <div id="panorama-container"></div>
       </div>
-      
+
     </div>
     <!-- FIN CONTENEDOR DEL MAPA -->
 

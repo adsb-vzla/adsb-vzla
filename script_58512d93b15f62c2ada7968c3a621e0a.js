@@ -158,6 +158,19 @@ let elevationAnchor = null;
 // ***** FIN VARIABLES ELEVACIÓN ******
 // ************************************
 
+// ****************************************************
+// ***** INICIO VARIABLES ELEVACIÓN CON AERONAVE ******
+// ****************************************************
+let elevationGroundAircraftMode = false;
+let elevationGroundAnchor = null;
+let elevationAircraftHex = null;
+let elevationGroundAircraftUpdateInterval = null;
+let elevationCountdownInterval = null;
+let elevationCountdownValue = 0;
+// *************************************************
+// ***** FIN VARIABLES ELEVACIÓN CON AERONAVE ******
+// *************************************************
+
 // **************************************************
 // ****** INICIO VARIABLES INDICADOR DE ZOOM ********
 // **************************************************
@@ -327,7 +340,6 @@ let badDot;
 let badDotMlat;
 let showingReplayBar = false;
 
-
 // =============================================
 // FUNCIÓN PARA FORMATEAR RUMBO (TRACK)
 // =============================================
@@ -362,7 +374,7 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
 // **************************************************
 
 // *****************************************************
-// ********** INICIO FUNCIÓN DE ELEVACIÓN **************
+// ********** INICIO c **************
 // *****************************************************
 const ELEV_CONFIG = {
     samples: 20,
@@ -492,6 +504,8 @@ function hidePanoramaOverlay() {
     if (el) el.classList.add('hidden');
     const c = document.getElementById('panorama-container');
     if (c) c.innerHTML = '';
+
+    stopElevationCountdown();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -602,7 +616,8 @@ async function getElevationProfileLine(lat1, lon1, lat2, lon2) {
             }
         }
 
-        const totalNm = data.points[data.points.length - 1].distNm || distanceNm(lat1, lon1, lat2, lon2) / 1.852;
+        // const totalNm = data.points[data.points.length - 1].distNm || distanceNm(lat1, lon1, lat2, lon2) / 1.852;
+        const totalNm = data.points[data.points.length - 1].distNm || distanceNm(lat1, lon1, lat2, lon2);
         elevCache.set(cacheKey, { points: data.points, totalNm });
 
         showPanoramaOverlay();
@@ -776,6 +791,189 @@ function toggleElevationMode() {
 // **************************************************
 // ********** FIN FUNCIÓN DE ELEVACIÓN **************
 // **************************************************
+
+// ******************************************************************
+// ********** INICIO FUNCIÓN DE ELEVACIÓN CON AERONAVE **************
+// ******************************************************************
+function startElevationGroundAircraft() {
+    elevationGroundAircraftMode = !elevationGroundAircraftMode;
+    buttonActive('#EA', elevationGroundAircraftMode);
+
+    if (elevationGroundAircraftMode) {
+        elevationGroundAnchor = null;
+        elevationAircraftHex = null;
+        hidePanoramaOverlay();
+        showDistanceGuide(
+            getTranslatedText(
+                'elevation_mark_ground_point',
+                'Click on the map to mark the ground point.'
+            )
+        );
+        stopElevationGroundAircraftUpdates();
+    } else {
+        elevationGroundAnchor = null;
+        elevationAircraftHex = null;
+
+        stopElevationGroundAircraftUpdates();
+        stopElevationCountdown();
+
+        elevationPointSource && elevationPointSource.clear();
+        elevationLineSource && elevationLineSource.clear();
+
+        elevationPointLayer && elevationPointLayer.setVisible(false);
+        elevationLineLayer && elevationLineLayer.setVisible(false);
+
+        hidePanoramaOverlay();
+        hideDistanceGuide();
+    }
+}
+
+// ***************************************************************
+// *** INICIO ACTUALIZACIÓN DE PANORAMA ELEVACIÓN CON AERONAVE ***
+// ***************************************************************
+function stopElevationGroundAircraftUpdates() {
+    if (elevationGroundAircraftUpdateInterval) {
+        clearInterval(elevationGroundAircraftUpdateInterval);
+        elevationGroundAircraftUpdateInterval = null;
+    }
+}
+
+function updateElevationGroundAircraftProfile() {
+    if (!elevationGroundAircraftMode ||
+        !elevationGroundAnchor ||
+        !elevationAircraftHex ||
+        elevationBusy) {
+        return;
+    }
+
+    const plane = g.planes[elevationAircraftHex];
+
+    if (!plane || !plane.position || plane.seen > 15) {
+        return;
+    }
+
+    updateElevationGroundAircraftDrawings(plane);
+
+    getElevationProfileLine(
+        elevationGroundAnchor.lat,
+        elevationGroundAnchor.lon,
+        plane.position[1],
+        plane.position[0]
+    );
+}
+
+function updateElevationGroundAircraftDrawings(plane) {
+    if (!elevationGroundAnchor || !plane || !plane.position) return;
+    if (!elevationPointSource || !elevationLineSource) return;
+
+    const groundCoord = ol.proj.fromLonLat([
+        elevationGroundAnchor.lon,
+        elevationGroundAnchor.lat
+    ]);
+
+    const aircraftCoord = ol.proj.fromLonLat([
+        plane.position[0],
+        plane.position[1]
+    ]);
+
+    elevationPointSource.clear();
+    elevationLineSource.clear();
+
+    const groundFeature = new ol.Feature(
+        new ol.geom.Point(groundCoord)
+    );
+    groundFeature.set('role', 'ground');
+
+    const aircraftFeature = new ol.Feature(
+        new ol.geom.Point(aircraftCoord)
+    );
+    aircraftFeature.set('role', 'aircraft');
+
+    elevationPointSource.addFeatures([
+        groundFeature,
+        aircraftFeature
+    ]);
+
+    elevationLineSource.addFeature(
+        new ol.Feature(
+            new ol.geom.LineString([
+                groundCoord,
+                aircraftCoord
+            ])
+        )
+    );
+
+    elevationPointLayer.setVisible(true);
+    elevationLineLayer.setVisible(true);
+
+    elevationPointSource.changed();
+    elevationLineSource.changed();
+    elevationPointLayer.changed();
+    elevationLineLayer.changed();
+
+    if (OLMap) OLMap.renderSync();
+}
+// ***************************************************************
+// *** FIN ACTUALIZACIÓN DE PANORAMA DE ELEVACIÓN CON AERONAVE ***
+// ***************************************************************
+
+function startElevationCountdown() {
+    clearInterval(elevationCountdownInterval);
+
+    elevationCountdownValue = 5;
+    updateElevationCountdown();
+
+    elevationCountdownInterval = setInterval(() => {
+        elevationCountdownValue--;
+        updateElevationCountdown();
+
+        if (elevationCountdownValue <= 0) {
+            elevationCountdownValue = 5;
+        }
+    }, 1000);
+}
+
+function updateElevationCountdown() {
+    const el = document.getElementById('panorama-update-countdown');
+    if (!el) return;
+
+    el.textContent = getTranslatedText(
+        'elevation_next_update',
+        'Next update in {seconds}s'
+    ).replace('{seconds}', elevationCountdownValue);
+}
+
+function stopElevationCountdown() {
+    clearInterval(elevationCountdownInterval);
+    elevationCountdownInterval = null;
+
+    const el = document.getElementById('panorama-update-countdown');
+    if (el) el.textContent = '';
+}
+
+function drawElevationGroundPoint(point) {
+    if (!elevationPointSource || !point) return;
+
+    elevationPointSource.clear();
+
+    const feature = new ol.Feature(
+        new ol.geom.Point(
+            ol.proj.fromLonLat([point.lon, point.lat])
+        )
+    );
+
+    feature.set('role', 'ground');
+    elevationPointSource.addFeature(feature);
+
+    elevationPointLayer && elevationPointLayer.setVisible(true);
+    elevationPointSource.changed();
+    elevationPointLayer && elevationPointLayer.changed();
+    OLMap && OLMap.renderSync();
+}
+
+// ***************************************************************
+// ********** FIN FUNCIÓN DE ELEVACIÓN CON AERONAVE **************
+// ***************************************************************
 
 // ***********************************************************
 // ** INICIO FUNCIÓN ACTUALIZAR DISTANCIA AERONAVE-AERONAVE **
@@ -3891,14 +4089,14 @@ function initPage() {
         //     if (onMobile)
         //         globeTableLimit /= 2;
         // };
-        window.setGlobeTableLimit = function() {
+        window.setGlobeTableLimit = function () {
             let mult = 1 + 4 * (toggles['moreTableLines1'] ? toggles['moreTableLines1'].state : 0) + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
             globeTableLimit = globeTableLimitBase * mult;
             if (toggles['allTableLines'] && toggles['allTableLines'].state)
                 globeTableLimit = 1e9;
             if (onMobile)
                 globeTableLimit /= 2;
-            
+
             // Refrescar la tabla
             if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.refresh) {
                 TAR.planeMan.refresh();
@@ -4467,6 +4665,18 @@ function earlyInitPage() {
         init: true,
         setState: function (state) {
             jQuery("#E").toggle(!state);
+        }
+    });
+    createToggle({
+        key: "hideElevationGroundAircraftFunction",
+        display: 'hide_elevation_ground_aircraft_function',
+        displayKey: 'hide_elevation_ground_aircraft_function',
+        tooltip: 'hide_elevation_ground_aircraft_function_tooltip',
+        tooltipKey: 'hide_elevation_ground_aircraft_function_tooltip',
+        container: "#category-filters-container",
+        init: true,
+        setState: function (state) {
+            jQuery("#EA").toggle(!state);
         }
     });
     createToggle({
@@ -5258,7 +5468,7 @@ function resetCategory(category) {
             if (toggles['hideReplayFunction']) toggles['hideReplayFunction'].toggle(true);
             if (toggles['hideTrackFunctions']) toggles['hideTrackFunctions'].toggle(true);
             if (toggles['hideZoomFunctions']) toggles['hideZoomFunctions'].toggle(true);
-            break;
+            if (toggles['hideElevationGroundAircraftFunction']) toggles['hideElevationGroundAircraftFunction'].toggle(true);
 
         case 'data':
             if (toggles['baroUseQNH']) toggles['baroUseQNH'].toggle(false);
@@ -6385,6 +6595,125 @@ function ol_map_init() {
         // ***** FIN MANEJAR MODO DE ELEVACIÓN *****
         // *****************************************
 
+        if (elevationGroundAircraftMode) {
+            if (elevationBusy) {
+                showDistanceGuide(
+                    getTranslatedText(
+                        'building_elevation',
+                        'Building elevation...'
+                    )
+                );
+                evt.stopPropagation();
+                return;
+            }
+
+            const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
+            const clickedLonLat = ol.proj.toLonLat(evtCoords);
+
+            if (elevationGroundAnchor && !planeHex && elevationAircraftHex) {
+                stopElevationGroundAircraftUpdates();
+                stopElevationCountdown();
+
+                elevationAircraftHex = null;
+
+                elevationLineSource && elevationLineSource.clear();
+                elevationLineLayer && elevationLineLayer.setVisible(false);
+
+                hidePanoramaOverlay();
+
+                elevationGroundAnchor = {
+                    lat: clickedLonLat[1],
+                    lon: clickedLonLat[0]
+                };
+
+                drawElevationGroundPoint(elevationGroundAnchor);
+
+                showDistanceGuide(
+                    getTranslatedText(
+                        'elevation_select_aircraft',
+                        'Now click on an aircraft.'
+                    )
+                );
+
+                evt.stopPropagation();
+                return;
+            }
+
+            if (!elevationGroundAnchor) {
+                if (planeHex) {
+                    showDistanceGuide(
+                        getTranslatedText(
+                            'elevation_mark_ground_first',
+                            'First mark a ground point.'
+                        )
+                    );
+                    evt.stopPropagation();
+                    return;
+                }
+
+                elevationGroundAnchor = {
+                    lat: clickedLonLat[1],
+                    lon: clickedLonLat[0]
+                };
+
+                drawElevationGroundPoint(elevationGroundAnchor);
+
+                showDistanceGuide(
+                    getTranslatedText(
+                        'elevation_select_aircraft',
+                        'Now click on an aircraft.'
+                    )
+                );
+
+                evt.stopPropagation();
+                return;
+            }
+
+            if (!planeHex) {
+                showDistanceGuide(
+                    getTranslatedText(
+                        'elevation_select_aircraft',
+                        'Now click on an aircraft.'
+                    )
+                );
+                evt.stopPropagation();
+                return;
+            }
+
+            const plane = g.planes[planeHex];
+
+            if (!plane || !plane.position || plane.seen > 15) {
+                showDistanceGuide(
+                    getTranslatedText(
+                        'elevation_invalid_aircraft',
+                        'The aircraft position is unavailable.'
+                    )
+                );
+                evt.stopPropagation();
+                return;
+            }
+
+            elevationAircraftHex = planeHex;
+
+            updateElevationGroundAircraftDrawings(plane);
+            startElevationCountdown();
+
+            getElevationProfileLine(
+                elevationGroundAnchor.lat,
+                elevationGroundAnchor.lon,
+                plane.position[1],
+                plane.position[0]
+            );
+
+            stopElevationGroundAircraftUpdates();
+            elevationGroundAircraftUpdateInterval =
+                setInterval(updateElevationGroundAircraftProfile, 5000);
+
+            hideDistanceGuide();
+            evt.stopPropagation();
+            return;
+        }
+
         // ******************************************************
         // ** INICIO MANEJAR CAPAS Y ALERTAS (TIERRA-AERONAVE) **
         // ******************************************************
@@ -7241,6 +7570,7 @@ function initMap() {
         type: 'overlay',
         fold: 'close',
         combine: false,
+        visible: true,
         layers: new ol.Collection([
             elevationPointLayer,
             elevationLineLayer
@@ -7609,7 +7939,7 @@ function initMap() {
 
     setTimeout(initPanoramaObserver, 500);
 
-    OLMap.on('change:size', function() {
+    OLMap.on('change:size', function () {
         setTimeout(updatePanoramaOverlayBounds, 50);
     });
 
@@ -15045,7 +15375,7 @@ function showReplayBar() {
         if (panoramaButton) {
             panoramaButton.textContent = '+';
         }
-        
+
     }
 
     updatePanoramaOverlayBounds();

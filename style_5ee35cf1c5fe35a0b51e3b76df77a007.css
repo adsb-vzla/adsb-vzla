@@ -2956,3 +2956,13 @@ Estilos para los buscadores unificados
     justify-content: space-between;
     
 }
+
+.panorama-update-countdown {
+    position: absolute;
+    top: 4px;
+    left: 10px;
+    z-index: 2;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    pointer-events: none;
+}

@@ -590,6 +590,15 @@
             'layer_terrain_topography': 'Terrain / Topography',
             'layer_waypoints_fixes': 'Waypoints / Fixes',
             'layer_weather_radar': 'Weather / Radar',
+
+            'elevation_ground_aircraft_tooltip': 'Display terrain elevation from a ground point to an aircraft.',
+            'hide_elevation_ground_aircraft_function': 'Hide ground-aircraft elevation function',
+            'hide_elevation_ground_aircraft_function_tooltip': 'Hide the terrain elevation profile from a ground point to an aircraft.',
+            'elevation_mark_ground_point': 'Click on the map to mark the ground point.',
+            'elevation_mark_ground_first': 'First mark a ground point.',
+            'elevation_select_aircraft': 'Now click on an aircraft.',
+            'elevation_invalid_aircraft': 'The aircraft position is unavailable.',
+            'elevation_next_update': 'Next update in {seconds}s',
         },
         es: {
             'copyright_text': 'ADS-B VENEZUELA — Desarrollado por EANSA. <br> <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer" style="color: gray;">tar1090</a>',
@@ -1176,6 +1185,15 @@
             'layer_terrain_topography': 'Terreno / Topografía',
             'layer_waypoints_fixes': 'Puntos de Navegación / Fijos',
             'layer_weather_radar': 'Clima / Radar',
+
+            'elevation_ground_aircraft_tooltip': 'Mostrar la elevación del terreno desde un punto en tierra hasta una aeronave.',
+            'hide_elevation_ground_aircraft_function': 'Ocultar función de elevación tierra-aeronave',
+            'hide_elevation_ground_aircraft_function_tooltip': 'Ocultar el perfil de elevación desde un punto en tierra hasta una aeronave.',
+            'elevation_mark_ground_point': 'Haz clic en el mapa para marcar el punto en tierra.',
+            'elevation_mark_ground_first': 'Primero marca un punto en tierra.',
+            'elevation_select_aircraft': 'Ahora haz clic en una aeronave.',
+            'elevation_invalid_aircraft': 'La posición de la aeronave no está disponible.',
+            'elevation_next_update': 'Próxima actualización en {seconds}s',
         }
     };
     // *****************************************
