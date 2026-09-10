@@ -461,6 +461,8 @@
             'no_limit': 'no limit',
             'altitude_filter_active': '✓ Altitude filter active:',
             'to': 'to',
+            'logout': 'Logout',
+            'logout_tooltip': 'Close the current session and return to the login page.',
             // *** planesTable ***
             'active_columns': 'Active columns',
             'inactive_columns': 'Inactive columns',
@@ -1056,6 +1058,8 @@
             'error_min_alt_greater': 'ERROR: La altitud mínima ({min}) no puede ser mayor que la máxima ({max}). Por favor, corrige los valores.',
             'no_limit': 'sin límite',
             'altitude_filter_active': '✓ Filtro de altitud activo:',
+            'logout': 'Cerrar sesión',
+            'logout_tooltip': 'Cerrar la sesión actual y volver a la página de inicio de sesión.',
             // *** planesTable ***
             'active_columns': 'Columnas activas',
             'inactive_columns': 'Columnas inactivas',

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ADSB VZLA - Iniciar sesión</title>
+  <!-- Font Awesome para los íconos -->
+  <link rel="stylesheet" href="fontawesome-free-7.2.0-web/css/fontawesome.css" type="text/css" />
+  <link rel="stylesheet" href="fontawesome-free-7.2.0-web/css/solid.css" type="text/css" />
+  <link rel="stylesheet" href="login_style.css">
+</head>
+
+<body>
+  <main class="login-card">
+    <!-- Ícono en lugar de la foto -->
+    <i class="fa-solid fa-plane-departure login-logo"></i>
+
+    <h1 class="login-title">Iniciar sesión</h1>
+
+    <form id="login-form">
+      <div class="login-field">
+        <label for="username">Usuario</label>
+        <input id="username" name="username" type="text" required autocomplete="username">
+      </div>
+
+      <div class="login-field">
+        <label for="password">Clave</label>
+        <div class="password-wrapper">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            autocomplete="current-password"
+          >
+          <button
+            id="toggle-password"
+            class="password-toggle"
+            type="button"
+            aria-label="Mostrar clave"
+            aria-pressed="false"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button class="login-submit" type="submit">Entrar</button>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById('login-form');
+    const password = document.getElementById('password');
+    const togglePassword = document.getElementById('toggle-password');
+    const icon = togglePassword.querySelector('i');
+
+    togglePassword.addEventListener('click', () => {
+      const isVisible = password.type === 'text';
+
+      password.type = isVisible ? 'password' : 'text';
+      
+      // Cambiar el ícono
+      if (isVisible) {
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+        togglePassword.setAttribute('aria-label', 'Mostrar clave');
+      } else {
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+        togglePassword.setAttribute('aria-label', 'Ocultar clave');
+      }
+      
+      togglePassword.setAttribute('aria-pressed', String(!isVisible));
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      if (form.checkValidity()) {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>

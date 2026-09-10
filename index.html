@@ -1428,6 +1428,11 @@
                 <a href="#" id="reset-sidebar-link" data-i18n-title="restore_sidebar_tooltip"
                   title="Restore sidebar to default width" data-i18n="restore">Restore</a>
               </li>
+              <li id="logout-sidebar-tab" class="reset-sidebar-tab-item">
+                <a href="#" id="logout-sidebar-link" data-i18n-title="logout_tooltip" title="Logout"
+                  data-i18n="logout">Logout</a>
+              </li>
+
             </ul>
 
             <!-- INICIO SELECTOR DE FILTROS -->
@@ -1827,6 +1832,33 @@
           setTimeout(scanForPanels, 200);
         });
       }
+    })();
+  </script>
+
+  <!-- ***** CERRAR SESIÓN ***** -->
+
+  <script>
+    (function () {
+      function bindLogout() {
+        const link = document.getElementById('logout-sidebar-link');
+        if (!link || link.dataset.bound === '1') return;
+        link.dataset.bound = '1';
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.location.href = 'login.html';
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindLogout);
+      } else {
+        bindLogout();
+      }
+
+      // Re-vincular cuando cambie el idioma (por si el patch reemplaza nodos)
+      document.addEventListener('languageChanged', function () {
+        setTimeout(bindLogout, 100);
+      });
     })();
   </script>
 

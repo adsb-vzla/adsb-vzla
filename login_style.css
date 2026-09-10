@@ -1,0 +1,110 @@
+:root {
+  --login-base: #192a56;
+  --login-light: #243f8b;
+  --login-dark: #0c152b;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Helvetica Neue", Helvetica, Verdana, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, rgba(12, 21, 43, 0.96), rgba(25, 42, 86, 0.9)),
+    #727272;
+  color: #fff;
+}
+
+.login-card {
+  width: min(92vw, 380px);
+  padding: 2rem;
+  background: rgba(19, 19, 19, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  text-align: center; /* Centrar el ícono */
+}
+
+/* Estilo para el ícono que reemplaza la foto */
+.login-logo {
+  display: block;
+  font-size: 50px; /* Ajusta el tamaño del ícono */
+  color: #ffffff; /* Color del ícono */
+  margin: 0 auto 1rem;
+  line-height: 1;
+}
+
+.login-title {
+  margin: 0 0 1.5rem;
+  text-align: center;
+  font-size: 1.35rem;
+}
+
+.login-field {
+  margin-bottom: 1rem;
+  text-align: left; /* Alinear etiquetas a la izquierda */
+}
+
+.login-field label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: bold;
+}
+
+.login-field input {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid #777;
+  border-radius: 4px;
+  background: #fff;
+  color: #111;
+  font: inherit;
+}
+
+.password-wrapper {
+  display: flex;
+}
+
+.password-wrapper input {
+  border-radius: 4px 0 0 4px;
+}
+
+/* Ajustes para el botón de mostrar/ocultar con íconos */
+.password-toggle {
+  width: 48px;
+  border: 1px solid #777;
+  border-left: 0;
+  border-radius: 0 4px 4px 0;
+  background: var(--login-light);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem; /* Tamaño del ícono */
+}
+
+.password-toggle i {
+  pointer-events: none; /* Para que el clic siempre sea en el botón */
+}
+
+.login-submit {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--login-dark);
+  border-radius: 4px;
+  background: var(--login-light);
+  color: #fff;
+  font: inherit;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.login-submit:hover {
+  filter: brightness(1.15);
+}
