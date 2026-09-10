@@ -1163,9 +1163,17 @@ function updateDistanceLine() {
                 trackDiffStr = `${trackDiff.toFixed(1)}°`;
             }
 
+            const bearingAToB = bearingFromLonLat(coords1, coords2);
+            const angle = relativeBearing(plane1.track, bearingAToB);
+
+            // textContainer.innerHTML = `
+            // ${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>
+            // ${trackIcon1} ${track1Str} | ${trackIcon2} ${track2Str} | ${trackIcon3} ${trackDiffStr}`;
             textContainer.innerHTML = `
-            ${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>
-            ${trackIcon1} ${track1Str} | ${trackIcon2} ${track2Str} | ${trackIcon3} ${trackDiffStr}`;
+                ${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>
+                ✈ A ${formatTrackDisplay(track1)} |
+                ✈ B ${formatTrackDisplay(track2)} |
+                ∠ A→B ${formatAngle(angle)}`;
         }
 
         distanceOverlay.setPosition(midPointProj);
@@ -2333,9 +2341,13 @@ function updateDistanceToGroundOverlay() {
             const trackStr = formatTrackDisplay(track);
             const trackIcon = '✈';
 
+            const bearingGroundToAircraft = bearingFromLonLat(gp, pp);
+            const angle = relativeBearing(plane.track, bearingGroundToAircraft);
+
             // textContainer.innerHTML = `${distanceLabel} ${slantText}`;
             // textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
-            textContainer.innerHTML = `${iconHTML} ${distanceText} ${trackIcon} ${trackStr}`;
+            //textContainer.innerHTML = `${iconHTML} ${distanceText} ${trackIcon} ${trackStr}`;
+            textContainer.innerHTML = `${iconHTML} ${distanceText} ${trackIcon} ${trackStr} ∠ ${formatAngle(angle)}`;
         }
 
         const isHidden = groundPlaneHiddenState.get(key) || false;
@@ -2423,6 +2435,9 @@ function updateGroundToGroundOverlay() {
         }
 
         const mid = feat.getGeometry().getCoordinateAt(0.5);
+
+        const trueBearing = bearingFromLonLat(a, b);
+        const angle = magneticBearing(a[1], a[0], 0, trueBearing);
 
         let ov = ggOverlays.get(key);
         if (!ov) {
@@ -2577,7 +2592,8 @@ function updateGroundToGroundOverlay() {
             const iconHTML = '⟷';
             const distanceText = showLabelUnits ? distText : format_distance_brief(distM, DisplayUnits);
             // textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
-            textContainer.innerHTML = `${iconHTML} ${distanceText}`;
+            // textContainer.innerHTML = `${iconHTML} ${distanceText}`;
+            textContainer.innerHTML = `${iconHTML} ${distanceText} ∠ ${formatAngle(angle)}`;
         }
 
         const isHidden = ggHiddenState.get(key) || false;
@@ -12219,6 +12235,34 @@ function bearingFromLonLat(position1, position2) {
     const x = Math.cos(lat1) * Math.sin(lat2)
         - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
     return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+function normalizeBearing(degrees) {
+    return ((degrees % 360) + 360) % 360;
+}
+
+function magneticBearing(lat, lon, altitude, trueBearing) {
+    if (!geoMag || trueBearing == null || isNaN(trueBearing)) {
+        return null;
+    }
+
+    const declination = geoMag(lat, lon, altitude || 0).dec || 0;
+    return normalizeBearing(trueBearing - declination);
+}
+
+function relativeBearing(referenceBearing, targetBearing) {
+    if (referenceBearing == null || targetBearing == null ||
+        isNaN(referenceBearing) || isNaN(targetBearing)) {
+        return null;
+    }
+
+    return normalizeBearing(targetBearing - referenceBearing);
+}
+
+function formatAngle(angle) {
+    return angle == null || isNaN(angle)
+        ? '---°'
+        : `${angle.toFixed(1)}°`;
 }
 
 function changeZoom(init) {
