@@ -6360,6 +6360,9 @@ function ol_map_init() {
                         if (currentParentGroup) {
                             layers_group.getLayers().forEach(group => {
                                 if (group instanceof ol.layer.Group) {
+                                    if (['fir', 'world'].includes(group.get('name'))) {
+                                        return;
+                                    }
                                     if (group === currentParentGroup) {
                                         group.getLayers().forEach(l => {
                                             if (l.get('type') === 'overlay') {
