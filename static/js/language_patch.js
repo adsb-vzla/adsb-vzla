@@ -6,6 +6,21 @@
     // *****************************************
     const translations = {
         en: {
+            // ***** LOGIN *****
+            'login': 'Log In',
+            'username': 'Username',
+            'password': 'Password',
+
+            'swal_incomplete_title': 'Incomplete Fields',
+            'swal_incomplete_text': 'Please enter both username and password.',
+            'swal_access_granted': 'Access Granted',
+            'swal_welcome': 'Press OK to access.',
+            'swal_access_denied': 'Access Denied',
+            'swal_invalid_credentials': 'Invalid username or password.',
+            'swal_server_error': 'Server Error',
+            'swal_file_error': 'Could not read credentials file.',
+
+            // ***** INDEX *****
             'copyright_text': 'ADS-B VENEZUELA — Developed by EANSA. <br> <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer" style="color: gray;">tar1090</a>',
 
             // *** HEAD ***
@@ -603,6 +618,21 @@
             'elevation_next_update': 'Next update in {seconds}s',
         },
         es: {
+            // ***** LOGIN *****
+            'login': 'Iniciar Sesión',
+            'username': 'Nombre de Usuario',
+            'password': 'Contraseña',
+
+            'swal_incomplete_title': 'Campos incompletos',
+            'swal_incomplete_text': 'Por favor, ingrese el usuario y la contraseña.',
+            'swal_access_granted': '¡Acceso concedido!',
+            'swal_welcome': 'Presione OK para acceder.',
+            'swal_access_denied': 'Acceso denegado',
+            'swal_invalid_credentials': 'El usuario o la contraseña son incorrectos.',
+            'swal_server_error': 'Error de servidor',
+            'swal_file_error': 'No se pudo leer el archivo de credenciales.',
+            
+            // ***** INDEX *****
             'copyright_text': 'ADS-B VENEZUELA — Desarrollado por EANSA. <br> <a href="https://github.com/wiedehopf/tar1090" target="_blank" rel="noopener noreferrer" style="color: gray;">tar1090</a>',
 
             // *** HEAD ***
@@ -1361,8 +1391,10 @@
     function addLanguageSelector() {
         if (document.getElementById('language_selector_patch')) return;
 
-        const unitsContainer = document.getElementById('category-units-container');
-        if (!unitsContainer) return;
+        let container = document.getElementById('category-units-container');
+        if (!container) {
+            container = document.getElementById('language-selector-container');
+        }
 
         const selectorHTML = `
             <div class="settingsOptionContainer" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(128,128,128,0.2);">
@@ -1373,7 +1405,7 @@
             </div>
         `;
 
-        unitsContainer.insertAdjacentHTML('beforeend', selectorHTML);
+        container.insertAdjacentHTML('beforeend', selectorHTML);
 
         const selector = document.getElementById('language_selector_patch');
         if (selector) {
@@ -1394,6 +1426,8 @@
         updateUI();
         addLanguageSelector();
     }
+
+    window.translations = translations;
 
     window.translate = { t, setLang, getLang, updateUI };
     window.__ = t;

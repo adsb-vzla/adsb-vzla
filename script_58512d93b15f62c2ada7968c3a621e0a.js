@@ -4,6 +4,11 @@
 
 "use strict";
 
+jQuery.fn.updateText = function (text) {
+    this.text() !== String(text) && this.text(text);
+    return this;
+}
+
 g.planes = {};
 g.planesOrdered = [];
 g.route_cache = [];
@@ -217,6 +222,8 @@ let settingsResizeHandle = null;
 // ****** FIN VARIABLES VENTANA DE SETTINGS *********
 // **************************************************
 
+let appReady = false;
+
 let loadStart = new Date().getTime();
 let mapResizeTimeout;
 let pointerMoveTimeout;
@@ -391,7 +398,7 @@ function showPanoramaOverlay() {
     el.classList.remove('minimized');
 
     const btn = document.getElementById('panorama-close');
-    if (btn) btn.textContent = '-';
+    if (btn) btn.textContent = '▼';
 
     updatePanoramaOverlayBounds();
     setTimeout(updatePanoramaOverlayBounds, 50);
@@ -492,7 +499,7 @@ function togglePanoramaMinimize() {
     if (!el) return;
     el.classList.toggle('minimized');
     const btn = document.getElementById('panorama-close');
-    if (btn) btn.textContent = el.classList.contains('minimized') ? '+' : '-';
+    if (btn) btn.textContent = el.classList.contains('minimized') ? '▲' : '▼';
     setTimeout(updatePanoramaOverlayBounds, 50);
 }
 
@@ -6058,7 +6065,7 @@ function startPage() {
     }
 
     loadFinished = true;
-
+    appReady = true;
     setIntervalTimers();
 
     if (tempTrails)
@@ -7647,7 +7654,7 @@ function initMap() {
             minimizeText = window.t('minimize_infoblock') || minimizeText;
         }
         jQuery('#infoblock_minimize').attr('title', state ? restoreText : minimizeText);
-        jQuery('#infoblock_minimize').text(state ? '+' : '−');
+        jQuery('#infoblock_minimize').text(state ? '▲' : '▼');
         adjustInfoBlock();
     }
 
@@ -8219,6 +8226,10 @@ let selReg = null;
 let somethingSelected = false;
 // Refresh the detail window about the plane
 function refreshSelected() {
+    if (!appReady) return;
+    if (typeof jQuery === 'undefined' || !jQuery.fn.updateText) {
+        return;
+    }
     const selected = SelectedPlane;
     jQuery('#infoblocks_container').hide();
 
@@ -12366,6 +12377,9 @@ let checkMoveCenter = [0, 0];
 let checkMoveDone = 0;
 
 function checkMovement() {
+    if (typeof jQuery === 'undefined' || !jQuery.fn.updateText) {
+        return;
+    }
     if (!OLMap)
         return;
 
@@ -12435,6 +12449,10 @@ function getCenter() {
 let lastRefresh = 0;
 let refreshZoom, refreshCenter;
 function checkRefresh() {
+    if (!appReady) return;
+    if (typeof jQuery === 'undefined' || !jQuery.fn.updateText) {
+        return;
+    }
     if (showTrace)
         return;
 
@@ -12457,6 +12475,9 @@ function checkRefresh() {
     }
 }
 function refresh(redraw) {
+    if (typeof jQuery === 'undefined' || !jQuery.fn.updateText) {
+        return;
+    }
     lastRefresh = new Date().getTime();
 
     refreshZoom = getZoom();
@@ -15420,7 +15441,7 @@ function showReplayBar() {
         }
 
         if (panoramaButton) {
-            panoramaButton.textContent = '+';
+            panoramaButton.textContent = '▲';
         }
 
     }
@@ -15667,11 +15688,6 @@ function registrationLink(plane) {
     }
 }
 
-
-//simple jquery plugin to only update the text when it changes
-jQuery.fn.updateText = function (text) {
-    this.text() !== String(text) && this.text(text);
-}
 
 function zeroPad(num, size) {
     var s = num + "";

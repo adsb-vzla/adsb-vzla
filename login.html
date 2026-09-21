@@ -4,83 +4,58 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ADSB VZLA - Iniciar sesión</title>
-  <!-- Font Awesome para los íconos -->
-  <link rel="stylesheet" href="fontawesome-free-7.2.0-web/css/fontawesome.css" type="text/css" />
-  <link rel="stylesheet" href="fontawesome-free-7.2.0-web/css/solid.css" type="text/css" />
+  <!-- ***** MODO OSCURO DE SWEETALERT2 ***** -->
+  <link rel="stylesheet" href="./static/sweetalert2/dark.css">
+  <!-- ***** SWEETALERT2 PARA ALERTAS DE ERROR DE AUTENTICACIÓN ***** -->
+  <script src="./static/sweetalert2/sweetalert2.min.js"></script>
+  <script src="./static/sweetalert2/sweetalert2.min.css"></script>
+  <!-- ***** FONT-AWESOME PARA EL USO DE ÍCONOS ***** -->
+  <link rel="stylesheet" href="./static/fontawesome-free-7.2.0-web/css/fontawesome.css" type="text/css" />
+  <link rel="stylesheet" href="./static/fontawesome-free-7.2.0-web/css/solid.css" type="text/css" />
+  <!-- ***** PROCESAR HOJAS DE CÁLCULO CON FORMATO .XLSX (EXCEL) ***** -->
+  <script src="./static/sheetjs/xlsx.full.min.js"></script>
+  <!-- ***** ESTILOS ESPECÍFICOS DE LOGIN ***** -->
   <link rel="stylesheet" href="login_style.css">
 </head>
-
 <body>
+  <!-- ***** CONTENEDOR DEL LOGIN ***** -->
   <main class="login-card">
-    <!-- Ícono en lugar de la foto -->
+    <!-- ***** LOGO ***** -->
     <i class="fa-solid fa-plane-departure login-logo"></i>
-
-    <h1 class="login-title">Iniciar sesión</h1>
-
+    <!-- ***** TÍTULO ***** -->
+    <h1 class="login-title" data-i18n="login">Log In</h1>
+    
+    <!-- ***** FORMULARIO ***** -->
     <form id="login-form">
+
+      <!-- ***** USUARIO ***** -->
       <div class="login-field">
-        <label for="username">Usuario</label>
+        <label for="username" data-i18n="username">Username</label>
         <input id="username" name="username" type="text" required autocomplete="username">
       </div>
 
+      <!-- ***** CONTRASEÑA ***** -->
       <div class="login-field">
-        <label for="password">Clave</label>
+        <label for="password" data-i18n="password">Password</label>
         <div class="password-wrapper">
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            autocomplete="current-password"
-          >
-          <button
-            id="toggle-password"
-            class="password-toggle"
-            type="button"
-            aria-label="Mostrar clave"
-            aria-pressed="false"
-          >
-            <i class="fa-solid fa-eye"></i>
+          <input id="password" name="password" type="password" required autocomplete="current-password">
+          <button id="toggle-password" class="password-toggle" type="button" aria-pressed="false">
+          <i class="fa-solid fa-eye"></i>
           </button>
         </div>
       </div>
+      
+      <!-- ***** BOTÓN PARA ACCEDER ***** -->
+      <button class="login-submit" type="submit" data-i18n="login">Log In</button>
 
-      <button class="login-submit" type="submit">Entrar</button>
     </form>
+
+    <!-- ***** SELECTOR DE IDIOMA ***** -->
+    <div id="language-selector-container"></div>
   </main>
-
-  <script>
-    const form = document.getElementById('login-form');
-    const password = document.getElementById('password');
-    const togglePassword = document.getElementById('toggle-password');
-    const icon = togglePassword.querySelector('i');
-
-    togglePassword.addEventListener('click', () => {
-      const isVisible = password.type === 'text';
-
-      password.type = isVisible ? 'password' : 'text';
-      
-      // Cambiar el ícono
-      if (isVisible) {
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-        togglePassword.setAttribute('aria-label', 'Mostrar clave');
-      } else {
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-        togglePassword.setAttribute('aria-label', 'Ocultar clave');
-      }
-      
-      togglePassword.setAttribute('aria-pressed', String(!isVisible));
-    });
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-
-      if (form.checkValidity()) {
-        window.location.href = 'index.html';
-      }
-    });
-  </script>
+  <!-- ***** SOPORTE DE IDIOMA ***** -->
+  <script src="./static/js/language_patch.js"></script>
+  <!-- ***** MOSTRAR/OCULTAR CONTRASEÑA - VALIDACIÓN DE USUARIO - REDIRECCIÓN A INDEX ***** -->
+  <script src="./static/js/login-auth.js"></script>
 </body>
 </html>

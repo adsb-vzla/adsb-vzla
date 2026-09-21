@@ -19,10 +19,10 @@
   <!-- CUSTOM CSS -->
   <link rel="stylesheet" href="style_5ee35cf1c5fe35a0b51e3b76df77a007.css" type="text/css" />
   <!-- FONT AWESOME -->
-  <link rel="stylesheet" href="fontawesome-free-7.2.0-web/css/fontawesome.css" type="text/css" />
-  <link rel="stylesheet" href="fontawesome-free-7.2.0-web/css/solid.css" type="text/css" />
+  <link rel="stylesheet" href="./static/fontawesome-free-7.2.0-web/css/fontawesome.css" type="text/css" />
+  <link rel="stylesheet" href="./static/fontawesome-free-7.2.0-web/css/solid.css" type="text/css" />
   <!-- IDIOMA -->
-  <script src="language_patch.js"></script>
+  <script src="./static/js/language_patch.js"></script>
   <!-- ICONO -->
   <link rel="icon" type="image/png" href="images/plane-icon.png">
   <!-- TITULO -->
@@ -1290,7 +1290,7 @@
 
 
       <div id="panorama-overlay" class="panorama-overlay hidden">
-        <button id="panorama-close" class="panorama-close" type="button">-</button>
+        <button id="panorama-close" class="panorama-close" type="button">▼</button>
         <div id="panorama-update-countdown" class="panorama-update-countdown"></div>
         <div id="panorama-container"></div>
       </div>
@@ -1837,7 +1837,7 @@
 
   <!-- ***** CERRAR SESIÓN ***** -->
 
-  <script>
+  <!-- <script>
     (function () {
       function bindLogout() {
         const link = document.getElementById('logout-sidebar-link');
@@ -1860,7 +1860,67 @@
         setTimeout(bindLogout, 100);
       });
     })();
-  </script>
+  </script> -->
+  <!-- ***** CERRAR SESIÓN ***** -->
+<script>
+  (function () {
+    function bindLogout() {
+      const link = document.getElementById('logout-sidebar-link');
+      if (!link || link.dataset.bound === '1') return;
+      link.dataset.bound = '1';
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // 1. Limpiar estado persistente que puede re-disparar initialize()
+        try {
+          // Limpiar solo las claves de tar1090, no todo localStorage
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && (k.startsWith('layer_') ||
+                      k === 'active_tab' ||
+                      k === 'sortCol' ||
+                      k === 'sortAscending' ||
+                      k === 'columnOrder' ||
+                      k === 'sidebar_width' ||
+                      k === 'sidebar_visible' ||
+                      k === 'MapType_tar1090' ||
+                      k === 'zoomLvl' ||
+                      k === 'CenterLat' ||
+                      k === 'CenterLon')) {
+              keysToRemove.push(k);
+            }
+          }
+          keysToRemove.forEach(k => localStorage.removeItem(k));
+
+          // Limpiar sessionStorage relacionado
+          sessionStorage.clear();
+        } catch (err) {
+          console.warn('Logout: error limpiando storage', err);
+        }
+
+        // 2. Forzar recarga COMPLETA desde el servidor (no bfcache)
+        //    reemplazar la URL evita que el navegador restaure desde bfcache
+        const target = 'login.html';
+        if (window.location.replace) {
+          window.location.replace(target);
+        } else {
+          window.location.href = target;
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindLogout);
+    } else {
+      bindLogout();
+    }
+
+    document.addEventListener('languageChanged', function () {
+      setTimeout(bindLogout, 100);
+    });
+  })();
+</script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">
 

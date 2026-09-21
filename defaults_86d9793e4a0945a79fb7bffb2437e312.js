@@ -60,7 +60,7 @@ let actual_range_show = false;
 
 // which map is displayed to new visitors
 // let MapType_tar1090 = "VFR_Blank";
-let MapType_tar1090 = "osm";
+let MapType_tar1090 = "osm_tiles_offline";
 let defaultOverlays = [];
 let dwdLayers = 'dwd:RADOLAN-RY';
 

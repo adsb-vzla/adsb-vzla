@@ -5,6 +5,7 @@
     --FS1: calc(10px * var(--SCALE));
     --FS2: calc(13px * var(--SCALE));
     --FS3: calc(17px * var(--SCALE));
+    --TXTCOLOR1: #bfbfbf;
     --TXTCOLOR2: rgb(5, 5, 5);
     --TXTCOLOR3: #101010;
     --BASE-COLOR: #192a56;
