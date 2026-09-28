@@ -154,12 +154,12 @@ function hidePanoramaOverlay() {
 async function getElevationProfileLine(lat1, lon1, lat2, lon2) {
     // ***** IMPEDIR SELECCIONAR OTROS PUNTOS HASTA QUE NO TERMINE DE CONSTRUIRSE EL PANORAMA ACTUAL *****
     if (elevationBusy) {
-        showDistanceGuide(getTranslatedText('wait_for_elevation', 'Wait for the elevation to finish rendering...'));
+        showDistanceGuide(() => getTranslatedText('wait_for_elevation', 'Wait for the elevation to finish rendering...'));
         return;
     }
     // ***** MENSAJE DE QUE EL PANORAMA SE ESTÁ CONSTRUYENDO *****
     elevationBusy = true;
-    showDistanceGuide(getTranslatedText('building_elevation', 'Building elevation...'));
+    showDistanceGuide(() => getTranslatedText('building_elevation', 'Building elevation...'));
 
     // ***** CONSULTAR ENDPOINT *****
     const urlBase = `${ELEV_CONFIG.cgiUrl}?lat1=${lat1}&lon1=${lon1}&lat2=${lat2}&lon2=${lon2}&samples=${ELEV_CONFIG.samples}`;
@@ -183,7 +183,7 @@ async function getElevationProfileLine(lat1, lon1, lat2, lon2) {
 
         // ***** SALIR SI EL ENDPOINT NO DEVOLVIÓ NADA Y MOSTRAR ERROR *****
         if (!data.points || !data.points.length) {
-            showDistanceGuide(getTranslatedText('no_data', 'No significant data to draw from.'));
+            showDistanceGuide(() => getTranslatedText('no_data', 'No significant data to draw from.'));
             return;
         }
 
@@ -202,7 +202,7 @@ async function getElevationProfileLine(lat1, lon1, lat2, lon2) {
         draw3DPanorama(data.points, totalNm);
     // ***** CAPTURAR ERROR AL PROCESAR PANORAMA *****
     } catch (e) {
-        showDistanceGuide(getTranslatedText('data_error', 'Batch elevation error:'));
+        showDistanceGuide(() => getTranslatedText('data_error', 'Batch elevation error:'));
     } finally {
         elevationBusy = false;
         hideDistanceGuide();
@@ -404,7 +404,7 @@ function toggleElevationMode() {
         // ***** LIMPIAR ANCLA *****
         elevationAnchor = null;
         // ***** MOSTRAR MENSAJE GUÍA DEL PASO 1 *****
-        showDistanceGuide(getTranslatedText('elevation_mark_point_a', 'Click on the map to mark point A.'));
+        showDistanceGuide(() => getTranslatedText('elevation_mark_point_a', 'Click on the map to mark point A.'));
         // ***** OCULTAR OVERLAY *****
         hidePanoramaOverlay();
 
@@ -532,12 +532,7 @@ function startElevationGroundAircraft() {
         // ***** OCULTAR OVERLAY *****
         hidePanoramaOverlay();
         // ***** MOSTRAR GUÍA PARA EL USUARIO *****
-        showDistanceGuide(
-            getTranslatedText(
-                'elevation_select_aircraft_only',
-                'Click on an aircraft to draw the elevation panorama (50 NM ahead).'
-            )
-        );
+        showDistanceGuide(() => getTranslatedText('elevation_select_aircraft_only', 'Click on an aircraft to draw the elevation panorama (50 NM ahead).'));
         // MODO ANTIGUO: INDICAR AL USUARIO QUE SELECCIONE PUNTO A
         // showDistanceGuide(
         //     getTranslatedText(
@@ -786,6 +781,172 @@ function initPanoramaObserver() {
     }
 }
 
+// ***** MANEJADOR DE CLIC PARA ELEVACIÓN TIERRA-TIERRA *****
+function handleElevationClick(evt) {
+    // ***** INDICAR QUE LA ELEVACIÓN SE ESTÁ CONSTRUYENDO *****
+    if (elevationBusy) {
+        showDistanceGuide(() => getTranslatedText('building_elevation', 'Building elevation...'));
+        return;
+    }
+
+    // ***** OBTENER COORDENADAS DEL PUNTO MARCADO *****
+    const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
+    // ***** TRANSFORMAR COORDENADA OBTENIDA A VALORES DE LATITUD/LONGITUD *****
+    const lonlat = ol.proj.toLonLat(evtCoords);
+    // ***** ESTABLECER COORDENADAS DEL PUNTO MARCADO *****
+    const clicked = { lat: lonlat[1], lon: lonlat[0] };
+
+    // ***** SI NO HAY ANCLA (PUNTO A) DEFINIDA *****
+    if (!elevationAnchor) {
+        // ***** ASIGNAR PUNTO MARCADO COMO ANCLA *****
+        elevationAnchor = clicked;
+
+        // ***** SI EXISTE LA CAPA DE PUNTOS *****
+        if (elevationPointSource) {
+            // ***** LIMPIAR CAPA EXISTENTE PARA EVITAR ERRORES DE DIBUJO *****
+            elevationPointSource.clear();
+            // ***** INSERTAR PUNTO MARCADO EN LA CAPA *****
+            const fA = new ol.Feature(
+                new ol.geom.Point(ol.proj.fromLonLat([clicked.lon, clicked.lat]))
+            );
+            // ***** ESTABLECER PUNTO A *****
+            fA.set('role', 'A');
+            elevationPointSource.addFeature(fA);
+            // ***** HACER VISIBLE LA CAPA DE PUNTOS *****
+            elevationPointLayer && elevationPointLayer.setVisible(true);
+        }
+
+        // ***** LIMPIAR Y OCULTAR CAPAS DE LÍNEAS Y PUNTOS *****
+        if (elevationLineSource) elevationLineSource.clear();
+        elevationLineLayer && elevationLineLayer.setVisible(false);
+
+        // ***** INDICAR AL USUARIO QUE SELECCIONE EL PUNTO B *****
+        showDistanceGuide(() => getTranslatedText('elevation_mark_point_b', 'Click on the map to mark point B.'));
+        return;
+    }
+
+    // ***** ASIGNAR PUNTO A COMO ANCLA Y PUNTO B COMO EL QUE ACABA DE SER MARCADO *****
+    const a = elevationAnchor;
+    const b = clicked;
+
+    // ***** SI EXISTE LA CAPA DE PUNTOS *****
+    if (elevationPointSource) {
+        // ***** LIMPIAR CAPA EXISTENTE PARA EVITAR ERRORES DE DIBUJO *****
+        elevationPointSource.clear();
+        // ***** INSERTAR PUNTO A EN LA CAPA *****
+        const fA = new ol.Feature(
+            new ol.geom.Point(ol.proj.fromLonLat([a.lon, a.lat]))
+        );
+        // ***** ESTABLECER PUNTO A *****
+        fA.set('role', 'A');
+        elevationPointSource.addFeature(fA);
+
+        // ***** INSERTAR PUNTO MARCADO EN LA CAPA *****
+        const fB = new ol.Feature(
+            new ol.geom.Point(ol.proj.fromLonLat([b.lon, b.lat]))
+        );
+        // ***** ESTABLECER PUNTO B *****
+        fB.set('role', 'B');
+        elevationPointSource.addFeature(fB);
+        
+        // ***** HACER VISIBLE LA CAPA DE PUNTOS *****
+        elevationPointLayer && elevationPointLayer.setVisible(true);
+    }
+
+    // ***** SI EXISTE LA CAPA DE LÍNEA *****
+    if (elevationLineSource) {
+        // ***** LIMPIAR CAPA EXISTENTE PARA EVITAR ERRORES DE DIBUJO *****
+        elevationLineSource.clear();
+        // ***** INSERTAR LÍNEA ENTRE LOS DOS PUNTOS EN LA CAPA *****
+        elevationLineSource.addFeature(
+            new ol.Feature(
+                new ol.geom.LineString([
+                    ol.proj.fromLonLat([a.lon, a.lat]),
+                    ol.proj.fromLonLat([b.lon, b.lat])
+                ])
+            )
+        );
+        // ***** HACER VISIBLE LA CAPA DE LÍNEA *****
+        elevationLineLayer && elevationLineLayer.setVisible(true);
+    }
+
+    // ***** OCULTAR GUÍA *****
+    hideDistanceGuide();
+
+    // ***** LLAMAR A LA FUNCIÓN QUE DIBUJA LA ELEVACIÓN *****
+    if (typeof getElevationProfileLine === 'function') {
+        getElevationProfileLine(a.lat, a.lon, b.lat, b.lon);
+    }
+
+    // ***** LIMPIAR ANCLA *****
+    elevationAnchor = null;
+}
+
+// ***** MANEJADOR DE CLIC PARA ELEVACIÓN TIERRA-AERONAVE *****
+function handleElevationGroundAircraftClick(evt, planeHex) {
+    // ***** INDICAR QUE LA ELEVACIÓN SE ESTÁ CONSTRUYENDO *****
+    if (elevationBusy) {
+        showDistanceGuide(() => getTranslatedText('building_elevation', 'Building elevation...'));
+        return;
+    }
+
+    // ***** INDICAR QUE SE SELECCIONE EL AERONAVE REFERENTE A LA CUAL SE QUIERE DIBUJAR LA ELEVACIÓN *****
+    if (!planeHex) {
+        showDistanceGuide(() => getTranslatedText('elevation_select_aircraft_only', 'Click on an aircraft to draw the elevation panorama (50 NM ahead).'));
+        return;
+    }
+
+    // ***** OBTENER INFORMACIÓN DEL AERONAVE *****
+    const plane = g.planes[planeHex];
+
+    // ***** SI NO HAY AERONAVE, NO TIENE POSICIÓN O LA ÚLTIMA VEZ QUE SE VIÓ FUE HACE 15 SEGUNDOS *****
+    if (!plane || !plane.position || plane.seen > 15) {
+        // ***** INDICAR QUE LA POSICIÓN DEL AERONAVE NO ESTÁ DISPONIBLE *****
+        showDistanceGuide(() => getTranslatedText('elevation_invalid_aircraft', 'The aircraft position is unavailable.'));
+        return;
+    }
+
+    // ***** DETENER LA ACTUALIZACIÓN DEL PANORAMA *****
+    stopElevationGroundAircraftUpdates();
+    // ***** DETENER TIMER DE ACTUALIZACIÓN *****
+    stopElevationCountdown();
+
+    // ***** ESTABLECER AVIÓN COMO EL SELECCIONADO *****
+    elevationAircraftHex = planeHex;
+    // ***** LLAMAR A LA FUNCIÓN QUE CALCULA EL ANCLA A 50NM *****
+    elevationGroundAnchor = computeAnchorFromAircraft(plane, 50);
+
+    // ***** SI NO SE PUEDE DETERMINAR EL ANCLA POR PROBLEMAS EN LOS DATOS DEL AVIÓN, MOSTRAR MENSAJE *****
+    if (!elevationGroundAnchor) {
+        showDistanceGuide(() => getTranslatedText('elevation_invalid_aircraft', 'The aircraft position is unavailable.'));
+        return;
+    }
+
+    // ***** DIBUJAR ELEVACIÓN CONFORME AL ANCLA *****
+    drawElevationGroundPoint(elevationGroundAnchor);
+    // ***** ACTUALIZAR LÍNEA Y PUNTOS SEGÚN SE MUEVE EL AVIÓN *****
+    updateElevationGroundAircraftDrawings(plane);
+    // ***** INICIAR TIMER *****
+    startElevationCountdown();
+
+    // ***** SI LA FUNCIÓN ESTÁ DISPONIBLE, DIBUJAR EL PERFIL CONFORME EL AVIÓN SE MUEVE *****
+    if (typeof getElevationProfileLine === 'function') {
+        getElevationProfileLine(
+            elevationGroundAnchor.lat,
+            elevationGroundAnchor.lon,
+            plane.position[1],
+            plane.position[0]
+        );
+    }
+
+    // ***** CADA 5 SEGUNDOS, ACTUALIZAR EL PERFIL *****
+    elevationGroundAircraftUpdateInterval =
+        setInterval(updateElevationGroundAircraftProfile, 5000);
+
+    // ***** OCULTAR GUÍA *****
+    hideDistanceGuide();
+}
+
 // ***** EXPONER FUNCIONES GLOBALMENTE PARA USO EN OTROS ARCHIVOS *****
 window.updatePanoramaOverlayBounds = updatePanoramaOverlayBounds;
 window.showPanoramaOverlay = showPanoramaOverlay;
@@ -803,3 +964,5 @@ window.startElevationCountdown = startElevationCountdown;
 window.updateElevationCountdown = updateElevationCountdown;
 window.stopElevationCountdown = stopElevationCountdown;
 window.updateElevationGroundAircraftDrawings = updateElevationGroundAircraftDrawings;
+window.handleElevationClick = handleElevationClick;
+window.handleElevationGroundAircraftClick = handleElevationGroundAircraftClick;
