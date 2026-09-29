@@ -1204,6 +1204,23 @@
           </div>
           <!-- FIN EXPANDIR/OCULTAR SIDEBAR DERECHO -->
 
+          <!-- INICIO OPCIÓN DE ELEVACIÓN -->
+          <div id="elevation_dropdown" class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              data-i18n-title="elevation_tools_tooltip" title="Elevation tools - Open elevation options."><i
+                class="fa-solid fa-mountain-sun fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
+              <li class="dropdown-menu-title" data-i18n="elevation_tools">Elevation tools</li>
+              <li><a id="E" data-i18n-title="elevation_tooltip"
+                  title="Display the elevation of the existing terrain between two points."
+                  onclick="toggleElevationMode();" data-i18n="elevation_ground_ground">Ground-ground</a></li>
+              <li><a id="EA" data-i18n-title="elevation_ground_aircraft_tooltip"
+                  title="Display terrain elevation from a ground point to an aircraft."
+                  onclick="startElevationGroundAircraft();" data-i18n="elevation_ground_aircraft">Ground-aircraft</a>
+              </li>
+            </ul>
+          </div>
+
           <!-- INICIO OPCIONES DE CAPAS -->
           <div id="layer-select" class="button-layer">
             <!-- FIN OPCIONES DE CAPAS -->
@@ -1240,23 +1257,6 @@
               class="fa-solid fa-minus fa-xl"></i>
           </div>
           <!-- FIN OPCIONES DE ZOOM -->
-
-          <!-- INICIO OPCIÓN DE ELEVACIÓN -->
-          <div id="elevation_dropdown" class="dropdown dropdown-left">
-            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
-              data-i18n-title="elevation_tools_tooltip" title="Elevation tools - Open elevation options."><i
-                class="fa-solid fa-mountain-sun fa-xl"></i></div>
-            <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
-              <li class="dropdown-menu-title" data-i18n="elevation_tools">Elevation tools</li>
-              <li><a id="E" data-i18n-title="elevation_tooltip"
-                  title="Display the elevation of the existing terrain between two points."
-                  onclick="toggleElevationMode();" data-i18n="elevation_ground_ground">Ground-ground</a></li>
-              <li><a id="EA" data-i18n-title="elevation_ground_aircraft_tooltip"
-                  title="Display terrain elevation from a ground point to an aircraft."
-                  onclick="startElevationGroundAircraft();" data-i18n="elevation_ground_aircraft">Ground-aircraft</a>
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
       <!-- FIN TIRA DE OPCIONES LATERAL -->

@@ -2243,19 +2243,7 @@ function earlyInitPage() {
         container: "#category-filters-container",
         init: true,
         setState: function (state) {
-            jQuery("#E").toggle(!state);
-        }
-    });
-    createToggle({
-        key: "hideElevationGroundAircraftFunction",
-        display: 'hide_elevation_ground_aircraft_function',
-        displayKey: 'hide_elevation_ground_aircraft_function',
-        tooltip: 'hide_elevation_ground_aircraft_function_tooltip',
-        tooltipKey: 'hide_elevation_ground_aircraft_function_tooltip',
-        container: "#category-filters-container",
-        init: true,
-        setState: function (state) {
-            jQuery("#EA").toggle(!state);
+            jQuery("#elevation_dropdown").toggle(!state);
         }
     });
     createToggle({
@@ -3047,7 +3035,7 @@ function resetCategory(category) {
             if (toggles['hideReplayFunction']) toggles['hideReplayFunction'].toggle(true);
             if (toggles['hideTrackFunctions']) toggles['hideTrackFunctions'].toggle(true);
             if (toggles['hideZoomFunctions']) toggles['hideZoomFunctions'].toggle(true);
-            if (toggles['hideElevationGroundAircraftFunction']) toggles['hideElevationGroundAircraftFunction'].toggle(true);
+            break;
 
         case 'data':
             if (toggles['baroUseQNH']) toggles['baroUseQNH'].toggle(false);
@@ -4584,7 +4572,7 @@ function initMap() {
         })
     });
 
-        // **************************************************************
+    // **************************************************************
     // ** MOVER CAPAS DE GA AL GRUPO DE ELEVACIÓN (si el grupo existe) **
     // **************************************************************
     try {
@@ -4618,7 +4606,7 @@ function initMap() {
             takeLayerFromAnywhere(planePointLayerTA);
 
             // Añadir al grupo GA en el orden deseado
-            [groundPointLayer, planePointLayerTA, groundToPlaneLineLayer]
+            [groundToPlaneLineLayer, planePointLayerTA, groundPointLayer]
                 .filter(Boolean)
                 .forEach(l => elevGA.getLayers().push(l));
         }
@@ -4733,25 +4721,51 @@ function initMap() {
     })();
 
     // **************************************************************
-    // ** INSERTAR CAPAS DE NÚMEROS Y PUNTOS DE AVIONES EN SUS       **
-    // ** GRUPOS CORRESPONDIENTES (ya existen en el dropdown)        **
+    // ** INSERTAR CAPAS EN SUS GRUPOS CON EL ORDEN SOLICITADO     **
     // **************************************************************
     try {
-        window.addLayerToDistanceGroup('aa', pointNumberLayerAA);
-        window.addLayerToDistanceGroup('aa', planePointLayerAA);
+        // ----- AERONAVE-AERONAVE (AA) -----
+        // Orden deseado: Numeración → Línea A-B → Puntos A-B en aeronaves
+        const gAA = window.ensureDistanceGroup('aa');
+        if (gAA) {
+            // Vaciar el grupo para reinsertar en orden correcto
+            const aaSubLayers = gAA.getLayers().getArray().slice();
+            aaSubLayers.forEach(l => gAA.getLayers().remove(l));
+            // Reinsertar en el orden deseado
+            if (planePointLayerAA) gAA.getLayers().push(planePointLayerAA);
+            if (distanceLineLayer) gAA.getLayers().push(distanceLineLayer);
+            if (pointNumberLayerAA) gAA.getLayers().push(pointNumberLayerAA);
+        }
 
-        window.addLayerToDistanceGroup('ta', pointNumberLayerTA);
-        window.addLayerToDistanceGroup('ta', planePointLayerTA);
+        // ----- TIERRA-AERONAVE (TA) -----
+        // Orden deseado: Numeración → Línea A-B → Punto en aeronave → Punto en tierra
+        const gTA = window.ensureDistanceGroup('ta');
+        if (gTA) {
+            const taSubLayers = gTA.getLayers().getArray().slice();
+            taSubLayers.forEach(l => gTA.getLayers().remove(l));
+            
+            if (groundPointLayer) gTA.getLayers().push(groundPointLayer);
+            if (planePointLayerTA) gTA.getLayers().push(planePointLayerTA);
+            if (groundToPlaneLineLayer) gTA.getLayers().push(groundToPlaneLineLayer);
+            if (pointNumberLayerTA) gTA.getLayers().push(pointNumberLayerTA);
+        }
 
-        window.addLayerToDistanceGroup('tt', pointNumberLayerTT);
+        // ----- TIERRA-TIERRA (TT) -----
+        // Orden deseado: Numeración → Línea A-B → Puntos A-B en tierra
+        const gTT = window.ensureDistanceGroup('tt');
+        if (gTT) {
+            const ttSubLayers = gTT.getLayers().getArray().slice();
+            ttSubLayers.forEach(l => gTT.getLayers().remove(l));
+            
+            if (ggPointLayer) gTT.getLayers().push(ggPointLayer);
+            if (ggLineLayer) gTT.getLayers().push(ggLineLayer);
+            if (pointNumberLayerTT) gTT.getLayers().push(pointNumberLayerTT);
+        }
     } catch (e) {
         console.error('Error insertando capas dinámicas en grupos:', e);
     }
-    // **************************************************************
-    // *** FIN MENÚ DROPDOWN CON CAPAS DE FUNCIONES DE DISTANCIA ****
-    // **************************************************************
 
-        // ****************************************************
+    // ****************************************************
     // *** INICIO MENÚ DROPDOWN CON CAPAS DE ELEVACIÓN ****
     // ****************************************************
 
@@ -4856,7 +4870,8 @@ function initMap() {
     const elevGA = window.ensureElevationGroup('ga');
 
     if (elevGG) {
-        [elevationPointLayer, elevationLineLayer, elevationNumberLayerGG]
+        // Orden deseado: Numeración → Línea A-B → Puntos A-B en tierra
+        [elevationNumberLayerGG, elevationLineLayer, elevationPointLayer]
             .filter(Boolean)
             .forEach(l => elevGG.getLayers().push(l));
     }

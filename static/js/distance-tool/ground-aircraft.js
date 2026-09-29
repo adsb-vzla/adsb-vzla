@@ -824,10 +824,10 @@ function taStep1Message() {
             msg = getTranslatedText('ta_click_first_point', 'Click on the map or an aircraft to mark the first point.');
             break;
         case '1A_nB':
-            msg = getTranslatedText('ta_click_first_point_single', 'Click on the map to mark a single ground point (point A).');
+            msg = getTranslatedText('ta_click_first_point_single', 'Click on the map to mark a single point. <br> Or, Click on multiple aircraft to mark multiple points.');
             break;
         case 'nA_1B':
-            msg = getTranslatedText('ta_click_multiple_points_a', 'Click on the map to mark multiple ground points (point A).');
+            msg = getTranslatedText('ta_click_multiple_points_a', 'Click on the map to mark multiple points.');
             break;
         case 'nA_nB':
             msg = getTranslatedText('ta_click_first_point', 'Click on the map or an aircraft to mark the first point.');
@@ -846,10 +846,36 @@ function taStep2Message() {
             msg = getTranslatedText('ta_click_second_point', 'Now click on the other element (ground or aircraft).');
             break;
         case '1A_nB':
-            msg = getTranslatedText('ta_click_aircraft_multiple_points_b', 'Click on one or more aircraft to mark multiple points B.');
+            // 1A_nB: 1 tierra (A) + múltiples aviones (B)
+            if (taFirstPointType === 'aircraft') {
+                // Primero se tocaron las aeronaves → ahora falta la tierra
+                msg = getTranslatedText(
+                    'ta_1A_nB_aircraft_first_step2',
+                    'Now click on the map to complete the pairs with each aircraft.'
+                );
+            } else {
+                // Primero se tocó el mapa (tierra) → ahora faltan las aeronaves
+                msg = getTranslatedText(
+                    'ta_1A_nB_ground_first_step2',
+                    'Now click on as many aircraft as you want to create pairs with the point on the map.'
+                );
+            }
             break;
         case 'nA_1B':
-            msg = getTranslatedText('ta_click_aircraft_single_point_b', 'Click on an aircraft to mark a single point B.');
+            // nA_1B: múltiples tierras (A) + 1 avión (B)
+            if (taFirstPointType === 'aircraft') {
+                // Primero se tocó la aeronave → ahora faltan los puntos en el mapa
+                msg = getTranslatedText(
+                    'ta_nA_1B_aircraft_first_step2',
+                    'Now click on as many points on the map as you want to create pairs with the aircraft.'
+                );
+            } else {
+                // Primero se tocaron los puntos en el mapa → ahora falta la aeronave
+                msg = getTranslatedText(
+                    'ta_nA_1B_ground_first_step2',
+                    'Now click on the aircraft you want to complete the pairs with each point on the map.'
+                );
+            }
             break;
         case 'nA_nB':
             msg = getTranslatedText('ta_click_second_point', 'Now click on the other element (ground or aircraft).');
@@ -1000,7 +1026,15 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     { key: 'ta_pending_num_' + planeHex, coord: p.position, num: planeNum, isDark: false }
                 ]);
             }
-            hideDistanceGuide();
+
+            // Mostrar el paso 2 correcto según el primer punto
+            if (!firstWasGround) {
+                // Los aviones fueron primero → ahora pedir el punto en el mapa
+                showDistanceGuide(() => taStep2Message());
+            } else {
+                // Ya había tierra → el par está completo con este avión
+                hideDistanceGuide();
+            }
             // NO resetear taFirstPointType: el overlay lo necesita para numerar.
         } else if (distanceToGroundModeType === 'nA_1B') {
             // Si el usuario toca el avión como PRIMER punto, el avión es 1.
@@ -1009,9 +1043,6 @@ function handleDistanceToGroundClick(evt, planeHex) {
             const planeNum = firstWasPlane ? 1 : 2;
 
             planesForGround = [planeHex];
-            hideDistanceGuide();
-            // NO resetear taFirstPointType aquí: updateDistanceToGroundOverlay
-            // lo necesita para numerar correctamente.
 
             // Marcar el punto del avión inmediatamente
             updatePlanePoints('ta', [
@@ -1020,6 +1051,17 @@ function handleDistanceToGroundClick(evt, planeHex) {
             updatePointNumbers('ta', [
                 { key: 'ta_pending_num_' + planeHex, coord: p.position, num: planeNum, isDark: false }
             ]);
+
+            // Mostrar el paso 2 correcto según el primer punto
+            if (firstWasPlane) {
+                // El avión fue primero → ahora pedir puntos del mapa
+                showDistanceGuide(() => taStep2Message());
+            } else {
+                // Ya había tierras → el par está completo con este avión
+                hideDistanceGuide();
+            }
+            // NO resetear taFirstPointType aquí: updateDistanceToGroundOverlay
+            // lo necesita para numerar correctamente.
         } else {
             // Modo 1A1B
             if (hasGround) {
@@ -1101,6 +1143,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     );
                 }
             }
+            // Mostrar el paso 2 correcto según el primer punto seleccionado
             showDistanceGuide(() => taStep2Message());
         } else if (distanceToGroundModeType === '1A_nB') {
             // 1A_nB: la tierra es el punto único (A).

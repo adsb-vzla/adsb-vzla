@@ -42,6 +42,24 @@
     filter: invert(1) sepia(1) saturate(3) hue-rotate(190deg) brightness(0.8);
 }
 
+/* Botón presionado - estilo invertido global */
+#header_side .buttonContainer .btn:active {
+    background-color: #ffffff !important;
+    border-radius: 5px;
+    transition: background-color 0.05s ease;
+}
+
+#header_side .buttonContainer .btn:active i,
+#header_side .buttonContainer .btn:active .fa-solid,
+#header_side .buttonContainer .btn:active .fa-regular,
+#header_side .buttonContainer .btn:active .fa-brands {
+    color: var(--BASE-COLOR) !important;
+}
+
+#header_side .buttonContainer .btn:active img {
+    filter: invert(1) sepia(1) saturate(3) hue-rotate(190deg) brightness(0.8);
+}
+
 html,
 body {
     -ms-overflow-style: -ms-autohiding-scrollbar;
@@ -1804,9 +1822,9 @@ html .ui-button.ui-state-disabled:active {
     background: var(--LIGHTER-BASE-COLOR) !important;
 }
 
-#RP img {
+/* #RP img {
     filter: invert(100);
-}
+} */
 
 #header_side .buttonContainer .btn .header-icon,
 #RP .header-icon,
