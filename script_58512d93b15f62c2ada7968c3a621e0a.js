@@ -4118,6 +4118,13 @@ function ol_map_init() {
             return;
         }
 
+        // ***** MANEJADOR DE CLIC (PROYECCIÓN DE AERONAVES) *****
+        if (window.ProjectionTool && window.ProjectionTool.isActive()) {
+            if (window.ProjectionTool.handleClick(evt, planeHex)) {
+                return;
+            }
+        }
+
         // ***** MANEJADOR DE CLIC (DISTANCIA AERONAVE-AERONAVE) *****
         if (distanceBetweenPlanesMode) {
             handleDistanceBetweenPlanesClick(evt, planeHex);
@@ -4743,7 +4750,7 @@ function initMap() {
         if (gTA) {
             const taSubLayers = gTA.getLayers().getArray().slice();
             taSubLayers.forEach(l => gTA.getLayers().remove(l));
-            
+
             if (groundPointLayer) gTA.getLayers().push(groundPointLayer);
             if (planePointLayerTA) gTA.getLayers().push(planePointLayerTA);
             if (groundToPlaneLineLayer) gTA.getLayers().push(groundToPlaneLineLayer);
@@ -4756,7 +4763,7 @@ function initMap() {
         if (gTT) {
             const ttSubLayers = gTT.getLayers().getArray().slice();
             ttSubLayers.forEach(l => gTT.getLayers().remove(l));
-            
+
             if (ggPointLayer) gTT.getLayers().push(ggPointLayer);
             if (ggLineLayer) gTT.getLayers().push(ggLineLayer);
             if (pointNumberLayerTT) gTT.getLayers().push(pointNumberLayerTT);
