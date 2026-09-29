@@ -136,50 +136,28 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
 // **************************************************
 // **** INICIO NUMERACIÓN DE PUNTOS EN EL MAPA ******
 // **************************************************
-const _pointNumberSources = {};   // layerKey -> ol.source.Vector
-const _pointNumberLayers  = {};   // layerKey -> ol.layer.Vector
+// **************************************************
+// **** INICIO NUMERACIÓN DE PUNTOS EN EL MAPA ******
+// **************************************************
+// NOTA: las fuentes/capas de números y puntos se crean en initMap()
+// (script_*.js) e insertan directamente en sus grupos de distancia.
+// Aquí solo se resuelven las referencias globales para actualizarlas.
 
-function ensurePointNumberLayer(layerKey) {
-    if (_pointNumberLayers[layerKey]) return;
-
-    const source = new ol.source.Vector();
-    const layer = new ol.layer.Vector({
-        name: 'pointNumbers_' + layerKey,
-        type: 'overlay',
-        title: 'Point numbers',
-        source: source,
-        zIndex: 305,
-        style: (feature) => {
-            const num = feature.get('num');
-            const isDark = feature.get('isDark');
-            return new ol.style.Style({
-                text: new ol.style.Text({
-                    text: String(num),
-                    font: 'bold 13px sans-serif',
-                    fill: new ol.style.Fill({ color: isDark ? '#000' : '#fff' }),
-                    stroke: new ol.style.Stroke({ color: isDark ? '#fff' : '#000', width: 3 }),
-                    offsetY: -14
-                })
-            });
-        }
-    });
-
-    OLMap.addLayer(layer);
-    _pointNumberSources[layerKey] = source;
-    _pointNumberLayers[layerKey]  = layer;
+function _getPointNumberSource(layerKey) {
+    switch (layerKey) {
+        case 'aa': return (typeof pointNumberSourceAA !== 'undefined') ? pointNumberSourceAA : null;
+        case 'ta': return (typeof pointNumberSourceTA !== 'undefined') ? pointNumberSourceTA : null;
+        case 'tt': return (typeof pointNumberSourceTT !== 'undefined') ? pointNumberSourceTT : null;
+        default:
+            console.warn('updatePointNumbers: layerKey desconocido:', layerKey);
+            return null;
+    }
 }
 
-/**
- * Actualiza los números de los puntos.
- * @param {string} layerKey - 'aa' | 'ta' | 'tt' | 'elev'
- * @param {Array}  points   - [{ key: 'id-unico', coord: [lon,lat], num: 1, isDark: false }, ...]
- * @param {boolean} replaceAll - Si es true, limpia antes de agregar. Default false.
- */
 function updatePointNumbers(layerKey, points, replaceAll = false) {
     if (!OLMap) return;
-    ensurePointNumberLayer(layerKey);
 
-    const source = _pointNumberSources[layerKey];
+    const source = _getPointNumberSource(layerKey);
     if (!source) return;
 
     if (replaceAll) source.clear();
@@ -187,7 +165,6 @@ function updatePointNumbers(layerKey, points, replaceAll = false) {
     for (const p of points) {
         if (!p || !p.coord || !p.key) continue;
 
-        // Si ya existe un feature con ese key, actualizarlo
         let existing = null;
         source.forEachFeature(f => {
             if (f.get('pointKey') === p.key) existing = f;
@@ -208,11 +185,8 @@ function updatePointNumbers(layerKey, points, replaceAll = false) {
     }
 }
 
-/**
- * Elimina números específicos por su key.
- */
 function removePointNumbers(layerKey, keysArray) {
-    const source = _pointNumberSources[layerKey];
+    const source = _getPointNumberSource(layerKey);
     if (!source) return;
     const toRemove = [];
     source.forEachFeature(f => {
@@ -222,7 +196,8 @@ function removePointNumbers(layerKey, keysArray) {
 }
 
 function clearPointNumbers(layerKey) {
-    if (_pointNumberSources[layerKey]) _pointNumberSources[layerKey].clear();
+    const source = _getPointNumberSource(layerKey);
+    if (source) source.clear();
 }
 // **************************************************
 // **** FIN NUMERACIÓN DE PUNTOS EN EL MAPA *********
@@ -231,47 +206,25 @@ function clearPointNumbers(layerKey) {
 // **************************************************
 // **** CAPA DE PUNTOS PARA AVIONES SELECCIONADOS ***
 // **************************************************
-const _planePointSources = {};   // layerKey -> ol.source.Vector
-const _planePointLayers  = {};   // layerKey -> ol.layer.Vector
+// **************************************************
+// **** CAPA DE PUNTOS PARA AVIONES SELECCIONADOS ***
+// **************************************************
+// NOTA: las fuentes/capas se crean en initMap() (script_*.js).
 
-function ensurePlanePointLayer(layerKey) {
-    if (_planePointLayers[layerKey]) return;
-
-    const source = new ol.source.Vector();
-    const layer = new ol.layer.Vector({
-        name: 'planePoints_' + layerKey,
-        type: 'overlay',
-        title: 'Plane points',
-        source: source,
-        zIndex: 250,
-        style: new ol.style.Style({
-            image: new ol.style.Circle({
-                radius: 6,
-                fill: new ol.style.Fill({ color: '#222' }),
-                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
-            })
-        })
-    });
-
-    if (OLMap) {
-        OLMap.addLayer(layer);
+function _getPlanePointSource(layerKey) {
+    switch (layerKey) {
+        case 'aa': return (typeof planePointSourceAA !== 'undefined') ? planePointSourceAA : null;
+        case 'ta': return (typeof planePointSourceTA !== 'undefined') ? planePointSourceTA : null;
+        default:
+            console.warn('updatePlanePoints: layerKey desconocido:', layerKey);
+            return null;
     }
-
-    _planePointSources[layerKey] = source;
-    _planePointLayers[layerKey] = layer;
 }
 
-/**
- * Actualiza los puntos de los aviones seleccionados.
- * @param {string} layerKey - 'aa' | 'ta'
- * @param {Array}  points   - [{ key, coord, hex }, ...]
- * @param {boolean} replaceAll
- */
 function updatePlanePoints(layerKey, points, replaceAll = false) {
     if (!OLMap) return;
-    ensurePlanePointLayer(layerKey);
 
-    const source = _planePointSources[layerKey];
+    const source = _getPlanePointSource(layerKey);
     if (!source) return;
 
     if (replaceAll) source.clear();
@@ -300,7 +253,7 @@ function updatePlanePoints(layerKey, points, replaceAll = false) {
 }
 
 function removePlanePoints(layerKey, keysArray) {
-    const source = _planePointSources[layerKey];
+    const source = _getPlanePointSource(layerKey);
     if (!source) return;
     const toRemove = [];
     source.forEachFeature(f => {
@@ -310,7 +263,8 @@ function removePlanePoints(layerKey, keysArray) {
 }
 
 function clearPlanePoints(layerKey) {
-    if (_planePointSources[layerKey]) _planePointSources[layerKey].clear();
+    const source = _getPlanePointSource(layerKey);
+    if (source) source.clear();
 }
 
 // ***** REGISTRO GENÉRICO DE CAPAS OVERLAY CACHEABLES *****
@@ -346,6 +300,84 @@ function registerOverlayLayer(layerKey, config) {
 }
 
 
+
+
+
+
+
+// ***** REGISTRO DE GRUPOS DE CAPAS DE DISTANCIA *****
+// Los grupos se crean SIN depender de OLMap, y se insertan en el mapa
+// cuando OLMap esté disponible (ver flushDistanceGroupsToMap).
+const _distanceGroupLayers = {}; // groupKey -> ol.layer.Group
+const _distanceGroupConfigs = {
+    aa:   { name: 'aircraft_aircraft',         title: 'Aircraft-aircraft' },
+    ta:   { name: 'ground_point_aircraft',     title: 'Ground point-aircraft' },
+    tt:   { name: 'ground_point_ground_point', title: 'Ground point-ground point' },
+};
+
+/**
+ * Crea (o retorna) el grupo para una función de distancia.
+ * NO requiere OLMap: los grupos son objetos ol.layer.Group válidos
+ * aunque no estén insertados en el mapa todavía.
+ */
+function ensureDistanceGroup(groupKey) {
+    if (_distanceGroupLayers[groupKey]) return _distanceGroupLayers[groupKey];
+
+    const cfg = _distanceGroupConfigs[groupKey];
+    if (!cfg) return null;
+
+    const group = new ol.layer.Group({
+        name: cfg.name,
+        title: cfg.title,
+        type: 'overlay',
+        fold: 'close',
+        combine: false,
+        layers: new ol.Collection([])
+    });
+
+    _distanceGroupLayers[groupKey] = group;
+    return group;
+}
+
+/**
+ * Inserta una capa dentro del grupo de distancia correspondiente.
+ * El grupo se crea si no existe. Si OLMap ya existe, el grupo se
+ * agrega al mapa para que sea visible.
+ */
+function addLayerToDistanceGroup(groupKey, layer) {
+    const group = ensureDistanceGroup(groupKey);
+    if (!group) {
+        // layerKey desconocido: fallback
+        if (OLMap) OLMap.addLayer(layer);
+        return;
+    }
+    group.getLayers().push(layer);
+
+    // Si OLMap ya existe:
+    //  - Si el grupo NO está dentro de distanceRoot, agregarlo a distanceRoot
+    //  - Si distanceRoot tampoco está en OLMap, agregar distanceRoot
+    if (OLMap) {
+        const root = window._distanceRootGroup;
+        if (root) {
+            if (!root.getLayers().getArray().includes(group)) {
+                root.getLayers().push(group);
+            }
+            if (!OLMap.getLayers().getArray().includes(root)) {
+                OLMap.addLayer(root);
+            }
+        } else if (!OLMap.getLayers().getArray().includes(group)) {
+            // Aún no hay distanceRoot (initMap no corrió todavía):
+            // dejarlo listo, initMap lo insertará en su lugar
+            OLMap.addLayer(group);
+        }
+        if (typeof refreshLayerSwitcher === 'function') {
+            refreshLayerSwitcher();
+        }
+    }
+}
+
+
+
 // ***** EXPONER FUNCIONES GLOBALMENTE PARA USO EN OTROS ARCHIVOS *****
 window.haversineDistance = haversineDistance;
 window.bearingFromLonLat = bearingFromLonLat;
@@ -363,3 +395,5 @@ window.clearPointNumbers  = clearPointNumbers;
 window.updatePlanePoints  = updatePlanePoints;
 window.removePlanePoints  = removePlanePoints;
 window.clearPlanePoints   = clearPlanePoints;
+window.ensureDistanceGroup = ensureDistanceGroup;
+window.addLayerToDistanceGroup = addLayerToDistanceGroup;

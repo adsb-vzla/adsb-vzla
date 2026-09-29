@@ -23,6 +23,25 @@
     background-color: var(--BASE-COLOR);
 }
 
+/* Estado activo: fondo blanco, ícono del color base */
+.btn-active {
+    background-color: #ffffff !important;
+    border-radius: 5px;
+}
+
+/* Font Awesome */
+.btn-active i,
+.btn-active .fa-solid,
+.btn-active .fa-regular,
+.btn-active .fa-brands {
+    color: var(--BASE-COLOR) !important;
+}
+
+/* Imágenes PNG (como el de replay) */
+.btn-active img {
+    filter: invert(1) sepia(1) saturate(3) hue-rotate(190deg) brightness(0.8);
+}
+
 html,
 body {
     -ms-overflow-style: -ms-autohiding-scrollbar;
@@ -863,6 +882,24 @@ input.error {
     top: calc(0px * var(--SCALE));
     width: calc(38px * var(--SCALE));
     z-index: 9;
+}
+
+/* =========================================
+   BOTÓN ACTIVO (panel abierto)
+   ========================================= */
+.btn-active {
+    background-color: #ffffff !important;
+    border-radius: 5px;
+}
+
+/* Si el botón contiene un SVG */
+.btn-active svg {
+    fill: var(--BASE-COLOR) !important;
+}
+
+/* Si el botón contiene una imagen PNG */
+.btn-active img {
+    filter: invert(1) sepia(1) saturate(3) hue-rotate(190deg) brightness(0.8);
 }
 
 #header_top {

@@ -84,6 +84,19 @@ let pairBuffer = []; // temporary buffer for click pairing
 // **************************************************
 const planePointFeatures = new Map(); // key -> ol.Feature
 const planePointOverlays = new Map(); // key -> ol.Overlay
+// Fuentes/capas para números de puntos y puntos de aviones.
+// Se crean en initMap() e insertan directamente en sus grupos de distancia.
+let pointNumberSourceAA = null;
+let pointNumberSourceTA = null;
+let pointNumberSourceTT = null;
+let pointNumberLayerAA = null;
+let pointNumberLayerTA = null;
+let pointNumberLayerTT = null;
+
+let planePointSourceAA = null;
+let planePointSourceTA = null;
+let planePointLayerAA = null;
+let planePointLayerTA = null;
 // Per-pair missing signal tracking for plane-plane mode
 let ppMissingSince = new Map();
 let ppRemoved = new Set();
@@ -497,6 +510,98 @@ function resetSidebarWidth() {
 // *****************************************
 // ***** FIN RESTAURAR ANCHO SIDEBAR *******
 // *****************************************
+
+// ============================================================
+// Vincula un botón con un panel/dropdown toggleable.
+// - mode 'panel': el panel se muestra/oculta con show()/hide()
+// - mode 'dropdown': el dropdown se abre con :focus-within (Tailwind)
+// ============================================================
+function bindToggleButton(options) {
+    const buttonSelector = options.button;
+    const panelSelector = options.panel;
+    const mode = options.mode || 'panel';
+    const closeSelectors = options.closeButtons || [];
+    const activeClass = options.activeClass || 'btn-active';
+    // NUEVO: condición extra para mantener el botón activo
+    const activeWhen = options.activeWhen || null;
+
+    const $button = jQuery(buttonSelector);
+    const $panel = panelSelector ? jQuery(panelSelector) : null;
+
+    if (!$button.length) {
+        console.warn('bindToggleButton: no se encontró', buttonSelector);
+        return;
+    }
+
+    // -------------------- MODO DROPDOWN --------------------
+    if (mode === 'dropdown') {
+        const $container = $button.closest('.dropdown');
+
+        function syncDropdownState() {
+            const isOpen = $container.length && $container[0].matches(':focus-within');
+            const hasActiveItem = typeof activeWhen === 'function' ? !!activeWhen() : false;
+            $button.toggleClass(activeClass, isOpen || hasActiveItem);
+        }
+
+        // Guardar la función en el botón para poder re-invocarla desde fuera
+        $button[0].__syncBtnState = syncDropdownState;
+
+        $container.off('.bindToggleBtn');
+        $container.on('focusin.bindToggleBtn', syncDropdownState);
+        $container.on('focusout.bindToggleBtn', function () {
+            setTimeout(syncDropdownState, 0);
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') setTimeout(syncDropdownState, 0);
+        });
+        document.addEventListener('click', function () {
+            setTimeout(syncDropdownState, 0);
+        });
+
+        // Sincronizar cada vez que cambia la clase activeButton de algún item
+        const observer = new MutationObserver(function () {
+            syncDropdownState();
+        });
+        $container.find('[id]').each(function () {
+            observer.observe(this, { attributes: true, attributeFilter: ['class'] });
+        });
+        // También observar el contenedor por si se agregan items dinámicamente
+        observer.observe($container[0], { childList: true, subtree: true });
+
+        syncDropdownState();
+        return;
+    }
+
+    // -------------------- MODO PANEL --------------------
+    if (!$panel || !$panel.length) {
+        console.warn('bindToggleButton: no se encontró el panel', panelSelector);
+        return;
+    }
+
+    function syncButtonState() {
+        const isVisible = $panel.is(':visible');
+        const hasActiveItem = typeof activeWhen === 'function' ? !!activeWhen() : false;
+        $button.toggleClass(activeClass, isVisible || hasActiveItem);
+    }
+
+    $button[0].__syncBtnState = syncButtonState;
+
+    $button.off('click.bindToggleBtn').on('click.bindToggleBtn', function (e) {
+        e.preventDefault();
+        $panel.toggle();
+        syncButtonState();
+    });
+
+    closeSelectors.forEach(function (sel) {
+        jQuery(sel).off('click.bindToggleBtn').on('click.bindToggleBtn', function () {
+            $panel.hide();
+            syncButtonState();
+        });
+    });
+
+    syncButtonState();
+}
+
 
 // ******************************************
 // ** INICIO BOTÓN RESTAURAR ANCHO SIDEBAR **
@@ -2086,10 +2191,6 @@ function earlyInitPage() {
     jQuery("#leg_prev").click(function () { legShift(-1) });
     jQuery("#leg_next").click(function () { legShift(1) });
 
-    jQuery('#settingsCog').on('click', function () {
-        jQuery('#settings_infoblock').toggle();
-    });
-
     if (onMobile) {
         jQuery('#fullscreenButton').on('click', function () {
             if (!document.fullscreenElement) {
@@ -2101,10 +2202,6 @@ function earlyInitPage() {
     } else {
         jQuery('#fullscreenButton').hide();
     }
-
-    jQuery('#settings_close').on('click', function () {
-        jQuery('#settings_infoblock').hide();
-    });
 
     jQuery('#groundvehicle_filter').on('click', function () {
         filterGroundVehicles(true);
@@ -4217,17 +4314,6 @@ function initMap() {
     // **************************************************************
     // ** INICIO MENÚ DROPDOWN CON CAPAS DE FUNCIONES DE DISTANCIA **
     // **************************************************************
-    distanceLineLayer = new ol.layer.Vector({
-        source: new ol.source.Vector(),
-        style: new ol.style.Style({
-            stroke: new ol.style.Stroke({
-                color: 'blue',
-                width: 2
-            })
-        }),
-        zIndex: 300
-    });
-    layers.push(distanceLineLayer);
 
     try {
         if (!ggPointSource) ggPointSource = new ol.source.Vector();
@@ -4378,6 +4464,121 @@ function initMap() {
     });
     layers.push(distanceLineLayer);
 
+    // **************************************************************
+    // ** CAPAS DE NÚMEROS DE PUNTOS (una por función de distancia) **
+    // ** Existen desde el arranque, igual que las capas base.       **
+    // **************************************************************
+    pointNumberSourceAA = new ol.source.Vector();
+    pointNumberLayerAA = new ol.layer.Vector({
+        name: 'pointNumbers_aa',
+        type: 'overlay',
+        title: 'Point numbers (Aircraft-aircraft)',
+        source: pointNumberSourceAA,
+        zIndex: 305,
+        visible: true,
+        renderBuffer: renderBuffer,
+        style: (feature) => {
+            const num = feature.get('num');
+            const isDark = feature.get('isDark');
+            return new ol.style.Style({
+                text: new ol.style.Text({
+                    text: String(num),
+                    font: 'bold 13px sans-serif',
+                    fill: new ol.style.Fill({ color: isDark ? '#000' : '#fff' }),
+                    stroke: new ol.style.Stroke({ color: isDark ? '#fff' : '#000', width: 3 }),
+                    offsetY: -14
+                })
+            });
+        }
+    });
+
+    pointNumberSourceTA = new ol.source.Vector();
+    pointNumberLayerTA = new ol.layer.Vector({
+        name: 'pointNumbers_ta',
+        type: 'overlay',
+        title: 'Point numbers (Ground-aircraft)',
+        source: pointNumberSourceTA,
+        zIndex: 305,
+        visible: true,
+        renderBuffer: renderBuffer,
+        style: (feature) => {
+            const num = feature.get('num');
+            const isDark = feature.get('isDark');
+            return new ol.style.Style({
+                text: new ol.style.Text({
+                    text: String(num),
+                    font: 'bold 13px sans-serif',
+                    fill: new ol.style.Fill({ color: isDark ? '#000' : '#fff' }),
+                    stroke: new ol.style.Stroke({ color: isDark ? '#fff' : '#000', width: 3 }),
+                    offsetY: -14
+                })
+            });
+        }
+    });
+
+    pointNumberSourceTT = new ol.source.Vector();
+    pointNumberLayerTT = new ol.layer.Vector({
+        name: 'pointNumbers_tt',
+        type: 'overlay',
+        title: 'Point numbers (Ground-ground)',
+        source: pointNumberSourceTT,
+        zIndex: 305,
+        visible: true,
+        renderBuffer: renderBuffer,
+        style: (feature) => {
+            const num = feature.get('num');
+            const isDark = feature.get('isDark');
+            return new ol.style.Style({
+                text: new ol.style.Text({
+                    text: String(num),
+                    font: 'bold 13px sans-serif',
+                    fill: new ol.style.Fill({ color: isDark ? '#000' : '#fff' }),
+                    stroke: new ol.style.Stroke({ color: isDark ? '#fff' : '#000', width: 3 }),
+                    offsetY: -14
+                })
+            });
+        }
+    });
+
+    // **************************************************************
+    // ** CAPAS DE PUNTOS DE AVIONES SELECCIONADOS                 **
+    // **************************************************************
+    planePointSourceAA = new ol.source.Vector();
+    planePointLayerAA = new ol.layer.Vector({
+        name: 'planePoints_aa',
+        type: 'overlay',
+        title: 'Plane points (Aircraft-aircraft)',
+        source: planePointSourceAA,
+        zIndex: 250,
+        visible: true,
+        renderBuffer: renderBuffer,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({ color: '#222' }),
+                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+            })
+        })
+    });
+
+    planePointSourceTA = new ol.source.Vector();
+    planePointLayerTA = new ol.layer.Vector({
+        name: 'planePoints_ta',
+        type: 'overlay',
+        title: 'Plane points (Ground-aircraft)',
+        source: planePointSourceTA,
+        zIndex: 250,
+        visible: true,
+        renderBuffer: renderBuffer,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({ color: '#222' }),
+                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+            })
+        })
+    });
+
     distanceLineLayer.on('change:visible', function (evt) {
         const vis = !!evt.target.getVisible();
         if (!vis) {
@@ -4425,64 +4626,47 @@ function initMap() {
                 return found;
             };
 
+            // Capas base (líneas y puntos estáticos)
             const lAA = takeLayer('distanceLines');
             const lGA_line = takeLayer('groundToPlane');
             const lGA_point = takeLayer('groundPoint');
             const lGG_line = takeLayer('groundToGround');
             const lGG_point = takeLayer('ggPoints');
 
-            const gGG = new ol.layer.Group({
-                name: 'ground_point_ground_point',
-                title: 'Ground point-ground point',
-                type: 'overlay',
-                fold: 'close',
-                combine: false,
-                layers: new ol.Collection(
-                    [lGG_line, lGG_point].filter(Boolean)
-                )
-            });
+            // Obtener/crear grupos (no dependen de OLMap)
+            const gGG = window.ensureDistanceGroup('tt');
+            const gGA = window.ensureDistanceGroup('ta');
+            const gAA = window.ensureDistanceGroup('aa');
+            const gE = window.ensureDistanceGroup('elev');
 
-            const gGA = new ol.layer.Group({
-                name: 'ground_point_aircraft',
-                title: 'Ground point-aircraft',
-                type: 'overlay',
-                fold: 'close',
-                combine: false,
-                layers: new ol.Collection(
-                    [lGA_line, lGA_point].filter(Boolean)
-                )
-            });
+            // Insertar capas base en sus grupos
+            if (gGG) {
+                [lGG_line, lGG_point].filter(Boolean).forEach(l => gGG.getLayers().push(l));
+            }
+            if (gGA) {
+                [lGA_line, lGA_point].filter(Boolean).forEach(l => gGA.getLayers().push(l));
+            }
+            if (gAA && lAA) {
+                gAA.getLayers().push(lAA);
+            }
 
-            const gAA = new ol.layer.Group({
-                name: 'aircraft_aircraft',
-                title: 'Aircraft-aircraft',
-                type: 'overlay',
-                fold: 'close',
-                combine: false,
-                layers: new ol.Collection(
-                    [lAA].filter(Boolean)
-                )
-            });
-
+            // distanceRoot contiene TODOS los subgrupos de distancia
             const distanceRoot = new ol.layer.Group({
                 name: 'distance_tools',
                 title: 'Distance tools',
                 type: 'overlay',
                 fold: 'close',
                 combine: false,
-                layers: new ol.Collection([gGG, gGA, gAA])
+                layers: new ol.Collection([gGG, gGA, gAA, gE].filter(Boolean))
             });
 
+            // Insertar distanceRoot cerca de VFR / siteCircles si es posible
             let vfrIndex = -2;
             let siteCircleIndex = -2;
 
             layers.forEach((layer, index) => {
-                if (layer.get('title') === 'VFR') {
-                    vfrIndex = index;
-                }
-                if (layer.get('name') === 'siteCircles') {
-                    siteCircleIndex = index;
-                }
+                if (layer.get('title') === 'VFR') vfrIndex = index;
+                if (layer.get('name') === 'siteCircles') siteCircleIndex = index;
             });
 
             if (vfrIndex !== -2 && siteCircleIndex !== -2 && siteCircleIndex > vfrIndex) {
@@ -4493,10 +4677,29 @@ function initMap() {
                 layers.push(distanceRoot);
             }
 
+            // Guardar referencia global por si otras funciones la necesitan
+            window._distanceRootGroup = distanceRoot;
+
         } catch (e) {
             console.error('Error agrupando capas de distancia:', e);
         }
     })();
+
+    // **************************************************************
+    // ** INSERTAR CAPAS DE NÚMEROS Y PUNTOS DE AVIONES EN SUS       **
+    // ** GRUPOS CORRESPONDIENTES (ya existen en el dropdown)        **
+    // **************************************************************
+    try {
+        window.addLayerToDistanceGroup('aa', pointNumberLayerAA);
+        window.addLayerToDistanceGroup('aa', planePointLayerAA);
+
+        window.addLayerToDistanceGroup('ta', pointNumberLayerTA);
+        window.addLayerToDistanceGroup('ta', planePointLayerTA);
+
+        window.addLayerToDistanceGroup('tt', pointNumberLayerTT);
+    } catch (e) {
+        console.error('Error insertando capas dinámicas en grupos:', e);
+    }
     // **************************************************************
     // *** FIN MENÚ DROPDOWN CON CAPAS DE FUNCIONES DE DISTANCIA ****
     // **************************************************************
@@ -4572,6 +4775,7 @@ function initMap() {
     // *************************************************
 
     ol_map_init();
+
 
     // handle the layer settings pane checkboxes
     //OLMap.once('postrender', function(e) {
@@ -7798,6 +8002,73 @@ jQuery(document).ready(function () {
     jQuery("#search_clear_button").click(function () {
         jQuery("#search_input").val("");
     });
+
+    // Helper: ¿algún item dentro del contenedor tiene .activeButton?
+    function hasActiveItem(containerSelector) {
+        return jQuery(containerSelector).find('.activeButton').length > 0;
+    }
+
+    // ---------------------------------------------------------
+    // 1) DROPDOWNS con detección de item activo
+    // ---------------------------------------------------------
+
+    // Aircraft tools: los items son #V, #M, #P, #I, #U, #F
+    bindToggleButton({
+        button: '#aircraft_dropdown [role="button"].btn',
+        mode: 'dropdown',
+        activeClass: 'btn-active',
+        activeWhen: function () {
+            return hasActiveItem('#aircraft_dropdown');
+        }
+    });
+
+    // Measurement tools: los items son #D, #TA, #TT
+    // (aquí es donde más importa: si hay una distancia activa, el botón sigue invertido)
+    bindToggleButton({
+        button: '#measurement_dropdown [role="button"].btn',
+        mode: 'dropdown',
+        activeClass: 'btn-active',
+        activeWhen: function () {
+            return hasActiveItem('#measurement_dropdown');
+        }
+    });
+
+    // Track tools: los items son #T, #K
+    bindToggleButton({
+        button: '#track_dropdown [role="button"].btn',
+        mode: 'dropdown',
+        activeClass: 'btn-active',
+        activeWhen: function () {
+            return hasActiveItem('#track_dropdown');
+        }
+    });
+
+    // Label tools: los items son #L, #O
+    bindToggleButton({
+        button: '#label_dropdown [role="button"].btn',
+        mode: 'dropdown',
+        activeClass: 'btn-active',
+        activeWhen: function () {
+            return hasActiveItem('#label_dropdown');
+        }
+    });
+
+    // ---------------------------------------------------------
+    // 2) PANELES flotantes
+    // ---------------------------------------------------------
+
+    bindToggleButton({
+        button: '#settingsCog',
+        panel: '#settings_infoblock',
+        closeButtons: ['#settings_close'],
+        activeClass: 'btn-active'
+    });
+
+    // bindToggleButton({
+    //     button: '#RP',
+    //     panel: '#replayBar',
+    //     activeClass: 'btn-active'
+    // });
 });
 
 // *****************************************************************

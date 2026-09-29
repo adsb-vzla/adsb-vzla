@@ -574,13 +574,25 @@ function updateDistanceToGroundOverlay() {
 
         // Numeración por par usando la key única
         // Determinar el orden de numeración según el modo
+        // Numeración por par usando la key única
+        // Determinar el orden de numeración según el modo
+        // Numeración por par usando la key única.
+        // Regla general: el primer punto seleccionado es 1, el segundo es 2.
         let groundNum, planeNum;
         if (distanceToGroundModeType === 'nA_1B') {
-            // nA_1B: puntos en tierra = 1, avión = 2
-            groundNum = 1;
-            planeNum = 2;
+            // En nA_1B: si el primer clic fue el avión, el avión es 1 y la tierra es 2.
+            // Si el primer clic fue la tierra, la tierra es 1 y el avión es 2.
+            const firstWasPlane = (taFirstPointType === 'aircraft');
+            groundNum = firstWasPlane ? 2 : 1;
+            planeNum = firstWasPlane ? 1 : 2;
+        } else if (distanceToGroundModeType === '1A_nB') {
+            // En 1A_nB: si el primer clic fue avión, los aviones son 1 y la tierra es 2.
+            // Si el primer clic fue tierra, la tierra es 1 y los aviones son 2.
+            const firstWasPlane = (taFirstPointType === 'aircraft');
+            groundNum = firstWasPlane ? 2 : 1;
+            planeNum = firstWasPlane ? 1 : 2;
         } else {
-            // 1A1B, nA_nB, 1A_nB: usar el tipo del primer punto del par
+            // 1A1B, nA_nB: usar el tipo del primer punto del par
             const groundIsFirst = (pairFirstType === 'ground');
             groundNum = groundIsFirst ? 1 : 2;
             planeNum = groundIsFirst ? 2 : 1;
@@ -594,6 +606,9 @@ function updateDistanceToGroundOverlay() {
         updatePlanePoints('ta', [
             { key: 'ta_' + key + '_a', coord: pp, hex: hex }
         ]);
+
+        removePlanePoints('ta', ['ta_pending_' + hex]);
+        removePointNumbers('ta', ['ta_pending_num_' + hex]);
 
         ov.setPosition(midProj);
     }
@@ -674,6 +689,12 @@ function clearTAGroundDrawings(opts = {}) {
 
     try { groundToPlaneLineSource && groundToPlaneLineSource.clear() } catch (_) { }
 
+    try {
+        if (typeof planePointSourceTA !== 'undefined' && planePointSourceTA) {
+            planePointSourceTA.clear();
+        }
+    } catch (_) { }
+
     groundToPlaneLineFeature = null;
 
     if (groundPlaneOverlays && groundPlaneOverlays.size) {
@@ -707,6 +728,9 @@ function clearTAGroundDrawings(opts = {}) {
         try { groundPlaneMissingSince && groundPlaneMissingSince.clear(); } catch (_) { }
         try { groundPlaneRemoved && groundPlaneRemoved.clear(); } catch (_) { }
     }
+
+    try { clearPointNumbers('ta'); } catch (_) { }
+    try { clearPlanePoints('ta'); } catch (_) { }
 
     if (distanceGroundUpdateInterval) {
         clearInterval(distanceGroundUpdateInterval);
@@ -877,6 +901,15 @@ function handleDistanceToGroundClick(evt, planeHex) {
         }
     }
 
+    // En 1A_nB, si ya hay aviones seleccionados pero todavía no hay tierra,
+    // taFirstPointType ya debería estar en 'aircraft' desde el primer clic.
+    // Si por alguna razón quedó null pero hay aviones, corregirlo.
+    if (distanceToGroundModeType === '1A_nB' &&
+        planesForGround.length > 0 &&
+        taFirstPointType == null) {
+        taFirstPointType = 'aircraft';
+    }
+
     // === VALIDAR SEGUNDO CLIC SEGÚN EL PRIMER PUNTO ===
     // Solo validar si YA existe un primer punto (no si estamos empezando)
     const hasFirstPoint = hasGround || hasPlane || hasPendingGround || hasPendingPlane;
@@ -925,6 +958,9 @@ function handleDistanceToGroundClick(evt, planeHex) {
                 // No volver a agregar el punto tierra (ya se agregó en el primer clic)
                 hideDistanceGuide();
                 taFirstPointType = null; // RESET para permitir nuevo par
+
+                removePlanePoints('ta', ['ta_pending_' + planeHex]);
+                removePointNumbers('ta', ['ta_pending_num_' + planeHex]);
             } else if (!hasPlane) {
                 // No hay nada pendiente: este avión será el primer punto
                 taPendingPlaneHex = planeHex;
@@ -932,18 +968,58 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     'ta_click_second_point',
                     'Now click on the other element (ground or aircraft).'
                 ));
+
+                updatePlanePoints('ta', [
+                    { key: 'ta_pending_' + planeHex, coord: p.position, hex: planeHex }
+                ]);
+                updatePointNumbers('ta', [
+                    { key: 'ta_pending_num_' + planeHex, coord: p.position, num: 1, isDark: false }
+                ]);
             }
         } else if (distanceToGroundModeType === '1A_nB') {
+            // En 1A_nB, el primer punto (sea tierra o avión) es 1.
+            // Los aviones tocados antes de la tierra se marcan como 1.
+            // Si ya hay tierra seleccionada, los aviones son 2.
+            const firstWasGround = (taFirstPointType === 'ground');
+            const planeNum = firstWasGround ? 2 : 1;
+
             if (!planesForGround.includes(planeHex)) {
                 planesForGround.push(planeHex);
+
+                // Marcar el punto del avión inmediatamente
+                updatePlanePoints('ta', [
+                    { key: 'ta_pending_' + planeHex, coord: p.position, hex: planeHex }
+                ]);
+                updatePointNumbers('ta', [
+                    { key: 'ta_pending_num_' + planeHex, coord: p.position, num: planeNum, isDark: false }
+                ]);
+            } else {
+                // Si el avión ya estaba seleccionado (por ejemplo, porque el usuario
+                // cambió la tierra y se re-numeran los pares), actualizar su número.
+                updatePointNumbers('ta', [
+                    { key: 'ta_pending_num_' + planeHex, coord: p.position, num: planeNum, isDark: false }
+                ]);
             }
             hideDistanceGuide();
-            // En 1A_nB, el punto A es único y los B son múltiples.
-            // No reseteamos taFirstPointType porque siempre es 'ground'.
+            // NO resetear taFirstPointType: el overlay lo necesita para numerar.
         } else if (distanceToGroundModeType === 'nA_1B') {
+            // Si el usuario toca el avión como PRIMER punto, el avión es 1.
+            // Si ya hay tierras seleccionadas, el avión es 2.
+            const firstWasPlane = (taFirstPointType === 'aircraft');
+            const planeNum = firstWasPlane ? 1 : 2;
+
             planesForGround = [planeHex];
             hideDistanceGuide();
-            taFirstPointType = null;
+            // NO resetear taFirstPointType aquí: updateDistanceToGroundOverlay
+            // lo necesita para numerar correctamente.
+
+            // Marcar el punto del avión inmediatamente
+            updatePlanePoints('ta', [
+                { key: 'ta_pending_' + planeHex, coord: p.position, hex: planeHex }
+            ]);
+            updatePointNumbers('ta', [
+                { key: 'ta_pending_num_' + planeHex, coord: p.position, num: planeNum, isDark: false }
+            ]);
         } else {
             // Modo 1A1B
             if (hasGround) {
@@ -967,6 +1043,12 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     'ta_click_second_point',
                     'Now click on the other element (ground or aircraft).'
                 ));
+                updatePlanePoints('ta', [
+                    { key: 'ta_pending_' + planeHex, coord: p.position, hex: planeHex }
+                ]);
+                updatePointNumbers('ta', [
+                    { key: 'ta_pending_num_' + planeHex, coord: p.position, num: 1, isDark: false }
+                ]);
             }
         }
     }
@@ -992,6 +1074,9 @@ function handleDistanceToGroundClick(evt, planeHex) {
                 }
                 hideDistanceGuide();
                 taFirstPointType = null; // RESET
+
+                removePlanePoints('ta', ['ta_pending_' + hex]);
+                removePointNumbers('ta', ['ta_pending_num_' + hex]);
             } else if (!hasPendingGround) {
                 // No hay nada pendiente: esta tierra será el primer punto
                 taPendingGround = lonlat;
@@ -1017,6 +1102,32 @@ function handleDistanceToGroundClick(evt, planeHex) {
                 }
             }
             showDistanceGuide(() => taStep2Message());
+        } else if (distanceToGroundModeType === '1A_nB') {
+            // 1A_nB: la tierra es el punto único (A).
+            // Si aún no hay tierra, esta es la primera → será 1 (o 2 si los
+            // aviones fueron primero, pero eso se calcula en el overlay).
+            if (!hasGround) {
+                groundPoints = [lonlat];
+                groundPointCoord = lonlat;
+                if (groundPointSource) {
+                    groundPointSource.clear();
+                    groundPointSource.addFeature(
+                        new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                    );
+                }
+                hideDistanceGuide();
+            } else {
+                // Ya había tierra: reemplazarla (1A_nB solo admite una).
+                groundPoints = [lonlat];
+                groundPointCoord = lonlat;
+                if (groundPointSource) {
+                    groundPointSource.clear();
+                    groundPointSource.addFeature(
+                        new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
+                    );
+                }
+                hideDistanceGuide();
+            }
         } else {
             // Modo 1A1B
             if (hasPlane) {
