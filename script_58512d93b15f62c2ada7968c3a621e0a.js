@@ -188,6 +188,11 @@ let elevationAircraftHex = null;
 let elevationGroundAircraftUpdateInterval = null;
 let elevationCountdownInterval = null;
 let elevationCountdownValue = 0;
+// ***** FUENTES Y CAPAS PARA NUMERACIÓN DE PUNTOS DE ELEVACIÓN *****
+let elevationNumberSourceGG = null;
+let elevationNumberLayerGG = null;
+let elevationNumberSourceGA = null;
+let elevationNumberLayerGA = null;
 
 // **************************************************
 // ****** INICIO VARIABLES INDICADOR DE ZOOM ********
@@ -4472,7 +4477,7 @@ function initMap() {
     pointNumberLayerAA = new ol.layer.Vector({
         name: 'pointNumbers_aa',
         type: 'overlay',
-        title: 'Point numbers (Aircraft-aircraft)',
+        title: 'Point numbers',
         source: pointNumberSourceAA,
         zIndex: 305,
         visible: true,
@@ -4496,7 +4501,7 @@ function initMap() {
     pointNumberLayerTA = new ol.layer.Vector({
         name: 'pointNumbers_ta',
         type: 'overlay',
-        title: 'Point numbers (Ground-aircraft)',
+        title: 'Point numbers',
         source: pointNumberSourceTA,
         zIndex: 305,
         visible: true,
@@ -4520,7 +4525,7 @@ function initMap() {
     pointNumberLayerTT = new ol.layer.Vector({
         name: 'pointNumbers_tt',
         type: 'overlay',
-        title: 'Point numbers (Ground-ground)',
+        title: 'Point numbers',
         source: pointNumberSourceTT,
         zIndex: 305,
         visible: true,
@@ -4547,7 +4552,7 @@ function initMap() {
     planePointLayerAA = new ol.layer.Vector({
         name: 'planePoints_aa',
         type: 'overlay',
-        title: 'Plane points (Aircraft-aircraft)',
+        title: 'Plane point',
         source: planePointSourceAA,
         zIndex: 250,
         visible: true,
@@ -4565,7 +4570,7 @@ function initMap() {
     planePointLayerTA = new ol.layer.Vector({
         name: 'planePoints_ta',
         type: 'overlay',
-        title: 'Plane points (Ground-aircraft)',
+        title: 'Plane point',
         source: planePointSourceTA,
         zIndex: 250,
         visible: true,
@@ -4578,6 +4583,48 @@ function initMap() {
             })
         })
     });
+
+        // **************************************************************
+    // ** MOVER CAPAS DE GA AL GRUPO DE ELEVACIÓN (si el grupo existe) **
+    // **************************************************************
+    try {
+        const elevGA = window.ensureElevationGroup('ga');
+        if (elevGA) {
+            // Remover las capas de donde estén (layers o grupos de distancia)
+            const takeLayerFromAnywhere = (layer) => {
+                if (!layer) return;
+                // Buscar en layers raíz
+                const idx = layers.getArray().indexOf(layer);
+                if (idx >= 0) {
+                    layers.removeAt(idx);
+                }
+                // Buscar recursivamente en grupos
+                layers.forEach((lyr) => {
+                    if (lyr instanceof ol.layer.Group) {
+                        const sub = lyr.getLayers().getArray();
+                        const i = sub.indexOf(layer);
+                        if (i >= 0) {
+                            lyr.getLayers().removeAt(i);
+                        }
+                    }
+                });
+            };
+
+            // groundPointLayer y groundToPlaneLineLayer se crean más arriba en initMap
+            takeLayerFromAnywhere(groundPointLayer);
+            takeLayerFromAnywhere(groundToPlaneLineLayer);
+
+            // planePointLayerTA también se crea aquí
+            takeLayerFromAnywhere(planePointLayerTA);
+
+            // Añadir al grupo GA en el orden deseado
+            [groundPointLayer, planePointLayerTA, groundToPlaneLineLayer]
+                .filter(Boolean)
+                .forEach(l => elevGA.getLayers().push(l));
+        }
+    } catch (e) {
+        console.error('Error moviendo capas GA al grupo de elevación:', e);
+    }
 
     distanceLineLayer.on('change:visible', function (evt) {
         const vis = !!evt.target.getVisible();
@@ -4704,14 +4751,16 @@ function initMap() {
     // *** FIN MENÚ DROPDOWN CON CAPAS DE FUNCIONES DE DISTANCIA ****
     // **************************************************************
 
-    // ****************************************************
+        // ****************************************************
     // *** INICIO MENÚ DROPDOWN CON CAPAS DE ELEVACIÓN ****
     // ****************************************************
+
+    // ***** CAPAS PARA MODO GROUND-GROUND (GG) *****
     if (!elevationPointSource) elevationPointSource = new ol.source.Vector();
     elevationPointLayer = new ol.layer.Vector({
         name: 'elev_points',
         type: 'overlay',
-        title: 'A-B Ground points',
+        title: 'A-B ground points',
         source: elevationPointSource,
         zIndex: 262,
         style: new ol.style.Style({
@@ -4737,17 +4786,95 @@ function initMap() {
         visible: true
     });
 
+    // ***** CAPA DE NUMERACIÓN PARA GG *****
+    if (!elevationNumberSourceGG) elevationNumberSourceGG = new ol.source.Vector();
+    elevationNumberLayerGG = new ol.layer.Vector({
+        name: 'elev_pointnumbers_gg',
+        type: 'overlay',
+        title: 'Numbering',
+        source: elevationNumberSourceGG,
+        zIndex: 305,
+        visible: true,
+        renderBuffer: renderBuffer,
+        style: (feature) => {
+            const num = feature.get('num');
+            const isDark = feature.get('isDark');
+            return new ol.style.Style({
+                text: new ol.style.Text({
+                    text: String(num),
+                    font: 'bold 13px sans-serif',
+                    fill: new ol.style.Fill({ color: isDark ? '#000' : '#fff' }),
+                    stroke: new ol.style.Stroke({ color: isDark ? '#fff' : '#000', width: 3 }),
+                    offsetY: -14
+                })
+            });
+        }
+    });
+
+    // ***** CAPAS PARA MODO GROUND-AIRCRAFT (GA) *****
+    // NOTA: reutilizamos las mismas fuentes/capas que ya usa el modo GA
+    // en el archivo elevation-tool.js. Si ya existen (porque el tool
+    // ground-aircraft las crea bajo demanda), las creamos aquí para
+    // que aparezcan siempre en el menú de capas.
+
+    // Ground point (reutiliza groundPointLayer si existe)
+    if (typeof groundPointLayer === 'undefined' || !groundPointLayer) {
+        // Si no existe, se creará más abajo en el bloque de distancia.
+        // Por ahora dejamos referencia nula y se añadirá dinámicamente.
+    }
+
+    // Plane point (reutiliza planePointLayerTA si existe)
+    // A-B Line (reutiliza groundToPlaneLineLayer si existe)
+
+    // ***** CAPA DE NUMERACIÓN PARA GA *****
+    if (!elevationNumberSourceGA) elevationNumberSourceGA = new ol.source.Vector();
+    elevationNumberLayerGA = new ol.layer.Vector({
+        name: 'elev_pointnumbers_ga',
+        type: 'overlay',
+        title: 'Numbering',
+        source: elevationNumberSourceGA,
+        zIndex: 305,
+        visible: true,
+        renderBuffer: renderBuffer,
+        style: (feature) => {
+            const num = feature.get('num');
+            const isDark = feature.get('isDark');
+            return new ol.style.Style({
+                text: new ol.style.Text({
+                    text: String(num),
+                    font: 'bold 13px sans-serif',
+                    fill: new ol.style.Fill({ color: isDark ? '#000' : '#fff' }),
+                    stroke: new ol.style.Stroke({ color: isDark ? '#fff' : '#000', width: 3 }),
+                    offsetY: -14
+                })
+            });
+        }
+    });
+
+    // ***** GRUPOS ANIDADOS *****
+    const elevGG = window.ensureElevationGroup('gg');
+    const elevGA = window.ensureElevationGroup('ga');
+
+    if (elevGG) {
+        [elevationPointLayer, elevationLineLayer, elevationNumberLayerGG]
+            .filter(Boolean)
+            .forEach(l => elevGG.getLayers().push(l));
+    }
+    if (elevGA) {
+        [elevationNumberLayerGA]
+            .filter(Boolean)
+            .forEach(l => elevGA.getLayers().push(l));
+    }
+
+    // ***** GRUPO RAÍZ DE ELEVACIÓN *****
     const elevRoot = new ol.layer.Group({
         name: 'elevation_tool',
-        title: 'Elevation tool',
+        title: 'Elevation tools',
         type: 'overlay',
         fold: 'close',
         combine: false,
         visible: true,
-        layers: new ol.Collection([
-            elevationPointLayer,
-            elevationLineLayer
-        ])
+        layers: new ol.Collection([elevGG, elevGA].filter(Boolean))
     });
 
     let FIRIndex = 0;
@@ -8050,6 +8177,15 @@ jQuery(document).ready(function () {
         activeClass: 'btn-active',
         activeWhen: function () {
             return hasActiveItem('#label_dropdown');
+        }
+    });
+
+    bindToggleButton({
+        button: '#elevation_dropdown [role="button"].btn',
+        mode: 'dropdown',
+        activeClass: 'btn-active',
+        activeWhen: function () {
+            return hasActiveItem('#elevation_dropdown');
         }
     });
 

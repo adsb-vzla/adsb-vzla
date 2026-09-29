@@ -1242,18 +1242,20 @@
           <!-- FIN OPCIONES DE ZOOM -->
 
           <!-- INICIO OPCIÓN DE ELEVACIÓN -->
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="E"
-            data-i18n-title="elevation_tooltip"
-            title="Display the elevation of the existing terrain between two points." onclick="toggleElevationMode();">
-            <i class="fa-solid fa-mountain-sun"></i></i>
-          </div>
-          <!-- FIN OPCIÓN DE ELEVACIÓN -->
-
-          <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="EA"
-            data-i18n-title="elevation_ground_aircraft_tooltip"
-            title="Display terrain elevation from a ground point to an aircraft."
-            onclick="startElevationGroundAircraft();">
-            <i class="fa-solid fa-panorama"></i>
+          <div id="elevation_dropdown" class="dropdown dropdown-left">
+            <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
+              data-i18n-title="elevation_tools_tooltip" title="Elevation tools - Open elevation options."><i
+                class="fa-solid fa-mountain-sun fa-xl"></i></div>
+            <ul tabindex="-1" class="dropdown-content menu bg-base-color rounded-box z-50 w-52 p-2">
+              <li class="dropdown-menu-title" data-i18n="elevation_tools">Elevation tools</li>
+              <li><a id="E" data-i18n-title="elevation_tooltip"
+                  title="Display the elevation of the existing terrain between two points."
+                  onclick="toggleElevationMode();" data-i18n="elevation_ground_ground">Ground-ground</a></li>
+              <li><a id="EA" data-i18n-title="elevation_ground_aircraft_tooltip"
+                  title="Display terrain elevation from a ground point to an aircraft."
+                  onclick="startElevationGroundAircraft();" data-i18n="elevation_ground_aircraft">Ground-aircraft</a>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -1601,7 +1603,7 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
 
   <script src="./static/js/shared.js"></script>
-  
+
   <script src="./static/js/distance-tool/aircraft-aircraft.js"></script>
   <script src="./static/js/distance-tool/ground-aircraft.js"></script>
   <script src="./static/js/distance-tool/ground-ground.js"></script>
@@ -1868,65 +1870,65 @@
     })();
   </script> -->
   <!-- ***** CERRAR SESIÓN ***** -->
-<script>
-  (function () {
-    function bindLogout() {
-      const link = document.getElementById('logout-sidebar-link');
-      if (!link || link.dataset.bound === '1') return;
-      link.dataset.bound = '1';
-      link.addEventListener('click', function (e) {
-        e.preventDefault();
+  <script>
+    (function () {
+      function bindLogout() {
+        const link = document.getElementById('logout-sidebar-link');
+        if (!link || link.dataset.bound === '1') return;
+        link.dataset.bound = '1';
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
 
-        // 1. Limpiar estado persistente que puede re-disparar initialize()
-        try {
-          // Limpiar solo las claves de tar1090, no todo localStorage
-          const keysToRemove = [];
-          for (let i = 0; i < localStorage.length; i++) {
-            const k = localStorage.key(i);
-            if (k && (k.startsWith('layer_') ||
-                      k === 'active_tab' ||
-                      k === 'sortCol' ||
-                      k === 'sortAscending' ||
-                      k === 'columnOrder' ||
-                      k === 'sidebar_width' ||
-                      k === 'sidebar_visible' ||
-                      k === 'MapType_tar1090' ||
-                      k === 'zoomLvl' ||
-                      k === 'CenterLat' ||
-                      k === 'CenterLon')) {
-              keysToRemove.push(k);
+          // 1. Limpiar estado persistente que puede re-disparar initialize()
+          try {
+            // Limpiar solo las claves de tar1090, no todo localStorage
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (k && (k.startsWith('layer_') ||
+                k === 'active_tab' ||
+                k === 'sortCol' ||
+                k === 'sortAscending' ||
+                k === 'columnOrder' ||
+                k === 'sidebar_width' ||
+                k === 'sidebar_visible' ||
+                k === 'MapType_tar1090' ||
+                k === 'zoomLvl' ||
+                k === 'CenterLat' ||
+                k === 'CenterLon')) {
+                keysToRemove.push(k);
+              }
             }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+
+            // Limpiar sessionStorage relacionado
+            sessionStorage.clear();
+          } catch (err) {
+            console.warn('Logout: error limpiando storage', err);
           }
-          keysToRemove.forEach(k => localStorage.removeItem(k));
 
-          // Limpiar sessionStorage relacionado
-          sessionStorage.clear();
-        } catch (err) {
-          console.warn('Logout: error limpiando storage', err);
-        }
+          // 2. Forzar recarga COMPLETA desde el servidor (no bfcache)
+          //    reemplazar la URL evita que el navegador restaure desde bfcache
+          const target = 'login.html';
+          if (window.location.replace) {
+            window.location.replace(target);
+          } else {
+            window.location.href = target;
+          }
+        });
+      }
 
-        // 2. Forzar recarga COMPLETA desde el servidor (no bfcache)
-        //    reemplazar la URL evita que el navegador restaure desde bfcache
-        const target = 'login.html';
-        if (window.location.replace) {
-          window.location.replace(target);
-        } else {
-          window.location.href = target;
-        }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindLogout);
+      } else {
+        bindLogout();
+      }
+
+      document.addEventListener('languageChanged', function () {
+        setTimeout(bindLogout, 100);
       });
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', bindLogout);
-    } else {
-      bindLogout();
-    }
-
-    document.addEventListener('languageChanged', function () {
-      setTimeout(bindLogout, 100);
-    });
-  })();
-</script>
+    })();
+  </script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">
 

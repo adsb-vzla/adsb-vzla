@@ -403,6 +403,10 @@
             'zoom_out_tooltip': 'Zoom Out - Decrease map zoom level.',
 
             // *** PANORAMA-OVERLAY ***
+            'elevation_tools': 'Elevation tools',
+            'elevation_tools_tooltip': 'Elevation tools - Open elevation options.',
+            'elevation_ground_ground': 'Ground point-ground point',
+            'elevation_ground_aircraft': 'Ground point-aircraft',
             'elevation_tooltip': 'Display the elevation of the existing terrain between two points.',
             'wait_for_elevation': 'Wait for the elevation to finish rendering...',
             'building_elevation': 'Building elevation...',
@@ -413,6 +417,13 @@
             'layer_group_elevation_tool': 'Elevation tool',
             'layer_elev_points': 'A-B Ground points',
             'layer_elev_line': 'A-B Line',
+            'layer_elevation_tool': 'Elevation tools',
+            'layer_group_elevation_gg': 'Ground point-ground point',
+            'layer_group_elevation_ga': 'Ground point-aircraft',
+            'layer_elev_points': 'A-B ground points',
+            'layer_elev_line': 'A-B Line',
+            'layer_elev_pointnumbers_gg': 'Numbering',
+            'layer_elev_pointnumbers_ga': 'Numbering',
 
             // *** REPLAY ***
             'play': 'Play',
@@ -537,7 +548,6 @@
             'select_aircraft_valid_position': 'Select an aircraft with a valid position.',
             'select_aircraft_complete_pair': 'Select an aircraft to complete the pair.',
             'pairs_mode': 'Pairs Mode',
-            // 'click_two_aircraft_measure': 'Click on two aircraft to measure the distance.',
             'distance_select_plane_a': 'Click on an aircraft to mark point A.',
             'distance_select_plane_b': 'Click on another aircraft to mark point B.',
             'distance_invalid_aircraft': 'Select an aircraft.',
@@ -1030,6 +1040,10 @@
             'zoom_out_tooltip': 'Alejar - Disminuir el nivel de zoom del mapa.',
 
             // *** PANORAMA-OVERLAY ***
+            'elevation_tools': 'Herramientas de elevación',
+            'elevation_tools_tooltip': 'Herramientas de elevación - Abre opciones de elevación.',
+            'elevation_ground_ground': 'Punto en tierra-punto en tierra',
+            'elevation_ground_aircraft': 'Punto en tierra-aeronave',
             'elevation_tooltip': 'Mostrar la elevación del terreno existente entre dos puntos.',
             'wait_for_elevation': 'Espere a que la elevación termine de dibujarse...',
             'building_elevation': 'Generando elevación...',
@@ -1040,12 +1054,18 @@
             'layer_group_elevation_tool': 'Herramienta de elevación',
             'layer_elev_points': 'Puntos A-B en tierra',
             'layer_elev_line': 'Línea A-B',
+            'layer_elevation_tool': 'Herramientas de elevación',
+            'layer_group_elevation_gg': 'Punto en tierra-punto en tierra',
+            'layer_group_elevation_ga': 'Punto en tierra-aeronave',
+            'layer_elev_points': 'Puntos A-B en tierra',
+            'layer_elev_line': 'Línea A-B',
+            'layer_elev_pointnumbers_gg': 'Numeración',
+            'layer_elev_pointnumbers_ga': 'Numeración',
 
             // *** REPLAY ***
             'play': 'Reproducir',
             'pause': 'Pausar',
             'date_label': 'Fecha',
-            // 'utc_label': 'UTC:',
             'playback_label': 'Reproducción',
             'hours_label': 'Horas',
             'minutes_label': 'Minutos',
