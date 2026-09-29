@@ -2003,26 +2003,15 @@ html .ui-button.ui-state-disabled:active {
 
 #hourSelect {
     grid-area: hourSlider;
-    /* margin-right: calc(var(--replay-handle-gap) / 2);
-    margin-left: calc(var(--replay-handle-gap) / 2); */
-    position: relative;
-    padding: 10px 0 0;
-    border-radius: 10px;
-    padding-left: 8px;
-    padding-right: 8px;
-    background: rgba(8, 12, 22, 0.7);
-    border: 1px solid rgba(120, 160, 255, 0.18);
-    box-shadow:
-        inset 0 1px 2px rgba(255, 255, 255, 0.06),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.5);
-    overflow: visible;
+    margin-right: calc(var(--replay-handle-gap) / 2);
+    margin-left: calc(var(--replay-handle-gap) / 2);
 
 }
 
 #minuteSelect {
     grid-area: minuteSlider;
-    /* margin-right: calc(var(--replay-handle-gap) / 2);
-    margin-left: calc(var(--replay-handle-gap) / 2); */
+    margin-right: calc(var(--replay-handle-gap) / 2);
+    margin-left: calc(var(--replay-handle-gap) / 2);
 }
 
 #replaySpeedSelect {
@@ -2779,69 +2768,6 @@ Estilos para los buscadores unificados
     max-height: 2.5rem;
 }
 
-/* ==========================================
-   REPLAY - INPUTS NUMÉRICOS CON INDICADORES
-   ========================================== */
-
-/* Contenedor de los inputs */
-#hourSelect,
-#minuteSelect {
-    /* display: flex !important; */
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 4px !important;
-    /* background: rgba(8, 12, 22, 0.7) !important; */
-    /* border: 1px solid rgba(120, 160, 255, 0.18) !important; */
-    border-radius: 0.5rem;
-    padding: 0px 12px !important;
-    min-height: 35px;
-    /* box-sizing: border-box; */
-    /* box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.06),
-                inset 0 -1px 2px rgba(0, 0, 0, 0.5); */
-}
-
-/* Input numérico */
-.replay-number-input {
-    width: 100%;
-    max-width: 20px;
-    /* padding: 6px 4px; */
-    font-size: calc(15px * var(--SCALE));
-    font-weight: 700;
-    text-align: center;
-    background: transparent !important;
-    border: none !important;
-    outline: none !important;
-    color: #e9edf7;
-    font-family: 'Helvetica Neue', Helvetica, Verdana, sans-serif;
-    -moz-appearance: textfield;
-    appearance: textfield;
-    transition: all 0.2s ease;
-}
-
-/* Ocultar flechas en navegadores WebKit */
-/* .replay-number-input::-webkit-inner-spin-button,
-.replay-number-input::-webkit-outer-spin-button {
-    /* -webkit-appearance: none; */
-    /* margin: 0; 
-} */
-
-/* Firefox */
-/* .replay-number-input[type="number"] {
-    -moz-appearance: textfield;
-} */
-
-/* Efectos hover/focus */
-/* .replay-number-input:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-radius: 4px;
-}
-
-.replay-number-input:focus {
-    background: rgba(255, 255, 255, 0.10) !important;
-    border-radius: 4px;
-    box-shadow: 0 0 0 2px rgba(120, 160, 255, 0.30);
-} */
-
 /* Indicadores h y m */
 .replay-input-label {
     font-size: calc(13px * var(--SCALE));
@@ -2857,58 +2783,6 @@ Estilos para los buscadores unificados
 .replay-input-label:hover {
     opacity: 1;
 }
-
-/* Etiquetas de hint (HH, MM) */
-/* #replayHoursHint,
-#replayMinutesHint {
-    font-size: calc(11px * var(--SCALE));
-    color: rgba(255, 255, 255, 0.4);
-    text-align: center;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-} */
-
-/* Ajuste responsive */
-/* @media screen and (max-width: 768px) {
-    #hourSelect,
-    #minuteSelect {
-        padding: 4px 8px !important;
-        min-height: 36px;
-    }
-    .replay-number-input {
-        font-size: calc(15px * var(--SCALE));
-        max-width: 50px;
-        padding: 4px 2px;
-    }
-    .replay-input-label {
-        font-size: calc(11px * var(--SCALE));
-        min-width: 12px;
-    }
-} */
-
-/* Estado de edición activa - resaltar contenedor */
-#hourSelect:focus-within,
-#minuteSelect:focus-within {
-    border-color: rgba(120, 160, 255, 0.5) !important;
-    box-shadow: 0 0 0 2px rgba(120, 160, 255, 0.15),
-                inset 0 1px 2px rgba(255, 255, 255, 0.06) !important;
-}
-
-/* Ajustes para la barra de replay */
-/* #replayBar {
-    gap: calc(4px * var(--SCALE));
-    padding: calc(4px * var(--SCALE)) calc(8px * var(--SCALE));
-}
-
-#hourSelect,
-#minuteSelect {
-    min-width: 70px;
-    flex: 0 1 auto;
-}
-
-#replaySpeedSelect {
-    min-width: 100px;
-} */
 
 #histDatePicker,
 #leg_sel,
@@ -3023,3 +2897,29 @@ Estilos para los buscadores unificados
     font-size: 11px;
     pointer-events: none;
 }
+
+
+
+
+
+
+
+
+
+
+
+/* Estilo del input editable dentro del handle del slider */
+/* .ui-slider-handle .slider-edit-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: inherit;
+    font: inherit;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    box-sizing: border-box;
+    border-radius: 2px;
+} */

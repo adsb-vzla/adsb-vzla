@@ -11843,43 +11843,14 @@ function setReplayTimeHint(date) {
 // **** FIN MOSTRAR FECHA, HORAS Y MINUTOS EN EL REPLAY *****
 // **********************************************************
 
-// function replayOnSliderMove() {
-//     clearTimeout(refreshId);
-
-//     let date = new Date(replay.dateText);
-//     date.setUTCHours(Number(replay.hours));
-//     date.setUTCMinutes(Number(replay.minutes));
-//     replay.seconds = 0;
-//     date.setUTCSeconds(Number(replay.seconds));
-
-//     setReplayTimeHint(date);
-// }
-function replayOnInputChange() {
+function replayOnSliderMove() {
     clearTimeout(refreshId);
 
-    const hourInput = document.getElementById('replayHourInput');
-    const minuteInput = document.getElementById('replayMinuteInput');
-
-    if (!hourInput || !minuteInput) return;
-
-    // Solo si no están en edición activa
-    if (document.activeElement === hourInput || document.activeElement === minuteInput) {
-        return;
-    }
-
-    let hours = parseInt(hourInput.value);
-    let minutes = parseInt(minuteInput.value);
-
-    if (isNaN(hours)) hours = 0;
-    if (isNaN(minutes)) minutes = 0;
-
-    hours = Math.max(0, Math.min(23, hours));
-    minutes = Math.max(0, Math.min(59, minutes));
-
     let date = new Date(replay.dateText);
-    date.setUTCHours(hours);
-    date.setUTCMinutes(minutes);
-    date.setUTCSeconds(0);
+    date.setUTCHours(Number(replay.hours));
+    date.setUTCMinutes(Number(replay.minutes));
+    replay.seconds = 0;
+    date.setUTCSeconds(Number(replay.seconds));
 
     setReplayTimeHint(date);
 }
@@ -12370,267 +12341,35 @@ function showReplayBar() {
 
         jQuery("#replayDatepicker").datepicker(datepickerOptions);
 
-        // jQuery('#hourSelect').slider({
-        //     step: 1, min: 0, max: 23,
-        //     slide: function (event, ui) {
-        //         replay.hours = ui.value;
-        //         updateSliderTip(ui.handle, ui.value, "h");
-        //         replayOnSliderMove();
-        //     },
-        //     change: function (event, ui) {
-        //         updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "h");
-        //         replayJump();
-        //     }
-        // });
-
-        // setupSliderDecorations('#hourSelect', '00h', '23h');
-
-        // jQuery('#minuteSelect').slider({
-        //     step: 1, min: 0, max: 59,
-        //     slide: function (event, ui) {
-        //         replay.minutes = ui.value;
-        //         updateSliderTip(ui.handle, ui.value, "m");
-        //         replayOnSliderMove();
-        //     },
-        //     change: function (event, ui) {
-        //         updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "m");
-        //         replayJump();
-        //     }
-        // });
-
-        // setupSliderDecorations('#minuteSelect', '00m', '59m');
-
-        // --- INPUT DE HORAS ---
-        const hourContainer = document.getElementById('hourSelect');
-        if (hourContainer) {
-            hourContainer.innerHTML = '';
-            hourContainer.style.display = 'flex';
-            hourContainer.style.alignItems = 'center';
-            hourContainer.style.gap = '4px';
-
-            const hourInput = document.createElement('input');
-            hourInput.type = 'text';  // Cambiar a text para mejor control
-            hourInput.id = 'replayHourInput';
-            hourInput.inputMode = 'numeric';
-            hourInput.pattern = '[0-9]*';
-            hourInput.maxLength = 2;
-            hourInput.value = String(replay.ts.getUTCHours()).padStart(2, '0');
-            hourInput.className = 'replay-number-input';
-            hourInput.setAttribute('aria-label', 'Hour');
-
-            const hourLabel = document.createElement('span');
-            hourLabel.className = 'replay-input-label';
-            hourLabel.textContent = 'h';
-
-            // --- Eventos del input de horas ---
-            let hourValid = true;
-
-            hourInput.addEventListener('focus', function () {
-                replayEditLock = true;
-                if (replay && replay.playing) {
-                    playReplay(false);
-                }
-                this.select();
-            });
-
-            hourInput.addEventListener('input', function () {
-                // Permitir escritura libre sin interrupciones
-                let raw = this.value.replace(/[^0-9]/g, '');
-
-                // Limitar a 2 dígitos
-                if (raw.length > 2) {
-                    raw = raw.slice(0, 2);
-                }
-
-                // Si está vacío, mostrar placeholder visual pero no hacer nada
-                if (raw === '') {
-                    this.value = '';
-                    replayHourValue = -1; // Valor inválido temporal
-                    hourValid = false;
-                    this.style.color = '#ff6b6b';
-                    return;
-                }
-
-                let val = parseInt(raw);
-                if (!isNaN(val)) {
-                    // Guardar el valor aunque sea parcial (ej: "1" mientras escriben "15")
-                    replayHourValue = val;
-                    this.value = raw;
-
-                    // Solo marcar como inválido si el valor parcial es > 23
-                    if (val > 23) {
-                        hourValid = false;
-                        this.style.color = '#ff6b6b';
-                    } else {
-                        hourValid = true;
-                        this.style.color = '#e9edf7';
-                        // Solo actualizar replay.hours si el valor es válido
-                        replay.hours = val;
-                    }
-                }
-            });
-
-            hourInput.addEventListener('blur', function () {
-                replayEditLock = false;
-
-                let raw = this.value.replace(/[^0-9]/g, '');
-                let val = parseInt(raw);
-
-                // Si está vacío o inválido, restaurar el valor anterior
-                if (isNaN(val) || raw === '') {
-                    val = replay.ts.getUTCHours();
-                    this.value = String(val).padStart(2, '0');
-                    this.style.color = '#e9edf7';
-                    replay.hours = val;
-                    hourValid = true;
-                } else {
-                    // Validar rango y corregir si es necesario
-                    if (val < 0) val = 0;
-                    if (val > 23) val = 23;
-                    this.value = String(val).padStart(2, '0');
-                    this.style.color = '#e9edf7';
-                    replay.hours = val;
-                    hourValid = true;
-                }
-
-                // Ejecutar el salto solo si no estamos editando minutos
-                if (!document.getElementById('replayMinuteInput') ||
-                    document.activeElement !== document.getElementById('replayMinuteInput')) {
-                    replayJump();
-                }
-            });
-
-            hourInput.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    this.blur();
-                    e.preventDefault();
-                }
-                if (e.key === 'Escape') {
-                    const originalHour = replay.ts.getUTCHours();
-                    this.value = String(originalHour).padStart(2, '0');
-                    replay.hours = originalHour;
-                    this.style.color = '#e9edf7';
-                    this.blur();
-                    e.preventDefault();
-                    // No ejecutar jump aquí, blur lo hará
-                }
-            });
-
-            hourContainer.appendChild(hourInput);
-            hourContainer.appendChild(hourLabel);
-
-            // Guardar referencia para acceso global
-            window.replayHourInput = hourInput;
-        }
-
-        // --- INPUT DE MINUTOS ---
-        const minuteContainer = document.getElementById('minuteSelect');
-        if (minuteContainer) {
-            minuteContainer.innerHTML = '';
-            minuteContainer.style.display = 'flex';
-            minuteContainer.style.alignItems = 'center';
-            minuteContainer.style.gap = '4px';
-
-            const minuteInput = document.createElement('input');
-            minuteInput.type = 'text';
-            minuteInput.id = 'replayMinuteInput';
-            minuteInput.inputMode = 'numeric';
-            minuteInput.pattern = '[0-9]*';
-            minuteInput.maxLength = 2;
-            minuteInput.value = String(replay.ts.getUTCMinutes()).padStart(2, '0');
-            minuteInput.className = 'replay-number-input';
-            minuteInput.setAttribute('aria-label', 'Minute');
-
-            const minuteLabel = document.createElement('span');
-            minuteLabel.className = 'replay-input-label';
-            minuteLabel.textContent = 'm';
-
-            let minuteValid = true;
-
-            minuteInput.addEventListener('focus', function () {
-                replayEditLock = true;
-                if (replay && replay.playing) {
-                    playReplay(false);
-                }
-                this.select();
-            });
-
-            minuteInput.addEventListener('input', function () {
-                let raw = this.value.replace(/[^0-9]/g, '');
-
-                if (raw.length > 2) {
-                    raw = raw.slice(0, 2);
-                }
-
-                if (raw === '') {
-                    this.value = '';
-                    replayMinuteValue = -1;
-                    minuteValid = false;
-                    this.style.color = '#ff6b6b';
-                    return;
-                }
-
-                let val = parseInt(raw);
-                if (!isNaN(val)) {
-                    replayMinuteValue = val;
-                    this.value = raw;
-
-                    if (val > 59) {
-                        minuteValid = false;
-                        this.style.color = '#ff6b6b';
-                    } else {
-                        minuteValid = true;
-                        this.style.color = '#e9edf7';
-                        replay.minutes = val;
-                    }
-                }
-            });
-
-            minuteInput.addEventListener('blur', function () {
-                replayEditLock = false;
-
-                let raw = this.value.replace(/[^0-9]/g, '');
-                let val = parseInt(raw);
-
-                if (isNaN(val) || raw === '') {
-                    val = replay.ts.getUTCMinutes();
-                    this.value = String(val).padStart(2, '0');
-                    this.style.color = '#e9edf7';
-                    replay.minutes = val;
-                    minuteValid = true;
-                } else {
-                    if (val < 0) val = 0;
-                    if (val > 59) val = 59;
-                    this.value = String(val).padStart(2, '0');
-                    this.style.color = '#e9edf7';
-                    replay.minutes = val;
-                    minuteValid = true;
-                }
-
-                // Ejecutar el salto
+        jQuery('#hourSelect').slider({
+            step: 1, min: 0, max: 23,
+            slide: function (event, ui) {
+                replay.hours = ui.value;
+                updateSliderTip(ui.handle, ui.value, "h");
+                replayOnSliderMove();
+            },
+            change: function (event, ui) {
+                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "h");
                 replayJump();
-            });
+            }
+        });
 
-            minuteInput.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    this.blur();
-                    e.preventDefault();
-                }
-                if (e.key === 'Escape') {
-                    const originalMinute = replay.ts.getUTCMinutes();
-                    this.value = String(originalMinute).padStart(2, '0');
-                    replay.minutes = originalMinute;
-                    this.style.color = '#e9edf7';
-                    this.blur();
-                    e.preventDefault();
-                }
-            });
+        setupSliderDecorations('#hourSelect', '00h', '23h');
 
-            minuteContainer.appendChild(minuteInput);
-            minuteContainer.appendChild(minuteLabel);
+        jQuery('#minuteSelect').slider({
+            step: 1, min: 0, max: 59,
+            slide: function (event, ui) {
+                replay.minutes = ui.value;
+                updateSliderTip(ui.handle, ui.value, "m");
+                replayOnSliderMove();
+            },
+            change: function (event, ui) {
+                updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "m");
+                replayJump();
+            }
+        });
 
-            window.replayMinuteInput = minuteInput;
-        }
+        setupSliderDecorations('#minuteSelect', '00m', '59m');
 
         const slideBase = 3.0;
         jQuery('#replaySpeedSelect').slider({
