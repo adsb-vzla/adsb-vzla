@@ -562,6 +562,9 @@ function startElevationGroundAircraft() {
         // );
         // ***** DETENER ACTUALIZACIÓN DEL PANORAMA *****
         stopElevationGroundAircraftUpdates();
+
+        buttonActive('#EA', true);
+        
         // ***** SI NO ESTÁ ACTIVO *****
     } else {
         // ***** LIMPIAR ANCLA EN TIERRA Y AVIÓN SELECCIONADO *****
@@ -594,6 +597,10 @@ function startElevationGroundAircraft() {
         buttonActive('#EA', elevationGroundAircraftMode);
         if (jQuery('#elevation_dropdown [role="button"].btn')[0]?.__syncBtnState) {
             jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
+        }
+
+        if (elevationAircraftHex && typeof InstrumentedAircraft !== 'undefined') {
+            InstrumentedAircraft.unregister(elevationAircraftHex);
         }
     }
 }
@@ -958,6 +965,9 @@ function handleElevationGroundAircraftClick(evt, planeHex) {
 
     // ***** ESTABLECER AVIÓN COMO EL SELECCIONADO *****
     elevationAircraftHex = planeHex;
+    if (typeof InstrumentedAircraft !== 'undefined') {
+        InstrumentedAircraft.register(planeHex);
+    }
     // ***** LLAMAR A LA FUNCIÓN QUE CALCULA EL ANCLA A 50NM *****
     elevationGroundAnchor = computeAnchorFromAircraft(plane, 50);
 

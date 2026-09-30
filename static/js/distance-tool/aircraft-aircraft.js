@@ -369,6 +369,11 @@ function updateDistanceLine() {
                                 if (selectedPlaneA === anchorToCheck) selectedPlaneA = null;
                             }
                         }
+
+                        if (typeof InstrumentedAircraft !== 'undefined') {
+                            InstrumentedAircraft.unregister(hexA);
+                            InstrumentedAircraft.unregister(hexB);
+                        }
                     });
 
                     ov = new ol.Overlay({ element: el, positioning: 'bottom-center', offset: [0, -10], stopEvent: true });
@@ -513,6 +518,11 @@ function updateDistanceLine() {
                             removePlanePoints('aa', ['aa_anchor_' + anchorToCheck]);
                             if (selectedPlaneA === anchorToCheck) selectedPlaneA = null;
                         }
+                    }
+
+                    if (typeof InstrumentedAircraft !== 'undefined') {
+                        InstrumentedAircraft.unregister(hexA);
+                        InstrumentedAircraft.unregister(hexB);
                     }
 
                 });
@@ -794,6 +804,10 @@ function handleDistanceBetweenPlanesClick(evt, planeHex) {
                 altitude: plane.altitude
             });
 
+            if (typeof InstrumentedAircraft !== 'undefined') {
+                InstrumentedAircraft.register(planeHex);
+            }
+
             // Actualizar mensaje según el paso
             // Actualizar mensaje según el paso
             if (selectedPlanesForDistance.length === 1) {
@@ -845,6 +859,10 @@ function handleDistanceBetweenPlanesClick(evt, planeHex) {
                 return;
             }
             pairMap.set(key, { a: selectedPlaneA, b: planeHex });
+            if (typeof InstrumentedAircraft !== 'undefined') {
+                InstrumentedAircraft.register(selectedPlaneA);
+                InstrumentedAircraft.register(planeHex);
+            }
             pairOrder.push(key);
             // NUEVO: dibujar puntos de ambos aviones del nuevo par
             const planeAnchor = g.planes[selectedPlaneA];

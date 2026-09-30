@@ -8192,7 +8192,6 @@ jQuery(document).ready(function () {
         }
     });
 
-    // Label tools: los items son #L, #O
     bindToggleButton({
         button: '#label_dropdown [role="button"].btn',
         mode: 'dropdown',
@@ -8211,22 +8210,12 @@ jQuery(document).ready(function () {
         }
     });
 
-    // ---------------------------------------------------------
-    // 2) PANELES flotantes
-    // ---------------------------------------------------------
-
     bindToggleButton({
         button: '#settingsCog',
         panel: '#settings_infoblock',
         closeButtons: ['#settings_close'],
         activeClass: 'btn-active'
     });
-
-    // bindToggleButton({
-    //     button: '#RP',
-    //     panel: '#replayBar',
-    //     activeClass: 'btn-active'
-    // });
 });
 
 // *****************************************************************
@@ -12045,6 +12034,20 @@ function replayStep(arg) {
                 continue;
             }
             processAircraft(ac, false, false);
+
+            if (typeof InstrumentedAircraft !== 'undefined' &&
+                InstrumentedAircraft.hexes.has(hex)) {
+                const p = g.planes[hex];
+                if (p) {
+                    // Asegurarnos de que la traza completa esté cargada
+                    if (!p.fullTrace) {
+                        getTrace(p, hex, { noDeselect: true });
+                    } else {
+                        InstrumentedAircraft.enrichFromTrace(p);
+                    }
+                }
+            }
+
             continue;
         }
         if (!inView(pos, ext)) {
@@ -12121,6 +12124,14 @@ function replayStep(arg) {
         triggerRefresh = 1;
         checkMovement();
         checkRefresh();
+        if (typeof InstrumentedAircraft !== 'undefined' && InstrumentedAircraft.hexes.size) {
+            InstrumentedAircraft.hexes.forEach(hex => {
+                const p = g.planes[hex];
+                if (p && p.fullTrace) {
+                    InstrumentedAircraft.enrichFromTrace(p);
+                }
+            });
+        }
     }
     replay.index = index + 1;
 }

@@ -257,7 +257,7 @@ function updatePlanePoints(layerKey, points, replaceAll = false) {
         if (existing) {
             existing.setGeometry(new ol.geom.Point(ol.proj.fromLonLat(p.coord)));
             existing.set('hex', p.hex || '');
-        // ***** SI NO HAY PUNTO NUEVO, INSERTAR EL PUNTO ANTERIOR *****
+            // ***** SI NO HAY PUNTO NUEVO, INSERTAR EL PUNTO ANTERIOR *****
         } else {
             source.addFeature(new ol.Feature({
                 geometry: new ol.geom.Point(ol.proj.fromLonLat(p.coord)),
@@ -297,7 +297,7 @@ function clearPlanePoints(layerKey) {
 
 // ***** OBTENER CAPAS PARA CADA GRUPO *****
 const _overlayLayerSources = {};
-const _overlayLayers       = {};
+const _overlayLayers = {};
 const _overlayLayerConfigs = {};
 
 // ***** ASEGURAR CAPAS DE GRUPOS *****
@@ -311,8 +311,8 @@ function ensureOverlayLayer(layerKey) {
     // ***** DETERMINAR CADA CAPA OVERLAY *****
     const source = new ol.source.Vector();
     const layer = new ol.layer.Vector({
-        name:  cfg.name,
-        type:  'overlay',
+        name: cfg.name,
+        type: 'overlay',
         title: cfg.title,
         source,
         zIndex: cfg.zIndex,
@@ -322,7 +322,7 @@ function ensureOverlayLayer(layerKey) {
     });
 
     _overlayLayerSources[layerKey] = source;
-    _overlayLayers[layerKey]       = layer;
+    _overlayLayers[layerKey] = layer;
     return layer;
 }
 
@@ -334,9 +334,9 @@ function registerOverlayLayer(layerKey, config) {
 // ***** DETERMINAR LOS SUB GRUPOS PARA CADA GRUPO DE CAPAS *****
 const _distanceGroupLayers = {};
 const _distanceGroupConfigs = {
-    aa:   { name: 'aircraft_aircraft',         title: 'Aircraft-aircraft' },
-    ta:   { name: 'ground_point_aircraft',     title: 'Ground point-aircraft' },
-    tt:   { name: 'ground_point_ground_point', title: 'Ground point-ground point' },
+    aa: { name: 'aircraft_aircraft', title: 'Aircraft-aircraft' },
+    ta: { name: 'ground_point_aircraft', title: 'Ground point-aircraft' },
+    tt: { name: 'ground_point_ground_point', title: 'Ground point-ground point' },
 };
 
 // ***** ASEGURAR GRUPO DE CAPAS DE DISTANCIA *****
@@ -431,6 +431,76 @@ window.addLayerToElevationGroup = function (key, layer) {
     }
 };
 
+// ***** REGISTRO DE AVIONES INSTRUMENTADOS *****
+window.InstrumentedAircraft = {
+    hexes: new Set(),
+
+    register(hex) {
+        if (!hex) return;
+        this.hexes.add(hex);
+        const plane = g.planes[hex];
+        if (plane && (replay || showTrace)) {
+            if (!plane.fullTrace) {
+
+                getTrace(plane, hex, { noDeselect: true, noFetch: false });
+            } else {
+                this.enrichFromTrace(plane);
+            }
+        }
+    },
+
+    unregister(hex) {
+        if (hex) this.hexes.delete(hex);
+    },
+
+    clear() {
+        this.hexes.clear();
+    },
+
+    enrichFromTrace(plane) {
+        if (!plane || !plane.fullTrace || !plane.fullTrace.trace || !plane.fullTrace.trace.length) {
+            return;
+        }
+
+        const trace = plane.fullTrace.trace;
+        let best = null;
+        let bestDiff = Infinity;
+        for (let i = 0; i < trace.length; i++) {
+            const pt = trace[i];
+            const ts = pt[0];
+            const diff = Math.abs(ts - plane.position_time);
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                best = pt;
+            }
+        }
+        if (!best || bestDiff > 60) return;
+
+        const [, lat, lon, altitude, gs, track, flags, rate, data, type, geom_alt, geom_rate, ias, roll, rId] = best;
+        if (track != null) {
+            plane.track = track;
+            plane.rotation = track;
+        }
+        if (data) {
+            if (data.mag_heading != null) plane.mag_heading = data.mag_heading;
+            if (data.true_heading != null) plane.true_heading = data.true_heading;
+            if (data.track_rate != null) plane.track_rate = data.track_rate;
+            if (data.tas != null) plane.tas = data.tas;
+            if (data.mach != null) plane.mach = data.mach;
+            if (data.nav_qnh != null) plane.nav_qnh = data.nav_qnh;
+            if (data.nav_altitude != null) plane.nav_altitude = data.nav_altitude;
+            if (data.nav_heading != null) plane.nav_heading = data.nav_heading;
+            if (data.wd != null) plane.wd = data.wd;
+            if (data.ws != null) plane.ws = data.ws;
+        }
+        if (geom_alt != null) plane.alt_geom = geom_alt;
+        if (geom_rate != null) plane.geom_rate = geom_rate;
+        if (ias != null) plane.ias = ias;
+        if (roll != null) plane.roll = roll;
+        if (rId != null) plane.rId = rId;
+    }
+};
+
 // ***** EXPONER FUNCIONES GLOBALMENTE PARA USO EN OTROS ARCHIVOS *****
 window.haversineDistance = haversineDistance;
 window.bearingFromLonLat = bearingFromLonLat;
@@ -444,9 +514,9 @@ window.hideDistanceGuide = hideDistanceGuide;
 window.updateDistanceGuideContent = updateDistanceGuideContent;
 window.updatePointNumbers = updatePointNumbers;
 window.removePointNumbers = removePointNumbers;
-window.clearPointNumbers  = clearPointNumbers;
-window.updatePlanePoints  = updatePlanePoints;
-window.removePlanePoints  = removePlanePoints;
-window.clearPlanePoints   = clearPlanePoints;
+window.clearPointNumbers = clearPointNumbers;
+window.updatePlanePoints = updatePlanePoints;
+window.removePlanePoints = removePlanePoints;
+window.clearPlanePoints = clearPlanePoints;
 window.ensureDistanceGroup = ensureDistanceGroup;
 window.addLayerToDistanceGroup = addLayerToDistanceGroup;

@@ -679,6 +679,10 @@ function setGroundPoint(lonlat) {
 // ************************************************************************
 function clearTAGroundDrawings(opts = {}) {
 
+    if (typeof InstrumentedAircraft !== 'undefined') {
+        InstrumentedAircraft.clear();
+    }
+
     if (groundPlaneHiddenState) {
         groundPlaneHiddenState.clear();
     }
@@ -961,6 +965,9 @@ function handleDistanceToGroundClick(evt, planeHex) {
 
     // === CLIC SOBRE UN AVIÓN ===
     if (planeHex) {
+        if (typeof InstrumentedAircraft !== 'undefined') {
+            InstrumentedAircraft.register(planeHex);
+        }
         const p = g.planes[planeHex];
         if (!p || !p.position || p.seen > 15) {
             showDistanceGuide(() => getTranslatedText(
