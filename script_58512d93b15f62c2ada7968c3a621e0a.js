@@ -183,8 +183,13 @@ let panoramaResizeObs = null;
 let elevationBusy = false;
 let elevationAnchor = null;
 let elevationGroundAircraftMode = false;
+let elevationGroundAircraftModeType = 'aircraft'; // 'aircraft' | 'ground_aircraft'
+const ELEVATION_GA_MODES = ['aircraft', 'ground_aircraft'];
 let elevationGroundAnchor = null;
 let elevationAircraftHex = null;
+let elevationPendingGround = null; // NUEVO: punto en tierra pendiente en modo ground_aircraft
+let elevationPendingAircraftHex = null;
+let elevationGAAircraftWasFirst = false;
 let elevationGroundAircraftUpdateInterval = null;
 let elevationCountdownInterval = null;
 let elevationCountdownValue = 0;
@@ -4099,7 +4104,11 @@ function ol_map_init() {
 
         // ***** MANEJADOR DE CLIC (ELEVACIÓN TIERRA-AERONAVE) *****
         if (elevationGroundAircraftMode) {
-            handleElevationGroundAircraftClick(evt, planeHex);
+            if (elevationGroundAircraftModeType === 'ground_aircraft') {
+                handleElevationGroundAircraftGroundClick(evt, planeHex);
+            } else {
+                handleElevationGroundAircraftClick(evt, planeHex);
+            }
             evt.stopPropagation();
             return;
         }

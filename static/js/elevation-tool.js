@@ -519,6 +519,111 @@ function computeAnchorFromAircraft(plane, distanceNm = 50) {
     };
 }
 
+// ***** CICLAR MODOS DE ELEVACIÓN TIERRA-AERONAVE *****
+function onElevationGACycleClick() {
+    if (!elevationGroundAircraftMode) {
+        // Primer clic: activar en modo 'aircraft' (solo aeronave, comportamiento original)
+        elevationGroundAircraftModeType = 'aircraft';
+        startElevationGroundAircraft();
+        return;
+    }
+
+    const idx = ELEVATION_GA_MODES.indexOf(elevationGroundAircraftModeType);
+
+    if (idx >= 0 && idx < ELEVATION_GA_MODES.length - 1) {
+        // Siguiente modo: 'ground_aircraft'
+        elevationGroundAircraftModeType = ELEVATION_GA_MODES[idx + 1];
+        // Limpiar sin desactivar
+        stopElevationGroundAircraftUpdates();
+        stopElevationCountdown();
+        elevationGroundAnchor = null;
+        elevationAircraftHex = null;
+        elevationPendingGround = null;
+        if (elevationPointSource) elevationPointSource.clear();
+        if (elevationLineSource) elevationLineSource.clear();
+        if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
+            elevationNumberSourceGA.clear();
+        }
+        hidePanoramaOverlay();
+        // Mostrar guía del nuevo modo
+        elevationPendingGround = null;
+        elevationPendingAircraftHex = null;
+        elevationGAAircraftWasFirst = false;
+        showElevationGAGuide(1);
+        if (jQuery('#elevation_dropdown [role="button"].btn')[0]?.__syncBtnState) {
+            jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
+        }
+    } else {
+        // Último modo: desactivar
+        startElevationGroundAircraft();
+    }
+}
+
+function elevationGAPreMessage() {
+    switch (elevationGroundAircraftModeType) {
+        case 'aircraft':
+            return getTranslatedText('elevation_ga_mode_aircraft', 'Mode: Aircraft - 50 NM');
+        case 'ground_aircraft':
+            return getTranslatedText('elevation_ga_mode_ground_aircraft', 'Mode: Point - Aircraft');
+        default:
+            return '';
+    }
+}
+
+function elevationGAStep1Message() {
+    switch (elevationGroundAircraftModeType) {
+        case 'aircraft':
+            return getTranslatedText(
+                'elevation_ga_aircraft_step1',
+                'Click on an aircraft to draw the elevation panorama (50 NM ahead).'
+            );
+        case 'ground_aircraft':
+            return getTranslatedText(
+                'elevation_ga_ground_aircraft_step1',
+                'Click on the map or an aircraft to mark the first point.'
+            );
+        default:
+            return '';
+    }
+}
+
+function elevationGAStep2Message() {
+    switch (elevationGroundAircraftModeType) {
+        case 'ground_aircraft':
+            if (elevationPendingGround) {
+                // Primer punto fue tierra → ahora falta aeronave
+                return getTranslatedText(
+                    'elevation_ga_ground_first_step2',
+                    'Now click on an aircraft to complete the pair.'
+                );
+            }
+            if (elevationPendingAircraftHex) {
+                // Primer punto fue aeronave → ahora falta tierra
+                return getTranslatedText(
+                    'elevation_ga_aircraft_first_step2',
+                    'Now click on the map to complete the pair with the aircraft.'
+                );
+            }
+            return getTranslatedText(
+                'elevation_ga_step2_generic',
+                'Now click on the other element (ground or aircraft).'
+            );
+        default:
+            return '';
+    }
+}
+
+function showElevationGAGuide(step) {
+    const msg = (step === 2) ? elevationGAStep2Message() : elevationGAStep1Message();
+    if (step === 2) {
+        // En el paso 2 solo se muestra la instrucción, sin el nombre del modo
+        showDistanceGuide(() => `<center>${msg}</center>`);
+    } else {
+        const pre = elevationGAPreMessage();
+        showDistanceGuide(() => `<center>${pre}</center><br><center>${msg}</center>`);
+    }
+}
+
 // ***** HABILITAR/DESHABILITAR FUNCIÓN DE ELEVACIÓN (MODO TIERRA-AERONAVE) *****
 function startElevationGroundAircraft() {
     // ***** INVERTIR ESTADO GLOBAL DEL MODO *****
@@ -549,27 +654,27 @@ function startElevationGroundAircraft() {
         // ***** LIMPIAR ANCLA EN TIERRA Y AVIÓN SELECCIONADO *****
         elevationGroundAnchor = null;
         elevationAircraftHex = null;
+        elevationPendingGround = null;
+        elevationPendingAircraftHex = null;
+        elevationGAAircraftWasFirst = false;
         // ***** OCULTAR OVERLAY *****
         hidePanoramaOverlay();
-        // ***** MOSTRAR GUÍA PARA EL USUARIO *****
-        showDistanceGuide(() => getTranslatedText('elevation_select_aircraft_only', 'Click on an aircraft to draw the elevation panorama (50 NM ahead).'));
-        // MODO ANTIGUO: INDICAR AL USUARIO QUE SELECCIONE PUNTO A
-        // showDistanceGuide(
-        //     getTranslatedText(
-        //         'elevation_mark_ground_point',
-        //         'Click on the map to mark the ground point.'
-        //     )
-        // );
+        // ***** MOSTRAR GUÍA SEGÚN EL MODO *****
+        showElevationGAGuide(1);
         // ***** DETENER ACTUALIZACIÓN DEL PANORAMA *****
         stopElevationGroundAircraftUpdates();
 
         buttonActive('#EA', true);
-        
+
         // ***** SI NO ESTÁ ACTIVO *****
     } else {
         // ***** LIMPIAR ANCLA EN TIERRA Y AVIÓN SELECCIONADO *****
         elevationGroundAnchor = null;
         elevationAircraftHex = null;
+        elevationPendingGround = null;
+        elevationPendingAircraftHex = null;
+        elevationGAAircraftWasFirst = false;
+        elevationGroundAircraftModeType = 'aircraft';
 
         // ***** DETENER ACTUALIZACIÓN DEL PANORAMA Y TIMER DE 5 SEGUNDOS *****
         stopElevationGroundAircraftUpdates();
@@ -632,12 +737,24 @@ function updateElevationGroundAircraftProfile() {
         return;
     }
 
-    // ***** RECALCULTAR ANCLA CADA 5 SEGUNDOS *****
-    elevationGroundAnchor = computeAnchorFromAircraft(plane, 50);
+    // ***** RECALCULAR ANCLA SEGÚN EL MODO *****
+    if (elevationGroundAircraftModeType === 'ground_aircraft') {
+        // En modo ground_aircraft el ancla es el punto en tierra fijo
+        // No recalcular; se mantiene el punto seleccionado por el usuario
+        if (!elevationGroundAnchor) {
+            return;
+        }
+    } else {
+        // Modo 'aircraft': recalcular ancla 50NM delante cada 5 segundos
+        elevationGroundAnchor = computeAnchorFromAircraft(plane, 50);
+    }
     // ***** SALIR SI NO HAY ANCLA *****
     if (!elevationGroundAnchor) {
         return;
     }
+
+    // ***** ACTUALIZAR POSICIÓN DE LA LÍNEA Y PUNTO B SEGÚN MOVIMIENTO DEL AVIÓN *****
+    updateElevationGroundAircraftDrawings(plane);
 
     // ***** ACTUALIZAR POSICIÓN DE LA LÍNEA Y PUNTO B SEGÚN MOVIMIENTO DEL AVIÓN *****
     updateElevationGroundAircraftDrawings(plane);
@@ -936,6 +1053,11 @@ function handleElevationClick(evt) {
 
 // ***** MANEJADOR DE CLIC PARA ELEVACIÓN TIERRA-AERONAVE *****
 function handleElevationGroundAircraftClick(evt, planeHex) {
+    // ***** ESTE HANDLER ES SOLO PARA EL MODO 'aircraft' *****
+    if (elevationGroundAircraftModeType !== 'aircraft') {
+        return;
+    }
+
     // ***** INDICAR QUE LA ELEVACIÓN SE ESTÁ CONSTRUYENDO *****
     if (elevationBusy) {
         showDistanceGuide(() => getTranslatedText('building_elevation', 'Building elevation...'));
@@ -1002,6 +1124,180 @@ function handleElevationGroundAircraftClick(evt, planeHex) {
     hideDistanceGuide();
 }
 
+// ***** MANEJADOR DE CLIC PARA ELEVACIÓN TIERRA-AERONAVE (MODO GROUND ↔ AIRCRAFT BIDIRECCIONAL) *****
+function handleElevationGroundAircraftGroundClick(evt, planeHex) {
+    // ***** INDICAR QUE LA ELEVACIÓN SE ESTÁ CONSTRUYENDO *****
+    if (elevationBusy) {
+        showDistanceGuide(() => getTranslatedText('building_elevation', 'Building elevation...'));
+        return;
+    }
+
+    // ***** DETECTAR ESTADO ACTUAL *****
+    const hasPendingGround = elevationPendingGround !== null;
+    const hasPendingAircraft = elevationPendingAircraftHex !== null;
+
+    // ***** VALIDAR SEGUNDO CLIC: DEBE SER OPUESTO AL PRIMERO *****
+    if (hasPendingGround && !planeHex) {
+        showElevationGAGuide(2);
+        return;
+    }
+    if (hasPendingAircraft && planeHex) {
+        showElevationGAGuide(2);
+        return;
+    }
+
+    // ================================================================
+    // CASO A: CLIC SOBRE UN AVIÓN
+    // ================================================================
+    if (planeHex) {
+        const plane = g.planes[planeHex];
+
+        // ***** VALIDAR AERONAVE *****
+        if (!plane || !plane.position || plane.seen > 15) {
+            showDistanceGuide(() => getTranslatedText('elevation_invalid_aircraft', 'The aircraft position is unavailable.'));
+            return;
+        }
+
+        // ***** SI YA HAY TIERRA PENDIENTE → COMPLETAR EL PAR (tierra primero) *****
+        if (hasPendingGround) {
+            elevationGAAircraftWasFirst = false; // el primer clic fue tierra
+            finalizeElevationGAPair(plane);
+            return;
+        }
+
+        // ***** SI NO HAY NADA PENDIENTE → ESTE AVIÓN ES EL PRIMER PUNTO *****
+        if (!hasPendingAircraft) {
+            elevationPendingAircraftHex = planeHex;
+            elevationGAAircraftWasFirst = true; // el primer clic fue avión
+            if (typeof InstrumentedAircraft !== 'undefined') {
+                InstrumentedAircraft.register(planeHex);
+            }
+            updateElevationGAPendingAircraftVisual(plane);
+            showElevationGAGuide(2);
+            return;
+        }
+    }
+    // ================================================================
+    // CASO B: CLIC SOBRE EL MAPA (TIERRA)
+    // ================================================================
+    else {
+        const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
+        const lonlat = ol.proj.toLonLat(evtCoords);
+        const clickedGround = { lat: lonlat[1], lon: lonlat[0] };
+
+        // ***** SI YA HAY AVIÓN PENDIENTE → COMPLETAR EL PAR (avión primero) *****
+        if (hasPendingAircraft) {
+            const plane = g.planes[elevationPendingAircraftHex];
+            if (!plane || !plane.position || plane.seen > 15) {
+                showDistanceGuide(() => getTranslatedText('elevation_invalid_aircraft', 'The aircraft position is unavailable.'));
+                return;
+            }
+            elevationPendingGround = clickedGround;
+            // elevationGAAircraftWasFirst ya es true desde el primer clic
+            finalizeElevationGAPair(plane);
+            return;
+        }
+
+        // ***** SI NO HAY NADA PENDIENTE → ESTA TIERRA ES EL PRIMER PUNTO *****
+        if (!hasPendingGround) {
+            elevationPendingGround = clickedGround;
+            elevationGAAircraftWasFirst = false; // el primer clic fue tierra
+            drawElevationGroundPoint(elevationPendingGround);
+            showElevationGAGuide(2);
+            return;
+        }
+    }
+}
+
+// ***** MOSTRAR VISUALMENTE EL AVIÓN PENDIENTE (PRIMER PUNTO = AVIÓN) *****
+function updateElevationGAPendingAircraftVisual(plane) {
+    if (!elevationPointSource || !plane || !plane.position) return;
+    elevationPointSource.clear();
+
+    const aircraftCoord = ol.proj.fromLonLat([plane.position[0], plane.position[1]]);
+    const fA = new ol.Feature(new ol.geom.Point(aircraftCoord));
+    fA.set('role', 'aircraft');
+    elevationPointSource.addFeature(fA);
+    elevationPointLayer && elevationPointLayer.setVisible(true);
+    elevationPointSource.changed();
+    elevationPointLayer && elevationPointLayer.changed();
+    OLMap && OLMap.renderSync();
+}
+
+// ***** FINALIZAR PAR DE ELEVACIÓN (TIERRA ↔ AERONAVE) *****
+function finalizeElevationGAPair(plane) {
+    if (!plane || !plane.position) return;
+
+    // ***** DETENER ACTUALIZACIÓN PREVIA *****
+    stopElevationGroundAircraftUpdates();
+    stopElevationCountdown();
+
+    // ***** EL ANCLA SIEMPRE ES EL PUNTO EN TIERRA *****
+    const groundAnchor = elevationPendingGround;
+    if (!groundAnchor) return;
+
+    // ***** USAR EL FLAG PARA SABER QUIÉN FUE PRIMERO *****
+    const aircraftWasFirst = elevationGAAircraftWasFirst;
+
+    // ***** ESTABLECER AVIÓN SELECCIONADO *****
+    elevationAircraftHex = plane.icao;
+    if (typeof InstrumentedAircraft !== 'undefined') {
+        InstrumentedAircraft.register(plane.icao);
+    }
+
+    // ***** USAR EL PUNTO EN TIERRA COMO ANCLA FIJA *****
+    elevationGroundAnchor = { ...groundAnchor };
+
+    // ***** DIBUJAR PUNTO Y LÍNEA *****
+    drawElevationGroundPoint(elevationGroundAnchor);
+    updateElevationGroundAircraftDrawings(plane);
+
+    // ***** INICIAR TIMER *****
+    startElevationCountdown();
+
+    // ***** DIBUJAR PERFIL DE ELEVACIÓN *****
+    if (typeof getElevationProfileLine === 'function') {
+        getElevationProfileLine(
+            elevationGroundAnchor.lat,
+            elevationGroundAnchor.lon,
+            plane.position[1],
+            plane.position[0]
+        );
+    }
+
+    // ***** POBLAR NUMERACIÓN SEGÚN ORDEN DE CLIC *****
+    if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
+        elevationNumberSourceGA.clear();
+
+        // Si el avión fue primero → avión=1, tierra=2
+        // Si la tierra fue primero → tierra=1, avión=2
+        const groundNum = aircraftWasFirst ? '2' : '1';
+        const planeNum = aircraftWasFirst ? '1' : '2';
+
+        const fGround = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([elevationGroundAnchor.lon, elevationGroundAnchor.lat])));
+        fGround.set('num', groundNum);
+        fGround.set('isDark', true);
+
+        const fPlane = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([plane.position[0], plane.position[1]])));
+        fPlane.set('num', planeNum);
+        fPlane.set('isDark', false);
+
+        elevationNumberSourceGA.addFeatures([fGround, fPlane]);
+    }
+
+    // ***** ACTUALIZAR CADA 5 SEGUNDOS *****
+    elevationGroundAircraftUpdateInterval =
+        setInterval(updateElevationGroundAircraftProfile, 5000);
+
+    // ***** LIMPIAR PENDIENTES Y FLAG *****
+    elevationPendingGround = null;
+    elevationPendingAircraftHex = null;
+    elevationGAAircraftWasFirst = false;
+
+    // ***** OCULTAR GUÍA *****
+    hideDistanceGuide();
+}
+
 // ***** EXPONER FUNCIONES GLOBALMENTE PARA USO EN OTROS ARCHIVOS *****
 window.updatePanoramaOverlayBounds = updatePanoramaOverlayBounds;
 window.showPanoramaOverlay = showPanoramaOverlay;
@@ -1021,3 +1317,8 @@ window.stopElevationCountdown = stopElevationCountdown;
 window.updateElevationGroundAircraftDrawings = updateElevationGroundAircraftDrawings;
 window.handleElevationClick = handleElevationClick;
 window.handleElevationGroundAircraftClick = handleElevationGroundAircraftClick;
+window.handleElevationGroundAircraftGroundClick = handleElevationGroundAircraftGroundClick;
+window.onElevationGACycleClick = onElevationGACycleClick;
+window.finalizeElevationGAPair = finalizeElevationGAPair;
+window.updateElevationGAPendingAircraftVisual = updateElevationGAPendingAircraftVisual;
+window.showElevationGAGuide = showElevationGAGuide;

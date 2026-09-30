@@ -679,6 +679,14 @@
             'elevation_select_aircraft': 'Now click on an aircraft.',
             'elevation_invalid_aircraft': 'The aircraft position is unavailable.',
             'elevation_next_update': 'Next update in {seconds}s',
+            'elevation_ga_mode_aircraft': 'Mode: Aircraft - 50 NM',
+            'elevation_ga_mode_ground_aircraft': 'Mode: Point - Aircraft',
+            'elevation_ga_click_second_time': 'Click again to switch to ground point mode.',
+            'elevation_ga_aircraft_step1': 'Click on an aircraft to draw the elevation panorama (50 NM ahead).',
+            'elevation_ga_ground_aircraft_step1': 'Click on the map or an aircraft to mark the first point.',
+            'elevation_ga_ground_first_step2': 'Now click on an aircraft to complete the pair.',
+            'elevation_ga_aircraft_first_step2': 'Now click on the map to complete the pair with the aircraft.',
+            'elevation_ga_step2_generic': 'Now click on the other element (ground or aircraft).',
         },
         es: {
             // ***** LOGIN *****
@@ -1354,6 +1362,14 @@
             'elevation_select_aircraft': 'Ahora haz clic en una aeronave.',
             'elevation_invalid_aircraft': 'La posición de la aeronave no está disponible.',
             'elevation_next_update': 'Próxima actualización en {seconds}s',
+            'elevation_ga_mode_aircraft': 'Modo: Aeronave - 50 NM',
+            'elevation_ga_mode_ground_aircraft': 'Modo: Punto - Aeronave',
+            'elevation_ga_click_second_time': 'Haz clic de nuevo para cambiar al modo punto en tierra.',
+            'elevation_ga_aircraft_step1': 'Haz clic en una aeronave para dibujar el panorama de elevación (50 NM al frente).',
+            'elevation_ga_ground_aircraft_step1': 'Haz clic en el mapa o en una aeronave para marcar el primer punto.',
+            'elevation_ga_ground_first_step2': 'Ahora haz clic en una aeronave para completar el par.',
+            'elevation_ga_aircraft_first_step2': 'Ahora haz clic en el mapa para completar el par con la aeronave.',
+            'elevation_ga_step2_generic': 'Ahora haz clic en el otro elemento (tierra o aeronave).',
         }
     };
     // *****************************************
