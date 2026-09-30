@@ -36,7 +36,7 @@ togglePassword.addEventListener('click', () => {
         // ***** AÑADIR ÍCONO NUEVO *****
         icon.classList.add('fa-eye');
         togglePassword.setAttribute('aria-label', 'Mostrar clave');
-    // ***** SI NO, ÍCONO DE OJO TACHADO *****
+        // ***** SI NO, ÍCONO DE OJO TACHADO *****
     } else {
         // ***** LIMPIAR ÍCONO ANTERIOR PARA EVITAR ERRORES *****
         icon.classList.remove('fa-eye');
@@ -74,12 +74,12 @@ if (form) {
         try {
             // ***** OBTENER ARCHIVO CON LAS CREDENCIALES *****
             const response = await fetch('./login-credentials.xlsx');
-            
+
             // ***** SI FALLÓ LA PETICIÓN AL ARCHIVO, MOSTRAR ERROR *****
             if (!response.ok) {
                 throw new Error(`Error HTTP ${response.status}`);
             }
-            
+
             // ***** OBTENER CRUDOS DEL ARCHIVO *****
             const data = await response.arrayBuffer();
 
@@ -93,7 +93,7 @@ if (form) {
             // ***** VERIFICAR SI EL USUARIO INGRESADO EXISTE EN EL ARCHIVO DE CREDENCIALES *****
             const validUser = users.find(u => {
                 const keys = Object.keys(u);
-                
+
                 // ***** BUSCAR COINCIDENCIA IGNORANDO MAYÚSCULAS/MINÚSCULAS *****
                 const userKey = keys.find(k => k.trim().toLowerCase().includes('user'));
                 const passKey = keys.find(k => k.trim().toLowerCase().includes('pass'));
@@ -101,13 +101,22 @@ if (form) {
                 // ***** SI HUBO COINCIDENCIA, OBTENERLA Y ALMACENARLO EN UNA VARIABLE *****
                 const dbUser = userKey ? String(u[userKey]).trim() : '';
                 const dbPass = passKey ? String(u[passKey]).trim() : '';
-                
+
                 // ***** EL USUARIO Y CONTRASEÑA ESCRITOS EXISTEN EN EL ARCHIVO *****
                 return dbUser === inputUser && dbPass === inputPass;
             });
 
             // ***** ALERTA PARA USUARIO EXISTENTE *****
             if (validUser) {
+                // ***** GUARDAR SESIÓN ACTIVA *****
+                try {
+                    sessionStorage.setItem('adsb_session', '1');
+                    sessionStorage.setItem('adsb_session_ts', String(Date.now()));
+                    sessionStorage.setItem('adsb_session_user', inputUser);
+                } catch (e) {
+                    console.warn('No se pudo guardar la sesión:', e);
+                }
+                
                 Swal.fire({
                     icon: 'success',
                     title: t('swal_access_granted'),
@@ -115,7 +124,7 @@ if (form) {
                 }).then(() => {
                     window.location.href = './index.html';
                 });
-            // ***** ALERTA PARA USUARIO NO EXISTENTE *****
+                // ***** ALERTA PARA USUARIO NO EXISTENTE *****
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -124,7 +133,7 @@ if (form) {
                     confirmButtonColor: '#d33'
                 });
             }
-        // ***** ALERTA PARA ERROR AL LEER ARCHIVO *****
+            // ***** ALERTA PARA ERROR AL LEER ARCHIVO *****
         } catch (error) {
             console.error('Error durante la autenticación:', error);
         }
