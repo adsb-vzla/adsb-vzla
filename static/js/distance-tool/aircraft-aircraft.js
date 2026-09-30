@@ -704,10 +704,10 @@ function toggleDistance() {
             let modeText = '';
             switch (planeDistanceModeType) {
                 case '1A1B':
-                    modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+                    modeText = getTranslatedText('1_aircraft_1_aircraft', 'Mode: 1 Aircraft - 1 Aircraft');
                     break;
                 case 'pairs':
-                    modeText = getTranslatedText('pairs_mode', 'Pairs Mode');
+                    modeText = getTranslatedText('pairs_mode', 'Mode: Pairs');
                     break;
                 default:
                     modeText = planeDistanceModeType;
@@ -730,13 +730,13 @@ function toggleDistance() {
         selectedPlanesForDistance = [];
         if (planeDistanceModeType === 'pairs') {
             showDistanceGuide(() => {
-                let pairsMode = getTranslatedText('pairs_mode', 'Pairs Mode');
-                let pairsMsg = getTranslatedText('click_two_aircraft_sequence', 'Click on two aircraft in sequence to create independent pairs (A-B, C-D), or click twice on an aircraft to anchor it and then select multiple B points.');
+                let pairsMode = getTranslatedText('pairs_mode', 'Mode: Pairs');
+                let pairsMsg = getTranslatedText('click_two_aircraft_sequence', 'Click on two aircraft to create a pair, or double-click the same aircraft to anchor it.');
                 return `<center>${pairsMode}</center><br><center>${pairsMsg}</center>`;
             });
         } else {
             showDistanceGuide(() => {
-                let modeLabel = getTranslatedText('mode_label', 'Mode');
+                let modeLabel = getTranslatedText('mode_label', 'Mode: ');
                 return `<center>${modeLabel} ${planeDistanceModeType}</center>`;
             });
         }
@@ -765,7 +765,7 @@ function handleDistanceBetweenPlanesClick(evt, planeHex) {
         if (selectedPlanesForDistance.length >= 2) {
             resetDistanceCalculation();
             showDistanceGuide(() => {
-                let modeText = getTranslatedText('1_aircraft_1_aircraft', '1 Aircraft - 1 Aircraft Mode');
+                let modeText = getTranslatedText('1_aircraft_1_aircraft', 'Mode: 1 Aircraft - 1 Aircraft');
                 let step1Msg = getTranslatedText('distance_select_plane_a', 'Click on an aircraft to mark point A.');
                 return `<center>${modeText}</center><br>${step1Msg}`
             });

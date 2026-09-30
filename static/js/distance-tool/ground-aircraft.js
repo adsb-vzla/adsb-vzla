@@ -894,13 +894,13 @@ function taStep2Message() {
 function taPreMessage() {
     switch (distanceToGroundModeType) {
         case '1A1B':
-            return getTranslatedText('ta_1_point_1_aircraft', '1 Point - 1 Aircraft Mode');
+            return getTranslatedText('ta_1_point_1_aircraft', 'Mode: 1 Point - 1 Aircraft');
         case '1A_nB':
-            return getTranslatedText('ta_1_point_multiple_aircraft', '1 Point - Multiple Aircraft Mode');
+            return getTranslatedText('ta_1_point_multiple_aircraft', 'Mode: 1 Point - Multiple Aircraft');
         case 'nA_1B':
-            return getTranslatedText('ta_multiple_points_1_aircraft', 'Multiple Points - 1 Aircraft Mode');
+            return getTranslatedText('ta_multiple_points_1_aircraft', 'Mode: Multiple Points - 1 Aircraft');
         case 'nA_nB':
-            return getTranslatedText('ta_multiple_points_multiple_aircraft', 'Multiple Points - Multiple Aircraft Mode');
+            return getTranslatedText('ta_multiple_points_multiple_aircraft', 'Mode: Multiple Points - Multiple Aircraft');
         default:
             return '';
     }
@@ -1152,10 +1152,12 @@ function handleDistanceToGroundClick(evt, planeHex) {
             }
             // Mostrar el paso 2 correcto según el primer punto seleccionado
             showDistanceGuide(() => taStep2Message());
-        } else if (distanceToGroundModeType === '1A_nB') {
+                } else if (distanceToGroundModeType === '1A_nB') {
             // 1A_nB: la tierra es el punto único (A).
             // Si aún no hay tierra, esta es la primera → será 1 (o 2 si los
             // aviones fueron primero, pero eso se calcula en el overlay).
+            const firstWasGround = (taFirstPointType === 'ground');
+
             if (!hasGround) {
                 groundPoints = [lonlat];
                 groundPointCoord = lonlat;
@@ -1165,7 +1167,6 @@ function handleDistanceToGroundClick(evt, planeHex) {
                         new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                     );
                 }
-                hideDistanceGuide();
             } else {
                 // Ya había tierra: reemplazarla (1A_nB solo admite una).
                 groundPoints = [lonlat];
@@ -1176,6 +1177,15 @@ function handleDistanceToGroundClick(evt, planeHex) {
                         new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                     );
                 }
+            }
+
+            // Mostrar el paso 2 según el orden del primer punto:
+            // - Si la tierra fue primero → pedir aeronaves
+            // - Si los aviones fueron primero → pedir que se repita/complemente
+            if (firstWasGround) {
+                showDistanceGuide(() => taStep2Message());
+            } else {
+                // Los aviones fueron primero; al marcar tierra ya se completan los pares
                 hideDistanceGuide();
             }
         } else {

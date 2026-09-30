@@ -809,7 +809,6 @@
                     `<button class="proj-min-btn" data-min="${m}">${m}m</button>`
                 ).join('')}
             </div>
-            <div style="font-size:10px;color:${SYS.textDim};padding:2px 0;">${T('projection_click_map', 'Clic en aviones del mapa para proyectar')}</div>
         `;
 
         menu.appendChild(li);
@@ -1070,7 +1069,6 @@
             const menuSpan = document.querySelector('#projection-menu-item > div:first-child > span');
             if (menuSpan) menuSpan.textContent = T('projection_tool', 'Proyección');
             const clickHint = document.querySelector('#projection-menu-item > div:last-child');
-            if (clickHint) clickHint.textContent = T('projection_click_map', 'Clic en aviones del mapa para proyectar');
 
             const headerH4 = document.querySelector('#projection-section .projection-header h4');
             if (headerH4) headerH4.textContent = T('projection_tool', 'Proyección');
