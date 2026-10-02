@@ -276,7 +276,8 @@ select {
     background-color: #000;
 }
 
-#planesTable {
+#planesTable,
+#flightPlansTable {
     font-size: var(--FS2);
     white-space: nowrap;
     cursor: default;
@@ -293,17 +294,23 @@ select {
 }
 
 /* Centrar encabezados de la tabla */
-#planesTable thead tr td {
+#planesTable thead tr td,
+#flightPlansTable thead tr td {
     text-align: center !important;
     vertical-align: middle;
     border: 1.5px solid #e4e4e77b;
 }
 
 /* Asegurar que las celdas del cuerpo mantengan su alineación original */
-#planesTable tbody tr td {
+#planesTable tbody tr td,
+#flightPlansTable tbody tr td {
     text-align: left;
     border: 1.5px solid #e4e4e77b;
     padding: 2px;
+}
+
+#flight-plans-panel {
+    overflow-x: auto;
 }
 
 /* Para columnas que específicamente deben estar a la derecha (como números) */
@@ -2466,11 +2473,16 @@ div.ui-slider .ui-slider-handle {
     pointer-events: auto;
 }
 
-#reset-sidebar-tab a {
+#reset-sidebar-tab a,
+#flight-plans-tab a {
     color: var(--TXTCOLOR2) !important;
     text-decoration: none !important;
     display: block;
     padding: 0.5em 1em;
+}
+
+#flight-plans-tab.flight-plans-active {
+    background: var(--LIGHTER-BASE-COLOR);
 }
 
 /* Evitar que jQuery UI tabs intente activar este elemento como pestaña */

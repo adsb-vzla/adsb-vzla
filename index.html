@@ -1430,6 +1430,9 @@
                 <a href="#" id="reset-sidebar-link" data-i18n-title="restore_sidebar_tooltip"
                   title="Restore sidebar to default width" data-i18n="restore">Restore</a>
               </li>
+              <li id="flight-plans-tab" class="reset-sidebar-tab-item">
+                <a href="#" id="flight-plans-toggle" aria-expanded="false">Planes de vuelo</a>
+              </li>
               <li id="logout-sidebar-tab" class="reset-sidebar-tab-item">
                 <a href="#" id="logout-sidebar-link" data-i18n-title="logout_tooltip" title="Logout"
                   data-i18n="logout">Logout</a>
@@ -1519,6 +1522,12 @@
             <!-- FIN SELECTOR DE COLUMNAS -->
           </div>
           <!-- FIN SELECTOR DE FILTROS Y COLUMNAS -->
+
+          <div id="flight-plans-panel" class="planes-table-wrapper hidden" aria-live="polite">
+            <div id="flight-plans-title" class="planes-table-title">Planes de vuelo</div>
+            <div id="flight-plans-status" role="status"></div>
+            <table id="flightPlansTable" style="width: 100%"></table>
+          </div>
 
           <!-- INICIO TABLA DE AVIONES -->
           <div class="planes-table-wrapper">
@@ -1938,6 +1947,8 @@
       });
     })();
   </script>
+
+  <script src="./static/js/flight-plans.js"></script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">
 
