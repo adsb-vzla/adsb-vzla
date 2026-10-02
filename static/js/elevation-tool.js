@@ -718,12 +718,40 @@ function stopElevationGroundAircraftUpdates() {
     }
 }
 
+function exitElevationGroundAircraftMode() {
+    const aircraftHex = elevationAircraftHex || elevationPendingAircraftHex;
+
+    stopElevationGroundAircraftUpdates();
+    stopElevationCountdown();
+    hidePanoramaOverlay();
+
+    elevationPointSource && elevationPointSource.clear();
+    elevationLineSource && elevationLineSource.clear();
+    elevationNumberSourceGA && elevationNumberSourceGA.clear();
+
+    if (aircraftHex && typeof InstrumentedAircraft !== 'undefined') {
+        InstrumentedAircraft.unregister(aircraftHex);
+    }
+
+    elevationGroundAircraftMode = false;
+    elevationGroundAircraftModeType = 'aircraft';
+    elevationGroundAnchor = null;
+    elevationAircraftHex = null;
+    elevationPendingGround = null;
+    elevationPendingAircraftHex = null;
+    elevationGAAircraftWasFirst = false;
+
+    elevationPointLayer && elevationPointLayer.setVisible(false);
+    elevationLineLayer && elevationLineLayer.setVisible(false);
+
+    hideDistanceGuide();
+    buttonActive('#EA', false);
+}
+
 // ***** ACTUALIZAR PANORAMA SEGÚN TIMER *****
 function updateElevationGroundAircraftProfile() {
     // ***** SALIR SI NO HAY AVIÓN SELECCIONADO O SI HAY UN PANORAMA CONSTRUYÉNDOSE *****
     if (!elevationGroundAircraftMode ||
-        // MODO ANTIGUO: exigía que existiera un punto A ya marcado
-        // !elevationGroundAnchor ||
         !elevationAircraftHex ||
         elevationBusy) {
         return;
@@ -734,6 +762,7 @@ function updateElevationGroundAircraftProfile() {
 
     // ***** SALIR SI NO HAY AVIÓN, SI EL AVIÓN NO TIENE POSICIÓN O SI FUE VISTO POR ÚLTIMA VEZ HACE MÁS DE 15 SEGUNDOS *****
     if (!plane || !plane.position || plane.seen > 15) {
+        exitElevationGroundAircraftMode();
         return;
     }
 
