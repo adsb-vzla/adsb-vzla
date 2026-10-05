@@ -101,6 +101,16 @@ function updateGroundToGroundOverlay() {
             });
 
             closeBtn.addEventListener('click', (e) => {
+                if (groundToGroundModeType === '1A1B') {
+                    clearPointNumbers('tt');
+                } else if (groundToGroundModeType === '1A_nB') {
+                    removePointNumbers('tt', ['tt_' + key + '_2']);
+                } else {
+                    removePointNumbers('tt', [
+                        'tt_' + key + '_1',
+                        'tt_' + key + '_2'
+                    ]);
+                }
                 e.stopPropagation();
                 const lineFeat = ggLineFeatures.get(key);
                 if (lineFeat && ggLineSource) {
@@ -157,6 +167,11 @@ function updateGroundToGroundOverlay() {
                     }
 
                     ggPairs = ggPairs.filter(p => p.key !== key);
+
+                    removePointNumbers('tt', [
+                        'tt_' + key + '_1',
+                        'tt_' + key + '_2'
+                    ]);
 
                     if (ggPointSource && ggPointSource.getFeatures().length === 0 && ggPointLayer) {
                         ggPointLayer.setVisible(false);

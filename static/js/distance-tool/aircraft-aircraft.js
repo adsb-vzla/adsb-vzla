@@ -265,6 +265,15 @@ function updateDistanceLine() {
                 }
 
                 for (const k of keysToRemove) {
+                    removePointNumbers('aa', [
+                        'aa_' + k + '_1',
+                        'aa_' + k + '_2'
+                    ]);
+
+                    removePlanePoints('aa', [
+                        'aa_' + k + '_1',
+                        'aa_' + k + '_2'
+                    ]);
                     pairMap.delete(k);
                     pairOrder = pairOrder.filter(po => po !== k);
                     // Eliminar líneas y overlays de estos pares
@@ -356,6 +365,15 @@ function updateDistanceLine() {
                         if (ov) OLMap && OLMap.removeOverlay(ov);
                         distanceOverlaysMap.delete(key);
                         pairHiddenState.delete(key);
+                        removePointNumbers('aa', [
+                            'aa_' + key + '_1',
+                            'aa_' + key + '_2'
+                        ]);
+
+                        removePlanePoints('aa', [
+                            'aa_' + key + '_1',
+                            'aa_' + key + '_2'
+                        ]);
                         pairMap.delete(key);
                         pairOrder = pairOrder.filter(k => k !== key);
                         // Limpiar del buffer si estaba pendiente
@@ -913,10 +931,10 @@ function handleDistanceBetweenPlanesClick(evt, planeHex) {
                     { key: 'aa_buffer_' + planeHex, coord: planeFirst.position, hex: planeHex }
                 ]);
             }
-            showDistanceGuide(() => getTranslatedText(
+            showDistanceGuide(() => `<center>${getTranslatedText(
                 'first_selected',
                 'First selected. Click another aircraft to form a pair, or click this aircraft again to anchor it.'
-            ));
+            )}</center>`);
             return;
         } else {
             const first = pairBuffer[0];
@@ -934,10 +952,10 @@ function handleDistanceBetweenPlanesClick(evt, planeHex) {
                         { key: 'aa_anchor_' + planeHex, coord: planeAnchor.position, hex: planeHex }
                     ]);
                 }
-                showDistanceGuide(() => getTranslatedText(
+                showDistanceGuide(() => `<center>${getTranslatedText(
                     'anchor_aircraft',
                     'Anchor aircraft. Now click on B aircraft to create pairs with A. Click A again to unanchor.'
-                ));
+                )}</center>`);
                 return;
             }
 

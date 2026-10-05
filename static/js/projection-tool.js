@@ -85,6 +85,14 @@
         try { return (typeof OLMap !== 'undefined') ? OLMap : null; } catch (e) { return null; }
     }
 
+    function getProjectionTime() {
+        if (replay && Number.isFinite(now)) {
+            return now;
+        }
+
+        return Date.now() / 1000;
+    }
+
     function projectPosition(lat, lon, track, distanceMeters) {
         const R = 6378137.0;
         const angularDistance = distanceMeters / R;
@@ -411,6 +419,26 @@
         return COLORS[state.planes.length % COLORS.length];
     }
 
+    function getProjectionTrack(plane) {
+        if (Number.isFinite(plane.track)) {
+            return plane.track;
+        }
+
+        if (Number.isFinite(plane.true_heading)) {
+            return plane.true_heading;
+        }
+
+        if (Number.isFinite(plane.nav_heading)) {
+            return plane.nav_heading;
+        }
+
+        if (Number.isFinite(plane.mag_heading)) {
+            return plane.mag_heading;
+        }
+
+        return null;
+    }
+
     function createProjection(hex) {
         if (!state.active) { showBadge(T('projection_not_active', 'El modo proyección no está activo'), 3000); return false; }
         if (state.planes.length >= state.maxPlanes) {
@@ -424,15 +452,23 @@
 
         const plane = g.planes[hex];
         if (!plane) { showBadge(T('projection_no_plane', 'Aeronave no encontrada'), 3000); return false; }
+        if (typeof InstrumentedAircraft !== 'undefined') {
+            InstrumentedAircraft.register(hex);
+        }
         if (!plane.position || plane.position.length < 2) { showBadge(T('projection_no_pos', 'Sin posición válida'), 3000); return false; }
 
-        const track = plane.track;
-        if (track == null || isNaN(track)) { showBadge(T('projection_no_track', 'Sin rumbo válido'), 3000); return false; }
+        const track = getProjectionTrack(plane);
+
+        if (track == null) {
+            showBadge(T('projection_no_track', 'Sin rumbo válido'), 3000);
+            return false;
+        }
 
         const gs = plane.gs;
         if (gs == null || isNaN(gs) || gs <= 0) { showBadge(T('projection_no_gs', 'Sin velocidad válida'), 3000); return false; }
 
-        const now = Date.now() / 1000;
+        // const now = Date.now() / 1000;
+        const now = getProjectionTime();
         const minutes = state.minutes;
         const color = getAvailableColor();
 
@@ -600,7 +636,8 @@
             if (!state.active) return;
             if (state.planes.length === 0) return;
 
-            const now = Date.now() / 1000;
+            // const now = Date.now() / 1000;
+            const now = getProjectionTime();
             const finished = [];
 
             for (const entry of state.planes.slice()) {
@@ -955,7 +992,8 @@
             return;
         }
 
-        const now = Date.now() / 1000;
+        // const now = Date.now() / 1000;
+        const now = getProjectionTime();
         let html = '';
         for (const entry of state.planes) {
             const remaining = Math.max(0, entry.endTime - now);

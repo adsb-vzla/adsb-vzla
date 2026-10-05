@@ -262,6 +262,22 @@ function updateDistanceToGroundOverlay() {
             ov.setPosition(overlayPos);
 
             if (secondsMissing >= 15) {
+                if (distanceToGroundModeType === '1A1B') {
+                    clearPointNumbers('ta');
+                    clearPlanePoints('ta');
+                } else if (distanceToGroundModeType === 'nA_1B') {
+                    removePointNumbers('ta', ['ta_' + key + '_a']);
+                    removePlanePoints('ta', ['ta_' + key + '_a']);
+                } else {
+                    removePointNumbers('ta', [
+                        'ta_' + key + '_g',
+                        'ta_' + key + '_a'
+                    ]);
+
+                    removePlanePoints('ta', [
+                        'ta_' + key + '_a'
+                    ]);
+                }
                 groundPlaneMissingSince.delete(key);
                 groundPlaneRemoved.add(key);
 
