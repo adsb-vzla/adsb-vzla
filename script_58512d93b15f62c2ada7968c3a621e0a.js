@@ -370,7 +370,15 @@ let badDot;
 let badDotMlat;
 let showingReplayBar = false;
 
-
+// Exponer OLMap y ol a window para que módulos externos (aero-help.js, etc.)
+// puedan acceder a la vista del mapa sin depender del scope del módulo.
+Object.defineProperty(window, 'OLMap', {
+    get() { return OLMap; },
+    set(v) { OLMap = v; },
+    configurable: true,
+});
+window.ol = ol;   // ol viene del bundle libs/ol-custom-10.6.1.js y ya es global,
+                  // pero por si acaso lo re-exponemos.
 
 
 
@@ -8334,8 +8342,8 @@ function executeJump(coords, showMarker = true) {
     OLMap.getView().setCenter(ol.proj.fromLonLat([coords[1], coords[0]]));
 
     const currentZoom = OLMap.getView().getZoom();
-    if (currentZoom < 10) {
-        OLMap.getView().setZoom(12);
+    if (currentZoom < 8) {
+        OLMap.getView().setZoom(9);
     }
 
     if (g.zoomLvl >= 7) fetchData({ force: true });
