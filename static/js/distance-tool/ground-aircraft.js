@@ -1047,7 +1047,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
             // Si el usuario toca el avión como PRIMER punto, el avión es 1.
             // Si ya hay tierras seleccionadas, el avión es 2.
             const firstWasPlane = (taFirstPointType === 'aircraft');
-            const planeNum = firstWasPlane ? 1 : 2;
+            const planeNum = firstWasPlane ? 'A' : 'B';
 
             planesForGround = [planeHex];
 

@@ -35,6 +35,7 @@
         lineLayer: null,
         pointLayer: null,
         ghostLayer: null,
+        projectionGroup: null,
         layersReady: false,
         updateInterval: null,
         uiReady: false
@@ -146,8 +147,8 @@
         const dLat = (lat2 - lat1) * toRad;
         const dLon = (lon2 - lon1) * toRad;
         const a = Math.sin(dLat / 2) ** 2 +
-                  Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) *
-                  Math.sin(dLon / 2) ** 2;
+            Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) *
+            Math.sin(dLon / 2) ** 2;
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
@@ -234,11 +235,45 @@
             renderBuffer: renderBuf
         });
 
-        map.addLayer(state.lineLayer);
-        map.addLayer(state.pointLayer);
-        map.addLayer(state.ghostLayer);
+        // map.addLayer(state.lineLayer);
+        // map.addLayer(state.pointLayer);
+        // map.addLayer(state.ghostLayer);
+
+        // state.layersReady = true;
+        const projectionGroup = new ol.layer.Group({
+            name: 'projection_tool',
+            title: 'Projection tool',
+            type: 'overlay',
+            fold: 'close',
+            combine: false,
+            visible: true,
+            layers: new ol.Collection([
+                state.ghostLayer,
+                state.pointLayer,
+                state.lineLayer
+            ])
+        });
+
+        const rootLayers = map.getLayerGroup().getLayers();
+        const distanceRoot = window._distanceRootGroup;
+        const distanceIndex = distanceRoot
+            ? rootLayers.getArray().indexOf(distanceRoot)
+            : -1;
+
+        if (distanceIndex >= 0) {
+            rootLayers.insertAt(distanceIndex + 1, projectionGroup);
+        } else {
+            rootLayers.push(projectionGroup);
+        }
+
+        state.projectionGroup = projectionGroup;
+
+        if (typeof window.updateLayerTitles === 'function') {
+            setTimeout(window.updateLayerTitles, 0);
+        }
 
         state.layersReady = true;
+
         log('Capas creadas');
         return true;
     }
@@ -637,13 +672,13 @@
         const entry = state.planes[idx];
         state.planes.splice(idx, 1);
 
-        try { if (entry.lineFeature) state.lineSource.removeFeature(entry.lineFeature); } catch (e) {}
-        try { if (entry.pointFeature) state.pointSource.removeFeature(entry.pointFeature); } catch (e) {}
-        try { if (entry.ghostFeature) state.ghostSource.removeFeature(entry.ghostFeature); } catch (e) {}
+        try { if (entry.lineFeature) state.lineSource.removeFeature(entry.lineFeature); } catch (e) { }
+        try { if (entry.pointFeature) state.pointSource.removeFeature(entry.pointFeature); } catch (e) { }
+        try { if (entry.ghostFeature) state.ghostSource.removeFeature(entry.ghostFeature); } catch (e) { }
 
         const map = getMap();
         if (entry.overlay && map) {
-            try { map.removeOverlay(entry.overlay); } catch (e) {}
+            try { map.removeOverlay(entry.overlay); } catch (e) { }
         }
 
         renderSidebarPanel();
@@ -806,8 +841,8 @@
             </div>
             <div id="projection-minutes-row" style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;padding-bottom:4px;">
                 ${state.validMinutes.map(m =>
-                    `<button class="proj-min-btn" data-min="${m}">${m}m</button>`
-                ).join('')}
+            `<button class="proj-min-btn" data-min="${m}">${m}m</button>`
+        ).join('')}
             </div>
         `;
 
@@ -1013,16 +1048,20 @@
 
     function init() {
         log('init()');
-        if (tryBuildMenu()) return;
-        const t = setInterval(() => {
-            if (tryBuildMenu()) clearInterval(t);
-        }, 300);
-        setTimeout(() => {
-            if (!state.uiReady) {
-                warn('Timeout esperando al menú');
-                clearInterval(t);
-                tryBuildMenu();
+
+        const readyTimer = setInterval(() => {
+            const menuReady = tryBuildMenu();
+            const layersReady = createLayers();
+
+            if (menuReady && layersReady) {
+                clearInterval(readyTimer);
             }
+        }, 300);
+
+        setTimeout(() => {
+            clearInterval(readyTimer);
+            tryBuildMenu();
+            createLayers();
         }, 15000);
     }
 

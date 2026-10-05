@@ -504,6 +504,7 @@
             'to': 'to',
             'logout': 'Logout',
             'logout_tooltip': 'Close the current session and return to the login page.',
+            'military': 'Military',
             // *** planesTable ***
             'active_columns': 'Active columns',
             'inactive_columns': 'Inactive columns',
@@ -550,7 +551,6 @@
             'error_fetching_data': 'Problem fetching data from the server:',
 
             // *** PROYECCIÓN ***
-            'projection_tool': 'Projection',
             'projection_label': 'PROY',
             'projection_min_abbr': 'min',
             'projection_mode': 'PROJECTION MODE',
@@ -581,6 +581,10 @@
             'projection_base_time': 'Base time',
             'projection_applies_new': 'applies to new projections',
             'projection_reached': 'reached its projection',
+            'layer_group_projection_tool': 'Projection tool',
+            'layer_projectionlines': 'Projection lines',
+            'layer_projectionpoints': 'Projection points',
+            'layer_projectionghosts': 'Projection ghosts',
 
             // *** FUNCIONES DE DISTANCIA ***
             'signal_lost': 'SIGNAL LOST',
@@ -1183,8 +1187,8 @@
             'search_flight_placeholder': 'Buscar por indicativo, squawk o hex ICAO...',
             'search_type_placeholder': 'Buscar por código de tipo, descripción o categoría...',
             'search_reg_placeholder': 'Buscar por matrícula, ruta o país...',
-            'min_ft': 'Mín ft',
-            'max_ft': 'Máx ft',
+            'min_ft': 'Mín. pies',
+            'max_ft': 'Máx. pies',
             'filter_flight': 'Vuelo',
             'filter_aircraft_type': 'Tipo de aeronave',
             'filter_registration_route': 'Matrícula y ruta',
@@ -1200,6 +1204,7 @@
             'altitude_filter_active': '✓ Filtro de altitud activo:',
             'logout': 'Cerrar sesión',
             'logout_tooltip': 'Cerrar la sesión actual y volver a la página de inicio de sesión.',
+            'military': 'Militar',
             // *** planesTable ***
             'active_columns': 'Columnas activas',
             'inactive_columns': 'Columnas inactivas',
@@ -1246,7 +1251,6 @@
             'error_fetching_data': 'Problema al obtener datos del servidor:',
 
             // *** PROYECCIÓN ***
-            'projection_tool': 'Proyección',
             'projection_label': 'PROY',
             'projection_min_abbr': 'min',
             'projection_mode': 'MODO PROYECCIÓN',
@@ -1277,6 +1281,10 @@
             'projection_base_time': 'Tiempo base',
             'projection_applies_new': 'aplica a nuevas proyecciones',
             'projection_reached': 'alcanzó su proyección',
+            'layer_group_projection_tool': 'Herramientas de proyección',
+            'layer_projectionlines': 'Líneas de proyección',
+            'layer_projectionpoints': 'Puntos de proyección',
+            'layer_projectionghosts': 'Aviones proyectados',
 
             // *** FUNCIONES DE DISTANCIA ***
             'signal_lost': 'SEÑAL PERDIDA',

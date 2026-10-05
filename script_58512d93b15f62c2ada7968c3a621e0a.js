@@ -378,7 +378,7 @@ Object.defineProperty(window, 'OLMap', {
     configurable: true,
 });
 window.ol = ol;   // ol viene del bundle libs/ol-custom-10.6.1.js y ya es global,
-                  // pero por si acaso lo re-exponemos.
+// pero por si acaso lo re-exponemos.
 
 
 
@@ -3041,6 +3041,7 @@ function resetCategory(category) {
 
         case 'filters':
             if (toggles['hideAircraftFunctions']) toggles['hideAircraftFunctions'].toggle(true);
+            if (toggles['hideElevationFunction']) toggles['hideElevationFunction'].toggle(true);
             if (toggles['hideDistanceFunctions']) toggles['hideDistanceFunctions'].toggle(true);
             if (toggles['hideLabelFunctions']) toggles['hideLabelFunctions'].toggle(true);
             if (toggles['hideLayerFunctions']) toggles['hideLayerFunctions'].toggle(true);
@@ -3164,7 +3165,11 @@ function initFlagFilter(colors) {
     };
 
     let html = '';
-    html += createFilter(colors['tisb'], 'Military', flagFilterValues[0]);
+    html += createFilter(
+        colors['tisb'],
+        '<span data-i18n="military">Military</span>',
+        flagFilterValues[0]
+    );
     //html += createFilter(colors['mlat'], 'Interesting');
     html += createFilter(colors['uat'], 'PIA', flagFilterValues[1]);
     html += createFilter(colors['adsb'], 'LADD', flagFilterValues[2]);
@@ -4895,7 +4900,7 @@ function initMap() {
 
     if (elevGG) {
         // Orden deseado: Numeración → Línea A-B → Puntos A-B en tierra
-        [elevationNumberLayerGG, elevationLineLayer, elevationPointLayer]
+        [elevationPointLayer, elevationLineLayer, elevationNumberLayerGG]
             .filter(Boolean)
             .forEach(l => elevGG.getLayers().push(l));
     }
@@ -6859,20 +6864,34 @@ function refreshFeatures() {
         const tableOptionsHtml = `
             <div class="column-category" id="column-category-table-options">
                 <div class="column-category-title" data-i18n="table_display_options">
-                    Table display options
+                    ${typeof window.translate !== 'undefined' && window.translate.t
+                        ? window.translate.t('table_display_options')
+                        : 'Table display options'}
                 </div>
                 <div class="columns-grid" id="table-options-grid">
                     <li class="ui-state-default" id="table-option-more1" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
                         <div class="settingsCheckbox" id="moreTableLines1_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
-                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="more_table_lines">More Table Lines</span>
+                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="more_table_lines">
+                        ${typeof window.translate !== 'undefined' && window.translate.t
+                        ? window.translate.t('more_table_lines')
+                        : 'More Table Lines'}
+                        </span>
                     </li>
                     <li class="ui-state-default" id="table-option-more2" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
                         <div class="settingsCheckbox" id="moreTableLines2_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
-                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="even_more_table_lines">Even More Table Lines</span>
+                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="even_more_table_lines">
+                        ${typeof window.translate !== 'undefined' && window.translate.t
+                        ? window.translate.t('even_more_table_lines')
+                        : 'Even More'}
+                        </span>
                     </li>
                     <li class="ui-state-default" id="table-option-all" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
                         <div class="settingsCheckbox" id="allTableLines_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
-                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="all_table_lines">All Table Lines</span>
+                        <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="all_table_lines">
+                        ${typeof window.translate !== 'undefined' && window.translate.t
+                        ? window.translate.t('all_table_lines')
+                        : 'All Table Lines'}
+                        </span>
                     </li>
                 </div>
             </div>
@@ -8759,9 +8778,9 @@ function initFilters() {
         <div class="filter-group-content">
             <div class="filter-group-content-inner">
                 <div class="filter-group-fields" style="display: grid; grid-template-columns: 1fr auto 1fr; gap: calc(8px * var(--SCALE));">
-                    <input id="altitude_filter_min" name="minAltitude" type="text" class="filterInput" placeholder="Min ft" maxlength="6">
+                    <input id="altitude_filter_min" name="minAltitude" type="text" class="filterInput" data-i18n="min_ft" placeholder="Min ft" maxlength="6">
                     <span style="text-align: center; color: var(--TXTCOLOR3);">to</span>
-                    <input id="altitude_filter_max" name="maxAltitude" type="text" class="filterInput" placeholder="Max ft" maxlength="6">
+                    <input id="altitude_filter_max" name="maxAltitude" type="text" class="filterInput" data-i18n="max_ft" placeholder="Max ft" maxlength="6">
                 </div>
                 <div class="filter-buttons">
                     <button class="formButton" id="altitude_filter_apply">Apply</button>
@@ -9195,6 +9214,17 @@ function initFilters() {
             if (inactiveTitle.textContent !== newText) {
                 inactiveTitle.textContent = newText;
             }
+        }
+
+        const tableOptionsTitle = document.querySelector(
+            '#column-category-table-options .column-category-title'
+        );
+
+        if (tableOptionsTitle) {
+            tableOptionsTitle.textContent = getTranslation(
+                'table_display_options',
+                'Table display options'
+            );
         }
 
         const resetBtn = document.getElementById('reset-columns-btn');
