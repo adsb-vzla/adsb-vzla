@@ -250,7 +250,9 @@ function updateDistanceLine() {
             const missingB = !planeB || !planeB.position;
             const isStale = missingA || missingB || (planeA && planeA.seen > 15) || (planeB && planeB.seen > 15);
 
-            if (missingA && selectedPlaneA === hexA) {
+            if (isStale && selectedPlaneA === hexA) {
+                removePointNumbers('aa', ['aa_anchor_' + hexA]);
+                removePlanePoints('aa', ['aa_anchor_' + hexA]);
                 removePlanePoints('aa', ['aa_anchor_' + hexA]);
                 selectedPlaneA = null;
                 // Mostrar mensaje de anchor disabled
@@ -293,6 +295,9 @@ function updateDistanceLine() {
                 if (pairMap.size === 0) {
                     pairBuffer = [];
                 }
+
+                selectedPlaneA = null;
+                pairBuffer = [];
                 continue;
             }
 
@@ -427,6 +432,15 @@ function updateDistanceLine() {
                 if (isHidden && textContainer) textContainer.style.display = 'none';
 
                 if (secondsMissing >= 15) {
+                    removePointNumbers('aa', [
+                        'aa_' + key + '_1',
+                        'aa_' + key + '_2'
+                    ]);
+
+                    removePlanePoints('aa', [
+                        'aa_' + key + '_1',
+                        'aa_' + key + '_2'
+                    ]);
                     ppMissingSince.delete(key);
                     ppRemoved.add(key);
                     const feat = distanceLineFeaturesMap.get(key);

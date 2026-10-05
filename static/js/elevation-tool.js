@@ -996,23 +996,26 @@ function handleElevationClick(evt) {
 
     // ***** SI NO HAY ANCLA (PUNTO A) DEFINIDA *****
     if (!elevationAnchor) {
-        // ***** ASIGNAR PUNTO MARCADO COMO ANCLA *****
+        // Inicia una medición nueva: eliminar restos de la medición anterior.
+        elevationPointSource && elevationPointSource.clear();
+        elevationLineSource && elevationLineSource.clear();
+
+        if (typeof elevationNumberSourceGG !== 'undefined' && elevationNumberSourceGG) {
+            elevationNumberSourceGG.clear();
+        }
+
+        elevationLineLayer && elevationLineLayer.setVisible(false);
         elevationAnchor = clicked;
 
-        // ***** SI EXISTE LA CAPA DE PUNTOS *****
-        if (elevationPointSource) {
-            // ***** LIMPIAR CAPA EXISTENTE PARA EVITAR ERRORES DE DIBUJO *****
-            elevationPointSource.clear();
-            // ***** INSERTAR PUNTO MARCADO EN LA CAPA *****
-            const fA = new ol.Feature(
-                new ol.geom.Point(ol.proj.fromLonLat([clicked.lon, clicked.lat]))
-            );
-            // ***** ESTABLECER PUNTO A *****
-            fA.set('role', 'A');
-            elevationPointSource.addFeature(fA);
-            // ***** HACER VISIBLE LA CAPA DE PUNTOS *****
-            elevationPointLayer && elevationPointLayer.setVisible(true);
-        }
+        // ***** INSERTAR PUNTO MARCADO EN LA CAPA *****
+        const fA = new ol.Feature(
+            new ol.geom.Point(ol.proj.fromLonLat([clicked.lon, clicked.lat]))
+        );
+        // ***** ESTABLECER PUNTO A *****
+        fA.set('role', 'A');
+        elevationPointSource.addFeature(fA);
+        // ***** HACER VISIBLE LA CAPA DE PUNTOS *****
+        elevationPointLayer && elevationPointLayer.setVisible(true);
 
         // ***** LIMPIAR Y OCULTAR CAPAS DE LÍNEAS Y PUNTOS *****
         if (elevationLineSource) elevationLineSource.clear();
@@ -1144,6 +1147,36 @@ function handleElevationGroundAircraftClick(evt, planeHex) {
     drawElevationGroundPoint(elevationGroundAnchor);
     // ***** ACTUALIZAR LÍNEA Y PUNTOS SEGÚN SE MUEVE EL AVIÓN *****
     updateElevationGroundAircraftDrawings(plane);
+    if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
+        elevationNumberSourceGA.clear();
+
+        const groundFeature = new ol.Feature(
+            new ol.geom.Point(
+                ol.proj.fromLonLat([
+                    elevationGroundAnchor.lon,
+                    elevationGroundAnchor.lat
+                ])
+            )
+        );
+        groundFeature.set('num', 'A');
+        groundFeature.set('isDark', true);
+
+        const aircraftFeature = new ol.Feature(
+            new ol.geom.Point(
+                ol.proj.fromLonLat([
+                    plane.position[0],
+                    plane.position[1]
+                ])
+            )
+        );
+        aircraftFeature.set('num', 'B');
+        aircraftFeature.set('isDark', false);
+
+        elevationNumberSourceGA.addFeatures([
+            groundFeature,
+            aircraftFeature
+        ]);
+    }
     // ***** INICIAR TIMER *****
     startElevationCountdown();
 
