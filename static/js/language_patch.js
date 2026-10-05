@@ -701,6 +701,7 @@
             'elevation_ga_ground_first_step2': 'Now click on an aircraft to complete the pair.',
             'elevation_ga_aircraft_first_step2': 'Now click on the map to complete the pair with the aircraft.',
             'elevation_ga_step2_generic': 'Now click on the other element (ground or aircraft).',
+            'elevation_gg_mode': 'Mode: Ground point - Ground point',
         },
         es: {
             // ***** LOGIN *****
@@ -1397,6 +1398,7 @@
             'elevation_ga_ground_first_step2': 'Ahora haz clic en una aeronave para completar el par.',
             'elevation_ga_aircraft_first_step2': 'Ahora haz clic en el mapa para completar el par con la aeronave.',
             'elevation_ga_step2_generic': 'Ahora haz clic en el otro elemento (tierra o aeronave).',
+            'elevation_gg_mode': 'Modo: Punto en tierra - Punto en tierra',
         }
     };
     // *****************************************

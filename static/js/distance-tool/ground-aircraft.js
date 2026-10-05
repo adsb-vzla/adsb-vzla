@@ -583,19 +583,19 @@ function updateDistanceToGroundOverlay() {
             // En nA_1B: si el primer clic fue el avión, el avión es 1 y la tierra es 2.
             // Si el primer clic fue la tierra, la tierra es 1 y el avión es 2.
             const firstWasPlane = (taFirstPointType === 'aircraft');
-            groundNum = firstWasPlane ? 2 : 1;
-            planeNum = firstWasPlane ? 1 : 2;
+            groundNum = firstWasPlane ? 'B' : 'A';
+            planeNum = firstWasPlane ? 'A' : 'B';
         } else if (distanceToGroundModeType === '1A_nB') {
             // En 1A_nB: si el primer clic fue avión, los aviones son 1 y la tierra es 2.
             // Si el primer clic fue tierra, la tierra es 1 y los aviones son 2.
             const firstWasPlane = (taFirstPointType === 'aircraft');
-            groundNum = firstWasPlane ? 2 : 1;
-            planeNum = firstWasPlane ? 1 : 2;
+            groundNum = firstWasPlane ? 'B' : 'A';
+            planeNum = firstWasPlane ? 'A' : 'B';
         } else {
             // 1A1B, nA_nB: usar el tipo del primer punto del par
             const groundIsFirst = (pairFirstType === 'ground');
-            groundNum = groundIsFirst ? 1 : 2;
-            planeNum = groundIsFirst ? 2 : 1;
+            groundNum = groundIsFirst ? 'A' : 'B';
+            planeNum = groundIsFirst ? 'B' : 'A';
         }
 
         updatePointNumbers('ta', [
@@ -1006,7 +1006,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     { key: 'ta_pending_' + planeHex, coord: p.position, hex: planeHex }
                 ]);
                 updatePointNumbers('ta', [
-                    { key: 'ta_pending_num_' + planeHex, coord: p.position, num: 1, isDark: false }
+                    { key: 'ta_pending_num_' + planeHex, coord: p.position, num: 'A', isDark: false }
                 ]);
             }
         } else if (distanceToGroundModeType === '1A_nB') {
@@ -1096,7 +1096,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     { key: 'ta_pending_' + planeHex, coord: p.position, hex: planeHex }
                 ]);
                 updatePointNumbers('ta', [
-                    { key: 'ta_pending_num_' + planeHex, coord: p.position, num: 1, isDark: false }
+                    { key: 'ta_pending_num_' + planeHex, coord: p.position, num: 'A', isDark: false }
                 ]);
             }
         }
@@ -1152,7 +1152,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
             }
             // Mostrar el paso 2 correcto según el primer punto seleccionado
             showDistanceGuide(() => taStep2Message());
-                } else if (distanceToGroundModeType === '1A_nB') {
+        } else if (distanceToGroundModeType === '1A_nB') {
             // 1A_nB: la tierra es el punto único (A).
             // Si aún no hay tierra, esta es la primera → será 1 (o 2 si los
             // aviones fueron primero, pero eso se calcula en el overlay).

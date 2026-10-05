@@ -190,6 +190,13 @@ function updateDistanceLine() {
             const bearingAToB = bearingFromLonLat(coords1, coords2);
             const bearingStr = formatTrackDisplay(bearingAToB);
             const angle = relativeBearing(plane1.track, bearingAToB);
+
+            const turnAngle = angle == null
+                ? null
+                : angle > 180
+                    ? angle - 360
+                    : angle;
+
             console.log("--- PRUEBA DE RUMBOS ---");
             console.log("Rumbo geográfico A→B (bearingFromLonLat):", bearingAToB.toFixed(1) + "°");
             const bearingBToA = bearingFromLonLat(coords2, coords1);
@@ -207,7 +214,7 @@ function updateDistanceLine() {
             textContainer.innerHTML = `
                 ⟷ ${distText} | ↕ ${altText}<br>
                 ✈ A ${track1Str} | ✈ B ${track2Str} | ✈ A - B ${trackDiffStr}<br>
-                ⏱ A → B ${bearingStr} | ∠ ${formatAngle(angle)}
+                ⏱ A → B ${bearingStr} | ∠ ${formatAngle(angle)} | ↻ A → B ${formatAngle(turnAngle)}
             `;
         }
 
@@ -217,8 +224,8 @@ function updateDistanceLine() {
         ], true);
 
         updatePointNumbers('aa', [
-            { key: 'aa_' + key + '_1', coord: coords1, num: 1, isDark: false },
-            { key: 'aa_' + key + '_2', coord: coords2, num: 2, isDark: false }
+            { key: 'aa_' + key + '_1', coord: coords1, num: 'A', isDark: false },
+            { key: 'aa_' + key + '_2', coord: coords2, num: 'B', isDark: false }
         ]);
 
         distanceOverlay.setPosition(midPointProj);
@@ -573,10 +580,16 @@ function updateDistanceLine() {
                 const bearingStr = formatTrackDisplay(bearingAToB);
                 const anglePair = relativeBearing(planeA.track, bearingAToB);
 
+                const turnAnglePair = anglePair == null
+                    ? null
+                    : anglePair > 180
+                        ? anglePair - 360
+                        : anglePair;
+
                 textContainer.innerHTML = `
                     ⟷ ${distText} | ↕ ${altText}<br>
                     ✈ A ${trackAStr} | ✈ B ${trackBStr} | ✈ A-B ${trackDiffStr}<br>
-                    ⏱ A → B ${bearingStr} | ∠ ${formatAngle(anglePair)}
+                    ⏱ A → B ${bearingStr} | ∠ ${formatAngle(anglePair)} | ↻ A → B ${formatAngle(turnAnglePair)}
                 `;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';
@@ -584,8 +597,8 @@ function updateDistanceLine() {
 
             // Numerar cada par usando la key del par (sin replaceAll para no borrar los demás)
             updatePointNumbers('aa', [
-                { key: 'aa_' + key + '_1', coord: coordsA, num: 1, isDark: false },
-                { key: 'aa_' + key + '_2', coord: coordsB, num: 2, isDark: false }
+                { key: 'aa_' + key + '_1', coord: coordsA, num: 'A', isDark: false },
+                { key: 'aa_' + key + '_2', coord: coordsB, num: 'B', isDark: false }
             ]);
 
             // Marcar cada par con puntos (avión)

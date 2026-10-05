@@ -197,7 +197,7 @@ function updateGroundToGroundOverlay() {
                             if (fGeom) {
                                 const fCoord = ol.proj.toLonLat(fGeom.getCoordinates());
                                 // Si es el número 2 y coincide con b, marcar para eliminar
-                                if (f.get('num') === 2 &&
+                                if (f.get('num') === 'B' &&
                                     Math.abs(fCoord[0] - b[0]) < 1e-6 &&
                                     Math.abs(fCoord[1] - b[1]) < 1e-6) {
                                     allPointNumberKeys.push(f.get('pointKey'));
@@ -260,8 +260,8 @@ function updateGroundToGroundOverlay() {
         }
 
         updatePointNumbers('tt', [
-            { key: 'tt_' + key + '_1', coord: a, num: 1, isDark: true },
-            { key: 'tt_' + key + '_2', coord: b, num: 2, isDark: true }
+            { key: 'tt_' + key + '_1', coord: a, num: 'A', isDark: true },
+            { key: 'tt_' + key + '_2', coord: b, num: 'B', isDark: true }
         ]);
 
         ov.setPosition(mid);
