@@ -4974,6 +4974,10 @@ function initMap() {
         if (onlySelected)
             toggleIsolation();
 
+        const historyToggle = document.querySelector('.section-toggle[data-target="history_block"]');
+        if (historyToggle && historyToggle.getAttribute('aria-expanded') === 'true')
+            historyToggle.click();
+
         deselect(SelectedPlane);
         refreshFilter();
     });
@@ -13481,6 +13485,14 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const expanded = btn.getAttribute('aria-expanded') === 'true';
             setState(!expanded);
+            if (targetId === 'history_block' && !expanded && !showTrace) {
+                const planeTimestamp = SelectedPlane && (Number.isFinite(SelectedPlane.position_time)
+                    ? SelectedPlane.position_time
+                    : SelectedPlane.last_message_time);
+                if (Number.isFinite(planeTimestamp))
+                    setTraceDate({ ts: planeTimestamp * 1000 });
+                toggleShowTrace();
+            }
         });
     });
 });
