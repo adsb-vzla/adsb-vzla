@@ -682,7 +682,7 @@
         updateMinutesRow();
         showSidebarPanel();
         startLoop();
-        showBadge(`${T('projection_on', 'Modo proyección encendido')}: ${state.minutes} ${T('projection_min_abbr', 'min')}. ${T('projection_click_hint', 'Clic en hasta')} ${state.maxPlanes} ${T('projection_aircrafts', 'aviones')}.`, 3500);
+        showBadge(`${T('projection_on', 'Projection Mode: ON')}: ${state.minutes} ${T('projection_min_abbr', 'min')}.`, 3500);
     }
 
     function stopProjection() {
@@ -692,7 +692,7 @@
         stopLoop();
         updateToggleBtn();
         hideSidebarPanel();
-        showBadge(T('projection_off', 'Modo proyección apagado'), 2500);
+        showBadge(T('projection_off', 'Projection Mode: OFF'), 2500);
     }
 
     function toggleProjection() {
@@ -827,7 +827,7 @@
                 if (!state.validMinutes.includes(min)) return;
                 state.minutes = min;
                 updateMinutesRow();
-                showBadge(`${T('projection_base_time', 'Tiempo base')}: ${min} ${T('projection_min_abbr', 'min')} (${T('projection_applies_new', 'aplica a nuevas proyecciones')})`, 2500);
+                showBadge(`${T('projection_base_time', 'Base time')}: ${min} ${T('projection_min_abbr', 'min')} (${T('projection_applies_new', 'applies to new projections')})`, 2500);
             });
         });
 

@@ -113,7 +113,7 @@ body {
 }
 
 .units-select {
-    background: var(--BGCOLOR2);
+    background: var(--login-dark);
     color: var(--TXTCOLOR1);
     border: 2px solid var(--LIGHTER-BASE-COLOR);
     border-radius: 6px;
@@ -125,7 +125,7 @@ body {
 }
 
 .units-select option {
-    background-color: var(--BGCOLOR1);
+    background-color: var(--login-dark);
     color: var(--TXTCOLOR1);
 }
 

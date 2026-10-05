@@ -434,8 +434,6 @@
       flex-direction: column;
       flex-wrap: wrap;
       padding: calc(0.25rem * 2);
-      --menu-active-fg: var(--color-neutral-content);
-      --menu-active-bg: var(--color-neutral);
       font-size: 0.875rem;
       :where(li ul) {
         position: relative;
