@@ -1,5 +1,5 @@
 (function () {
-    const API_URL = 'http://192.168.1.103:8000/api/flights/';
+    const API_URL = 'http:localhost:8000/api/flights/';
     const API_TOKEN = '87f66840bdb7fc1a1b8a3a67b5f1c34a8f160975';
     const TEXT = {
         en: {
