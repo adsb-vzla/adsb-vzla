@@ -404,7 +404,19 @@ function toggleElevationMode() {
         // ***** LIMPIAR ANCLA *****
         elevationAnchor = null;
         // ***** MOSTRAR MENSAJE GUÍA DEL PASO 1 *****
-        showDistanceGuide(() => getTranslatedText('elevation_mark_point_a', 'Click on the map to mark point A.'));
+        showDistanceGuide(() => {
+            const modeText = getTranslatedText(
+                'elevation_gg_mode',
+                'Mode: Ground point - Ground point'
+            );
+
+            const stepText = getTranslatedText(
+                'elevation_mark_point_a',
+                'Click on the map to mark point A.'
+            );
+
+            return `<center>${modeText}</center><br><center>${stepText}</center>`;
+        });
         // ***** OCULTAR OVERLAY *****
         hidePanoramaOverlay();
 
@@ -1068,10 +1080,10 @@ function handleElevationClick(evt) {
     if (typeof elevationNumberSourceGG !== 'undefined' && elevationNumberSourceGG) {
         elevationNumberSourceGG.clear();
         const fNumA = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([a.lon, a.lat])));
-        fNumA.set('num', '1');
+        fNumA.set('num', 'A');
         fNumA.set('isDark', false);
         const fNumB = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([b.lon, b.lat])));
-        fNumB.set('num', '2');
+        fNumB.set('num', 'B');
         fNumB.set('isDark', false);
         elevationNumberSourceGG.addFeatures([fNumA, fNumB]);
     }
@@ -1300,8 +1312,8 @@ function finalizeElevationGAPair(plane) {
 
         // Si el avión fue primero → avión=1, tierra=2
         // Si la tierra fue primero → tierra=1, avión=2
-        const groundNum = aircraftWasFirst ? '2' : '1';
-        const planeNum = aircraftWasFirst ? '1' : '2';
+        const groundNum = aircraftWasFirst ? 'B' : 'A';
+        const planeNum = aircraftWasFirst ? 'A' : 'B';
 
         const fGround = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([elevationGroundAnchor.lon, elevationGroundAnchor.lat])));
         fGround.set('num', groundNum);

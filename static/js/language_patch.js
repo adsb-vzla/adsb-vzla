@@ -350,8 +350,23 @@
             'utc_tooltip': 'Current UTC time - Universal Time Coordinated.',
             'zoom_tooltip': 'Zoom',
             'zoom_tooltip_text': 'Current zoom level: {zoom} ({pct}% relative to base zoom {baseline})',
-            'search_placeholder': 'Search for planes, airports...',
-            'search_tooltip': 'Use decimal coordinates (lat,lon) to search airports. Use ICAO24 hex or callsign to search flights.',
+            'search_placeholder_combined': 'Search planes, airports, airlines or types…',
+            'search_min_chars': 'Type at least 2 characters…',
+            'search_no_results': 'No results',
+            'search_searching': 'Searching…',
+            'search_tooltip_descriptive':
+                'Search by name, city, ICAO/IATA code, airline or aircraft type. ' +
+                'Also accepts coordinates (lat,lon) or ICAO24 hex.',
+            'type_airport': 'airport',
+            'type_airline': 'airline',
+            'type_aircraft': 'aircraft',
+            'type_large_airport': 'large airport',
+            'type_medium_airport': 'medium airport',
+            'type_small_airport': 'small airport',
+            'type_heliport': 'heliport',
+            'type_seaplane_base': 'seaplane base',
+            'type_closed': 'closed',
+            'type_balloonport': 'balloonport',
             'open_sidebar': 'Open Sidebar',
             'toggle_sidebar': 'Toggle Sidebar',
 
@@ -686,6 +701,7 @@
             'elevation_ga_ground_first_step2': 'Now click on an aircraft to complete the pair.',
             'elevation_ga_aircraft_first_step2': 'Now click on the map to complete the pair with the aircraft.',
             'elevation_ga_step2_generic': 'Now click on the other element (ground or aircraft).',
+            'elevation_gg_mode': 'Mode: Ground point - Ground point',
         },
         es: {
             // ***** LOGIN *****
@@ -1032,8 +1048,23 @@
             'utc_tooltip': 'Hora UTC actual - Tiempo Universal Coordinado.',
             'zoom_tooltip': 'Zoom',
             'zoom_tooltip_text': 'Nivel de zoom actual: {zoom} ({pct}% relativo al zoom base {baseline})',
-            'search_placeholder': 'Buscar aviones, aeropuertos...',
-            'search_tooltip': 'Usa coordenadas decimales (lat,lon) para buscar aeropuertos. Usa hex ICAO24 o indicativo para buscar vuelos.',
+            'search_placeholder_combined': 'Buscar aviones, aeropuertos, aerolíneas o tipos…',
+            'search_min_chars': 'Escribe al menos 2 caracteres…',
+            'search_no_results': 'Sin resultados',
+            'search_searching': 'Buscando…',
+            'search_tooltip_descriptive':
+                'Busca por nombre, ciudad, código ICAO/IATA, aerolínea o tipo de aeronave. ' +
+                'También acepta coordenadas (lat,lon) o hex ICAO24.',
+            'type_airport': 'aeropuerto',
+            'type_airline': 'aerolínea',
+            'type_aircraft': 'aeronave',
+            'type_large_airport': 'aeropuerto grande',
+            'type_medium_airport': 'aeropuerto mediano',
+            'type_small_airport': 'aeropuerto pequeño',
+            'type_heliport': 'helipuerto',
+            'type_seaplane_base': 'base de hidroaviones',
+            'type_closed': 'cerrado',
+            'type_balloonport': 'globo aerostático',
             'open_sidebar': 'Abrir barra lateral',
             'toggle_sidebar': 'Alternar barra lateral',
 
@@ -1367,6 +1398,7 @@
             'elevation_ga_ground_first_step2': 'Ahora haz clic en una aeronave para completar el par.',
             'elevation_ga_aircraft_first_step2': 'Ahora haz clic en el mapa para completar el par con la aeronave.',
             'elevation_ga_step2_generic': 'Ahora haz clic en el otro elemento (tierra o aeronave).',
+            'elevation_gg_mode': 'Modo: Punto en tierra - Punto en tierra',
         }
     };
     // *****************************************

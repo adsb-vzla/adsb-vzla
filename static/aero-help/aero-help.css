@@ -1,0 +1,395 @@
+/* ============================================================
+   aero-help.css — Estilos oscuros para Select2 integrado
+   ============================================================ */
+
+/* Contenedor del Select2 dentro de la barra de búsqueda */
+#tab-search-navbar .select2-container {
+    flex: 1 1 auto;
+    min-width: 200px;
+}
+
+/* Caja de selección (parte visible) */
+.select2-container--default .select2-selection--single {
+    background-color: #2b2b2b !important;
+    border: 1px solid #4a4a4a !important;
+    border-radius: 4px !important;
+    height: 32px !important;
+    color: #e9edf7 !important;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.select2-container--default .select2-selection--single:hover {
+    border-color: #5a5a5a !important;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: #0a84ff !important;
+    box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.25) !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 30px !important;
+    color: #e9edf7 !important;
+    padding-left: 8px !important;
+    padding-right: 24px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #8a8f9a !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 30px !important;
+    right: 6px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #b8bdc7 transparent transparent transparent !important;
+}
+
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent #b8bdc7 transparent !important;
+}
+
+/* Clear button (X) */
+.select2-container--default .select2-selection--single .select2-selection__clear {
+    color: #b8bdc7 !important;
+    font-weight: bold;
+    margin-right: 4px;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__clear:hover {
+    color: #ffffff !important;
+}
+
+/* Dropdown */
+.select2-dropdown {
+    background-color: #242424 !important;
+    border: 1px solid #4a4a4a !important;
+    border-radius: 6px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+    color: #e9edf7 !important;
+}
+
+.select2-search--dropdown {
+    background-color: #242424 !important;
+    padding: 6px !important;
+}
+
+.select2-search--dropdown .select2-search__field {
+    background-color: #2b2b2b !important;
+    border: 1px solid #4a4a4a !important;
+    color: #e9edf7 !important;
+    border-radius: 4px !important;
+    padding: 4px 6px !important;
+    outline: none !important;
+}
+
+.select2-search--dropdown .select2-search__field:focus {
+    border-color: #0a84ff !important;
+}
+
+.select2-results__options {
+    max-height: 420px !important;
+    overflow-y: auto !important;
+}
+
+.select2-results__option {
+    padding: 6px 10px !important;
+    color: #d8d8d8 !important;
+    background-color: #242424 !important;
+    font-size: 12px !important;
+}
+
+.select2-results__option--highlighted[aria-selected] {
+    background-color: #0a84ff !important;
+    color: #ffffff !important;
+}
+
+.select2-results__option[aria-selected="true"] {
+    background-color: #1e3a5f !important;
+}
+
+.select2-results__group {
+    background-color: #1a1a1a !important;
+    color: #8a8f9a !important;
+    font-weight: bold !important;
+    font-size: 11px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px !important;
+    border-top: 1px solid #333 !important;
+}
+
+.select2-results__message {
+    color: #8a8f9a !important;
+    padding: 10px !important;
+}
+
+/* Layout interno de cada sugerencia */
+.aero-help-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.aero-help-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+}
+
+.aero-help-code {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-weight: 700;
+    color: #4ea1ff;
+    flex-shrink: 0;
+    min-width: 52px;
+}
+
+.select2-results__option--highlighted .aero-help-code {
+    color: #ffffff !important;
+}
+
+.aero-help-name {
+    /* color: #d8d8d8; */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1 1 auto;
+}
+
+.select2-results__option--highlighted .aero-help-name {
+    color: #ffffff !important;
+}
+
+.aero-help-meta {
+    color: #8a8f9a;
+    font-style: italic;
+    font-size: 10px;
+    margin-left: auto;
+    flex-shrink: 0;
+    padding-left: 6px;
+}
+
+.select2-results__option--highlighted .aero-help-meta {
+    color: #cfe3ff !important;
+}
+
+/* Modo seleccionado (input) */
+.aero-help-selected {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+
+#search_form:focus-within {
+    border-color: #0a84ff !important;
+    box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.25) !important;
+} */
+
+/* ============================================================
+   BUSCADOR UNIFICADO — hereda el look nativo de tar1090
+   ============================================================ */
+
+/* 1. El input nativo queda fuera de pantalla pero focusable. */
+#search_form > #search_input {
+    position: absolute !important;
+    left: -9999px !important;
+    top: 0 !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    border: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 2. El contenedor Select2 se fusiona con el form: mismo alto,
+      mismo ancho, sin borde ni fondo propios. */
+#search_form > .select2-container {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    height: 100% !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* 3. La caja de Select2 toma el fondo y el borde del contenedor
+      padre (el form o su wrapper). NO define borde propio. */
+#search_form .select2-selection--single {
+    height: 100% !important;
+    min-height: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    border-radius: inherit !important;
+    display: flex !important;
+    align-items: center !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+#search_form .select2-selection__rendered {
+    line-height: normal !important;
+    color: inherit !important;              /* hereda el color del input nativo */
+    padding-left: 8px !important;
+    padding-right: 24px !important;
+    font-size: inherit !important;
+    font-family: inherit !important;
+}
+
+
+#search_form .select2-selection__arrow {
+    height: 100% !important;
+    right: 6px !important;
+    top: 0 !important;
+}
+
+#search_form .select2-selection__clear {
+    color: inherit !important;
+    margin-right: 6px !important;
+    font-size: 14px !important;
+}
+
+/* 4. El botón de submit mantiene su look nativo — solo aseguramos
+      que no haya doble borde ni desalineación. */
+#search_form > #search_submit_btn {
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+/* ============================================================
+   DROPDOWN OSCURO (independiente del estilo del form)
+   ============================================================ */
+
+.select2-dropdown {
+    background-color: #242424 !important;
+    border: 1px solid #4a4a4a !important;
+    border-radius: 4px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.55) !important;
+    /* color: #e9edf7 !important; */
+    z-index: 10000 !important;
+}
+
+.select2-search--dropdown {
+    background-color: #242424 !important;
+    padding: 6px !important;
+}
+
+.select2-search--dropdown .select2-search__field {
+    background-color: #2b2b2b !important;
+    border: 1px solid #4a4a4a !important;
+    color: #e9edf7 !important;
+    border-radius: 3px !important;
+    padding: 4px 6px !important;
+    outline: none !important;
+}
+
+.select2-search--dropdown .select2-search__field:focus {
+    border-color: #0a84ff !important;
+}
+
+.select2-results__options {
+    max-height: 420px !important;
+    overflow-y: auto !important;
+}
+
+.select2-results__option {
+    padding: 5px 10px !important;
+    color: #d8d8d8 !important;
+    background-color: #242424 !important;
+    font-size: 12px !important;
+}
+
+.select2-results__option--highlighted[aria-selected] {
+    background-color: #0a84ff !important;
+    color: #ffffff !important;
+}
+
+.select2-results__option[aria-selected="true"] {
+    background-color: #1e3a5f !important;
+}
+
+.select2-results__group {
+    background-color: #1a1a1a !important;
+    color: #8a8f9a !important;
+    font-weight: bold !important;
+    font-size: 10px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px !important;
+    border-top: 1px solid #333 !important;
+}
+
+.select2-results__message {
+    color: #8a8f9a !important;
+    padding: 10px !important;
+}
+
+/* Layout interno de cada sugerencia */
+.aero-help-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.aero-help-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+}
+
+.aero-help-code {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-weight: 700;
+    color: #4ea1ff;
+    flex-shrink: 0;
+    min-width: 52px;
+}
+
+.select2-results__option--highlighted .aero-help-code {
+    color: #ffffff !important;
+}
+
+.aero-help-name {
+    color: #d8d8d8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1 1 auto;
+}
+
+.select2-results__option--highlighted .aero-help-name {
+    color: #ffffff !important;
+}
+
+.aero-help-meta {
+    color: #8a8f9a;
+    font-style: italic;
+    font-size: 10px;
+    margin-left: auto;
+    flex-shrink: 0;
+    padding-left: 6px;
+}
+
+.select2-results__option--highlighted .aero-help-meta {
+    color: #cfe3ff !important;
+}
