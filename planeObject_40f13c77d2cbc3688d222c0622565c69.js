@@ -249,15 +249,13 @@ PlaneObject.prototype.isFiltered = function() {
     if (this.selected)
         return false;
 
-    // Nuevos filtros múltiples (buscadores unificados)
+    // ***** NORMALIZAR TODOS LOS FILTROS EN UN SÓLO BUSCADOR *****
     for (const filter of filters_active) {
-        // Si el filtro tiene un método matches personalizado
         if (filter.matches) {
             if (!filter.matches(this)) {
                 return true;
             }
         }
-        // Filtros normales (campo único)
         else if (filter.field && !filter.field.startsWith('multi_')) {
             if (!this[filter.field] || !this[filter.field].toUpperCase().match(filter.PATTERN)) {
                 return true;
@@ -275,13 +273,6 @@ PlaneObject.prototype.isFiltered = function() {
     )) {
         return true;
     }
-
-    // for (const filter of filters_active) {
-    //     if (!this[filter.field] || !this[filter.field].toUpperCase().match(filter.PATTERN)) {
-    //         //this[filter.field] && console.log(this[filter.field].toUpperCase() + ' ' + filter.PATTERN);
-    //         return true;
-    //     }
-    // }
 
     if (g.icao_nt_only && this.addrtype != 'adsb_icao_nt') {
         return true;
@@ -1832,17 +1823,17 @@ PlaneObject.prototype.updateMarker = function(moved) {
 // return the styling of the lines based on altitude
 function altitudeLines (segment) {
     if (debugTracks) {
+        // ***** DEFINIR COLORES PARA SEGMENTOS ESTIMADOS *****
         if (segment.estimated) {
-            // Las líneas estimadas se ven en naranja más oscuro
             return new ol.style.Style({
                 stroke: new ol.style.Stroke({
-                    color: '#FF6600',  // Naranja para segmentos estimados
+                    color: '#FF6600',
                     width: 3,
                     lineDash: [8, 8]
                 })
             });
+        // ***** SI LA FUENTE ES MLAT *****
         } else if (segment.dataSource === 'mlat') {
-            // MLAT en naranja
             return new ol.style.Style({
                 stroke: new ol.style.Stroke({
                     color: '#FFA500',
@@ -1850,7 +1841,7 @@ function altitudeLines (segment) {
                 })
             });
             } else if (segment.dataSource === 'modeS') {
-            // Mode-S en rojo
+            // ***** SI LA FUENTE ES MODE-S *****
             return new ol.style.Style({
                 stroke: new ol.style.Stroke({
                     color: '#FF0000',
@@ -3194,16 +3185,14 @@ function normalizeTraceStamps(data) {
     return data;
 }
 
+// ***** MOSTRAR SÓLO EL ÚLTIMO SEGMENTO *****
 PlaneObject.prototype.applyLastLegFilter = function() {
-    // Si lastLeg está desactivado o no hay suficientes segmentos, no hacer nada
     if (!lastLeg || this.track_linesegs.length < 2) return;
     
-    // Guardar solo el último segmento
     const lastSegment = this.track_linesegs[this.track_linesegs.length - 1];
     this.track_linesegs = [lastSegment];
     this.history_size = 1;
     
-    // Forzar redibujado
     this.removeTrail();
     this.updateLines();
 };

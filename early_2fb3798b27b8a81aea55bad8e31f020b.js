@@ -733,18 +733,16 @@ function Toggle(arg) {
     this.setState = arg.setState;
     this.checkbox = (arg.checkbox == undefined) ? ('#' + this.key + '_cb') : null;
 
-    // **** Guardar los textos originales y las claves de traducción para la función de cambio de idioma ****
+    // **** GUARDAR TEXTO ORIGINAL Y CLAVES DE TRADUCCIÓN PARA CAMBIO DE IDIOMA ****
     this._displayKey = arg.displayKey || null;
     this._tooltipKey = arg.tooltipKey || null;
     this._originalDisplay = arg.display;
     this._originalTooltip = arg.tooltip;
     this._currentDisplay = arg.display;
     this._currentTooltip = arg.tooltip;
-    // this.display = arg.display;
-    // this.tooltip = arg.tooltip;
     this.container = arg.container;
     this.button = arg.button || this.checkbox;
-    // **** Obtener el elemento DOM que se va a traducir ****
+    // **** OBTENER ELEMENTO A TRADUCIR ****
     this._element = null;
 
     toggles[this.key] = this;
@@ -754,8 +752,7 @@ function Toggle(arg) {
 
 Toggle.prototype.init = function() {
     if (this.container) {
-        // let titleAttr = this.tooltip ? ' title="' + this.tooltip + '"' : '';
-        // **** Generar el elemento HTML con las claves definidas arriba ****
+        // **** GENERAR ELEMENTO CON CLAVES DE TRADUCCIÓN CORRESPONDIENTES ****
         let titleAttr = this._currentTooltip ? ' title="' + this._currentTooltip + '"' : '';
         const containerEl = jQuery(this.container);
         const html = (
@@ -766,11 +763,6 @@ Toggle.prototype.init = function() {
         );
         containerEl.append(html);
         this._element = containerEl.children().last();
-        // jQuery(this.container).append((
-        //     '<div class="settingsOptionContainer"' + titleAttr + '>'
-        //     + '<div class="settingsCheckbox" id="' + this.key + '_cb' + '"></div>'
-        //     + '<div class="settingsText">' + this.display + '</div>'
-        //     + '</div>'));
     }
 
     if (this.button) {
@@ -785,9 +777,7 @@ Toggle.prototype.init = function() {
     this.toggle(this.state, true);
 }
 
-// *****************************************
-// **** INICIO ACTUALIZAR IDIOMA TOGGLE ****
-// *****************************************
+// ***** ACTUALIZAR IDIOMA *****
 Toggle.prototype.updateLanguage = function(translations) {
     let newDisplay = this._originalDisplay;
     let newTooltip = this._originalTooltip;
@@ -833,9 +823,6 @@ Toggle.prototype.updateLanguage = function(translations) {
         }
     }
 }
-// *****************************************
-// ***** FIN ACTUALIZAR IDIOMA TOGGLE ******
-// *****************************************
 
 Toggle.prototype.toggle = function(override, init) {
     if (override == true)
@@ -874,11 +861,7 @@ Toggle.prototype.hideCheckbox = function () {
         jQuery(this.checkbox).parent().hide();
 }
 
-// *****************************************
-// **** INICIO FUNCIÓN ACTUALIZAR IDIOMA ***
-// *****************************************
-
-// **** Actualizar los toggles existentes ****
+// ***** ACTUALIZAR EL IDIOMA DE TODOS LOS ELEMENTOS DISPONIBLES *****
 window.updateAllToggles = function(translations) {
     let updatedCount = 0;
     for (const key in toggles) {
@@ -887,22 +870,18 @@ window.updateAllToggles = function(translations) {
             updatedCount++;
         }
     }
-    // if (updatedCount > 0) {
-    //     console.log(`Updated ${updatedCount} toggles with new language`);
-    // }
     return updatedCount;
 };
 
-// **** Escuchar evento de cambio de idioma ****
+// ***** ESCUCHAR CAMBIO DEL SELECTOR DE IDIOMA *****
 document.addEventListener('languageChanged', function(event) {
-    // Si el evento tiene datos de traducción, pasarlos
     const translations = event.detail || {};
     if (typeof window.updateAllToggles === 'function') {
         window.updateAllToggles(translations);
     }
 });
 
-// **** Actualizar cuando se abre el panel de configuración ****
+// ***** ACTUALIZAR LAS OPCIONES MARCADAS AL ABRIR EL MENÚ DE CONFIGURACIONES *****
 document.addEventListener('click', function(e) {
     if (e.target.closest('#settingsCog') || e.target.closest('#settings_infoblock')) {
         setTimeout(() => {
@@ -912,10 +891,6 @@ document.addEventListener('click', function(e) {
         }, 50);
     }
 });
-
-// *****************************************
-// ***** FIN FUNCIÓN ACTUALIZAR IDIOMA *****
-// *****************************************
 
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
 if (!Object.keys) {

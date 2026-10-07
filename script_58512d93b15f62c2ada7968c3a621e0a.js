@@ -4,6 +4,7 @@
 
 "use strict";
 
+// ***** GARANTIZAR ACTUALIZACIÓN DE TEXTOS AL TRADUCIR *****
 jQuery.fn.updateText = function (text) {
     this.text() !== String(text) && this.text(text);
     return this;
@@ -57,56 +58,40 @@ let replayEditLock = false;
 let replayPendingJump = false;
 let replayHourValue = 0;
 let replayMinuteValue = 0;
-// **************************************************
-// ** INICIO VARIABLES DISTANCIA AERONAVE-AERONAVE **
-// **************************************************
+
+// ***** DISTANCIA AERONAVE-AERONAVE *****
 let distanceBetweenPlanesMode = false;
 let selectedPlanesForDistance = [];
 let distanceLineLayer = null;
 let distanceLineFeature = null;
 let distanceOverlay = null;
 let distanceUpdateInterval = null;
-// Track visibility in 1A1B mode
 let distance1A1BHidden = false;
-// Track visibility in pairs mode
 let pairHiddenState = new Map();
-// Plane-plane distance modes and storage for multiple pairs
 let planeDistanceModeType = '1A1B';
 const PP_MODES = ['1A1B', 'pairs'];
-let distanceLineFeaturesMap = new Map(); // key -> ol.Feature
-let distanceOverlaysMap = new Map(); // key -> ol.Overlay
-let selectedPlaneA = null; // anchor A when in anchor mode
-let pairMap = new Map(); // key -> {a, b}
-let pairOrder = []; // keep insertion order of keys
-let pairBuffer = []; // temporary buffer for click pairing
-// **************************************************
-// ** CAPAS DE PUNTOS PARA AVIONES SELECCIONADOS **
-// **************************************************
-const planePointFeatures = new Map(); // key -> ol.Feature
-const planePointOverlays = new Map(); // key -> ol.Overlay
-// Fuentes/capas para números de puntos y puntos de aviones.
-// Se crean en initMap() e insertan directamente en sus grupos de distancia.
+let distanceLineFeaturesMap = new Map();
+let distanceOverlaysMap = new Map();
+let selectedPlaneA = null;
+let pairMap = new Map();
+let pairOrder = [];
+let pairBuffer = [];
+const planePointFeatures = new Map();
+const planePointOverlays = new Map();
 let pointNumberSourceAA = null;
 let pointNumberSourceTA = null;
 let pointNumberSourceTT = null;
 let pointNumberLayerAA = null;
 let pointNumberLayerTA = null;
 let pointNumberLayerTT = null;
-
 let planePointSourceAA = null;
 let planePointSourceTA = null;
 let planePointLayerAA = null;
 let planePointLayerTA = null;
-// Per-pair missing signal tracking for plane-plane mode
 let ppMissingSince = new Map();
 let ppRemoved = new Set();
-// **************************************************
-// ** FIN VARIABLES DISTANCIA AERONAVE-AERONAVE **
-// **************************************************
 
-// **************************************************
-// *** INICIO VARIABLES DISTANCIA TIERRA-AERONAVE ***
-// **************************************************
+// ***** DISTANCIA TIERRA-AERONAVE *****
 let distanceToGroundMode = false;
 let distanceGroundOverlay = null;
 let distanceGroundUpdateInterval = null;
@@ -133,17 +118,11 @@ const groundPlaneMissingSince = new Map();
 const groundPlaneRemoved = new Set();
 let groundPlaneHiddenState = new Map();
 let distanceGuideEl = null;
-// ***** VARIABLES DE ESTADO TIERRA-AERONAVE *****
-let taFirstPointType = null; // 'ground' | 'aircraft' | null
+let taFirstPointType = null;
 const hasGroundFirst = groundPoints.length > 0 || groundPointCoord;
 const hasPlaneFirst = planesForGround.length > 0;
-// **************************************************
-// **** FIN VARIABLES DISTANCIA TIERRA-AERONAVE *****
-// **************************************************
 
-// **************************************************
-// **** INICIO VARIABLES DISTANCIA TIERRA-TIERRA ****
-// **************************************************
+// ***** DISTANCIA TIERRA-TIERRA *****
 let groundToGroundMode = false;
 let groundToGroundModeType = '1A1B';
 const GG_MODES = ['1A1B', '1A_nB', 'nA_nB'];
@@ -164,14 +143,10 @@ let ggRemoved = new Set();
 let ggPairMap = new Map();
 let ggPairOrder = [];
 const firData = {};
-// ***** FUENTE Y CAPA PARA NÚMEROS QUE INDIQUEN PRIMER Y SEGUNDO PUNTO *****
 let ggNumberSource = null;
 let ggNumberLayer = null;
-// **************************************************
-// ***** FIN VARIABLES DISTANCIA TIERRA-TIERRA ******
-// **************************************************
 
-// ***** VARIABLES DE LA FUNCIÓN DE ELEVACIÓN *****
+// ***** ELEVACIÓN TIERRA-TIERRA *****
 let elevationMode = false;
 let elevationPointSource = null;
 let elevationPointLayer = null;
@@ -181,57 +156,40 @@ let lastPanoramaData = null;
 let lastPanoramaTotalNm = null;
 let panoramaResizeObs = null;
 let elevationBusy = false;
+let elevationNumberSourceGG = null;
+let elevationNumberLayerGG = null;
+// ***** ELEVACIÓN TIERRA-AERONAVE *****
 let elevationAnchor = null;
 let elevationGroundAircraftMode = false;
-let elevationGroundAircraftModeType = 'aircraft'; // 'aircraft' | 'ground_aircraft'
+let elevationGroundAircraftModeType = 'aircraft';
 const ELEVATION_GA_MODES = ['aircraft', 'ground_aircraft'];
 let elevationGroundAnchor = null;
 let elevationAircraftHex = null;
-let elevationPendingGround = null; // NUEVO: punto en tierra pendiente en modo ground_aircraft
+let elevationPendingGround = null;
 let elevationPendingAircraftHex = null;
 let elevationGAAircraftWasFirst = false;
 let elevationGroundAircraftUpdateInterval = null;
 let elevationCountdownInterval = null;
 let elevationCountdownValue = 0;
-// ***** FUENTES Y CAPAS PARA NUMERACIÓN DE PUNTOS DE ELEVACIÓN *****
-let elevationNumberSourceGG = null;
-let elevationNumberLayerGG = null;
 let elevationNumberSourceGA = null;
 let elevationNumberLayerGA = null;
 
-// **************************************************
-// ****** INICIO VARIABLES INDICADOR DE ZOOM ********
-// **************************************************
+// ***** INDICADOR DE ZOOM *****
 let zoomIndicatorBaseline = null;
 let ZOOM_BASELINE_KEY = 'zoomIndicatorBaseline_v2';
-// **************************************************
-// ******* FIN VARIABLES INDICADOR DE ZOOM **********
-// **************************************************
 
-// **************************************************
-// **** INICIO VARIABLES MARCADOR DE AEROPUERTO *****
-// **************************************************
+// ***** MARCADOR DE ELEMENTOS DE BÚSQUEDA *****
 let airportMarkerFeature = null;
 let airportMarkerLayer = null;
 let airportMarkerTimeout = null;
 let airportFadeInterval = null;
-// **************************************************
-// ***** FIN VARIABLES MARCADOR DE AEROPUERTO *******
-// **************************************************
 
-// **************************************************
-// ***** INICIO VARIABLES AVIONES DE INTERÉS ********
-// **************************************************
+// ***** AVIONES DE INTERÉS *****
 let columns = [];
 let starredAircraft = new Set();
 let starredListCollapsed = false;
-// **************************************************
-// ******* FIN VARIABLES AVIONES DE INTERÉS *********
-// **************************************************
 
-// **************************************************
-// ***** INICIO VARIABLES VENTANA DE SETTINGS *******
-// **************************************************
+// ***** CONFIGURACIONES COMO VENTANA FLOTANTE *****
 let settingsWindowState = {
     isMaximized: false,
     isMinimized: false,
@@ -241,9 +199,6 @@ let settingsWindowState = {
     savedHeight: null
 };
 let settingsResizeHandle = null;
-// **************************************************
-// ****** FIN VARIABLES VENTANA DE SETTINGS *********
-// **************************************************
 
 let appReady = false;
 
@@ -370,34 +325,13 @@ let badDot;
 let badDotMlat;
 let showingReplayBar = false;
 
-// Exponer OLMap y ol a window para que módulos externos (aero-help.js, etc.)
-// puedan acceder a la vista del mapa sin depender del scope del módulo.
+// ***** EXPONER OLMAP PARA USO DE MÓDULOS EXTERNOS *****
 Object.defineProperty(window, 'OLMap', {
     get() { return OLMap; },
     set(v) { OLMap = v; },
     configurable: true,
 });
-window.ol = ol;   // ol viene del bundle libs/ol-custom-10.6.1.js y ya es global,
-// pero por si acaso lo re-exponemos.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+window.ol = ol;
 
 // function stableOverlayOffset(key) {
 //     // Deterministic, small scatter around the anchor to avoid overlap
@@ -410,23 +344,7 @@ window.ol = ol;   // ol viene del bundle libs/ol-custom-10.6.1.js y ya es global
 //     return [dx, dy];
 // }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// *****************************************
-// ******* INICIO INDICADOR DE ZOOM ********
-// *****************************************
+// ***** INDICADOR DE ZOOM *****
 function updateZoomIndicator() {
     const el = document.getElementById('zoom_indicator');
     if (!el || !OLMap || !OLMap.getView) return;
@@ -468,13 +386,8 @@ function updateZoomIndicator() {
 
     el.title = tooltipText;
 }
-// *****************************************
-// ******** FIN INDICADOR DE ZOOM **********
-// *****************************************
 
-// *****************************************
-// ***** INICIO BOTONES ZOOM IN/OUT ********
-// *****************************************
+// ***** HACER ZOOM IN AL USAR BOTÓN *****
 function zoomInMap() {
     if (!OLMap || !OLMap.getView) return;
     const v = OLMap.getView();
@@ -483,6 +396,7 @@ function zoomInMap() {
     if (FollowSelected) toggleFollow(true);
 }
 
+// ***** HACER ZOOM OUT AL USAR BOTÓN *****
 function zoomOutMap() {
     if (!OLMap || !OLMap.getView) return;
     const v = OLMap.getView();
@@ -490,57 +404,14 @@ function zoomOutMap() {
     updateZoomIndicator();
     if (FollowSelected) toggleFollow(true);
 }
-// *****************************************
-// ******* FIN BOTONES ZOOM IN/OUT *********
-// *****************************************
 
-// *****************************************
-// **** INICIO RESTAURAR ANCHO SIDEBAR *****
-// *****************************************
-function resetSidebarWidth() {
-    const sidebar = document.getElementById('sidebar_container');
-    if (!sidebar) return;
-
-    const windowWidth = window.innerWidth;
-    let baseWidth = windowWidth * 0.25;
-
-    const minWidth = 200;
-    const maxWidth = windowWidth * 0.6;
-    baseWidth = Math.min(maxWidth, Math.max(minWidth, baseWidth));
-
-    sidebar.style.width = baseWidth + 'px';
-
-    localStorage.setItem('sidebar_width', baseWidth);
-
-    if (typeof updateMapSize === 'function') {
-        updateMapSize();
-    }
-
-    if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
-        TAR.planeMan.redraw();
-    }
-
-    sidebar.style.transition = 'width 0.2s ease';
-    setTimeout(() => {
-        sidebar.style.transition = '';
-    }, 200);
-}
-// *****************************************
-// ***** FIN RESTAURAR ANCHO SIDEBAR *******
-// *****************************************
-
-// ============================================================
-// Vincula un botón con un panel/dropdown toggleable.
-// - mode 'panel': el panel se muestra/oculta con show()/hide()
-// - mode 'dropdown': el dropdown se abre con :focus-within (Tailwind)
-// ============================================================
+// ***** VINCULAR BOTÓN CON ESTADO ACTIVO PARA APLICAR CLASE DE COLOR INVERTIDO *****
 function bindToggleButton(options) {
     const buttonSelector = options.button;
     const panelSelector = options.panel;
     const mode = options.mode || 'panel';
     const closeSelectors = options.closeButtons || [];
     const activeClass = options.activeClass || 'btn-active';
-    // NUEVO: condición extra para mantener el botón activo
     const activeWhen = options.activeWhen || null;
 
     const $button = jQuery(buttonSelector);
@@ -551,7 +422,7 @@ function bindToggleButton(options) {
         return;
     }
 
-    // -------------------- MODO DROPDOWN --------------------
+    // ***** BOTONES TIPO DROPDOWN *****
     if (mode === 'dropdown') {
         const $container = $button.closest('.dropdown');
 
@@ -561,7 +432,6 @@ function bindToggleButton(options) {
             $button.toggleClass(activeClass, isOpen || hasActiveItem);
         }
 
-        // Guardar la función en el botón para poder re-invocarla desde fuera
         $button[0].__syncBtnState = syncDropdownState;
 
         $container.off('.bindToggleBtn');
@@ -576,21 +446,19 @@ function bindToggleButton(options) {
             setTimeout(syncDropdownState, 0);
         });
 
-        // Sincronizar cada vez que cambia la clase activeButton de algún item
         const observer = new MutationObserver(function () {
             syncDropdownState();
         });
         $container.find('[id]').each(function () {
             observer.observe(this, { attributes: true, attributeFilter: ['class'] });
         });
-        // También observar el contenedor por si se agregan items dinámicamente
         observer.observe($container[0], { childList: true, subtree: true });
 
         syncDropdownState();
         return;
     }
 
-    // -------------------- MODO PANEL --------------------
+    // ***** BOTONES TIPO PANEL *****
     if (!$panel || !$panel.length) {
         console.warn('bindToggleButton: no se encontró el panel', panelSelector);
         return;
@@ -620,10 +488,37 @@ function bindToggleButton(options) {
     syncButtonState();
 }
 
+// ***** RESTAURAR ANCHO DEL SIDEBAR DESDE BOTÓN *****
+function resetSidebarWidth() {
+    const sidebar = document.getElementById('sidebar_container');
+    if (!sidebar) return;
 
-// ******************************************
-// ** INICIO BOTÓN RESTAURAR ANCHO SIDEBAR **
-// ******************************************
+    const windowWidth = window.innerWidth;
+    let baseWidth = windowWidth * 0.25;
+
+    const minWidth = 200;
+    const maxWidth = windowWidth * 0.6;
+    baseWidth = Math.min(maxWidth, Math.max(minWidth, baseWidth));
+
+    sidebar.style.width = baseWidth + 'px';
+
+    localStorage.setItem('sidebar_width', baseWidth);
+
+    if (typeof updateMapSize === 'function') {
+        updateMapSize();
+    }
+
+    if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.redraw) {
+        TAR.planeMan.redraw();
+    }
+
+    sidebar.style.transition = 'width 0.2s ease';
+    setTimeout(() => {
+        sidebar.style.transition = '';
+    }, 200);
+}
+
+// ***** DIBUJAR BOTÓN PARA RESTAURAR ANCHO DEL SIDEBAR *****
 function initSidebarResetTab() {
     const resetTab = document.getElementById('reset-sidebar-tab');
     const resetLink = document.getElementById('reset-sidebar-link');
@@ -643,6 +538,7 @@ function initSidebarResetTab() {
     });
 }
 
+// ***** ESPERAR A QUE EL DOM ESTÉ CARGADO PARA INICIALIZAR EL BOTÓN *****
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
         setTimeout(initSidebarResetTab, 100);
@@ -650,13 +546,8 @@ if (document.readyState === 'loading') {
 } else {
     setTimeout(initSidebarResetTab, 100);
 }
-// ******************************************
-// *** FIN BOTÓN RESTAURAR ANCHO SIDEBAR ****
-// ******************************************
 
-// **********************************************************
-// *** INICIO FUNCIÓN RESTAURAR CONFIGURACIÓN POR DEFECTO ***
-// **********************************************************
+// ***** RESTAURAR TODAS LAS CONFIGURACIONES A SU DEFINICIÓN POR DEFECTO *****
 (function () {
     const initResetButton = function () {
         const resetBtn = document.getElementById('reset-all-settings-btn');
@@ -769,59 +660,20 @@ if (document.readyState === 'loading') {
         initResetButton();
     }
 })();
-// **********************************************************
-// **** FIN FUNCIÓN RESTAURAR CONFIGURACIÓN POR DEFECTO *****
-// **********************************************************
 
-// ************************************************
-// ** INICIO FUNCIÓN ACTUALIZAR TÍTULOS DE CAPAS **
-// ************************************************
+// ***** ACTUALIZAR TÍTULOS DE LAS CAPAS AL CAMBIAR IDIOMA *****
 function updateLayerTitles() {
     if (!OLMap) return;
     const layers = OLMap.getLayers().getArray();
     let updatedCount = 0;
 
-    // **********************************************
-    // ** INICIO FUNCIÓN TRADUCIR TÍTULOS DE CAPAS **
-    // **********************************************
-    // function translateLayer(layer) {
-    //     if (!layer) return;
-    //     if (typeof layer.getLayers === 'function') {
-    //         const groupName = layer.get('name');
-    //         if (groupName) {
-    //             const translatedTitle = getLayerTitle('group_' + groupName, layer.get('title'));
-    //             if (translatedTitle !== layer.get('title')) {
-    //                 layer.set('title', translatedTitle);
-    //                 updatedCount++;
-    //             }
-    //         }
-    //         const subLayers = layer.getLayers();
-    //         if (subLayers) {
-    //             subLayers.forEach(subLayer => {
-    //                 translateLayer(subLayer);
-    //             });
-    //         }
-    //     } else if (typeof layer.get === 'function') {
-    //         const name = layer.get('name');
-    //         if (name) {
-    //             const translatedTitle = getLayerTitle(name, layer.get('title'));
-    //             if (translatedTitle !== layer.get('title')) {
-    //                 layer.set('title', translatedTitle);
-    //                 updatedCount++;
-    //             }
-    //         }
-    //     }
-    // }
     function translateLayer(layer) {
         if (!layer) return;
 
-        // Verificar si es un grupo (tiene método getLayers)
         if (typeof layer.getLayers === 'function') {
-            // Es un grupo de capas
             const groupName = layer.get('name');
             const groupTitle = layer.get('title');
 
-            // Traducir título del grupo
             if (groupName) {
                 const translatedTitle = getLayerTitle('group_' + groupName, groupTitle);
                 if (translatedTitle !== groupTitle) {
@@ -830,8 +682,6 @@ function updateLayerTitles() {
                     console.log(`Grupo actualizado: ${groupName} -> ${translatedTitle}`);
                 }
             } else if (groupTitle) {
-                // Si no tiene name, intentar traducir por el título
-                // Esto es clave para los grupos de distancia que no tienen 'name'
                 const translatedTitle = getLayerTitle(groupTitle, groupTitle);
                 if (translatedTitle !== groupTitle) {
                     layer.set('title', translatedTitle);
@@ -840,7 +690,6 @@ function updateLayerTitles() {
                 }
             }
 
-            // ⭐ IMPORTANTE: Recursivamente traducir capas hijas
             const subLayers = layer.getLayers();
             if (subLayers) {
                 subLayers.forEach(subLayer => {
@@ -848,7 +697,6 @@ function updateLayerTitles() {
                 });
             }
         } else if (typeof layer.get === 'function') {
-            // Es una capa individual
             const name = layer.get('name');
             const title = layer.get('title');
 
@@ -860,7 +708,6 @@ function updateLayerTitles() {
                     console.log(`Capa actualizada: ${name} -> ${translatedTitle}`);
                 }
             } else if (title) {
-                // Si no tiene name, intentar traducir por el título
                 const translatedTitle = getLayerTitle(title, title);
                 if (translatedTitle !== title) {
                     layer.set('title', translatedTitle);
@@ -870,9 +717,6 @@ function updateLayerTitles() {
             }
         }
     }
-    // *******************************************
-    // ** FIN FUNCIÓN TRADUCIR TÍTULOS DE CAPAS **
-    // *******************************************
 
     layers.forEach(layer => {
         translateLayer(layer);
@@ -880,13 +724,8 @@ function updateLayerTitles() {
 
     refreshLayerSwitcher();
 }
-// *********************************************
-// ** FIN FUNCIÓN ACTUALIZAR TÍTULOS DE CAPAS **
-// *********************************************
 
-// *********************************************
-// ** INICIO FUNCIÓN ACTUALIZAR MENÚ DE CAPAS **
-// *********************************************
+// ***** ACTUALIZAR MENÚ DE CAPAS *****
 function refreshLayerSwitcher() {
     if (!OLMap) {
         console.warn('refreshLayerSwitcher: OLMap no está inicializado');
@@ -932,13 +771,8 @@ function refreshLayerSwitcher() {
         OLMap.render();
     }
 }
-// ******************************************
-// ** FIN FUNCIÓN ACTUALIZAR MENÚ DE CAPAS **
-// ******************************************
 
-// ***********************************************************
-// ** INICIO FUNCIÓN FORZAR ACTUALIZACIÓN DEL MENÚ DE CAPAS **
-// ***********************************************************
+// ***** FORZAR ACTUALIZACIÓN DEL MENÚ DE CAPAS *****
 function forceRecreateLayerSwitcher() {
     if (!OLMap) return;
     let oldControl = null;
@@ -972,18 +806,6 @@ function forceRecreateLayerSwitcher() {
         }, 100);
     }, 50);
 }
-
-// ********************************************************
-// ** FIN FUNCIÓN FORZAR ACTUALIZACIÓN DEL MENÚ DE CAPAS **
-// ********************************************************
-
-// ***********************************************
-// ** EXPONER FUNCIONES GLOBALMENTE PARA SU USO **
-// ***********************************************
-window.forceRecreateLayerSwitcher = forceRecreateLayerSwitcher;
-window.getLayerTitle = getLayerTitle;
-window.updateLayerTitles = updateLayerTitles;
-window.refreshLayerSwitcher = refreshLayerSwitcher;
 
 function processAircraft(ac, init, uat) {
     const isArray = Array.isArray(ac);
@@ -1281,7 +1103,6 @@ function fetchDone(data) {
         if (last == now && !globeIndex) {
             StaleReceiverCount++;
             if (StaleReceiverCount > 5) {
-                // jQuery("#update_error_detail").text("The data from the server hasn't been updated in a while.");
                 let errorMsg = getTranslatedText('error_data_not_updated', "The data from the server hasn't been updated in a while.");
                 jQuery("#update_error_detail").text(errorMsg);
                 jQuery("#update_error").css('display', 'block');
@@ -1629,9 +1450,7 @@ function replaySpeedChange(arg) {
     legShift(0);
 };
 
-// *****************************************
-// ***** INICIO OBTENER TEXTO TRADUCIDO ****
-// *****************************************
+// ***** OBTENER CLAVE DE TRADUCCIÓN *****
 function getTranslatedText(key, fallback) {
     if (typeof window.translate !== 'undefined' && window.translate.t) {
         const translated = window.translate.t(key);
@@ -1645,13 +1464,8 @@ function getTranslatedText(key, fallback) {
 
     return fallback || key;
 }
-// *****************************************
-// ****** FIN OBTENER TEXTO TRADUCIDO ******
-// *****************************************
 
-// ****************************************************
-// ** INICIO CREAR TOGGLES CON SOPORTE DE TRADUCCIÓN **
-// ****************************************************
+// ***** CREAR TOGGLE DE TRADUCCIÓN A PARTIR DE LAS CLAVES *****
 function createToggle(options) {
     if (!options.displayKey && options.display) {
         if (options.display.includes('_') || options.display !== options.display.toLowerCase()) {
@@ -1674,21 +1488,11 @@ function createToggle(options) {
 
     return new Toggle(options);
 }
-// ****************************************************
-// *** FIN CREAR TOGGLES CON SOPORTE DE TRADUCCIÓN ****
-// ****************************************************
 
 function initPage() {
 
     if (globeIndex) {
-        // function setGlobeTableLimit() {
-        //     let mult = 1 + 4 * toggles['moreTableLines1'].state + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
-        //     globeTableLimit = globeTableLimitBase * mult;
-        //     if (toggles['allTableLines'] && toggles['allTableLines'].state)
-        //         globeTableLimit = 1e9;
-        //     if (onMobile)
-        //         globeTableLimit /= 2;
-        // };
+        // ***** TABS PARA VER MÁS FILAS DE LA TABLA DE AERONAVES *****
         window.setGlobeTableLimit = function () {
             let mult = 1 + 4 * (toggles['moreTableLines1'] ? toggles['moreTableLines1'].state : 0) + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
             globeTableLimit = globeTableLimitBase * mult;
@@ -1697,7 +1501,6 @@ function initPage() {
             if (onMobile)
                 globeTableLimit /= 2;
 
-            // Refrescar la tabla
             if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.refresh) {
                 TAR.planeMan.refresh();
             }
@@ -1705,7 +1508,6 @@ function initPage() {
         new Toggle({
             key: "moreTableLines1",
             display: "More Table Lines",
-            // container: "#sidebar-table",
             container: null,
             init: false,
             setState: window.setGlobeTableLimit,
@@ -1713,7 +1515,6 @@ function initPage() {
         new Toggle({
             key: "moreTableLines2",
             display: "Even More Table Lines",
-            // container: "#sidebar-table",
             container: null,
             init: false,
             setState: window.setGlobeTableLimit,
@@ -1721,13 +1522,11 @@ function initPage() {
         new Toggle({
             key: "allTableLines",
             display: "All Table Lines",
-            // container: "#sidebar-table",
             container: null,
             init: false,
             setState: window.setGlobeTableLimit,
         });
     }
-
 
     if (!globeIndex && !haveTraces) {
         jQuery("#lastLeg_cb").parent().hide();
@@ -1966,9 +1765,7 @@ function earlyInitPage() {
         },
     });
 
-    // **********************************************************************************
-    // ** INICIO BOTONES DE RESETEO PARA "TEXT AND ICON SIZE" Y "ICON SIZE MULTIPLIER" **
-    // **********************************************************************************
+    // ***** RESETEAR "TEXT AND ICON SIZE" A SU CONFIGURACIÓN POR DEFECTO *****
     const resetUserScaleBtn = document.getElementById('resetUserScaleBtn');
     if (resetUserScaleBtn) {
         resetUserScaleBtn.addEventListener('click', function () {
@@ -1982,6 +1779,8 @@ function earlyInitPage() {
             jQuery('#userScaleSlider').slider('value', Math.pow(userScale, 1 / slideBase));
         });
     }
+
+    // ***** RESETEAR "ICON SIZE MULTIPLIER" A SU CONFIGURACIÓN POR DEFECTO *****
     const resetIconScaleBtn = document.getElementById('resetIconScaleBtn');
     if (resetIconScaleBtn) {
         resetIconScaleBtn.addEventListener('click', function () {
@@ -1994,9 +1793,6 @@ function earlyInitPage() {
             jQuery('#iconScaleSlider').slider('value', Math.pow(iconScale, 1 / slideBase));
         });
     }
-    // **********************************************************************************
-    // *** FIN BOTONES DE RESETEO PARA "TEXT AND ICON SIZE" Y "ICON SIZE MULTIPLIER" ****
-    // **********************************************************************************
 
     setGlobalScale(userScale, "init");
 
@@ -2232,9 +2028,11 @@ function earlyInitPage() {
     });
 
 
-    // *****************************************
-    // ****** INICIO CATEGORÍA FILTERS *********
-    // *****************************************
+    // ***** ORDENAR LOS BOTONES DE CONFIGURACIONES POR CATEGORÍAS *****
+
+    // ***** CATEGORÍA FILTERS *****
+
+    // ***** FUNCIONES DE AERONAVE *****
     createToggle({
         key: "hideAircraftFunctions",
         display: 'hide_aircraft_functions',
@@ -2247,6 +2045,8 @@ function earlyInitPage() {
             jQuery("#aircraft_dropdown").toggle(!state);
         }
     });
+
+    // ***** FUNCIONES DE ELEVACIÓN *****
     createToggle({
         key: "hideElevationFunction",
         display: 'hide_elevation_function',
@@ -2259,6 +2059,8 @@ function earlyInitPage() {
             jQuery("#elevation_dropdown").toggle(!state);
         }
     });
+
+    // ***** FUNCIONES DE DISTANCIA *****
     createToggle({
         key: "hideDistanceFunctions",
         display: 'hide_distance_functions',
@@ -2271,6 +2073,8 @@ function earlyInitPage() {
             jQuery("#measurement_dropdown").toggle(!state);
         }
     });
+
+    // ***** FUNCIONES DE ETIQUETAS *****
     createToggle({
         key: "hideLabelFunctions",
         display: 'hide_label_functions',
@@ -2283,6 +2087,8 @@ function earlyInitPage() {
             jQuery("#label_dropdown").toggle(!state);
         }
     });
+
+    // ***** FUNCIONES DE CAPAS *****
     createToggle({
         key: "hideLayerFunctions",
         display: 'hide_layer_functions',
@@ -2295,6 +2101,8 @@ function earlyInitPage() {
             jQuery("#layer-select").toggle(!state);
         }
     });
+
+    // ***** FUNCIÓN DE RE-CENTRAR *****
     createToggle({
         key: "hideRecenterFunction",
         display: 'hide_recenter_function',
@@ -2307,6 +2115,8 @@ function earlyInitPage() {
             jQuery("#H").toggle(!state);
         }
     });
+
+    // ***** FUNCIÓN DE REPLAY *****
     createToggle({
         key: "hideReplayFunction",
         display: 'hide_replay_function',
@@ -2319,6 +2129,8 @@ function earlyInitPage() {
             jQuery("#RP").toggle(!state);
         }
     });
+
+    // ***** FUNCIÓN DE RUMBOS *****
     createToggle({
         key: "hideTrackFunctions",
         display: 'hide_track_functions',
@@ -2331,6 +2143,8 @@ function earlyInitPage() {
             jQuery("#track_dropdown").toggle(!state);
         }
     });
+
+    // ***** FUNCIONES DE ZOOM *****
     createToggle({
         key: "hideZoomFunctions",
         display: 'hide_zoom_functions',
@@ -2343,13 +2157,10 @@ function earlyInitPage() {
             jQuery("#ZI, #ZO").toggle(!state);
         }
     });
-    // *****************************************
-    // ******** FIN CATEGORÍA FILTERS **********
-    // *****************************************
 
-    // *****************************************
-    // ******* INICIO CATEGORÍA DATA ***********
-    // *****************************************
+    // ***** CATEGORÍA DATA *****
+
+    // ***** ALTITUD BAROMÉTRICA *****
     createToggle({
         key: "baroUseQNH",
         display: 'baro_alt_correct_qnh',
@@ -2375,6 +2186,8 @@ function earlyInitPage() {
             }
         }
     });
+
+    // ***** ALTITUD GEOMÉTRICA *****
     createToggle({
         key: "geomUseEGM",
         display: 'geom_alt_wgs84_egm',
@@ -2407,6 +2220,8 @@ function earlyInitPage() {
             }
         }
     });
+
+    // ***** HISTÓRICO DE TRAZAS *****
     createToggle({
         key: "utcTimesHistoric",
         display: 'historic_track_labels_utc',
@@ -2430,6 +2245,7 @@ function earlyInitPage() {
         toggles['geomUseEGM'].toggle(true, 'init');
     }
 
+    // ***** ETIQUETAS GEOMÉTRICAS *****
     createToggle({
         key: "labelsGeom",
         display: 'labels_geom_alt',
@@ -2446,6 +2262,8 @@ function earlyInitPage() {
             }
         }
     });
+
+    // ***** TRAZAS EN VIVO *****
     createToggle({
         key: "utcTimesLive",
         display: 'live_track_labels_utc',
@@ -2460,6 +2278,8 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
+
+    // ***** FUNCIÓN DE AVIONES DE INTERÉS *****
     createToggle({
         key: "enableStarredAircraft",
         display: 'notable_aircraft',
@@ -2489,13 +2309,8 @@ function earlyInitPage() {
             updateStarredButtonInInfoblock();
         }
     });
-    // *****************************************
-    // ********* FIN CATEGORÍA DATA ************
-    // *****************************************
-
-    // *****************************************
-    // ** INICIO OCULTAR TOOLTIPS DE SETTINGS **
-    // *****************************************
+    
+    // ***** FUNCIÓN PARA OCULTAR TOOLTIPS DEL MENÚ DE CONFIGURACIONES *****
     function setHideSettingsTooltips(state) {
         try {
             const sel = '#settings_infoblock [title], #settingsLeft [title], #settingsRight [title]';
@@ -2516,13 +2331,8 @@ function earlyInitPage() {
             }
         } catch (e) { console.error(e); }
     };
-    // *****************************************
-    // *** FIN OCULTAR TOOLTIPS DE SETTINGS ****
-    // *****************************************
-
-    // *****************************************
-    // *** INICIO OCULTAR TODOS LOS TOOLTIPS ***
-    // *****************************************
+    
+    // ***** FUNCIÓN PARA OCULTAR TODOS LOS TOOLTIPS *****
     function setHideAllTooltips(state) {
         try {
             if (state) {
@@ -2542,9 +2352,6 @@ function earlyInitPage() {
             }
         } catch (e) { console.error(e); }
     };
-    // *****************************************
-    // **** FIN OCULTAR TODOS LOS TOOLTIPS *****
-    // *****************************************
 
     jQuery('#tStop').on('click', function () { traceOpts.replaySpeed = 0; gotoTime(traceOpts.showTime); });
     jQuery('#t1x').on('click', function () { replaySpeedChange(1); });
@@ -2553,9 +2360,9 @@ function earlyInitPage() {
     jQuery('#t20x').on('click', function () { replaySpeedChange(20); });
     jQuery('#t40x').on('click', function () { replaySpeedChange(40); });
 
-    // *****************************************
-    // ****** INICIO CATEGORÍA SYSTEM **********
-    // *****************************************
+    // ***** CATEGORÍA SYSTEM *****
+
+    // ***** AUTOSELECCIONAR AVIÓN *****
     createToggle({
         key: "autoselect",
         display: 'auto_select_plane',
@@ -2575,6 +2382,7 @@ function earlyInitPage() {
         setAutoselect();
     }
 
+    // ***** MOSTRAR TODOS LOS LOGS DE DEBUG *****
     createToggle({
         key: "debugAll",
         display: 'debug_show_all',
@@ -2590,6 +2398,8 @@ function earlyInitPage() {
                 debugAll = false;
         }
     });
+
+    // ***** MOSTRAR LOS LOGS DE DEBUG DE LAS TRAZAS *****
     createToggle({
         key: "debugTracks",
         display: 'debug_tracks',
@@ -2603,6 +2413,8 @@ function earlyInitPage() {
             remakeTrails();
         }
     });
+
+    // ***** OCULTAR TODOS LOS TOOLTIPS *****
     createToggle({
         key: "hideAllTooltips",
         display: 'hide_all_tooltips',
@@ -2615,6 +2427,8 @@ function earlyInitPage() {
             setHideAllTooltips(state);
         }
     });
+
+    // ***** OCULTAR LOS TOOLTIPS DEL MENÚ DE CONFIGURACIONES *****
     createToggle({
         key: "hideSettingsTooltips",
         display: 'hide_settings_tooltips',
@@ -2627,6 +2441,8 @@ function earlyInitPage() {
             setHideSettingsTooltips(state);
         }
     });
+
+    // ***** MOSTRAR EN LA URL LOS FILTROS APLICADOS AL SISTEMA *****
     createToggle({
         key: "shareFilters",
         display: 'include_filters_in_urls',
@@ -2639,6 +2455,8 @@ function earlyInitPage() {
             updateAddressBar();
         }
     });
+
+    // ***** ACTUALIZAR UBICACIÓN DEL GPS *****
     createToggle({
         key: "updateLocation",
         display: 'update_gps_location',
@@ -2652,13 +2470,10 @@ function earlyInitPage() {
             runAfterLoad(watchPosition);
         }
     });
-    // *****************************************
-    // ******** FIN CATEGORÍA SYSTEM ***********
-    // *****************************************
+    
+    // ***** CATEGORÍA DISPLAY *****
 
-    // *****************************************
-    // ******* INICIO CATEGORÍA DISPLAY ********
-    // *****************************************
+    // ***** AVIONES COLOREADOS SEGÚN LEYENDA DE LA TABLA DE ALTITUD *****
     createToggle({
         key: "ColoredPlanes",
         display: 'colored_planes',
@@ -2676,6 +2491,8 @@ function earlyInitPage() {
             refreshFeatures();
         }
     });
+
+    // ***** TRAZAS COLOREADAS SEGÚN LEYENDA DE LA TABLA DE ALTITUD *****
     createToggle({
         key: "ColoredTrails",
         display: 'colored_trails',
@@ -2693,17 +2510,15 @@ function earlyInitPage() {
             remakeTrails();
         }
     });
-    // *****************************************
-    // ******** FIN CATEGORÍA DISPLAY **********
-    // *****************************************
 
+    // ***** MANEJAR VISIBILIDAD DEL SIDEBAR DERECHO *****
     new Toggle({
         key: "sidebar_visible",
         display: "Sidebar visible",
         container: null,
         checkbox: null,
         button: '#toggle_sidebar_button',
-        init: false, //Esto determina si abre la sidebar por defecto la primera vez. Funcion ternaria para movil: init: (onMobile ? false : true),
+        init: false,
         setState: function (state) {
             if (state) {
                 jQuery("#sidebar_container").show();
@@ -2753,9 +2568,9 @@ function earlyInitPage() {
         planespottersAPI = false;
     }
 
-    // *****************************************
-    // ***** INICIO CATEGORÍA INFORMATION ******
-    // *****************************************
+    // ***** CATEGORÍA INFORMATION *****
+
+    // ***** MOSTRAR INFOBLOCK IZQUIERDO DE LA AEROANVE SELECCIONADA *****
     createToggle({
         key: "enableInfoblock",
         display: 'enable_infoblock',
@@ -2768,6 +2583,8 @@ function earlyInitPage() {
             adjustInfoBlock();
         }
     });
+
+    // ***** BLOQUEAR LA APARICIÓN DEL INFOBLOCK HOVER AL HACER MOUSEOVER *****
     createToggle({
         key: "enableMouseover",
         display: 'enable_mouseover_block',
@@ -2784,6 +2601,7 @@ function earlyInitPage() {
         }
     });
 
+    // ***** MOSTRAR RUTA DE LA AERONAVE SELECCIONADA *****
     if (routeApiUrl) {
         if (location.protocol == 'http:' && routeApiUrl == "https://adsb.im/api/0/routeset") {
             // adsb.im API provider kindly asks that tar1090 uses http for the route API if possible
@@ -2821,6 +2639,7 @@ function earlyInitPage() {
         useRouteAPI = false;
     }
 
+    // ***** UTILIZAR LAS FOTOS DE LA FUENTE PLANESPOTTING *****
     createToggle({
         key: "planespottingAPI",
         display: 'pictures_planespotting_be',
@@ -2838,6 +2657,8 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
+
+    // ***** USAR LAS FOTOS DE LA FUENTE PLANESPOTTERS *****
     createToggle({
         key: "planespottersAPI",
         display: 'pictures_planespotters_net',
@@ -2855,6 +2676,8 @@ function earlyInitPage() {
             refreshSelected();
         }
     });
+
+    // ***** QUE EL INFOBLOCK SEA MÁS ANCHO *****
     createToggle({
         key: "wideInfoblock",
         display: 'wide_infoblock',
@@ -2868,9 +2691,6 @@ function earlyInitPage() {
             adjustInfoBlock();
         }
     });
-    // *****************************************
-    // ****** FIN CATEGORÍA INFORMATION ********
-    // *****************************************
 
     if (onMobile) {
         enableMouseover = false;
@@ -2927,9 +2747,7 @@ function earlyInitPage() {
 
     initCategoryResetButtons();
 
-    // ******************************************
-    // ** INICIO FUNCIÓN REDIMENSIONAR SIDEBAR **
-    // ******************************************
+    // ***** REDIMENSIONAR SIDEBAR *****
     (function () {
         const settingsWindow = document.getElementById('settings_infoblock');
         const dragHandle = document.getElementById('settings_window_header');
@@ -3013,22 +2831,19 @@ function earlyInitPage() {
             };
         }
     })();
-    // ******************************************
-    // ** INICIO FUNCIÓN REDIMENSIONAR SIDEBAR **
-    // ******************************************
 }
 
-// *************************************************************
-// ** INICIO FUNCIÓN RESETEAR CATEGORÍAS A ESTADO POR DEFECTO **
-// *************************************************************
+// ***** RESETEAR CATEGORÍAS A SU ESTADO POR DEFECTO *****
 function resetCategory(category) {
     switch (category) {
+        // ***** UNITS *****
         case 'units':
             DisplayUnits = 'nautical';
             loStore['displayUnits'] = DisplayUnits;
             jQuery('#units_selector').val(DisplayUnits).trigger('change');
             break;
 
+        // ***** DISPLAY *****
         case 'display':
             if (toggles['ColoredPlanes']) toggles['ColoredPlanes'].toggle(true);
             if (toggles['ColoredTrails']) toggles['ColoredTrails'].toggle(true);
@@ -3039,6 +2854,7 @@ function resetCategory(category) {
             if (toggles['windLabelsSlim']) toggles['windLabelsSlim'].toggle(false);
             break;
 
+        // ***** FILTERS *****
         case 'filters':
             if (toggles['hideAircraftFunctions']) toggles['hideAircraftFunctions'].toggle(true);
             if (toggles['hideElevationFunction']) toggles['hideElevationFunction'].toggle(true);
@@ -3051,6 +2867,7 @@ function resetCategory(category) {
             if (toggles['hideZoomFunctions']) toggles['hideZoomFunctions'].toggle(true);
             break;
 
+        // ***** DATA *****
         case 'data':
             if (toggles['baroUseQNH']) toggles['baroUseQNH'].toggle(false);
             if (toggles['geomUseEGM']) toggles['geomUseEGM'].toggle(false);
@@ -3060,6 +2877,7 @@ function resetCategory(category) {
             if (toggles['enableStarredAircraft']) toggles['enableStarredAircraft'].toggle(false);
             break;
 
+        // ***** SYSTEM *****
         case 'system':
             if (toggles['autoselect']) toggles['autoselect'].toggle(false);
             if (toggles['debugAll']) toggles['debugAll'].toggle(false);
@@ -3070,6 +2888,7 @@ function resetCategory(category) {
             if (toggles['updateLocation']) toggles['updateLocation'].toggle(false);
             break;
 
+        // ***** INFORMATION *****
         case 'info':
             if (toggles['enableInfoblock']) toggles['enableInfoblock'].toggle(true);
             if (toggles['enableMouseover']) toggles['enableMouseover'].toggle(true);
@@ -3085,6 +2904,7 @@ function resetCategory(category) {
     if (typeof refreshSelected === 'function') refreshSelected();
 }
 
+// ***** BOTÓN PARA RESTABLECER CATEGORÍA A SU ESTADO POR DEFECTO *****
 function initCategoryResetButtons() {
     const resetBtns = document.querySelectorAll('.category-reset-btn');
 
@@ -3098,9 +2918,6 @@ function initCategoryResetButtons() {
         });
     });
 }
-// *************************************************************
-// ** INICIO FUNCIÓN RESETEAR CATEGORÍAS A ESTADO POR DEFECTO **
-// *************************************************************
 
 function initLegend(colors) {
     let html = '';
@@ -3803,9 +3620,7 @@ function webglAddLayer() {
 function webglInit() {
     let init = true;
 
-    // *************************************************************************
-    // *********** INICIO WEBGL - PARTE DE LA CATEGORÍA DISPLAY ****************
-    // *************************************************************************
+    // ***** WEBGL - PARTE DE LA CATEGORÍA DISPLAY *****
     createToggle({
         key: "webgl",
         display: 'webgl',
@@ -3844,9 +3659,6 @@ function webglInit() {
             }
         },
     });
-    // *************************************************************************
-    // ************* FIN WEBGL - PARTE DE LA CATEGORÍA DISPLAY *****************
-    // *************************************************************************
 }
 
 function ol_map_init() {
@@ -3914,9 +3726,7 @@ function ol_map_init() {
                     const onVisible = lyr.get('onVisible');
                     onVisible && onVisible(lyr);
 
-                    // **********************************************
-                    // ** INICIO ACTIVAR/DESACTIVAR GRUPO DE CAPAS **
-                    // **********************************************
+                    // ***** ACTIVAR/DESACTIVAR GRUPOS DE CAPAS *****
                     try {
                         let currentParentGroup = null;
                         layers_group.getLayers().forEach(group => {
@@ -3951,9 +3761,6 @@ function ol_map_init() {
                     } catch (e) {
                         console.error("Error en gestión de capas:", e);
                     }
-                    // **********************************************
-                    // *** FIN ACTIVAR/DESACTIVAR GRUPO DE CAPAS ****
-                    // **********************************************
                 }
             });
         } else if (lyr.get('type') === 'overlay') {
@@ -3996,7 +3803,7 @@ function ol_map_init() {
         target: 'layer-select',
     }));
 
-    // Añadir un listener para cuando el LayerSwitcher esté listo
+    // ***** ESCUCHAR CLA ACTUALIZACIÓN DE LOS TÍTULOS DE LAS CAPAS *****
     setTimeout(function () {
         if (typeof window.updateLayerTitles === 'function') {
             window.updateLayerTitles();
@@ -4210,9 +4017,8 @@ function initMapEarly() {
         }
     });
 
-    // Después de crear el LayerSwitcher
+    // ***** ACTUALIZAR TÍTULOS UNA VEZ CREADO EL MENÚ DE CAPAS *****
     setTimeout(function () {
-        // Forzar actualización inicial
         if (typeof window.updateLayerTitles === 'function') {
             window.updateLayerTitles();
         }
@@ -4333,11 +4139,9 @@ function initMap() {
     });
     layers.push(iconLayer);
 
-    // **************************************************************
-    // ** INICIO MENÚ DROPDOWN CON CAPAS DE FUNCIONES DE DISTANCIA **
-    // **************************************************************
-
+    // ***** DROPDOWN PARA LOS MENÚS DE DISTANCIA *****
     try {
+        // ***** PUNTOS A-B EN TIERRA (TIERRA-TIERRA) *****
         if (!ggPointSource) ggPointSource = new ol.source.Vector();
         if (!ggPointLayer) {
             ggPointLayer = new ol.layer.Vector({
@@ -4361,6 +4165,7 @@ function initMap() {
         }
         layers.push(ggPointLayer);
 
+        // ***** LÍNEA A-B (TIERRA-TIERRA) *****
         if (!ggLineSource) ggLineSource = new ol.source.Vector();
         if (!ggLineLayer) {
             ggLineLayer = new ol.layer.Vector({
@@ -4398,6 +4203,7 @@ function initMap() {
         console.error('init TT layers', e);
     }
 
+    // ***** MANEJAR VISIBLIDAD DE CAPA DE PUNTOS TIERRA-AERONAVE *****
     if (groundPointLayer) {
         groundPointLayer.on('change:visible', function (evt) {
             const vis = !!evt.target.getVisible();
@@ -4413,6 +4219,7 @@ function initMap() {
         });
     }
 
+    // ***** PUNTO EN TIERRA (TIERRA-AERONAVE) *****
     groundPointSource = new ol.source.Vector();
     groundPointLayer = new ol.layer.Vector({
         name: 'groundPoint',
@@ -4430,6 +4237,7 @@ function initMap() {
     });
     layers.push(groundPointLayer);
 
+    // ***** LÍNEA A-B (TIERRA-AERONAVE) *****
     groundToPlaneLineSource = new ol.source.Vector();
     groundToPlaneLineLayer = new ol.layer.Vector({
         name: 'groundToPlane',
@@ -4443,6 +4251,7 @@ function initMap() {
     });
     layers.push(groundToPlaneLineLayer);
 
+    // ***** MANEJAR VISIBILIDAD DE CAPA DE LÍNEA TIERRA-AERONAVE *****
     groundToPlaneLineLayer.on('change:visible', function (evt) {
         const vis = !!evt.target.getVisible();
         if (!vis) {
@@ -4469,6 +4278,7 @@ function initMap() {
         }
     });
 
+    // ***** LÍNEA A-B (AERONAVE-AERONAVE) *****
     distanceLineLayer = new ol.layer.Vector({
         name: 'distanceLines',
         type: 'overlay',
@@ -4486,10 +4296,8 @@ function initMap() {
     });
     layers.push(distanceLineLayer);
 
-    // **************************************************************
-    // ** CAPAS DE NÚMEROS DE PUNTOS (una por función de distancia) **
-    // ** Existen desde el arranque, igual que las capas base.       **
-    // **************************************************************
+
+    // ***** NUMERACIÓN (AERONAVE-AERONAVE) *****
     pointNumberSourceAA = new ol.source.Vector();
     pointNumberLayerAA = new ol.layer.Vector({
         name: 'pointNumbers_aa',
@@ -4514,6 +4322,7 @@ function initMap() {
         }
     });
 
+    // ***** PUNTOS (TIERRA-AERONAVE) *****
     pointNumberSourceTA = new ol.source.Vector();
     pointNumberLayerTA = new ol.layer.Vector({
         name: 'pointNumbers_ta',
@@ -4538,6 +4347,7 @@ function initMap() {
         }
     });
 
+    // ***** PUNTOS (TIERRA-TIERRA) *****
     pointNumberSourceTT = new ol.source.Vector();
     pointNumberLayerTT = new ol.layer.Vector({
         name: 'pointNumbers_tt',
@@ -4562,9 +4372,7 @@ function initMap() {
         }
     });
 
-    // **************************************************************
-    // ** CAPAS DE PUNTOS DE AVIONES SELECCIONADOS                 **
-    // **************************************************************
+    // ***** PUNTOS (AERONAVE-AERONAVE) *****
     planePointSourceAA = new ol.source.Vector();
     planePointLayerAA = new ol.layer.Vector({
         name: 'planePoints_aa',
@@ -4583,6 +4391,7 @@ function initMap() {
         })
     });
 
+    // ***** PUNTO EN AVIÓN (TIERRA-AERONAVE) *****
     planePointSourceTA = new ol.source.Vector();
     planePointLayerTA = new ol.layer.Vector({
         name: 'planePoints_ta',
@@ -4601,21 +4410,16 @@ function initMap() {
         })
     });
 
-    // **************************************************************
-    // ** MOVER CAPAS DE GA AL GRUPO DE ELEVACIÓN (si el grupo existe) **
-    // **************************************************************
+    // ***** INGRESAR CAPAS DE ELEVACIÓN EN SU RESPECTIVO MENÚ DROPDOWN *****
     try {
         const elevGA = window.ensureElevationGroup('ga');
         if (elevGA) {
-            // Remover las capas de donde estén (layers o grupos de distancia)
             const takeLayerFromAnywhere = (layer) => {
                 if (!layer) return;
-                // Buscar en layers raíz
                 const idx = layers.getArray().indexOf(layer);
                 if (idx >= 0) {
                     layers.removeAt(idx);
                 }
-                // Buscar recursivamente en grupos
                 layers.forEach((lyr) => {
                     if (lyr instanceof ol.layer.Group) {
                         const sub = lyr.getLayers().getArray();
@@ -4627,14 +4431,11 @@ function initMap() {
                 });
             };
 
-            // groundPointLayer y groundToPlaneLineLayer se crean más arriba en initMap
             takeLayerFromAnywhere(groundPointLayer);
             takeLayerFromAnywhere(groundToPlaneLineLayer);
 
-            // planePointLayerTA también se crea aquí
             takeLayerFromAnywhere(planePointLayerTA);
 
-            // Añadir al grupo GA en el orden deseado
             [groundToPlaneLineLayer, planePointLayerTA, groundPointLayer]
                 .filter(Boolean)
                 .forEach(l => elevGA.getLayers().push(l));
@@ -4643,6 +4444,7 @@ function initMap() {
         console.error('Error moviendo capas GA al grupo de elevación:', e);
     }
 
+    // ***** MANEJAR VISIBILIDAD DE CAPA DE LÍNEA AERONAVE-AERONAVE *****
     distanceLineLayer.on('change:visible', function (evt) {
         const vis = !!evt.target.getVisible();
         if (!vis) {
@@ -4679,6 +4481,7 @@ function initMap() {
         }
     });
 
+    // ***** CONSTRUIR DROPDOWN DE DISTANCIA *****
     (function buildDistanceLayerTree() {
         try {
             const takeLayer = (name) => {
@@ -4690,20 +4493,17 @@ function initMap() {
                 return found;
             };
 
-            // Capas base (líneas y puntos estáticos)
             const lAA = takeLayer('distanceLines');
             const lGA_line = takeLayer('groundToPlane');
             const lGA_point = takeLayer('groundPoint');
             const lGG_line = takeLayer('groundToGround');
             const lGG_point = takeLayer('ggPoints');
 
-            // Obtener/crear grupos (no dependen de OLMap)
             const gGG = window.ensureDistanceGroup('tt');
             const gGA = window.ensureDistanceGroup('ta');
             const gAA = window.ensureDistanceGroup('aa');
             const gE = window.ensureDistanceGroup('elev');
 
-            // Insertar capas base en sus grupos
             if (gGG) {
                 [lGG_line, lGG_point].filter(Boolean).forEach(l => gGG.getLayers().push(l));
             }
@@ -4714,7 +4514,6 @@ function initMap() {
                 gAA.getLayers().push(lAA);
             }
 
-            // distanceRoot contiene TODOS los subgrupos de distancia
             const distanceRoot = new ol.layer.Group({
                 name: 'distance_tools',
                 title: 'Distance tools',
@@ -4724,7 +4523,6 @@ function initMap() {
                 layers: new ol.Collection([gGG, gGA, gAA, gE].filter(Boolean))
             });
 
-            // Insertar distanceRoot cerca de VFR / siteCircles si es posible
             let vfrIndex = -2;
             let siteCircleIndex = -2;
 
@@ -4741,7 +4539,6 @@ function initMap() {
                 layers.push(distanceRoot);
             }
 
-            // Guardar referencia global por si otras funciones la necesitan
             window._distanceRootGroup = distanceRoot;
 
         } catch (e) {
@@ -4749,15 +4546,11 @@ function initMap() {
         }
     })();
 
-    // **************************************************************
-    // ** INSERTAR CAPAS EN SUS GRUPOS CON EL ORDEN SOLICITADO     **
-    // **************************************************************
+    // ***** INSERTAR CAPAS EN ORDEN *****
     try {
-        // ----- AERONAVE-AERONAVE (AA) -----
-        // Orden deseado: Numeración → Línea A-B → Puntos A-B en aeronaves
+        // ***** AERONAVE-AERONAVE *****
         const gAA = window.ensureDistanceGroup('aa');
         if (gAA) {
-            // Vaciar el grupo para reinsertar en orden correcto
             const aaSubLayers = gAA.getLayers().getArray().slice();
             aaSubLayers.forEach(l => gAA.getLayers().remove(l));
             // Reinsertar en el orden deseado
@@ -4766,8 +4559,7 @@ function initMap() {
             if (pointNumberLayerAA) gAA.getLayers().push(pointNumberLayerAA);
         }
 
-        // ----- TIERRA-AERONAVE (TA) -----
-        // Orden deseado: Numeración → Línea A-B → Punto en aeronave → Punto en tierra
+        // ***** TIERRA-AERONAVE *****
         const gTA = window.ensureDistanceGroup('ta');
         if (gTA) {
             const taSubLayers = gTA.getLayers().getArray().slice();
@@ -4779,8 +4571,7 @@ function initMap() {
             if (pointNumberLayerTA) gTA.getLayers().push(pointNumberLayerTA);
         }
 
-        // ----- TIERRA-TIERRA (TT) -----
-        // Orden deseado: Numeración → Línea A-B → Puntos A-B en tierra
+        // ***** TIERRA-TIERRA *****
         const gTT = window.ensureDistanceGroup('tt');
         if (gTT) {
             const ttSubLayers = gTT.getLayers().getArray().slice();
@@ -4794,11 +4585,7 @@ function initMap() {
         console.error('Error insertando capas dinámicas en grupos:', e);
     }
 
-    // ****************************************************
-    // *** INICIO MENÚ DROPDOWN CON CAPAS DE ELEVACIÓN ****
-    // ****************************************************
-
-    // ***** CAPAS PARA MODO GROUND-GROUND (GG) *****
+    // ***** CAPA DE PUNTOS ELEVACIÓN TIERRA-TIERRA *****
     if (!elevationPointSource) elevationPointSource = new ol.source.Vector();
     elevationPointLayer = new ol.layer.Vector({
         name: 'elev_points',
@@ -4816,6 +4603,7 @@ function initMap() {
         visible: true
     });
 
+    // ***** CAPA DE LÍNEA ELEVACIÓN TIERRA-TIERRA *****
     if (!elevationLineSource) elevationLineSource = new ol.source.Vector();
     elevationLineLayer = new ol.layer.Vector({
         name: 'elev_line',
@@ -4829,7 +4617,7 @@ function initMap() {
         visible: true
     });
 
-    // ***** CAPA DE NUMERACIÓN PARA GG *****
+    // ***** CAPA DE NÚMEROS ELEVACIÓN TIERRA-TIERRA *****
     if (!elevationNumberSourceGG) elevationNumberSourceGG = new ol.source.Vector();
     elevationNumberLayerGG = new ol.layer.Vector({
         name: 'elev_pointnumbers_gg',
@@ -4854,22 +4642,10 @@ function initMap() {
         }
     });
 
-    // ***** CAPAS PARA MODO GROUND-AIRCRAFT (GA) *****
-    // NOTA: reutilizamos las mismas fuentes/capas que ya usa el modo GA
-    // en el archivo elevation-tool.js. Si ya existen (porque el tool
-    // ground-aircraft las crea bajo demanda), las creamos aquí para
-    // que aparezcan siempre en el menú de capas.
-
-    // Ground point (reutiliza groundPointLayer si existe)
     if (typeof groundPointLayer === 'undefined' || !groundPointLayer) {
-        // Si no existe, se creará más abajo en el bloque de distancia.
-        // Por ahora dejamos referencia nula y se añadirá dinámicamente.
     }
 
-    // Plane point (reutiliza planePointLayerTA si existe)
-    // A-B Line (reutiliza groundToPlaneLineLayer si existe)
-
-    // ***** CAPA DE NUMERACIÓN PARA GA *****
+    // ***** CAPA DE NÚMEROS ELEVACIÓN TIERRA-AERONAVE *****
     if (!elevationNumberSourceGA) elevationNumberSourceGA = new ol.source.Vector();
     elevationNumberLayerGA = new ol.layer.Vector({
         name: 'elev_pointnumbers_ga',
@@ -4894,16 +4670,19 @@ function initMap() {
         }
     });
 
-    // ***** GRUPOS ANIDADOS *****
     const elevGG = window.ensureElevationGroup('gg');
     const elevGA = window.ensureElevationGroup('ga');
 
+    // ***** INSERTAR CAPAS EN ORDEN *****
+
+    // ***** ELEVACIÓN TIERRA-TIERRA *****
     if (elevGG) {
-        // Orden deseado: Numeración → Línea A-B → Puntos A-B en tierra
         [elevationPointLayer, elevationLineLayer, elevationNumberLayerGG]
             .filter(Boolean)
             .forEach(l => elevGG.getLayers().push(l));
     }
+
+    // ***** ELEVACIÓN TIERRA-AERONAVE *****
     if (elevGA) {
         [elevationNumberLayerGA]
             .filter(Boolean)
@@ -4941,10 +4720,6 @@ function initMap() {
         layers.push(elevRoot);
     }
 
-    // *************************************************
-    // *** FIN MENÚ DROPDOWN CON CAPAS DE ELEVACIÓN ****
-    // *************************************************
-
     ol_map_init();
 
 
@@ -4956,10 +4731,7 @@ function initMap() {
     //toggleLayer('#acpositions_checkbox', 'webglLayer');
     //});
 
-
-    // ****************************************************************
-    // ** INICIO FUNCIÓN MINIZAR/MAXIMIZAR/CERRAR SELECTED_INFOBLOCK **
-    // ****************************************************************
+    // ***** MINIZAR/MAXIMIZAR/CERRAR SELECTED INFOBLOCK *****
     function setInfoBlockMinimized(state) {
         infoBlockMinimized = state;
         jQuery('#selected_infoblock').toggleClass('infoblock-minimized', state);
@@ -5007,13 +4779,7 @@ function initMap() {
         }
     });
 
-    // *************************************************************
-    // ** FIN FUNCIÓN MINIZAR/MAXIMIZAR/CERRAR SELECTED_INFOBLOCK **
-    // *************************************************************
-
-    // *************************************************************
-    // *** INICIO FUNCIÓN ESTABLECER ESTÉTICA OSCURA POR DEFECTO ***
-    // *************************************************************
+    // ***** ESTABLECER MODO OSCURO POR DEFECTO *****
     tableColorsLight = tableColors;
     tableColorsDark = JSON.parse(JSON.stringify(tableColors));
     let darkVals = Object.values(tableColorsDark);
@@ -5051,10 +4817,6 @@ function initMap() {
 
     initLegend(tableColors.unselected);
 
-    // *************************************************************
-    // **** FIN FUNCIÓN ESTABLECER ESTÉTICA OSCURA POR DEFECTO *****
-    // *************************************************************
-
     initFilters();
 
     ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
@@ -5063,9 +4825,7 @@ function initMap() {
         lyr.dimKey = lyr.on('postrender', dim);
     });
 
-    // *************************************************************************
-    // ***** INICIO DIM MAP Y LABEL UNITS - PARTE DE LA CATEGORÍA DISPLAY ******
-    // *************************************************************************
+    // ***** DIM MAP - PARTE DE LA CATEGORÍA DISPLAY *****
     createToggle({
         key: "MapDim",
         display: 'dim_map',
@@ -5081,6 +4841,8 @@ function initMap() {
             buttonActive('#B', state);
         }
     });
+
+    // ***** LABEL UNITS - PARTE DE LA CATEGORÍA DISPLAY *****
     createToggle({
         key: "showLabelUnits",
         display: 'label_units',
@@ -5103,9 +4865,6 @@ function initMap() {
             }
         }
     });
-    // *************************************************************************
-    // ******* FIN DIM MAP Y LABEL UNITS - PARTE DE LA CATEGORÍA DISPLAY *******
-    // *************************************************************************
 
     window.addEventListener('keydown', function (e) {
         active();
@@ -6118,9 +5877,7 @@ function refreshFeatures() {
     }
 }
 
-// *************************************************************
-// *********** INICIO TABLA DE AVIONES EN SIDEBAR **************
-// *************************************************************
+// ***** TABLA DE AVIONES EN EL SIDEBAR DERECHO *****
 (function (global, jQuery, TAR) {
     let planeMan = TAR.planeMan = TAR.planeMan || {};
 
@@ -6128,16 +5885,6 @@ function refreshFeatures() {
         if (xa === ya)
             return 0;
         if (xa < ya)
-            return -1;
-        return 1;
-    }
-
-    function compareBeta(xa, ya) {
-        if (xa === ya)
-            return 0;
-        if (planeMan.sortAscending && xa < ya)
-            return -1;
-        if (!planeMan.sortAscending && (xa.replace(/ /g, "").split("").reverse().join("") > ya.replace(/ /g, "").split("").reverse().join("")))
             return -1;
         return 1;
     }
@@ -6327,9 +6074,6 @@ function refreshFeatures() {
     let htmlTable = null;
     let tbody = null;
 
-    // *************************************************
-    // *** INICIO INICIALIZAR COLUMNAS TABLA AVIONES ***
-    // *************************************************
     planeMan.init = function () {
         htmlTable = document.getElementById('planesTable');
         for (let i in columns) {
@@ -6384,9 +6128,6 @@ function refreshFeatures() {
             planeMan.setColumnVis('flag', false);
         }
     }
-    // *************************************************
-    // **** FIN INICIALIZAR COLUMNAS TABLA AVIONES *****
-    // *************************************************
 
     planeMan.redraw = function () {
         activeCols = [];
@@ -6691,9 +6432,7 @@ function refreshFeatures() {
         planeMan.refresh();
     }
 
-    // *****************************************
-    // * INICIO CREAR COLUMNAS SELECCIONABLES **
-    // *****************************************
+    // ***** MENÚ PARA PERMITIR AL USUARIO SELECCIONAR LAS COLUMNAS QUE DESEE *****
     function createColumnToggles() {
         const prefix = 'dd_';
         const container = jQuery('#sortableColumns');
@@ -6713,9 +6452,7 @@ function refreshFeatures() {
             'rssi'
         ];
 
-        // *****************************************
-        // * INICIO RESTAURAR COLUMNAS POR DEFECTO *
-        // *****************************************
+        // ***** RESTAURAR COLUMNAS POR DEFECTO *****
         window.resetColumnsToDefault = function () {
             for (const col of Object.values(cols)) {
                 const shouldBeVisible = DEFAULT_COLUMNS.includes(col.id);
@@ -6763,13 +6500,8 @@ function refreshFeatures() {
                 TAR.planeMan.redraw();
             }
         };
-        // *****************************************
-        // ** FIN RESTAURAR COLUMNAS POR DEFECTO ***
-        // *****************************************
 
-        // *****************************************
-        // * INICIO TRADUCIR TEXTO DE UNA COLUMNA **
-        // *****************************************
+        // ***** TRADUCIR TEXTO DE LAS COLUMNAS *****
         function getTranslatedColumnText(col) {
             let text = col.text || col.id;
             const translationKey = 'col_' + col.id;
@@ -6786,9 +6518,6 @@ function refreshFeatures() {
             }
             return text;
         }
-        // *****************************************
-        // *** FIN TRADUCIR TEXTO DE UNA COLUMNA ***
-        // *****************************************
 
         let restoreText = 'Restore default columns';
         let activeColumnsText = 'Active columns';
@@ -6902,16 +6631,10 @@ function refreshFeatures() {
         container.append(inactiveCategoryHtml);
         container.append(tableOptionsHtml);
 
-        // *****************************************
-        // *** FIN CREAR COLUMNAS SELECCIONABLES ***
-        // *****************************************
-
         const checkedGrid = jQuery('#checked-columns-grid');
         const uncheckedGrid = jQuery('#unchecked-columns-grid');
 
-        // *****************************************
-        // ***** INICIO CREAR HTML DE UN ITEM ******
-        // *****************************************
+        // ***** CREAR ITEMS DE COLUMNA *****
         function createColumnItem(col, isChecked) {
             const displayText = getTranslatedColumnText(col);
             return `
@@ -6927,9 +6650,6 @@ function refreshFeatures() {
                 </li>
             `;
         }
-        // *****************************************
-        // ****** FIN CREAR HTML DE UN ITEM ********
-        // *****************************************
 
         for (const colId of orderedCheckedIds) {
             const col = cols[colId];
@@ -7003,9 +6723,7 @@ function refreshFeatures() {
             });
         }
 
-        // **************************************************************
-        // ** INICIO ACTUALIZAR CONTADOR DE COLUMNAS ACTIVAS/INACTIVAS **
-        // **************************************************************
+        // ***** ACTUALIZAR CONTADOR DE COLUMNAS ACTIVAS E INACTIVAS *****
         function updateCategoryCounts() {
             const checkedCount = checkedGrid.children('li').length;
             const uncheckedCount = uncheckedGrid.children('li').length;
@@ -7019,13 +6737,8 @@ function refreshFeatures() {
                 inactiveTitle.html(`${inactiveColumnsText} (${uncheckedCount})`);
             }
         }
-        // **************************************************************
-        // *** FIN ACTUALIZAR CONTADOR DE COLUMNAS ACTIVAS/INACTIVAS ****
-        // **************************************************************
-
-        // **************************************************************
-        // *** INICIO ACTUALIZAR ORDEN DE COLUMNAS ACTIVAS/INACTIVAS ****
-        // **************************************************************
+        
+        // ***** ACTUALIZAR ORDEN DE COLUMNAS ACTIVAS/INACTIVAS *****
         function updateColumnsOrderFromDOM() {
             const newOrder = [];
             checkedGrid.children('li').each(function () {
@@ -7062,23 +6775,8 @@ function refreshFeatures() {
 
         updateCategoryCounts();
 
-        // **************************************************************
-        // **** FIN ACTUALIZAR ORDEN DE COLUMNAS ACTIVAS/INACTIVAS ******
-        // **************************************************************
-
-
-
-
-
-
-
-
-
-        // --- INICIO: INICIALIZAR CHECKBOXES DE TABLA CON RETRASO ---
         function initTableOptions() {
-            // Verificar si los toggles ya existen
             if (typeof toggles === 'undefined' || !toggles['moreTableLines1']) {
-                // Si no existen, esperar 100ms y reintentar
                 setTimeout(initTableOptions, 100);
                 return;
             }
@@ -7090,12 +6788,10 @@ function refreshFeatures() {
                 const toggle = toggles[toggleKey];
                 if (!toggle) return;
 
-                // Establecer estado inicial
                 if (toggle.state) {
                     $checkbox.addClass('settingsCheckboxChecked');
                 }
 
-                // Remover event listeners previos para evitar duplicados
                 $checkbox.off('click.tableOption');
 
                 $checkbox.on('click.tableOption', function (e) {
@@ -7107,7 +6803,6 @@ function refreshFeatures() {
                     } else {
                         $checkbox.removeClass('settingsCheckboxChecked');
                     }
-                    // Forzar actualización de la tabla
                     if (typeof setGlobeTableLimit === 'function') {
                         setGlobeTableLimit();
                     }
@@ -7116,7 +6811,6 @@ function refreshFeatures() {
                     }
                 });
 
-                // También permitir clic en el texto
                 const $li = $checkbox.closest('li');
                 const $text = $li.find('.settingsText');
                 $text.off('click.tableOption').on('click.tableOption', function (e) {
@@ -7125,20 +6819,15 @@ function refreshFeatures() {
                 });
             }
 
-            // Inicializar los tres checkboxes
             initTableOptionCheckbox('moreTableLines1', 'moreTableLines1_checkbox');
             initTableOptionCheckbox('moreTableLines2', 'moreTableLines2_checkbox');
             initTableOptionCheckbox('allTableLines', 'allTableLines_checkbox');
         }
 
-        // Iniciar la inicialización con un pequeño retraso
         setTimeout(initTableOptions, 50);
-        // --- FIN: INICIALIZAR CHECKBOXES DE TABLA ---
     }
 
-    // ***************************************************************
-    // ** INICIO FUNCIÓN ORDENAR COLUMNAS INACTIVAS ALFABÉTICAMENTE **
-    // ***************************************************************
+    // ***** ORDENAR COLUMNAS ALFABÉTICAMENTE *****
     function createOrderedColumns() {
         if (window.columns && window.columns.length > 0) {
             return window.columns;
@@ -7161,15 +6850,9 @@ function refreshFeatures() {
         window.columns = Object.values(cols);
         return window.columns;
     }
-    // ***************************************************************
-    // *** FIN FUNCIÓN ORDENAR COLUMNAS INACTIVAS ALFABÉTICAMENTE ****
-    // ***************************************************************
 
     return TAR;
 }(window, jQuery, TAR || {}));
-// *************************************************************
-// ************* FIN TABLA DE AVIONES EN SIDEBAR ***************
-// *************************************************************
 
 let lastSelected = null;
 function deselect(plane) {
@@ -7454,6 +7137,7 @@ function setPhotoHtml(source) {
     jQuery('#selected_mini_photo').html(miniSource);
 }
 
+// ***** AJUSTAR TAMAÑO DEL INFOBLOCK *****
 function adjustInfoBlock() {
 
     if (wideInfoBlock) {
@@ -7463,7 +7147,6 @@ function adjustInfoBlock() {
     }
     jQuery('#selected_infoblock').css("width", infoBlockWidth * globalScale + 'px');
 
-    // Mantiene su comportamiento inicial de posicionamiento
     jQuery('.ol-scale-line').css('left', (infoBlockWidth * globalScale + 8) + 'px');
 
     if (SelectedPlane && toggles['enableInfoblock'].state) {
@@ -7522,6 +7205,7 @@ function adjustInfoBlock() {
 
 }
 
+// ***** ACTUALIZAR POSICIÓN DEL REPLAY *****
 function updateReplayBarPosition() {
     const replayBar = jQuery('#replayBar');
     if (!replayBar.length) {
@@ -7533,7 +7217,6 @@ function updateReplayBarPosition() {
     let rightOffset = 0;
     let bottomOffset = 0;
 
-    // Verificar si la barra de replay está visible
     const replayVisible = replayBar.is(':visible');
 
     if (replayVisible) {
@@ -7580,19 +7263,15 @@ function updateReplayBarPosition() {
     }
 }
 
-// ***********************************************************************************
-// ** INICIO FUNCIÓN ACTUALIZAR POSICIÓN DE ALTITUDE CHART SEGÚN POSICIÓN DE REPLAY **
-// ***********************************************************************************
+// ***** ACTUALIZAR POSICIÓN DEL CHART DE ALTITUD *****
 function restoreAltitudeChartPosition() {
     const altitudeChart = jQuery('#altitude_chart');
     if (altitudeChart.length) {
         altitudeChart.css('bottom', '35px');
     }
 }
-// ***********************************************************************************
-// *** FIN FUNCIÓN ACTUALIZAR POSICIÓN DE ALTITUDE CHART SEGÚN POSICIÓN DE REPLAY ****
-// ***********************************************************************************
 
+// ***** SELECTOR DE UNIDADES *****
 function initializeUnitsSelector() {
     // Get display unit preferences from local storage otherwise use value previously set defaults_86d9793e4a0945a79fb7bffb2437e312.js or config.js
     if (loStore.getItem('displayUnits')) {
@@ -7792,9 +7471,7 @@ function invertMap(evt) {
 
 }
 
-// *****************************************************
-// **** INICIO TABLA DE CÓDIGO DE COLOR POR ALTITUD ****
-// *****************************************************
+// ***** CHART DE ALTITUD *****
 (function (global, jQuery, TAR) {
     let altitudeChart = TAR.altitudeChart = TAR.altitudeChart || {};
 
@@ -7837,9 +7514,7 @@ function invertMap(evt) {
         }
     }
 
-    // *************************************************************************
-    // ******* INICIO ALTITUDE CHART - PARTE DE LA CATEGORÍA DISPLAY ***********
-    // *************************************************************************
+    // ***** ALTITUDE CHART - PARTE DE LA CATEGORÍA DISPLAY *****
     altitudeChart.init = function () {
         let chartOn = false;
         if (usp.has('altitudeChart')) {
@@ -7856,15 +7531,9 @@ function invertMap(evt) {
             setState: altitudeChart.render
         });
     }
-    // *************************************************************************
-    // ********* FIN ALTITUDE CHART - PARTE DE LA CATEGORÍA DISPLAY ************
-    // *************************************************************************
 
     return TAR;
 }(window, jQuery, TAR || {}));
-// *****************************************************
-// ***** FIN TABLA DE CÓDIGO DE COLOR POR ALTITUD ******
-// *****************************************************
 
 function followRandomPlane() {
     if (showTrace)
@@ -8030,9 +7699,7 @@ function onSearch(e) {
 }
 */
 
-// *****************************************************
-// **** INICIO ALERTA DE ERROR EN FILTRO DE ALTITUD ****
-// *****************************************************
+// ***** ALERTA DE ERROR EN FILTRO DE ALTITUD *****
 function ensureWarningElement() {
     let searchWarning = document.getElementById('search_warning');
     if (!searchWarning) {
@@ -8050,6 +7717,7 @@ function ensureWarningElement() {
     return jQuery(searchWarning);
 }
 
+// ***** MOSTRAR ALERTA DE ERROR *****
 function showSearchWarning(message) {
     const searchWarning = ensureWarningElement();
     if (!searchWarning.length) return;
@@ -8070,6 +7738,7 @@ function showSearchWarning(message) {
     window.searchWarningTimeout = setTimeout(() => hideSearchWarning(), 8000);
 }
 
+// ***** OCULTAR ALERTA DE ERROR *****
 function hideSearchWarning() {
     const searchWarning = jQuery('#search_warning');
     if (!searchWarning.length) return;
@@ -8087,13 +7756,8 @@ function hideSearchWarning() {
         window.searchWarningTimeout = null;
     }
 }
-// *****************************************************
-// ****** FIN ALERTA DE ERROR EN FILTRO DE ALTITUD *****
-// *****************************************************
 
-// *****************************************************
-// **** INICIO ALERTA DE FILTRO DE ALTITUD CORRECTO ****
-// *****************************************************
+// ***** ALERTA DE FILTRADO DE ALTITUD EXITOSO *****
 function showSuccessMessage(message) {
     const searchWarning = ensureWarningElement();
     if (!searchWarning.length) return;
@@ -8113,13 +7777,8 @@ function showSuccessMessage(message) {
     }
     window.searchWarningTimeout = setTimeout(() => hideSearchWarning(), 3000);
 }
-// *****************************************************
-// ****** FIN ALERTA DE FILTRO DE ALTITUD CORRECTO *****
-// *****************************************************
 
-// *********************************************************
-// ** INICIO ACTUALIZAR INDICADORES DEL FILTRO DE ALTITUD **
-// *********************************************************
+// ***** ACTUALIZAR INDICADORES DEL FILTRO DE ALTITUD *****
 function updateAltitudeFilterIndicators(minAlt, maxAlt, enabled) {
     const minInput = jQuery("#altitude_filter_min");
     const maxInput = jQuery("#altitude_filter_max");
@@ -8138,11 +7797,8 @@ function updateAltitudeFilterIndicators(minAlt, maxAlt, enabled) {
         maxInput.attr('title', 'Set maximum altitude');
     }
 }
-// *********************************************************
-// *** FIN ACTUALIZAR INDICADORES DEL FILTRO DE ALTITUD ****
-// *********************************************************
 
-// 1. La función principal (Definida fuera para que sea global)
+// ***** BUSCADOR UNIFICADO *****
 function unifiedSearch(e) {
     if (e) e.preventDefault();
 
@@ -8151,11 +7807,10 @@ function unifiedSearch(e) {
 
     if (!query) return;
 
-    // Limpiar UI
     inputField.val("").blur();
     toggleFollow(false);
 
-    // --- 1. INTENTAR COORDENADAS ---
+    // ***** COORDENADAS *****
     if (query.indexOf(",") >= 0) {
         const values = query.split(',');
         const lat = parseFloat(values[0]);
@@ -8166,42 +7821,36 @@ function unifiedSearch(e) {
         }
     }
 
-    // --- 2. INTENTAR AVIONES ---
+    // ***** AVIONES *****
     const planeResults = findPlanes(query, "byIcao", "byCallsign", "byReg", "byType", false);
 
-    // --- 3. SI NO HUBO AVIONES, INTENTAR AEROPUERTO ---
+    // ***** AEROPUERTOS *****
     if (!planeResults || planeResults.length === 0) {
         searchAirport(query.toUpperCase());
     }
 }
 
-// 2. Función puente para compatibilidad con URL (?airport=...)
+// ***** IR AL PUNTO ENCONTRADO EN LA BÚSQUEDA *****
 function onJump() {
     if (typeof onJumpInput !== 'undefined' && onJumpInput) {
         searchAirport(onJumpInput.trim().toUpperCase());
     }
 }
 
-// 3. Inicialización de los eventos
+// ***** INICIALIZAR BUSCADOR *****
 jQuery(document).ready(function () {
-    // Ahora 'unifiedSearch' sí existe en el scope global
     jQuery("#search_form").on("submit", unifiedSearch);
 
-    // Limpieza de antiguos botones si existen
     jQuery("#search_clear_button").click(function () {
         jQuery("#search_input").val("");
     });
 
-    // Helper: ¿algún item dentro del contenedor tiene .activeButton?
+    // ***** DETECTAR ITEMS ACTIVOS *****
     function hasActiveItem(containerSelector) {
         return jQuery(containerSelector).find('.activeButton').length > 0;
     }
 
-    // ---------------------------------------------------------
-    // 1) DROPDOWNS con detección de item activo
-    // ---------------------------------------------------------
-
-    // Aircraft tools: los items son #V, #M, #P, #I, #U, #F
+    // ***** ESTILO INVERTIDO PARA DROPDOWN DE AVIONES *****
     bindToggleButton({
         button: '#aircraft_dropdown [role="button"].btn',
         mode: 'dropdown',
@@ -8211,8 +7860,7 @@ jQuery(document).ready(function () {
         }
     });
 
-    // Measurement tools: los items son #D, #TA, #TT
-    // (aquí es donde más importa: si hay una distancia activa, el botón sigue invertido)
+    // ***** ESTILO INVERTIDO PARA DROPDOWN DE DISTANCIA *****
     bindToggleButton({
         button: '#measurement_dropdown [role="button"].btn',
         mode: 'dropdown',
@@ -8222,7 +7870,7 @@ jQuery(document).ready(function () {
         }
     });
 
-    // Track tools: los items son #T, #K
+    // ***** ESTILO INVERTIDO PARA DROPDOWN DE TRAZAS *****
     bindToggleButton({
         button: '#track_dropdown [role="button"].btn',
         mode: 'dropdown',
@@ -8232,6 +7880,7 @@ jQuery(document).ready(function () {
         }
     });
 
+    // ***** ESTILO INVERTIDO PARA DROPDOWN DE ETIQUETAS *****
     bindToggleButton({
         button: '#label_dropdown [role="button"].btn',
         mode: 'dropdown',
@@ -8241,6 +7890,7 @@ jQuery(document).ready(function () {
         }
     });
 
+    // ***** ESTILO INVERTIDO PARA DROPDOWN DE ELEVACIÓN *****
     bindToggleButton({
         button: '#elevation_dropdown [role="button"].btn',
         mode: 'dropdown',
@@ -8250,6 +7900,7 @@ jQuery(document).ready(function () {
         }
     });
 
+    // ***** ESTILO INVERTIDO PARA MENÚ DE CONFIGURACIONES *****
     bindToggleButton({
         button: '#settingsCog',
         panel: '#settings_infoblock',
@@ -8258,9 +7909,7 @@ jQuery(document).ready(function () {
     });
 });
 
-// *****************************************************************
-// ** INICIO FUNCIÓN DIBUJAR UN MARCADOR EN EL AEROPUERTO BUSCADO **
-// *****************************************************************
+// ***** DIBUJAR UN MARCADOR EN EL AEROPUERTO BUSCADO *****
 function initAirportMarkerLayer() {
     if (!airportMarkerLayer && OLMap) {
         const source = new ol.source.Vector();
@@ -8281,13 +7930,8 @@ function initAirportMarkerLayer() {
         OLMap.addLayer(airportMarkerLayer);
     }
 }
-// *****************************************************************
-// *** FIN FUNCIÓN DIBUJAR UN MARCADOR EN EL AEROPUERTO BUSCADO ****
-// *****************************************************************
 
-// *****************************************************************
-// *** INICIO FUNCIÓN MOSTRAR MARCADOR EN EL AEROPUERTO BUSCADO ****
-// *****************************************************************
+// ***** MOSTRAR MARCADOR EN EL AEROPUERTO BUSCADO *****
 function showAirportMarker(lonlat) {
     initAirportMarkerLayer();
 
@@ -8336,13 +7980,8 @@ function showAirportMarker(lonlat) {
         airportMarkerTimeout = null;
     }, 3000);
 }
-// *****************************************************************
-// **** FIN FUNCIÓN MOSTRAR MARCADOR EN EL AEROPUERTO BUSCADO ******
-// *****************************************************************
 
-// *****************************************************************
-// *********** INICIO FUNCIÓN RESTABLECER ZOOM BASE ****************
-// *****************************************************************
+// ***** REESTABLECER ZOOM BASE *****
 function resetZoomBaselineToCurrent() {
     if (!OLMap || !OLMap.getView) return;
     const z = Number(OLMap.getView().getZoom()) || 0;
@@ -8352,10 +7991,8 @@ function resetZoomBaselineToCurrent() {
     } catch (e) { }
     updateZoomIndicator();
 }
-// *****************************************************************
-// ************ FIN FUNCIÓN RESTABLECER ZOOM BASE ******************
-// *****************************************************************
 
+// ***** HACER SALTO AL PUNTO BUSCADO *****
 function executeJump(coords, showMarker = true) {
 
     if (coords && coords.length >= 2 && showMarker) {
@@ -8375,6 +8012,7 @@ function executeJump(coords, showMarker = true) {
 
 }
 
+// ***** BUSCAR AEROPUERTO *****
 const originalSearchAirport = searchAirport;
 function searchAirport(airport) {
     if (!g.airport_cache) {
@@ -8407,9 +8045,7 @@ function onResetAltitudeFilter(e) {
     refreshFilter();
 }
 
-// *****************************************
-// ** INICIO ACTUALIZAR FILTRO DE ALTITUD **
-// *****************************************
+// ***** ACTUALIZAR FILTRO DE ALTITUD *****
 function updateAltFilter() {
     let minAltitude = parseFloat(jQuery("#altitude_filter_min").val().trim());
     let maxAltitude = parseFloat(jQuery("#altitude_filter_max").val().trim());
@@ -8514,9 +8150,6 @@ function updateAltFilter() {
 
     updateAltitudeFilterIndicators(minAltFeet, maxAltFeet, enabled);
 }
-// *****************************************
-// **** FIN ACTUALIZAR FILTRO DE ALTITUD ***
-// *****************************************
 
 function getFlightAwareIdentLink(ident, linkText) {
     if (ident !== null && ident !== "") {
@@ -8644,9 +8277,7 @@ Filter.prototype.init = function () {
     jQuery(this.sid + '_reset').click((e) => { return this.reset(e); });
 }
 
-// *****************************************
-// ***** INICIO INICIALIZAR FILTROS ********
-// *****************************************
+// ***** INICIALIZAR FILTROS *****
 function initFilters() {
     initSourceFilter(tableColors.unselected);
     initFlagFilter(tableColors.unselected);
@@ -8663,6 +8294,7 @@ function initFilters() {
     const container = document.createElement('div');
     container.className = 'filters-accordion';
 
+    // ***** VUELOS *****
     const group1 = document.createElement('div');
     group1.className = 'filter-group';
     group1.innerHTML = `
@@ -8684,6 +8316,7 @@ function initFilters() {
     `;
     container.appendChild(group1);
 
+    // ***** TIPO AERONAVE *****
     const group2 = document.createElement('div');
     group2.className = 'filter-group';
     group2.innerHTML = `
@@ -8705,6 +8338,7 @@ function initFilters() {
     `;
     container.appendChild(group2);
 
+    // ***** RUTA Y REG *****
     const group3 = document.createElement('div');
     group3.className = 'filter-group';
     group3.innerHTML = `
@@ -8726,6 +8360,7 @@ function initFilters() {
     `;
     container.appendChild(group3);
 
+    // ***** FUENTE *****
     const group4 = document.createElement('div');
     group4.className = 'filter-group';
     group4.innerHTML = `
@@ -8747,6 +8382,7 @@ function initFilters() {
     `;
     container.appendChild(group4);
 
+    // ***** BANDERAS *****
     const group5 = document.createElement('div');
     group5.className = 'filter-group';
     group5.innerHTML = `
@@ -8768,6 +8404,7 @@ function initFilters() {
     `;
     container.appendChild(group5);
 
+    // ***** ALTITUD *****
     const group6 = document.createElement('div');
     group6.className = 'filter-group';
     group6.innerHTML = `
@@ -8791,6 +8428,7 @@ function initFilters() {
     `;
     container.appendChild(group6);
 
+    // ***** TABLA FILTRADA *****
     if (filterTable) {
         filterTable.innerHTML = '';
         const tbody = document.createElement('tbody');
@@ -8806,6 +8444,7 @@ function initFilters() {
     if (filterTable2) filterTable2.innerHTML = '';
     if (filterTable3) filterTable3.innerHTML = '';
 
+    // ***** ACORDIÓN CONTENEDOR DE LOS FILTROS *****
     function initAccordion() {
         const groups = document.querySelectorAll('.filter-group');
 
@@ -8851,9 +8490,11 @@ function initFilters() {
     let typeSearchPattern = '';
     let regSearchPattern = '';
 
+    // ***** ACTUALIZAR FILTROS *****
     function updateFilters() {
         filters_active.length = 0;
 
+        // ***** VUELOS *****
         if (flightSearchPattern) {
             const pattern = flightSearchPattern.toUpperCase();
             filters_active.push({
@@ -8869,6 +8510,7 @@ function initFilters() {
             });
         }
 
+        // ***** TIPO *****
         if (typeSearchPattern) {
             const pattern = typeSearchPattern.toUpperCase();
             filters_active.push({
@@ -8884,6 +8526,7 @@ function initFilters() {
             });
         }
 
+        // ***** REG *****
         if (regSearchPattern) {
             const pattern = regSearchPattern.toUpperCase();
             filters_active.push({
@@ -8902,6 +8545,7 @@ function initFilters() {
         refreshFilter();
     }
 
+    // ***** INPUT DE VUELO *****
     const flightInput = document.getElementById('filter_flight_search');
     if (flightInput) {
         let placeholder = 'Search by callsign, squawk or ICAO hex...';
@@ -8923,6 +8567,7 @@ function initFilters() {
         }
     }
 
+    // ***** INPUT DE TIPO *****
     const typeInput = document.getElementById('filter_type_search');
     if (typeInput) {
         let placeholder = 'Search by type code, description or category...';
@@ -8944,6 +8589,7 @@ function initFilters() {
         }
     }
 
+    // ***** INPUT DE REG *****
     const regInput = document.getElementById('filter_reg_search');
     if (regInput) {
         let placeholder = 'Search by registration, route or country...';
@@ -8965,6 +8611,7 @@ function initFilters() {
         }
     }
 
+    // ***** TÍTULO DE CADA FILTRO *****
     const groupTitles = {
         'Flight': 'filter_flight',
         'Aircraft type': 'filter_aircraft_type',
@@ -8974,6 +8621,7 @@ function initFilters() {
         'Altitude': 'filter_altitude'
     };
 
+    // ***** TRADUCIR TÍTULOS DE LOS FILTROS *****
     document.querySelectorAll('.filter-group-header .filter-group-title').forEach(el => {
         const text = el.textContent.trim();
         const key = groupTitles[text];
@@ -8988,6 +8636,7 @@ function initFilters() {
         }
     });
 
+    // ***** TRADUCIR TEXTO DE LIMPIAR FILTRO *****
     document.querySelectorAll('.filter-clear-btn').forEach(btn => {
         let clearText = 'Clear';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
@@ -9013,6 +8662,7 @@ function initFilters() {
         });
     });
 
+    // ***** TRADUCIR TEXTO DE APLICAR FILTRO *****
     document.querySelectorAll('#altitude_filter_apply, #source_filter_form button[type="submit"], #flag_filter_form button[type="submit"]').forEach(btn => {
         let applyText = 'Apply';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
@@ -9023,6 +8673,7 @@ function initFilters() {
         btn.textContent = applyText;
     });
 
+    // ***** TRADUCIR TEXTO DE RESETEAR FILTRO *****
     document.querySelectorAll('#altitude_filter_reset_button, #source_filter_reset_button, #flag_filter_reset_button').forEach(btn => {
         let resetText = 'Reset';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
@@ -9035,6 +8686,7 @@ function initFilters() {
 
     initSourceFilter(tableColors.unselected);
 
+    // ***** ACTUALIZAR FILTRO DE FUENTE *****
     const sourceForm = document.getElementById('source_filter_form');
     if (sourceForm) {
         sourceForm.onsubmit = function (e) {
@@ -9043,6 +8695,7 @@ function initFilters() {
         };
     }
 
+    // ***** RESETEAR FUENTE *****
     const sourceResetBtn = document.getElementById('source_filter_reset_button');
     if (sourceResetBtn) {
         sourceResetBtn.onclick = function (e) {
@@ -9055,6 +8708,7 @@ function initFilters() {
 
     initFlagFilter(tableColors.unselected);
 
+    // ***** ACTUALIZAR FILTRO DE FLAG *****
     const flagForm = document.getElementById('flag_filter_form');
     if (flagForm) {
         flagForm.onsubmit = function (e) {
@@ -9063,6 +8717,7 @@ function initFilters() {
         };
     }
 
+    // ***** RESETEAR FLAG *****
     const flagResetBtn = document.getElementById('flag_filter_reset_button');
     if (flagResetBtn) {
         flagResetBtn.onclick = function (e) {
@@ -9073,6 +8728,7 @@ function initFilters() {
         };
     }
 
+    // ***** APLICAR FILTRO DE ALTITUD *****
     const altitudeApply = document.getElementById('altitude_filter_apply');
     if (altitudeApply) {
         altitudeApply.addEventListener('click', (e) => {
@@ -9084,6 +8740,7 @@ function initFilters() {
         });
     }
 
+    // ***** RESETEAR FILTRO DE ALTITUD *****
     const altitudeReset = document.getElementById('altitude_filter_reset_button');
     if (altitudeReset) {
         altitudeReset.addEventListener('click', (e) => {
@@ -9116,19 +8773,12 @@ function initFilters() {
 
     initAccordion();
 }
-// *****************************************
-// ******* FIN INICIALIZAR FILTROS *********
-// *****************************************
 
-// ******************************************************
-// *** INICIO ACTUALIZAR IDIOMA DE COLUMNAS Y FILTROS ***
-// ******************************************************
+// ***** ACTUALIZAR IDIOMA DE COLUMNAS Y FILTROS *****
 (function () {
     'use strict';
 
-    // *****************************************
-    // ***** INICIO OBTENER TRADUCCIONES *******
-    // *****************************************
+    // ***** OBTENER TRADUCCIONES *****
     function getTranslation(key, fallback) {
         if (typeof window.translate !== 'undefined' && window.translate.t) {
             const translated = window.translate.t(key);
@@ -9139,13 +8789,8 @@ function initFilters() {
         }
         return fallback || key;
     }
-    // *****************************************
-    // ****** FIN OBTENER TRADUCCIONES *********
-    // *****************************************
-
-    // ********************************************
-    // ** INICIO ACTUALIZAR LENGUAJE DE COLUMNAS **
-    // ********************************************
+    
+    // ***** ACTUALIZAR LENGUAJE DE COLUMNAS *****
     function updateTableColumnLanguage() {
         if (typeof TAR === 'undefined' || !TAR.planeMan || !TAR.planeMan.cols) {
             console.log('Column update: TAR.planeMan.cols not available yet');
@@ -9244,13 +8889,8 @@ function initFilters() {
 
         return updatedCount;
     }
-    // ********************************************
-    // *** FIN ACTUALIZAR LENGUAJE DE COLUMNAS ****
-    // ********************************************
-
-    // ********************************************
-    // ** INICIO ACTUALIZAR LENGUAJE DE FILTROS ***
-    // ********************************************
+    
+    // ***** ACTUALIZAR LENGUAJE DE FILTROS *****
     function updateFilterLanguage() {
         let updatedCount = 0;
 
@@ -9272,6 +8912,7 @@ function initFilters() {
             'Altitude': 'filter_altitude'
         };
 
+        // ***** TÍTULOS *****
         document.querySelectorAll('.filter-group-header .filter-group-title').forEach(el => {
             const currentText = el.textContent.trim();
             let key = null;
@@ -9294,6 +8935,7 @@ function initFilters() {
             }
         });
 
+        // ***** VUELOS *****
         const flightInput = document.getElementById('filter_flight_search');
         if (flightInput) {
             const placeholder = getTranslation('search_flight_placeholder', 'Search by callsign, squawk or ICAO hex...');
@@ -9303,6 +8945,7 @@ function initFilters() {
             }
         }
 
+        // ***** TIPOS *****
         const typeInput = document.getElementById('filter_type_search');
         if (typeInput) {
             const placeholder = getTranslation('search_type_placeholder', 'Search by type code, description or category...');
@@ -9312,6 +8955,7 @@ function initFilters() {
             }
         }
 
+        // ***** REG *****
         const regInput = document.getElementById('filter_reg_search');
         if (regInput) {
             const placeholder = getTranslation('search_reg_placeholder', 'Search by registration, route or country...');
@@ -9321,6 +8965,7 @@ function initFilters() {
             }
         }
 
+        // ***** TEXTO DE LIMPIAR FILTROS *****
         document.querySelectorAll('.filter-clear-btn').forEach(btn => {
             const translated = getTranslation('clear', 'Clear');
             if (btn.textContent !== translated) {
@@ -9329,6 +8974,7 @@ function initFilters() {
             }
         });
 
+        // ***** TEXTO DE APLICAR FILTROS *****
         document.querySelectorAll('#altitude_filter_apply, #source_filter_form button[type="submit"], #flag_filter_form button[type="submit"]').forEach(btn => {
             const translated = getTranslation('apply', 'Apply');
             if (btn.textContent !== translated) {
@@ -9337,6 +8983,7 @@ function initFilters() {
             }
         });
 
+        // ***** TEXTO DE RESETEAR FILTROS *****
         document.querySelectorAll('#altitude_filter_reset_button, #source_filter_reset_button, #flag_filter_reset_button').forEach(btn => {
             const translated = getTranslation('reset', 'Reset');
             if (btn.textContent !== translated) {
@@ -9345,6 +8992,7 @@ function initFilters() {
             }
         });
 
+        // ***** TEXTO DE DESDE HASTA EN FILTRO DE ALTITUD *****
         document.querySelectorAll('.filter-group-fields span').forEach(el => {
             const text = el.textContent.trim();
             if (text === 'to' || text === 'To') {
@@ -9358,13 +9006,8 @@ function initFilters() {
 
         return updatedCount;
     }
-    // ********************************************
-    // *** FIN ACTUALIZAR LENGUAJE DE FILTROS *****
-    // ********************************************
-
-    // *****************************************************
-    // *** INICIO ACTUALIZAR LENGUAJE DE ELEMENTOS DE UI ***
-    // *****************************************************
+    
+    // ***** ACTUALIZAR LENGUAJE DE ELEMENTOS DE UI *****
     function updateUIElements() {
         let updatedCount = 0;
 
@@ -9374,6 +9017,7 @@ function initFilters() {
             'Columns': 'tab_columns'
         };
 
+        // ***** TABS *****
         document.querySelectorAll('#tabs .ui-tabs-tab a').forEach(tab => {
             const text = tab.textContent.trim();
             if (tabMap[text]) {
@@ -9385,6 +9029,7 @@ function initFilters() {
             }
         });
 
+        // ***** SELECCIÓN DE TRAMOS *****
         const legSel = document.getElementById('leg_sel');
         if (legSel) {
             const currentText = legSel.textContent;
@@ -9399,13 +9044,8 @@ function initFilters() {
 
         return updatedCount;
     }
-    // *****************************************************
-    // **** FIN ACTUALIZAR LENGUAJE DE ELEMENTOS DE UI *****
-    // *****************************************************
-
-    // **********************************************************
-    // ** INICIO EJECUTAR TODAS LAS FUNCIONES DE ACTUALIZACIÓN **
-    // **********************************************************
+    
+    // ***** EJECUTAR TODAS LAS FUNCIONES DE ACTUALIZACIÓN DE IDIOMA *****
     function updateAllLanguage() {
         if (typeof window.updateAllToggles === 'function') {
             window.updateAllToggles();
@@ -9419,9 +9059,6 @@ function initFilters() {
             updateZoomIndicator();
         }
     }
-    // **********************************************************
-    // *** FIN EJECUTAR TODAS LAS FUNCIONES DE ACTUALIZACIÓN ****
-    // **********************************************************
 
     document.removeEventListener('languageChanged', updateAllLanguage);
     document.addEventListener('languageChanged', updateAllLanguage);
@@ -9447,11 +9084,6 @@ function initFilters() {
     window.updateUIElements = updateUIElements;
 
 })();
-
-// ******************************************************
-// **** FIN ACTUALIZAR IDIOMA DE COLUMNAS Y FILTROS *****
-// ******************************************************
-
 
 function getFlightAwareModeSLink(code, ident, linkText) {
     if (code !== null && code.length > 0 && code[0] !== '~' && code !== "000000") {
@@ -11643,9 +11275,7 @@ function currentExtent(factor) {
     return myExtent(OLMap.getView().calculateExtent(size));
 }
 
-// *****************************************
-// *** INICIO ESTADO POR DEFECTO REPLAY ****
-// *****************************************
+// ***** ESTADO POR DEFECTO DEL REPLAY *****
 function replayDefaults(ts) {
     let playText = 'Play';
     if (typeof window.translate !== 'undefined' && window.translate.t) {
@@ -11676,9 +11306,6 @@ function replayDefaults(ts) {
         minutes: ts.getUTCMinutes(),
     };
 }
-// *****************************************
-// **** FIN ESTADO POR DEFECTO REPLAY ******
-// *****************************************
 
 function replayClear() {
     clearTimeout(refreshId);
@@ -11696,9 +11323,7 @@ function replayGetChunk(ts) {
     return { date: sDate, index: index, key: key, url: url, };
 }
 
-// *****************************************
-// ******** INICIO CARGAR REPLAY ***********
-// *****************************************
+// ***** CARGAR REPLAY *****
 function loadReplay(ts) {
     if (isNaN(ts.getTime())) {
         ts = new Date();
@@ -11796,13 +11421,8 @@ function loadReplay(ts) {
 
     }
 }
-// *****************************************
-// ********* FIN CARGAR REPLAY *************
-// *****************************************
 
-// *****************************************
-// ** INICIO INICIALIZAR DATOS DEL REPLAY **
-// *****************************************
+// ***** INICIALIZAR DATOS DEL REPLAY *****
 function initReplay(chunk, data) {
     if (data.byteLength % 16 != 0) {
         console.log("Invalid heatmap file (byteLength)");
@@ -11852,13 +11472,8 @@ function initReplay(chunk, data) {
 
     jQuery('#replayLoading').text('');
 }
-// *****************************************
-// *** FIN INICIALIZAR DATOS DEL REPLAY ****
-// *****************************************
 
-// **********************************************************
-// *** INICIO MOSTRAR FECHA, HORAS Y MINUTOS EN EL REPLAY ***
-// **********************************************************
+// ***** MOSTRAR FECHA, HORAS Y MINUTOS EN EL REPLAY *****
 function setReplayTimeHint(date) {
     let dateLabel = 'Date:';
     let utcLabel = 'UTC:';
@@ -11870,18 +11485,7 @@ function setReplayTimeHint(date) {
         dateLabel = window.t('date_label') || dateLabel;
         utcLabel = window.t('utc_label') || utcLabel;
     }
-    // if (true || utcTimesHistoric) {
-    //     jQuery("#replayDateHintLocal").html(TIMEZONE + " " + dateLabel + " " + lDateString(date));
-    //     jQuery("#replayDateHint").html("" + zDateString(date));
-    //     jQuery("#replayTimeHint").html(utcLabel + " " + zuluTime(date) + ' / ' + TIMEZONE + ":" + NBSP + localTime(date));
-    // } else {
-    //     jQuery("#replayDateHintLocal").html("");
-    //     jQuery("#replayDateHint").html(dateLabel + " " + lDateString(date));
-    // }
 }
-// **********************************************************
-// **** FIN MOSTRAR FECHA, HORAS Y MINUTOS EN EL REPLAY *****
-// **********************************************************
 
 function replayOnSliderMove() {
     clearTimeout(refreshId);
@@ -11895,9 +11499,9 @@ function replayOnSliderMove() {
     setReplayTimeHint(date);
 }
 
+// ***** SALTAR A LA FECHA BUSCADA *****
 let replayJumpEnabled = true;
 function replayJump() {
-    // NO ejecutar si estamos en modo edición
     if (replayEditLock) {
         replayPendingJump = true;
         return;
@@ -11906,7 +11510,6 @@ function replayJump() {
     if (!showingReplayBar) return;
     if (!replayJumpEnabled) return;
 
-    // Obtener valores actuales de los inputs (si existen)
     const hourInput = document.getElementById('replayHourInput');
     const minuteInput = document.getElementById('replayMinuteInput');
 
@@ -11936,7 +11539,6 @@ function replayJump() {
 
     let ts = new Date(replay.ts.getTime());
 
-    // Diff menor a 10 segundos -> no hacer nada
     if (Math.abs(date.getTime() - ts.getTime()) < 10000) {
         return;
     }
@@ -11946,6 +11548,8 @@ function replayJump() {
     loadReplay(date);
     replayPendingJump = false;
 }
+
+// ***** MOSTRAR MINUTOS, HORAS Y VELOCIDAD EN SLIDES Y HACERLOS EDITABLES *****
 function replaySetTimeHint(arg) {
     replayJumpEnabled = false;
     let dateString;
@@ -11960,13 +11564,6 @@ function replaySetTimeHint(arg) {
         replay.datepickerDate = dateString;
         jQuery("#replayDatepicker").datepicker('setDate', dateString);
     }
-
-
-    // let hours = replay.ts.getUTCHours();
-    // jQuery('#hourSelect').slider("option", "value", hours);
-
-    // let minutes = replay.ts.getUTCMinutes();
-    // jQuery('#minuteSelect').slider("option", "value", minutes);
 
     const hourInput = document.getElementById('replayHourInput');
     if (hourInput && document.activeElement !== hourInput && !replayEditLock) {
@@ -12307,9 +11904,7 @@ function updateMessageRate(data) {
     }
 }
 
-// *****************************************
-// ******* INICIO REPRODUCIR REPLAY ********
-// *****************************************
+// ***** REPRODUCIR REPLAY *****
 function playReplay(state) {
     if (!replay) {
         return;
@@ -12343,13 +11938,8 @@ function playReplay(state) {
         clearTimeout(refreshId);
     }
 };
-// *****************************************
-// ******* FIN REPRODUCIR REPLAY ***********
-// *****************************************
 
-// *****************************************
-// ******* INICIO MOSTRAR REPLAY ***********
-// *****************************************
+// ***** MOSTRAR REPLAY *****
 function showReplayBar() {
     showingReplayBar = !showingReplayBar;
     if (!showingReplayBar) {
@@ -12360,6 +11950,7 @@ function showReplayBar() {
         jQuery("#selected_showTrace_hide").show();
         restoreAltitudeChartPosition();
 
+        // ***** CAMBIAR VISUALIZACIÓN DEL OVERLAY DE PANORAMA SEGÚN EL REPLAY *****
         const panorama = document.getElementById('panorama-overlay');
         const panoramaButton = document.getElementById('panorama-close');
 
@@ -12368,7 +11959,7 @@ function showReplayBar() {
         }
 
         if (panoramaButton) {
-            panoramaButton.textContent = '-';
+            panoramaButton.textContent = '▼';
         }
 
     } else {
@@ -12443,15 +12034,6 @@ function showReplayBar() {
                 replay.speed = Math.pow(ui.value, slideBase).toFixed(1);
                 updateSliderTip(ui.handle, replay.speed, "x");
             },
-            //     let speedLabel = 'Speed: ';
-            //     if (typeof window.translate !== 'undefined' && window.translate.t) {
-            //         speedLabel = window.translate.t('speed_label') || speedLabel;
-            //     } else if (typeof window.t === 'function') {
-            //         speedLabel = window.t('speed_label') || speedLabel;
-            //     }
-
-            //     jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
-            // // },
             change: function (event, ui) {
                 updateSliderTip(jQuery(this).find('.ui-slider-handle'), replay.speed, "x");
                 replayStep();
@@ -12470,10 +12052,9 @@ function showReplayBar() {
 
         jQuery('#replaySpeedHint').text(speedLabel);
 
-        // jQuery('#replaySpeedHint').text(speedLabel + replay.speed + 'x');
-
         jQuery("#selected_showTrace_hide").hide();
 
+        // ***** CAMBIAR VISUALIZACIÓN DEL OVERLAY DE PANORAMA SEGÚN EL REPLAY *****
         const panorama = document.getElementById('panorama-overlay');
         const panoramaButton = document.getElementById('panorama-close');
 
@@ -12492,13 +12073,9 @@ function showReplayBar() {
     }
 
 };
-// *****************************************
-// ********* FIN MOSTRAR REPLAY ************
-// *****************************************
 
-// *****************************************************************
-// ****** INICIO TEXTO Y ETIQUETAS DE LOS SLIDER DEL REPLAY ********
-// *****************************************************************
+
+// ***** TEXTO Y ETIQUETAS DE LOS SLIDER DEL REPLAY *****
 function updateSliderTip(handle, value, suffix) {
     const formatted = value.toString().padStart(2, '0') + suffix;
     jQuery(handle).find('.slider-tip').text(formatted);
@@ -12512,9 +12089,6 @@ function setupSliderDecorations(selector, minTxt, maxTxt) {
     }
 
 }
-// *****************************************************************
-// ******* FIN TEXTO Y ETIQUETAS DE LOS SLIDER DEL REPLAY **********
-// *****************************************************************
 
 function timeoutFetch() {
     console.log("timeoutFetch " + localTime(new Date()));
@@ -13461,9 +13035,7 @@ function updateTime() {
 setInterval(updateTime, 1000);
 updateTime();
 
-// *************************************************************
-// ** INICIO PLEGAR/DESPLEGAR SECCIONES EN SELECTED_INFOBLOCK **
-// *************************************************************
+// ***** PLEGAR/DESPLEGAR SECCIONES EN SELECTED_INFOBLOCK *****
 document.addEventListener('DOMContentLoaded', () => {
     const toggles = document.querySelectorAll('.section-toggle');
 
@@ -13534,20 +13106,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-// *************************************************************
-// *** FIN PLEGAR/DESPLEGAR SECCIONES EN SELECTED_INFOBLOCK ****
-// *************************************************************
 
-
-
-
-// **************************************************************
-// ***** FIN LIMPIAR DISTANCIA CALCULADA AERONAVE-AERONAVE ******
-// **************************************************************
-
-// ***********************************************************************
-// ** INICIO IMAGEN GENÉRICA EN SELECTED_INFOBLOCK SI EL AVIÓN NO TIENE **
-// ***********************************************************************
+// ***** IMAGEN GENÉRICA EN SELECTED_INFOBLOCK SI EL AVIÓN NO TIENE *****
 (function () {
     const fallbackSrc = 'images/no-plane.jpg';
     const container = document.getElementById('selected_photo');
@@ -13586,13 +13146,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     new MutationObserver(ensurePhoto).observe(container, { childList: true, subtree: true });
 })();
-// ***********************************************************************
-// *** FIN IMAGEN GENÉRICA EN SELECTED_INFOBLOCK SI EL AVIÓN NO TIENE ****
-// ***********************************************************************
 
-// ***********************************************************************
-// ****** INICIO ACTUALIZAR CONTADOR Y LISTA DE AVIONES DE INTERÉS *******
-// ***********************************************************************
+// ***** ACTUALIZAR CONTADOR Y LISTA DE AVIONES DE INTERÉS *****
 function updateStarredUI() {
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
     const countSpan = document.getElementById('starred-count');
@@ -13641,9 +13196,6 @@ function updateStarredUI() {
     container.style.display = 'block';
 }
 
-// *****************************************************
-// ********** INICIO FUNCIÓN ESCAPAR HTML **************
-// *****************************************************
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function (m) {
@@ -13653,13 +13205,8 @@ function escapeHtml(str) {
         return m;
     });
 }
-// *****************************************************
-// ************ FIN FUNCIÓN ESCAPAR HTML ***************
-// *****************************************************
 
-// *******************************************************************
-// ** INICIO FUNCIÓN ACTUALIZAR VISUALIZACIÓN DE AVIONES DE INTERÉS **
-// *******************************************************************
+// ***** ACTUALIZAR VISUALIZACIÓN DE AVIONES DE INTERÉS *****
 function toggleStarredPlane(hex) {
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
 
@@ -13677,6 +13224,7 @@ function toggleStarredPlane(hex) {
     refreshFilter();
 }
 
+// ***** ACTUALIZAR AVIONES DE INTERÉS COLOCADOS EN LA TABLA *****
 function updateStarredPlaneVisual(hex) {
     const plane = g.planes[hex];
     if (!plane) return;
@@ -13695,13 +13243,8 @@ function updateStarredPlaneVisual(hex) {
         }
     }
 }
-// *******************************************************************
-// *** FIN FUNCIÓN ACTUALIZAR VISUALIZACIÓN DE AVIONES DE INTERÉS ****
-// *******************************************************************
 
-// *******************************************************************************
-// ** INICIO FUNCIÓN ACTUALIZAR BOTÓN DE AVIÓN DE INTERÉS EN SELECTED_INFOBLOCK **
-// *******************************************************************************
+// ***** ACTUALIZAR BOTÓN DE AVIÓN DE INTERÉS EN SELECTED_INFOBLOCK *****
 function updateStarredButtonInInfoblock() {
     const isEnabled = toggles['enableStarredAircraft'] && toggles['enableStarredAircraft'].state;
     const selected = SelectedPlane;
@@ -13742,17 +13285,13 @@ function updateStarredButtonInInfoblock() {
         toggleStarredPlane(selected.icao);
     };
 }
-// *******************************************************************************
-// *** FIN FUNCIÓN ACTUALIZAR BOTÓN DE AVIÓN DE INTERÉS EN SELECTED_INFOBLOCK ****
-// *******************************************************************************
 
-// *******************************************************************************************
-// ** INICIO FUNCIONES VERIFICAR AVIONES MARCADOS COMO INTERÉS Y LIMPIAR AVIONES DE INTERÉS **
-// *******************************************************************************************
+// ***** VERIFICAR AVIONES MARCADOS COMO INTERÉS *****
 function isPlaneStarred(plane) {
     return plane && starredAircraft.has(plane.icao);
 }
 
+// ***** ELIMINAR TODOS LOS AVIONES DE LA LISTA DE INTERÉS *****
 function clearAllStarred() {
 
     if (starredAircraft.size === 0) return;
@@ -13784,13 +13323,8 @@ deselect = function (plane) {
         if (starBtnContainer) starBtnContainer.innerHTML = '';
     }
 };
-// *******************************************************************************************
-// *** FIN FUNCIONES VERIFICAR AVIONES MARCADOS COMO INTERÉS Y LIMPIAR AVIONES DE INTERÉS ****
-// *******************************************************************************************
 
-// *******************************************************************************************
-// ***** INICIO AGREGAR FUNCIONALIDAD AL BOTÓN DE ESTRELLA PARA MARCAR COMO DE INTERÉS *******
-// *******************************************************************************************
+// ***** AGREGAR FUNCIONALIDAD AL BOTÓN DE ESTRELLA PARA MARCAR COMO DE INTERÉS *****
 function enhancePlaneObjectForStarred() {
     if (typeof PlaneObject !== 'undefined' && PlaneObject.prototype) {
         const originalUpdateMarker = PlaneObject.prototype.updateMarker;
@@ -13807,6 +13341,7 @@ function enhancePlaneObjectForStarred() {
     }
 }
 
+// ***** INICIALIZAR TABLA DE AVIONES DE INTERÉS *****
 function initStarredAircraft() {
     const starredSection = document.getElementById('starred-aircraft-section');
     if (starredSection) {
@@ -13867,10 +13402,8 @@ function initStarredAircraft() {
         clearAllBtn.addEventListener('click', clearAllStarredHandler);
     }
 }
-// *******************************************************************************************
-// ******* FIN AGREGAR FUNCIONALIDAD AL BOTÓN DE ESTRELLA PARA MARCAR COMO DE INTERÉS ********
-// *******************************************************************************************
 
+// ***** MANEJADOR DE LIMPIEXA DE TODOS LOS AVIONES DE INTERÉS *****
 function clearAllStarredHandler(e) {
     e.stopPropagation();
     if (starredAircraft.size > 0) {
@@ -13894,13 +13427,8 @@ if (typeof toggleStarredList === 'undefined') {
 } else {
     window.toggleStarredList = toggleStarredList;
 }
-// ***********************************************************************
-// ******* FIN ACTUALIZAR CONTADOR Y LISTA DE AVIONES DE INTERÉS *********
-// ***********************************************************************
 
-// *******************************************************************************
-// ** INICIO FUNCIÓN PARA MOVER SETTINGS_INFOBLOCK COMO VENTANA POR LA PANTALLA **
-// *******************************************************************************
+// ***** MOVER SETTINGS_INFOBLOCK COMO VENTANA POR LA PANTALLA *****
 (function () {
     let settingsWindow = null;
     let isDragging = false;
@@ -13978,13 +13506,8 @@ if (typeof toggleStarredList === 'undefined') {
         setTimeout(initDraggable, 100);
     }
 })();
-// *******************************************************************************
-// ** FIN FUNCIÓN PARA MOVER SETTINGS_INFOBLOCK COMO VENTANA POR LA PANTALLA **
-// *******************************************************************************
 
-// *******************************************************************************************
-// ***** INICIO UBICACION DE AERONAVE MEDIANTE FIR *******
-// *******************************************************************************************
+// ***** UBICACION DE AERONAVE MEDIANTE FIR *****
 const firFiles = {
     "Fir Amazonica": "geojson/fir_sbaz.geojson",
     "Fir Maiquetia": "geojson/fir_svzm.geojson",
@@ -14046,3 +13569,9 @@ function getFIRFromCoordinates(lat, lon) {
 
     return "Fuera de FIR conocido";
 }
+
+// ***** EXPONER FUNCIONES GLOBALES PARA SU USO DESDE MÓDULOS EXTERNOS *****
+window.forceRecreateLayerSwitcher = forceRecreateLayerSwitcher;
+window.getLayerTitle = getLayerTitle;
+window.updateLayerTitles = updateLayerTitles;
+window.refreshLayerSwitcher = refreshLayerSwitcher;

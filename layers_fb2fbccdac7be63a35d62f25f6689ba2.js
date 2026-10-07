@@ -55,11 +55,11 @@ function createBaseLayers() {
     */
 
     //if (offlineMapDetail > 0) {
+    // ***** CREAR CAPA BASE CON SUS CAPAS OVERLAY *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -68,11 +68,11 @@ function createBaseLayers() {
         title: 'Base',
         type: 'base',
     }));
+    // ***** MAPA *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "mapdata/VFR/{z}/{x}/{y}.png",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -83,11 +83,11 @@ function createBaseLayers() {
         visible: false,
 
     }));
+    // ***** AEROPUERTOS *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -97,11 +97,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** CLASES ESPACIO AÉREO *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -111,11 +111,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** RUTAS *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -125,11 +125,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** ESPACIO AÉREO CONTROLADO *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -139,11 +139,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** MORA/MEA *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -153,11 +153,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** AYUDA A LA NAVEGACIÓN *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -167,11 +167,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** OBSTÁCULOS *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -181,11 +181,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** LÍMITES POLÍTICOS *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -195,11 +195,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** ESPACIO AÉREO DE USO ESPECIAL *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -209,11 +209,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** TOPOGRAFÍA *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -223,11 +223,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** PUNTOS DE NAVEGACIÓN *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -237,11 +237,11 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+    // ***** CLIMA *****
     vfr.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -251,13 +251,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
-    //}
 
+    // ***** CREAR CAPA BASE CON SUS CAPAS OVERLAY *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -267,13 +266,11 @@ function createBaseLayers() {
         type: 'base',
     }));
 
-    //if (offlineMapDetail > 0) {
-
+    // ***** MAPA *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "mapdata/IFR_Low/{z}/{x}/{y}.png",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -283,11 +280,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AEROPUERTOS *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -297,11 +295,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLASES ESPACIO AÉREO *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -311,11 +310,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** RUTAS *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -325,11 +325,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO CONTROLADO *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -339,11 +340,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** MORA/MEA *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -353,11 +355,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AYUDA A LA NAVEGACIÓN *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -367,11 +370,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** OBSTÁCULOS *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -381,11 +385,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** LÍMITES POLÍTICOS *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -395,11 +400,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO DE USO ESPECIAL *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -409,11 +415,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** TOPOGRAFÍA *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -423,11 +430,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** PUNTOS DE NAVEGACIÓN *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -437,11 +445,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLIMA *****
     ifrlow.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -451,15 +460,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
-    //}
 
-    //if (offlineMapDetail > 0) {
-
+    // ***** CREAR CAPA BASE CON SUS CAPAS OVERLAY *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -468,11 +474,12 @@ function createBaseLayers() {
         title: 'Base',
         type: 'base',
     }));
+
+    // ***** MAPA *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "mapdata/IFR_Hight/{z}/{x}/{y}.png",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -482,11 +489,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AEROPUERTOS *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -496,11 +504,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLASES ESPACIO AÉREO *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -510,11 +519,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** RUTAS *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -524,11 +534,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO CONTROLADO *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -538,11 +549,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** MORA/MEA *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -552,11 +564,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AYUDA A LA NAVEGACIÓN *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -566,11 +579,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** OBSTÁCULOS *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -580,11 +594,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** LÍMITES POLÍTICOS *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -594,11 +609,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO DE USO ESPECIAL *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -608,11 +624,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** TOPOGRAFÍA *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -622,11 +639,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** PUNTOS DE NAVEGACIÓN *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -636,11 +654,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLIMA *****
     ifrhigh.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -651,14 +670,11 @@ function createBaseLayers() {
         visible: false,
     }));
 
-    //}
-
-    //if (offlineMapDetail > 0) {
+    // ***** CREAR CAPA BASE CON SUS CAPAS OVERLAY *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -667,11 +683,12 @@ function createBaseLayers() {
         title: 'Base',
         type: 'base',
     }));
+
+    // ***** MAPA *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "mapdata/TMA_MIQ/{z}/{x}/{y}.png",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -681,11 +698,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AEROPUERTOS *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -695,11 +713,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLASES ESPACIO AÉREO *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -709,11 +728,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** RUTAS *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -723,11 +743,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO CONTROLADO *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -737,11 +758,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** MORA/MEA *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -751,11 +773,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AYUDA A LA NAVEGACIÓN *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -765,11 +788,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** OBSTÁCULOS *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -779,11 +803,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** LÍMITES POLÍTICOS *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -793,11 +818,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO DE USO ESPECIAL *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -807,11 +833,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** TOPOGRAFÍA *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -821,11 +848,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** PUNTOS DE NAVEGACIÓN *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -835,11 +863,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLIMA *****
     TMA_MIQ.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -850,15 +879,11 @@ function createBaseLayers() {
         visible: false,
     }));
 
-    //}
-
-
-    //if (offlineMapDetail > 0) {
+    // ***** CREAR CAPA BASE CON SUS CAPAS OVERLAY *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -868,11 +893,12 @@ function createBaseLayers() {
         type: 'base',
         visible: false,
     }));
+
+    // ***** MAPA *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "mapdata/TMA_BNA/{z}/{x}/{y}.png",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -882,11 +908,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AEROPUERTOS *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -896,11 +923,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLASES ESPACIO AÉREO *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -910,11 +938,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** RUTAS *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -924,11 +953,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO CONTROLADO *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -938,11 +968,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** MORA/MEA *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -952,11 +983,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AYUDA A LA NAVEGACIÓN *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -966,11 +998,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** OBSTÁCULOS *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -980,11 +1013,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** LÍMITES POLÍTICOS *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -994,11 +1028,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO DE USO ESPECIAL *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1008,11 +1043,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** TOPOGRAFÍA *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1022,11 +1058,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** PUNTOS DE NAVEGACIÓN *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1036,11 +1073,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLIMA *****
     TMA_BNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1050,13 +1088,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
-    //}
-    //if (offlineMapDetail > 0) {
+
+    // ***** CREAR CAPA BASE CON SUS CAPAS OVERLAY *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -1064,13 +1101,13 @@ function createBaseLayers() {
         name: 'Base',
         title: 'Base',
         type: 'base',
-
     }));
+
+    // ***** MAPA *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "mapdata/TMA_GNA/{z}/{x}/{y}.png",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 1,
             maxZoom: 15,
             transition: tileTransition,
@@ -1080,11 +1117,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AEROPUERTOS *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1094,11 +1132,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLASES ESPACIO AÉREO *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1108,11 +1147,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** RUTAS *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1122,11 +1162,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO CONTROLADO *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1136,11 +1177,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** MORA/MEA *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1150,11 +1192,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** AYUDA A LA NAVEGACIÓN *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1164,11 +1207,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** OBSTÁCULOS *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1178,11 +1222,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** LÍMITES POLÍTICOS *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1192,11 +1237,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** ESPACIO AÉREO DE USO ESPECIAL *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1206,11 +1252,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** TOPOGRAFÍA *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1220,11 +1267,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** PUNTOS DE NAVEGACIÓN *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1234,11 +1282,12 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
+
+    // ***** CLIMA *****
     TMA_GNA.push(new ol.layer.Tile({
         source: new ol.source.XYZ({
             "url": "",
             attributionsCollapsible: false,
-            //maxZoom: offlineMapDetail,
             minZoom: 8,
             maxZoom: 15,
             transition: tileTransition,
@@ -1248,7 +1297,6 @@ function createBaseLayers() {
         type: 'overlay',
         visible: false,
     }));
-
 
     /*world.push(new ol.layer.Tile({
         source: new ol.source.OSM({
@@ -1325,6 +1373,7 @@ function createBaseLayers() {
         }));
     }*/
 
+    // ***** MAPA OFFLINE *****
     if (offlineMapDetail > 0) {
         world.push(new ol.layer.Tile({
             source: new ol.source.OSM({
@@ -1339,6 +1388,7 @@ function createBaseLayers() {
         }));
     }
 
+    // ***** MAPA OSM *****
     world.push(new ol.layer.Tile({
         source: new ol.source.OSM({
             maxZoom: 17,
@@ -2230,9 +2280,7 @@ function createBaseLayers() {
         }));
     }
 
-    // *********************************************
-    // ** INICIO TRADUCIR TODAS LAS CAPAS CREADAS **
-    // *********************************************
+    // ***** TRADUCIR NOMBRE DE LAS CAPAS *****
     function translateLayersRecursive(layerCollection) {
         if (!layerCollection || typeof layerCollection.forEach !== 'function') {
             return;
@@ -2241,12 +2289,9 @@ function createBaseLayers() {
         layerCollection.forEach(layer => {
             if (!layer) return;
 
-            // Verificar si es un grupo de capas (más seguro)
-            // Usamos get('layers') para identificar grupos en lugar de instanceof
             const subLayers = layer.getLayers ? layer.getLayers() : null;
 
             if (subLayers && typeof subLayers.forEach === 'function') {
-                // Es un grupo de capas
                 const groupName = layer.get('name');
                 if (groupName && window.getLayerTitle) {
                     const translated = window.getLayerTitle('group_' + groupName, layer.get('title'));
@@ -2254,10 +2299,8 @@ function createBaseLayers() {
                         layer.set('title', translated);
                     }
                 }
-                // Recursivamente traducir capas hijas
                 translateLayersRecursive(subLayers);
             } else if (layer.get && typeof layer.get === 'function') {
-                // Es una capa individual
                 const name = layer.get('name');
                 if (name && window.getLayerTitle) {
                     const translated = window.getLayerTitle(name, layer.get('title'));
@@ -2269,11 +2312,6 @@ function createBaseLayers() {
         });
     }
 
-    // Aplicar traducción inicial a todas las capas
     translateLayersRecursive(layers);
-    // *********************************************
-    // *** FIN TRADUCIR TODAS LAS CAPAS CREADAS ****
-    // *********************************************
-
     return layers_group;
 }

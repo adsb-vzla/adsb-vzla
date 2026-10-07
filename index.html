@@ -9,31 +9,31 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="viewport"
     content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui" />
-  <!-- JQUERY -->
+  <!-- ***** JQUERY ***** -->
   <link rel="stylesheet" href="libs/jquery-ui-1.13.2.min.css" type="text/css">
-  <!-- OPENLAYERS -->
+  <!-- ***** OPENLAYERS ***** -->
   <link rel="stylesheet" href="libs/ol-8.2.0.css" type="text/css" />
   <link rel="stylesheet" href="libs/ol-layerswitcher-4.1.1.css" type="text/css" />
-  <!-- CUSTOM TAILWIND -->
+  <!-- ***** CUSTOM TAILWIND ***** -->
   <link rel="stylesheet" href="tailwind.css" type="text/css" />
-  <!-- CUSTOM CSS -->
+  <!-- ***** CUSTOM CSS ***** -->
   <link rel="stylesheet" href="style_5ee35cf1c5fe35a0b51e3b76df77a007.css" type="text/css" />
-  <!-- FONT AWESOME -->
+  <!-- ***** FONT AWESOME ***** -->
   <link rel="stylesheet" href="./static/fontawesome-free-7.2.0-web/css/fontawesome.css" type="text/css" />
   <link rel="stylesheet" href="./static/fontawesome-free-7.2.0-web/css/solid.css" type="text/css" />
-  <!-- IDIOMA -->
+  <!-- ***** IDIOMA ***** -->
   <script src="./static/js/language_patch.js"></script>
-  <!-- ICONO -->
+  <!-- ***** ICONO ***** -->
   <link rel="icon" type="image/png" href="images/plane-icon.png">
-  <!-- TITULO -->
+  <!-- ***** TITULO ***** -->
   <title>ADSB VZLA</title>
 </head>
 
 <body>
   <div id="layout_container">
-    <!-- INICIO CARD HOVER -->
+    <!-- ***** INICIO CARD HOVER ***** -->
     <div id="highlighted_infoblock" style="pointer-events: none">
-      <!-- iNICIO ENCABEZADO -->
+      <!-- ***** iNICIO ENCABEZADO ***** -->
       <div class="highlightedTitle infoBlockSection">
         <div>
           <span class="identLarge"><span id="highlighted_callsign">n/a</span></span>
@@ -42,8 +42,8 @@
           <span class="identSmall"><span id="highlighted_pf_route">n/a</span></span>
         </div>
       </div>
-      <!-- FIN ENCABEZADO -->
-      <!-- INICIO CUERPO DEL CARD -->
+      <!-- ***** FIN ENCABEZADO ***** -->
+      <!-- ***** INICIO CUERPO DEL CARD ***** -->
       <div class="infoBlockSection">
         <div>
           <div class="infoHeading"><span data-i18n="reg">Reg.: </span></div>
@@ -83,14 +83,14 @@
           <div class="infoData"><span id="highlighted_rssi">n/a</span></div>
         </div>
       </div>
-      <!-- FIN CUERPO DEL CARD -->
+      <!-- ***** FIN CUERPO DEL CARD ***** -->
     </div>
-    <!-- FIN CARD HOVER -->
+    <!-- ***** FIN CARD HOVER ***** -->
 
-    <!-- INICIO SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN -->
+    <!-- ***** INICIO SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN ***** -->
     <div id="selected_infoblock" style="display: none">
       <div id="infoblock-container">
-        <!-- INICIO ENCABEZADO -->
+        <!-- ***** INICIO ENCABEZADO ***** -->
         <div class="highlightedTitle infoBlockSection">
           <div>
             <span class="identLarge" data-i18n-title="callsign_tooltip"
@@ -121,10 +121,10 @@
             </table>
           </div>
         </div>
-        <!-- FIN ENCABEZADO -->
+        <!-- ***** FIN ENCABEZADO ***** -->
 
-        <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
-        <!-- INICIO BLOQUE RESUMEN -->
+        <!-- ***** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN ***** -->
+        <!-- ***** INICIO BLOQUE RESUMEN ***** -->
         <div id="selected_infoblock_summary" class="infoBlockSection infoblockSummary" style="display: none;">
           <div class="summaryHeader">
             <div class="summaryPhoto" id="selected_mini_photo"></div>
@@ -144,10 +144,10 @@
             </div>
           </div>
         </div>
-        <!-- FIN BLOQUE RESUMEN -->
+        <!-- ***** FIN BLOQUE RESUMEN ***** -->
 
-        <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
-        <!-- INICIO MLAT SOURCE INFO -->
+        <!-- ***** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN ***** -->
+        <!-- ***** INICIO MLAT SOURCE INFO ***** -->
         <div id=anon_mlat_info class="infoBlockSection hidden">
           <div>
             <div class="infoHeading">
@@ -174,10 +174,10 @@
             </div>
           </div>
         </div>
-        <!-- FIN MLAT SOURCE INFO -->
+        <!-- ***** FIN MLAT SOURCE INFO ***** -->
 
-        <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
-        <!-- INICIO TIS-B SOURCE INFO -->
+        <!-- ***** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN ***** -->
+        <!-- ***** INICIO TIS-B SOURCE INFO ***** -->
         <div id=tisb_info class="infoBlockSection hidden">
           <div class="infoHeading">
             <span data-i18n="non_icao_hex_info">Non-ICAO hex, info:</span>
@@ -209,9 +209,9 @@
                 rel="noreferrer" data-i18n="what_is_hex_id">What is a hex ID?</a></span>
           </div>
         </div>
-        <!-- FIN TIS-B SOURCE INFO -->
+        <!-- ***** FIN TIS-B SOURCE INFO ***** -->
 
-        <!-- INICIO INFORMACIÓN GENERAL DEL AVIÓN -->
+        <!-- ***** INICIO INFORMACIÓN GENERAL DEL AVIÓN ***** -->
         <div id=reg_info class="infoBlockSection">
           <table class="infoSectionTable">
             <tr id=pf_info_container>
@@ -319,9 +319,9 @@
             </tr>
           </table>
         </div>
-        <!-- INICIO INFORMACIÓN GENERAL DEL AVIÓN -->
+        <!-- ***** INICIO INFORMACIÓN GENERAL DEL AVIÓN ***** -->
 
-        <!-- INICIO SECCIÓN HISTORIAL -->
+        <!-- ***** INICIO SECCIÓN HISTORIAL ***** -->
         <div class="sectionTitle" data-i18n-title="history_tooltip"
           title="Show or hide history controls for flight playback.">
           <div class="section-title-content">
@@ -332,40 +332,32 @@
             </button>
           </div>
         </div>
+        <!-- ***** SELECCIONAR HISTORIAL INDIVIDUAL ***** -->
         <div id="history_block" class="infoBlockSection hidden">
           <div class="rSpacer"></div>
-          <!-- Fecha -->
           <div class="identSmall" id="trace_date"><span data-i18n="history_utc_day">UTC day:</span></div>
           <div class="rSpacer"></div>
-          <!-- Datepicker -->
           <div class="datePickerHistory">
             <div>
               <input id="histDatePicker" class="identSmall datepicker" data-i18n="history_pick_date">
             </div>
-            <!-- <div class="rSpacer"></div> -->
-            <!-- Botones día anterior/siguiente -->
             <div>
               <button class="formButton" id="trace_back_1d" data-i18n="previous_day">previous</button>
               <button class="formButton" id="trace_jump_1d" data-i18n="next_day">next</button>
             </div>
           </div>
           <div class="rSpacer"></div>
-          <!-- Selector de tramo -->
           <div class="legPickerHistory">
             <div class="identSmall" id="leg_sel"><span data-i18n="history_legs_all">Legs: All</span></div>
-            <!-- <div class="rSpacer"></div> -->
-            <!-- Botones tramo anterior/siguiente -->
             <div>
               <button class="formButton" id="leg_prev" data-i18n="previous_leg">previous</button>
               <button class="formButton" id="leg_next" data-i18n="next_leg">next</button>
             </div>
           </div>
           <div class="rSpacer"></div>
-          <!-- Tiempo -->
           <div class="hourPickerHistory">
             <div class="identSmall" id="trace_time"><span data-i18n="history_time_label">Time:</span></div>
             <div class="rSpacer"></div>
-            <!-- Controles de velocidad -->
             <div>
               <button class="formButton" id="tStop" data-i18n="stop">stop</button>
               <button class="formButton" id="t1x">1x</button>
@@ -379,12 +371,11 @@
             <button class="formButton" id="t40x">40x</button>
           </div>
           <div class="rSpacer"></div>
-          <!-- Mensaje de ayuda -->
           <div data-i18n="click_trace_to_play">Click on the trace line to start playback!</div>
         </div>
-        <!-- FIN SECCIÓN HISTORIAL -->
+        <!-- ***** FIN SECCIÓN HISTORIAL ***** -->
 
-        <!-- INICIO SECCIÓN ESPACIAL -->
+        <!-- ***** INICIO SECCIÓN ESPACIAL ***** -->
         <div class="sectionTitle" data-i18n-title="spatial_tooltip"
           title="Show or hide spatial data: groundspeed, altitude, position and distance.">
           <div class="section-title-content">
@@ -458,7 +449,6 @@
               <td data-i18n-title="distance_tooltip"
                 title="Distance of the aircraft from your ADS-B site at its last known position">
                 <div class="infoHeading">
-                  <!-- <span data-i18n="distance">Distance:</span> -->
                   <i class="fa-solid fa-arrows-left-right-to-line"></i>
                 </div>
                 <div class="infoData">
@@ -468,9 +458,9 @@
             </tr>
           </table>
         </div>
-        <!-- FIN SECCIÓN ESPACIAL -->
+        <!-- ***** FIN SECCIÓN ESPACIAL ***** -->
 
-        <!-- INICIO SECCIÓN SEÑAL -->
+        <!-- ***** INICIO SECCIÓN SEÑAL ***** -->
         <div class="sectionTitle" data-i18n-title="signal_tooltip"
           title="Show or hide signal details such as RSSI, message rate, total messages, last position and last seen.">
           <div class="section-title-content">
@@ -538,9 +528,9 @@
             </div>
           </div>
         </div>
-        <!-- FIN SECCIÓN SEÑAL -->
+        <!-- ***** FIN SECCIÓN SEÑAL ***** -->
 
-        <!-- INICIO SECCIÓN FMS (SELECCIÓN) -->
+        <!-- ***** INICIO SECCIÓN FMS (SELECCIÓN) ***** -->
         <div class="sectionTitle" data-i18n-title="fms_tooltip"
           title="Show or hide selected FMS settings: selected altitude and selected heading.">
           <div class="section-title-content">
@@ -570,9 +560,9 @@
             </div>
           </div>
         </div>
-        <!-- FIN SECCIÓN FMS (SELECCIÓN) -->
+        <!-- ***** FIN SECCIÓN FMS (SELECCIÓN) ***** -->
 
-        <!-- INICIO SECCIÓN VIENTO -->
+        <!-- ***** INICIO SECCIÓN VIENTO ***** -->
         <div class="sectionTitle" data-i18n-title="wind_tooltip"
           title="Show or hide wind data: speed, direction (from), and temperatures (TAT/OAT).">
           <div class="section-title-content">
@@ -609,9 +599,9 @@
             </div>
           </div>
         </div>
-        <!-- FIN SECCIÓN VIENTO -->
+        <!-- ***** FIN SECCIÓN VIENTO ***** -->
 
-        <!-- INICIO SECCIÓN VELOCIDAD -->
+        <!-- ***** INICIO SECCIÓN VELOCIDAD ***** -->
         <div class="sectionTitle" data-i18n-title="speed_tooltip"
           title="Show or hide speed data: ground speed, true airspeed, indicated airspeed, and mach number.">
           <div class="section-title-content">
@@ -658,9 +648,9 @@
             </div>
           </div>
         </div>
-        <!-- FIN SECCIÓN VELOCIDAD -->
+        <!-- ***** FIN SECCIÓN VELOCIDAD ***** -->
 
-        <!-- INICIO SECCIÓN ALTITUD -->
+        <!-- ***** INICIO SECCIÓN ALTITUD ***** -->
         <div class="sectionTitle" data-i18n-title="altitude_tooltip"
           title="Show or hide altitude details: barometric, geometric, climb/descend rates, and QNH.">
           <div class="section-title-content">
@@ -717,9 +707,9 @@
             </div>
           </div>
         </div>
-        <!-- FIN SECCIÓN ALTITUD -->
+        <!-- ***** FIN SECCIÓN ALTITUD ***** -->
 
-        <!-- INICIO SECCIÓN DIRECCIÓN -->
+        <!-- ***** INICIO SECCIÓN DIRECCIÓN ***** -->
         <div class="sectionTitle" data-i18n-title="direction_tooltip"
           title="Show or hide direction data: ground track, true heading, magnetic heading, magnetic declination, track rate and roll.">
           <button class="section-toggle" data-target="direction_block" aria-expanded="false"
@@ -780,9 +770,9 @@
             </div>
           </div>
         </div>
-        <!-- FIN SECCIÓN DIRECCIÓN -->
+        <!-- ***** FIN SECCIÓN DIRECCIÓN ***** -->
 
-        <!-- INICIO SECCIÓN VARIOS -->
+        <!-- ***** INICIO SECCIÓN VARIOS ***** -->
         <div class="sectionTitle" data-i18n-title="stuff_tooltip"
           title="Show or hide miscellaneous aircraft data such as navigation modes, ADS-B version, and category.">
           <button class="section-toggle" data-target="stuff_block" aria-expanded="false" aria-controls="stuff_block">
@@ -824,9 +814,9 @@
             </div>
           </div>
         </div>
-        <!-- FIN SECCIÓN VARIOS -->
+        <!-- ***** FIN SECCIÓN VARIOS ***** -->
 
-        <!-- INICIO SECCIÓN PRECISIÓN -->
+        <!-- ***** INICIO SECCIÓN PRECISIÓN ***** -->
         <div class="sectionTitle" data-i18n-title="accuracy_tooltip"
           title="Show or hide precision and integrity indicators: NACp, SIL, NACv, NIC_BARO, radius of containment (Rc), and position epoch.">
           <button class="section-toggle" data-target="accuracy_block" aria-expanded="false"
@@ -895,9 +885,9 @@
             </div>
           </div>
         </div>
-        <!-- FIN SECCIÓN PRECISIÓN -->
+        <!-- ***** FIN SECCIÓN PRECISIÓN ***** -->
 
-        <!-- INICIO SECCIÓN EXPORTAR KML -->
+        <!-- ***** INICIO SECCIÓN EXPORTAR KML ***** -->
         <div class="sectionTitle" data-i18n-title="export_kml_tooltip"
           title="Export the current aircraft position to a KML file for viewing in mapping applications. Choose altitude source: geometric, geom_avg, or baro.">
           <button class="section-toggle" data-target="export_kml_block" aria-expanded="false"
@@ -917,13 +907,13 @@
             title="Export KML using uncorrected pressure altitude (barometric)." onclick='exportKML("baro")'
             data-i18n="export_kml_baro">uncorrected pressure alt.</button>
         </div>
-        <!-- FIN SECCIÓN EXPORTAR KML -->
+        <!-- ***** FIN SECCIÓN EXPORTAR KML ***** -->
       </div>
     </div>
     <div id="infoblocks_container" class="infoblocks-container" style="display: none;"></div>
-    <!-- FIN SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER CLIC AL AVIÓN) -->
+    <!-- ***** FIN SIDEBAR IZQUIERDO CON INFORMACIÓN DEL AVIÓN (SE MUESTRA AL HACER CLIC AL AVIÓN) ***** -->
 
-    <!-- INICIO SPINNER -->
+    <!-- ***** INICIO SPINNER ***** -->
     <div id="loader">
       <div class="spinner">
         <img class="spinner-logo" src="images/logo-adsb-vzla-planet6.png" alt="">
@@ -932,17 +922,17 @@
         </div>
       </div>
     </div>
-    <!-- FIN SPINNER -->
+    <!-- ***** FIN SPINNER ***** -->
 
-    <!-- INICIO CONTENEDOR DEL MAPA -->
+    <!-- ***** INICIO CONTENEDOR DEL MAPA ***** -->
     <div id="map_container" style="background-color:#727272;">
       <div id="map_canvas" style="background-color:#727272;">
       </div>
       <div id="iconTestCanvas" style="background-color:#727272;display:none;">
       </div>
-      <!-- INICIO MENÚ CONFIGURACIONES -->
+      <!-- ***** INICIO MENÚ CONFIGURACIONES ***** -->
       <div id="settings_infoblock">
-        <!-- INICIO ENCABEZADO -->
+        <!-- ***** INICIO ENCABEZADO ***** -->
         <div id="settings_window_header">
           <div class="panel-title"
             style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
@@ -958,9 +948,9 @@
             <button id="settings_close" class="formButton" data-i18n-title="close" title="Close">X</button>
           </div>
         </div>
-        <!-- FIN ENCABEZADO -->
+        <!-- ***** FIN ENCABEZADO ***** -->
 
-        <!-- INICIO SLIDES DE TAMAÑO DE ÍCONOS -->
+        <!-- ***** INICIO SLIDES DE TAMAÑO DE ÍCONOS ***** -->
         <div class="settingsOptionContainer">
           <div class="settingsText" data-i18n="text_icon_size">Text and icon size:</div>
         </div>
@@ -978,11 +968,11 @@
             data-i18n-title="reset_to_default_multiplier" title="Reset to default multiplier"
             data-i18n="reset">Reset</button>
         </div>
-        <!-- FIN SLIDES DE TAMAÑO DE ÍCONOS -->
+        <!-- ***** FIN SLIDES DE TAMAÑO DE ÍCONOS ***** -->
 
-        <!-- INICIO CATEGORÍAS DE CONFIGURACIONES -->
+        <!-- ***** INICIO CATEGORÍAS DE CONFIGURACIONES ***** -->
         <div id="settingsLeft" class="settingsColumn">
-          <!-- INICIO CATEGORÍA UNITS -->
+          <!-- ***** INICIO CATEGORÍA UNITS ***** -->
           <div id="category-units" class="settings-category">
             <div class="settings-category-title" data-i18n="units">UNITS</div>
             <div id="category-units-container">
@@ -996,9 +986,9 @@
               </div>
             </div>
           </div>
-          <!-- FIN CATEGORÍA UNITS -->
+          <!-- ***** FIN CATEGORÍA UNITS ***** -->
 
-          <!-- INICIO CATEGORÍA DISPLAY -->
+          <!-- ***** INICIO CATEGORÍA DISPLAY ***** -->
           <div id="category-display" class="settings-category">
             <div class="settings-category-title" data-i18n="display">DISPLAY</div>
             <div id="category-display-container"></div>
@@ -1007,9 +997,9 @@
               title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
-          <!-- FIN CATEGORÍA DISPLAY -->
+          <!-- ***** FIN CATEGORÍA DISPLAY ***** -->
 
-          <!-- INICIO CATEGORÍA FILTERS -->
+          <!-- ***** INICIO CATEGORÍA FILTERS ***** -->
           <div id="category-filters" class="settings-category">
             <div class="settings-category-title" data-i18n="filters_category">FILTERS</div>
             <div id="category-filters-container">
@@ -1030,10 +1020,10 @@
               title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
-          <!-- FIN CATEGORÍA FILTERS -->
+          <!-- ***** FIN CATEGORÍA FILTERS ***** -->
         </div>
         <div id="settingsRight" class="settingsColumn">
-          <!-- INICIO CATEGORÍA DATA -->
+          <!-- ***** INICIO CATEGORÍA DATA ***** -->
           <div id="category-data" class="settings-category">
             <div class="settings-category-title" data-i18n="data">DATA</div>
             <div id="category-data-container"></div>
@@ -1042,9 +1032,9 @@
               title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
-          <!-- FIN CATEGORÍA DATA -->
+          <!-- ***** FIN CATEGORÍA DATA ***** -->
 
-          <!-- INICIO CATEGORÍA SYSTEM -->
+          <!-- ***** INICIO CATEGORÍA SYSTEM ***** -->
           <div id="category-system" class="settings-category">
             <div class="settings-category-title" data-i18n="system">SYSTEM</div>
             <div id="category-system-container"></div>
@@ -1053,9 +1043,9 @@
               title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
-          <!-- FIN CATEGORÍA SYSTEM -->
+          <!-- ***** FIN CATEGORÍA SYSTEM ***** -->
 
-          <!-- INICIO CATEGORÍA INFORMATION -->
+          <!-- ***** INICIO CATEGORÍA INFORMATION ***** -->
           <div id="category-info" class="settings-category">
             <div class="settings-category-title" data-i18n="information">INFORMATION</div>
             <div id="category-info-container"></div>
@@ -1064,20 +1054,20 @@
               title="Reset to default" data-i18n="reset_to_default">Reset to
               default</button>
           </div>
-          <!-- FIN CATEGORÍA INFORMATION -->
+          <!-- ***** FIN CATEGORÍA INFORMATION ***** -->
         </div>
-        <!-- FIN CATEGORÍAS DE CONFIGURACIONES -->
+        <!-- ***** FIN CATEGORÍAS DE CONFIGURACIONES ***** -->
       </div>
-      <!-- FIN MENÚ CONFIGURACIONES -->
+      <!-- ***** FIN MENÚ CONFIGURACIONES ***** -->
 
-      <!-- INICIO CRÉDITOS DE IMAGEN -->
+      <!-- ***** INICIO CRÉDITOS DE IMAGEN ***** -->
       <div style="display: none" id="credits">
         <span class=credits-image></span>
         <span class=credits-text>aggregator.com</span>
       </div>
-      <!-- FIN CRÉDITOS DE IMAGEN -->
+      <!-- ***** FIN CRÉDITOS DE IMAGEN ***** -->
 
-      <!-- INICIO NAVBAR -->
+      <!-- ***** INICIO NAVBAR ***** -->
       <div id="navbar">
         <div id="right_controls">
           <div id="utc_clock" data-i18n-title="utc_tooltip" title="Current UTC time - Universal Time Coordinated.">00:00
@@ -1109,12 +1099,12 @@
           </div>
         </div>
       </div>
-      <!-- FIN NAVBAR -->
+      <!-- ***** FIN NAVBAR ***** -->
 
-      <!-- INICIO TIRA DE OPCIONES LATERAL -->
+      <!-- ***** INICIO TIRA DE OPCIONES LATERAL ***** -->
       <div id="header_side" class="infoHeading">
         <div class="buttonContainer">
-          <!-- INICIO OPCIONES DE AERONAVES -->
+          <!-- ***** INICIO OPCIONES DE AERONAVES ***** -->
           <div id="aircraft_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
               data-i18n-title="aircraft_tools_tooltip"
@@ -1142,9 +1132,9 @@
               </li>
             </ul>
           </div>
-          <!-- FIN OPCIONES DE AERONAVES -->
+          <!-- ***** FIN OPCIONES DE AERONAVES ***** -->
 
-          <!-- INICIO OPCIONES DE MEDICIÓN -->
+          <!-- ***** INICIO OPCIONES DE MEDICIÓN ***** -->
           <div id="measurement_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
               data-i18n-title="measurement_tools_tooltip" title="Measurement tools - Open measurement options."><i
@@ -1162,9 +1152,9 @@
                   point-ground point</a></li>
             </ul>
           </div>
-          <!-- FIN OPCIONES DE MEDICIÓN -->
+          <!-- ***** FIN OPCIONES DE MEDICIÓN ***** -->
 
-          <!-- INICIO OPCIONES DE TRAZAS -->
+          <!-- ***** INICIO OPCIONES DE TRAZAS ***** -->
           <div id="track_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn  btn-neutral m-1 w-9 truncate bg-base-color text-white"
               data-i18n-title="track_tools_tooltip" title="Track tools - Open track display options."><i
@@ -1179,9 +1169,9 @@
                   labels</a></li>
             </ul>
           </div>
-          <!-- FIN OPCIONES DE TRAZAS -->
+          <!-- ***** FIN OPCIONES DE TRAZAS ***** -->
 
-          <!-- INICIO OPCIONES DE ETIQUETAS -->
+          <!-- ***** INICIO OPCIONES DE ETIQUETAS ***** -->
           <div id="label_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
               data-i18n-title="label_tools_tooltip" title="Label tools - Open label visibility options."><i
@@ -1195,16 +1185,16 @@
                   details</a></li>
             </ul>
           </div>
-          <!-- FIN OPCIONES DE ETIQUETAS -->
+          <!-- ***** FIN OPCIONES DE ETIQUETAS ***** -->
 
-          <!-- INICIO EXPANDIR/OCULTAR SIDEBAR DERECHO -->
+          <!-- ***** INICIO EXPANDIR/OCULTAR SIDEBAR DERECHO ***** -->
           <div id="expand_sidebar_control">
             <button id="expand_sidebar_button" class="sidebar_button" title="Expand Sidebar"
               data-i18n-title="expand_sidebar" style="display: none;"></button>
           </div>
-          <!-- FIN EXPANDIR/OCULTAR SIDEBAR DERECHO -->
+          <!-- ***** FIN EXPANDIR/OCULTAR SIDEBAR DERECHO ***** -->
 
-          <!-- INICIO OPCIÓN DE ELEVACIÓN -->
+          <!-- ***** INICIO OPCIÓN DE ELEVACIÓN ***** -->
           <div id="elevation_dropdown" class="dropdown dropdown-left">
             <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
               data-i18n-title="elevation_tools_tooltip" title="Elevation tools - Open elevation options."><i
@@ -1221,33 +1211,33 @@
             </ul>
           </div>
 
-          <!-- INICIO OPCIONES DE CAPAS -->
+          <!-- ***** INICIO OPCIONES DE CAPAS ***** -->
           <div id="layer-select" class="button-layer">
-            <!-- FIN OPCIONES DE CAPAS -->
+            <!-- ***** FIN OPCIONES DE CAPAS ***** -->
           </div>
 
-          <!-- INICIO OPCIONES Y CONFIGURACIONES -->
+          <!-- ***** INICIO OPCIONES Y CONFIGURACIONES ***** -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white"
             data-i18n-title="settings_tooltip" title="Open application preferences and display options."
             id="settingsCog"><i class="fa-solid fa-gear fa-xl"></i>
           </div>
-          <!-- FIN OPCIONES Y CONFIGURACIONES -->
+          <!-- ***** FIN OPCIONES Y CONFIGURACIONES ***** -->
 
-          <!-- INICIO OPCIÓN PARA RECENTRAR EL MAPA -->
+          <!-- ***** INICIO OPCIÓN PARA RECENTRAR EL MAPA ***** -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="H"
             data-i18n-title="recenter_tooltip" title="Recenter the map and restore the default view."
             onclick="resetMap();"><i class="fa-solid fa-location-dot fa-xl"></i>
           </div>
-          <!-- FIN OPCIÓN PARA RECENTRAR EL MAPA -->
+          <!-- ***** FIN OPCIÓN PARA RECENTRAR EL MAPA ***** -->
 
-          <!-- INICIO OPCIÓN DE REPLAY -->
+          <!-- ***** INICIO OPCIÓN DE REPLAY ***** -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="RP"
             data-i18n-title="replay_tooltip" title="Open playback controls for historical flights."
             onclick="showReplayBar();"><img src="images/replay.png" class="header-icon">
           </div>
-          <!-- FIN OPCIÓN DE REPLAY -->
+          <!-- ***** FIN OPCIÓN DE REPLAY ***** -->
 
-          <!-- INICIO OPCIONES DE ZOOM -->
+          <!-- ***** INICIO OPCIONES DE ZOOM ***** -->
           <div tabindex="0" role="button" class="btn btn-neutral m-1 w-9 truncate bg-base-color text-white" id="ZI"
             data-i18n-title="zoom_in_tooltip" title="Zoom In - Increase map zoom level." onclick="zoomInMap();"> <i
               class="fa-solid fa-plus fa-xl"></i>
@@ -1256,24 +1246,22 @@
             data-i18n-title="zoom_out_tooltip" title="Zoom Out - Decrease map zoom level." onclick="zoomOutMap();"> <i
               class="fa-solid fa-minus fa-xl"></i>
           </div>
-          <!-- FIN OPCIONES DE ZOOM -->
+          <!-- ***** FIN OPCIONES DE ZOOM ***** -->
         </div>
       </div>
-      <!-- FIN TIRA DE OPCIONES LATERAL -->
+      <!-- ***** FIN TIRA DE OPCIONES LATERAL ***** -->
 
-      <!-- INICIO TABLA DE ALTITUDES -->
+      <!-- ***** INICIO TABLA DE ALTITUDES ***** -->
       <div id="altitude_chart" class="ol-unselectable ol-control altitudeFeet" style="display: none;">
-        <!-- <img id="altitude_chart_image" src="" alt="Altitude Legend" /> -->
         <img id="altitude_chart_image" src="images/alt_legend_ft.svg" alt="Altitude Legend" />
       </div>
-      <!-- FIN TABLA DE ALTITUDES -->
+      <!-- ***** FIN TABLA DE ALTITUDES ***** -->
 
-      <!-- INICIO REPLAY -->
+      <!-- ***** INICIO REPLAY ***** -->
       <div id="replayBar">
         <button id="replayPlay" data-i18n="play">Play</button>
 
         <p id="replayDateHintLocal" data-i18n="playback_label">Playback</p>
-        <!-- <p id="replayTimeHint" data-i18n="utc_label">UTC:</p> -->
         <p id="replayTimeHint" data-i18n="date_label">Date</p>
         <p id="replayHoursHint" data-i18n="hours_label">Hours</p>
         <p id="replayMinutesHint" data-i18n="minutes_label">Minutes</p>
@@ -1288,21 +1276,22 @@
 
         <p id="replayLoading" data-i18n="loading"></p>
       </div>
-      <!-- FIN REPLAY -->
+      <!-- ***** FIN REPLAY ***** -->
 
-
+      <!-- ***** INICIO OVERLAY DE PANORAMA DE ELEVACIÓN ***** -->
       <div id="panorama-overlay" class="panorama-overlay hidden">
         <button id="panorama-close" class="panorama-close" type="button">▼</button>
         <div id="panorama-update-countdown" class="panorama-update-countdown"></div>
         <div id="panorama-container"></div>
       </div>
+      <!-- ***** FIN OVERLAY DE PANORAMA DE ELEVACIÓN ***** -->
 
     </div>
-    <!-- FIN CONTENEDOR DEL MAPA -->
+    <!-- ***** FIN CONTENEDOR DEL MAPA ***** -->
 
-    <!-- INICIO MENÚ LATERAL DERECHO -->
+    <!-- ***** INICIO MENÚ LATERAL DERECHO ***** -->
     <div id="sidebar_container" style="display: none; height: 100%; position: relative;">
-      <!-- INICIO ENCABEZADO -->
+      <!-- ***** INICIO ENCABEZADO ***** -->
       <div class="header_sidebar">
         <div id="sidebar_close_button_container" style="position: absolute; right: 8px; top: -3px; z-index: 1200;">
           <button id="toggle_sidebar_button" class="show_sidebar sidebar_button" data-i18n-title="toggle_sidebar"
@@ -1318,11 +1307,11 @@
       </div>
       <div id="splitter" class="ui-resizable-handle ui-resizable-w" style="display: none;"
         data-i18n-title="control_sidebar_width" title="Control the width of the sidebar."></div>
-      <!-- FIN ENCABEZADO -->
+      <!-- ***** FIN ENCABEZADO ***** -->
 
       <div id="sidebar_canvas">
         <div id="sidebar-table">
-          <!-- INICIO TÍTULO Y DATOS GENERALES -->
+          <!-- ***** INICIO TÍTULO Y DATOS GENERALES ***** -->
           <table style="width: 100%">
             <tr>
               <td>
@@ -1330,8 +1319,8 @@
                   data-i18n-title="show_map" title="Show Map"></button>
               </td>
             </tr>
-            <!-- *** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN *** -->
-            <!-- INICIO INFORMACIÓN DEL AGREGADOR -->
+            <!-- ***** COMPROBAR USO DE ESTE BLOQUE EN PRODUCCIÓN ***** -->
+            <!-- ***** INICIO INFORMACIÓN DEL AGREGADOR ***** -->
             <tr id='aggregator_header' class="infoblock_row hidden">
               <td style="text-align: center">
                 <div>
@@ -1362,7 +1351,7 @@
                 </div>
               </td>
             </tr>
-            <!-- FIN INFORMACIÓN DEL AGREGADOR -->
+            <!-- ***** FIN INFORMACIÓN DEL AGREGADOR ***** -->
             <tr class="infoblock_heading">
               <td style="text-align: center" class="infoBlockTitleText">
                 <p>ADS-B VZLA</p>
@@ -1416,9 +1405,9 @@
               </td>
             </tr>
           </table>
-          <!-- FIN TÍTULO Y DATOS GENERALES -->
+          <!-- ***** FIN TÍTULO Y DATOS GENERALES ***** -->
 
-          <!-- INICIO SELECTOR DE FILTROS Y COLUMNAS -->
+          <!-- ***** INICIO SELECTOR DE FILTROS Y COLUMNAS ***** -->
           <div id="tabs" style="min-height: 10px; overflow: auto">
             <ul>
               <li data-i18n-title="filter_flights_tooltip" title="Filter flights by specific criteria."><a
@@ -1444,7 +1433,7 @@
 
             </ul>
 
-            <!-- INICIO SELECTOR DE FILTROS -->
+            <!-- ***** INICIO SELECTOR DE FILTROS ***** -->
             <div id="tab-filters">
               <table cellpadding="0" cellspacing="0" id="filterTable">
                 <tbody>
@@ -1517,15 +1506,15 @@
                 </tbody>
               </table>
             </div>
-            <!-- FIN SELECTOR DE FILTROS -->
+            <!-- ***** FIN SELECTOR DE FILTROS ***** -->
 
-            <!-- INICIO SELECTOR DE COLUMNAS -->
+            <!-- ***** INICIO SELECTOR DE COLUMNAS ***** -->
             <div id="tab-columns">
               <ul id="sortableColumns"></ul>
             </div>
-            <!-- FIN SELECTOR DE COLUMNAS -->
+            <!-- ***** FIN SELECTOR DE COLUMNAS ***** -->
           </div>
-          <!-- FIN SELECTOR DE FILTROS Y COLUMNAS -->
+          <!-- ***** FIN SELECTOR DE FILTROS Y COLUMNAS ***** -->
 
           <div id="flight-plans-panel" class="planes-table-wrapper hidden" aria-live="polite">
             <div id="flight-plans-title" class="planes-table-title">Planes de vuelo</div>
@@ -1533,20 +1522,20 @@
             <table id="flightPlansTable" style="width: 100%"></table>
           </div>
 
-          <!-- INICIO TABLA DE AVIONES -->
+          <!-- ***** INICIO TABLA DE AVIONES ***** -->
           <div class="planes-table-wrapper">
             <div class="planes-table-title" data-i18n="aircraft_list">Aircraft List</div>
             <table id="planesTable" style="width: 100%">
             </table>
           </div>
-          <!-- FIN TABLA DE AVIONES -->
+          <!-- ***** FIN TABLA DE AVIONES ***** -->
 
-          <!-- INICIO LEYENDA DE COLORES SEGÚN FUENTE -->
+          <!-- ***** INICIO LEYENDA DE COLORES SEGÚN FUENTE ***** -->
           <div id="legend" class="legend">
           </div>
-          <!-- FIN LEYENDA DE COLORES SEGÚN FUENTE -->
+          <!-- ***** FIN LEYENDA DE COLORES SEGÚN FUENTE ***** -->
 
-          <!-- INICIO SECCIÓN AVIONES DE INTERÉS -->
+          <!-- ***** INICIO SECCIÓN AVIONES DE INTERÉS ***** -->
           <div id="starred-aircraft-section" class="starred-aircraft-section hidden-by-setting">
             <div class="starred-header">
               <h4 data-i18n="notable_aircraft">Notable aircraft</h4>
@@ -1560,17 +1549,17 @@
               <div class="starred-empty" data-i18n="no_marked_planes">No marked planes</div>
             </div>
           </div>
-          <!-- FIN SECCIÓN AVIONES DE INTERÉS -->
+          <!-- ***** FIN SECCIÓN AVIONES DE INTERÉS ***** -->
         </div>
       </div>
       <br>
       <div data-i18n-html="copyright_text" style="text-align: center; margin: auto 0 0 0;">ADS-B VENEZUELA / EANSA
         — Powered by <a href="https://github.com/wiedehopf/tar1090">tar1090</a>. All rights reserved.</div>
     </div>
-    <!-- FIN MENÚ LATERAL DERECHO -->
+    <!-- ***** FIN MENÚ LATERAL DERECHO ***** -->
   </div>
 
-  <!-- INICIO BLOQUE DE ERRORES -->
+  <!-- ***** INICIO BLOQUE DE ERRORES ***** -->
   <div id="update_error" class="hidden error_box" data-i18n="error_fetching_data">
     Problem fetching data from the server:<br>
     <span id="update_error_detail"></span>
@@ -1587,10 +1576,12 @@
   <div id="inaccurate_warning" class='identSmall hidden inaccurate_warning'></div>
   <div id="js_error" class="hidden"></div>
   <div id="container_splitter"></div>
-  <!-- FIN BLOQUE DE ERRORES -->
+  <!-- ***** FIN BLOQUE DE ERRORES ***** -->
 
-  <!-- ***** GUARDIÁN DE SESIÓN ***** -->
+  <!-- ***** GUARDIÁN DE SESIÓN (EVITAR VOLVER A LOGIN SIN ANTES CERRAR SESIÓN) ***** -->
   <script src="./static/js/auth-tools/auth-guard.js"></script>
+  <!-- ***** MANEJO DE CIERRE DE SESIÓN DESDE BOTÓN ***** -->
+  <script src="./static/js/auth-tools/logout-guard.js"></script>
 
   <script>let databaseFolder = "db-8108b4e";</script>
   <!-- JS_ANCHOR1 -->
@@ -1616,353 +1607,48 @@
   <script src="geomag2020.js"></script>
   <script src="markers_c269fed24b04a113d1e23fbf5121e9c5.js"></script>
 
+  <!-- ***** LIBRERÍA PARA DIBUJAR EL PANORAMA ***** -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
 
+  <!-- ***** UTILIDADES COMPARTIDAS ***** -->
   <script src="./static/js/shared.js"></script>
 
+  <!-- ***** DISTANCIA: AERONAVE-AERONAVE | TIERRA-AERONAVE | TIERRA-TIERRA ***** -->
   <script src="./static/js/distance-tool/aircraft-aircraft.js"></script>
   <script src="./static/js/distance-tool/ground-aircraft.js"></script>
   <script src="./static/js/distance-tool/ground-ground.js"></script>
+
+  <!-- ***** ELEVACIÓN ***** -->
   <script src="./static/js/elevation-tool.js"></script>
 
-  <!-- Select2 (CSS + JS) -->
+  <!-- ***** SELECT2 ***** -->
   <link rel="stylesheet" href="./static/aero-help/vendor/select2.min.css" />
   <script src="./static/aero-help/vendor/select2.min.js"></script>
-
-  <link rel="stylesheet" href="./static/aero-help/aero-help.css" />
 
   <script src="planeObject_40f13c77d2cbc3688d222c0622565c69.js"></script>
   <script src="script_58512d93b15f62c2ada7968c3a621e0a.js"></script>
 
+  <!-- ***** BUSCADOR CON SUGERENCIAS ***** -->
+  <link rel="stylesheet" href="./static/aero-help/aero-help.css" />
   <script src="./static/aero-help/aero-help.js"></script>
 
+  <!-- ***** PROJECCIÓN ***** -->
   <script src="./static/js/projection-tool.js"></script>
+
+  <!-- ***** INPUT EN LOS SLIDER DE REPLAY ***** -->
   <script src="./static/js/replay-slider-inputs.js"></script>
+
+  <!-- ***** AJUSTAR TAMAÑO DEL MENÚ DE CAPAS SEGÚN DROPDOWNS ABIERTOS ***** -->
+  <script src="./static/js/layers-menu-utilities.js"></script>
 
   <!-- TURF.JS -->
   <script src="libs/turf.min.js"></script>
-  <script>
-    (function () {
-      function updateToggleButtons() {
-        var sidebar = document.getElementById('sidebar_container');
-        var closedBtn = document.getElementById('toggle_sidebar_button_closed');
-        var sidebarBtnContainer = document.getElementById('sidebar_close_button_container');
-        if (!sidebar || !closedBtn || !sidebarBtnContainer) return;
-        var isHidden = (window.getComputedStyle(sidebar).display === 'none');
-        closedBtn.style.display = isHidden ? 'block' : 'none';
-        sidebarBtnContainer.style.display = isHidden ? 'none' : 'block';
-      }
+  
 
-      function proxyClick(e) {
-        var target = document.getElementById('toggle_sidebar_button');
-        if (target) target.click();
-      }
-
-      document.addEventListener('DOMContentLoaded', function () {
-        updateToggleButtons();
-        var closed = document.getElementById('toggle_sidebar_button_closed');
-        if (closed) closed.addEventListener('click', proxyClick);
-
-        var sidebar = document.getElementById('sidebar_container');
-        if (sidebar && window.MutationObserver) {
-          var mo = new MutationObserver(function () { updateToggleButtons(); });
-          mo.observe(sidebar, { attributes: true, attributeFilter: ['style'] });
-        }
-      });
-    })();
-
-    // Ajustar el tamaño del menú de mapas al abrir dropdowns
-    (function () {
-      const menuIds = [
-        'aircraft_dropdown',
-        'measurement_dropdown',
-        'track_dropdown',
-        'label_dropdown',
-        'elevation_dropdown'
-      ];
-
-      const layerSelect = document.getElementById('layer-select');
-      if (!layerSelect) return;
-
-      function isOpen(root) {
-        const content = root.querySelector('.dropdown-content');
-        if (!content) return false;
-        const rect = content.getBoundingClientRect();
-        const cs = getComputedStyle(content);
-        return root.matches(':focus-within') &&
-          rect.height > 0 &&
-          cs.display !== 'none' &&
-          cs.visibility !== 'hidden';
-      }
-
-      function updateLayerSelectOffset() {
-        const extraSpacing = 12;
-        const menuIds = [
-          'aircraft_dropdown',
-          'measurement_dropdown',
-          'track_dropdown',
-          'label_dropdown',
-          'elevation_dropdown'
-        ];
-        const navbar = document.getElementById('navbar');
-        const navbarBottom = navbar ? navbar.getBoundingClientRect().bottom : 0;
-
-        let needed = 0;
-
-        for (const id of menuIds) {
-          const root = document.getElementById(id);
-          if (!root) continue;
-          const content = root.querySelector('.dropdown-content');
-          if (!content) continue;
-          const cs = getComputedStyle(content);
-          if (cs.display === 'none' || cs.visibility === 'hidden') continue;
-          const rect = content.getBoundingClientRect();
-          // si el dropdown se extiende por debajo del navbar, calcular cuánto empuja
-          const push = Math.max(0, Math.ceil(rect.bottom - navbarBottom) + extraSpacing);
-          needed = Math.max(needed, push);
-        }
-
-        layerSelect.style.setProperty('--layer-switcher-offset', `${needed}px`);
-
-        if (layerSelect.classList.contains('shown')) {
-          const top = layerSelect.getBoundingClientRect().top;
-          const available = Math.max(0, window.innerHeight - top - 12);
-          layerSelect.style.height = `${available}px`;
-          layerSelect.style.maxHeight = `${available}px`;
-        } else {
-          layerSelect.style.height = '';
-          layerSelect.style.maxHeight = '';
-        }
-      }
-
-      document.addEventListener('focusin', updateLayerSelectOffset);
-      document.addEventListener('focusout', () => setTimeout(updateLayerSelectOffset, 0));
-      document.addEventListener('click', () => setTimeout(updateLayerSelectOffset, 0));
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') setTimeout(updateLayerSelectOffset, 0);
-      });
-      window.addEventListener('resize', updateLayerSelectOffset);
-
-      const observer = new MutationObserver(updateLayerSelectOffset);
-      observer.observe(layerSelect, { attributes: true, attributeFilter: ['class', 'style'] });
-
-      updateLayerSelectOffset();
-    })();
-
-  </script>
-
-  <!-- Generar título para layer-select -->
-  <script>
-    (function () {
-      const TITLE_CLASS = 'layer-panel-title';
-
-      function getLayerToolsTitle() {
-        // Intentar obtener la traducción de forma segura
-        try {
-          if (typeof window.translate !== 'undefined' && window.translate && typeof window.translate.t === 'function') {
-            const translated = window.translate.t('layer_tools_title');
-            if (translated && translated !== 'layer_tools_title') {
-              return translated;
-            }
-          }
-        } catch (e) {
-          // Si hay error, usar fallback
-          console.warn('Error obteniendo traducción para layer_tools_title:', e);
-        }
-
-        try {
-          if (typeof window.t === 'function') {
-            const translated = window.t('layer_tools_title');
-            if (translated && translated !== 'layer_tools_title') {
-              return translated;
-            }
-          }
-        } catch (e) {
-          console.warn('Error obteniendo traducción para layer_tools_title (window.t):', e);
-        }
-
-        return 'Layer tools'; // Fallback en inglés
-      }
-
-      function insertTitleIntoPanel(panel) {
-        if (!panel) return;
-
-        // Buscar o crear el título
-        let titleEl = panel.querySelector(`:scope > .${TITLE_CLASS}`);
-        if (!titleEl) {
-          titleEl = document.createElement('div');
-          titleEl.className = TITLE_CLASS;
-          panel.prepend(titleEl);
-        }
-
-        // Actualizar el texto con la traducción actual
-        const titleText = getLayerToolsTitle();
-        if (titleEl.textContent !== titleText) {
-          titleEl.textContent = titleText;
-        }
-      }
-
-      function scanForPanels() {
-        try {
-          document.querySelectorAll('.layer-switcher').forEach(ls => {
-            const panel = ls.querySelector('.panel');
-            if (panel) insertTitleIntoPanel(panel);
-
-            if (window.MutationObserver && !ls.__layerTitleObserver) {
-              ls.__layerTitleObserver = new MutationObserver(() => {
-                const panel = ls.querySelector('.panel');
-                if (panel) insertTitleIntoPanel(panel);
-              });
-              ls.__layerTitleObserver.observe(ls, {
-                childList: true,
-                subtree: true,
-                attributes: true,
-                attributeFilter: ['class', 'style']
-              });
-            }
-          });
-        } catch (e) {
-          console.warn('Error en scanForPanels:', e);
-        }
-      }
-
-      function updateLayerToolsTitle() {
-        try {
-          document.querySelectorAll('.layer-switcher .panel .layer-panel-title').forEach(el => {
-            const titleText = getLayerToolsTitle();
-            if (el.textContent !== titleText) {
-              el.textContent = titleText;
-            }
-          });
-        } catch (e) {
-          console.warn('Error actualizando títulos de layer tools:', e);
-        }
-      }
-
-      // Exponer función
-      window.updateLayerToolsTitle = updateLayerToolsTitle;
-
-      // Escuchar evento de cambio de idioma
-      document.addEventListener('languageChanged', function () {
-        setTimeout(function () {
-          if (typeof window.updateLayerToolsTitle === 'function') {
-            window.updateLayerToolsTitle();
-          }
-        }, 100);
-      });
-
-      // Inicializar cuando el DOM esté listo
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-          // Esperar un poco a que el sistema de traducción esté listo
-          setTimeout(scanForPanels, 100);
-        });
-      } else {
-        setTimeout(scanForPanels, 100);
-      }
-
-      // También ejecutar después de que todo el contenido esté cargado
-      if (document.readyState === 'complete') {
-        setTimeout(scanForPanels, 200);
-      } else {
-        window.addEventListener('load', function () {
-          setTimeout(scanForPanels, 200);
-        });
-      }
-    })();
-  </script>
-
-  <!-- ***** CERRAR SESIÓN ***** -->
-
-  <!-- <script>
-    (function () {
-      function bindLogout() {
-        const link = document.getElementById('logout-sidebar-link');
-        if (!link || link.dataset.bound === '1') return;
-        link.dataset.bound = '1';
-        link.addEventListener('click', function (e) {
-          e.preventDefault();
-          window.location.href = 'login.html';
-        });
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', bindLogout);
-      } else {
-        bindLogout();
-      }
-
-      // Re-vincular cuando cambie el idioma (por si el patch reemplaza nodos)
-      document.addEventListener('languageChanged', function () {
-        setTimeout(bindLogout, 100);
-      });
-    })();
-  </script> -->
-  <!-- ***** CERRAR SESIÓN ***** -->
-  <script>
-    (function () {
-      function bindLogout() {
-        const link = document.getElementById('logout-sidebar-link');
-        if (!link || link.dataset.bound === '1') return;
-        link.dataset.bound = '1';
-        link.addEventListener('click', function (e) {
-          e.preventDefault();
-
-          // 1. Limpiar estado persistente que puede re-disparar initialize()
-          try {
-            // Limpiar solo las claves de tar1090, no todo localStorage
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-              const k = localStorage.key(i);
-              if (k && (k.startsWith('layer_') ||
-                k === 'active_tab' ||
-                k === 'sortCol' ||
-                k === 'sortAscending' ||
-                k === 'columnOrder' ||
-                k === 'sidebar_width' ||
-                k === 'sidebar_visible' ||
-                k === 'MapType_tar1090' ||
-                k === 'zoomLvl' ||
-                k === 'CenterLat' ||
-                k === 'CenterLon')) {
-                keysToRemove.push(k);
-              }
-            }
-            keysToRemove.forEach(k => localStorage.removeItem(k));
-
-            // Limpiar sessionStorage relacionado
-            sessionStorage.clear();
-          } catch (err) {
-            console.warn('Logout: error limpiando storage', err);
-          }
-
-          // 2. Forzar recarga COMPLETA desde el servidor (no bfcache)
-          //    reemplazar la URL evita que el navegador restaure desde bfcache
-          const target = 'login.html';
-          if (window.location.replace) {
-            window.location.replace(target);
-          } else {
-            window.location.href = target;
-          }
-        });
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', bindLogout);
-      } else {
-        bindLogout();
-      }
-
-      document.addEventListener('languageChanged', function () {
-        setTimeout(bindLogout, 100);
-      });
-    })();
-  </script>
-
+  <!-- ***** PLANES DE VUELO ***** -->
   <script src="./static/js/flight-plans.js"></script>
 
   <link rel="preload" as="image" crossOrigin="anonymous" href="images/sprites_193a0304570bcce84c40d8bd51c6397b.png">
-
 
 </body>
 
