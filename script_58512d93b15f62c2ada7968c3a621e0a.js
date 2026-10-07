@@ -12070,6 +12070,7 @@ function showReplayBar() {
                 replayOnSliderMove();
             },
             change: function (event, ui) {
+                replay.hours = ui.value;
                 updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "h");
                 replayJump();
             }
@@ -12085,6 +12086,7 @@ function showReplayBar() {
                 replayOnSliderMove();
             },
             change: function (event, ui) {
+                replay.minutes = ui.value;
                 updateSliderTip(jQuery(this).find('.ui-slider-handle'), ui.value, "m");
                 replayJump();
             }
