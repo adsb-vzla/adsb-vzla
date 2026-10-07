@@ -2353,12 +2353,8 @@ function earlyInitPage() {
         } catch (e) { console.error(e); }
     };
 
-    // jQuery('#tStop').on('click', function () { traceOpts.replaySpeed = 0; gotoTime(traceOpts.showTime); });
-    // jQuery('#t1x').on('click', function () { replaySpeedChange(1); });
-    // jQuery('#t5x').on('click', function () { replaySpeedChange(5); });
-    // jQuery('#t10x').on('click', function () { replaySpeedChange(10); });
-    // jQuery('#t20x').on('click', function () { replaySpeedChange(20); });
-    // jQuery('#t40x').on('click', function () { replaySpeedChange(40); });
+
+    // ***** BOTONES DE VELOCIDAD Y DETENER DEL HISTORIAL *****
     jQuery('#tStop').on('click', function () {
         traceOpts.animate = false;
         traceOpts.replaySpeed = 0;
@@ -3924,17 +3920,12 @@ function ol_map_init() {
 
         const dblclick = (evt.type === 'dblclick') && !showTrace;
 
-        // if (showTrace && trailTS) {
-        //     planeHex = null;
-        //     gotoTime(trailTS);
-        // }
+        // ***** GARANTIZAR MOVIMIENTO DEL AVIÓN EN REPRODUCCIÓN *****
         if (showTrace && trailTS) {
             planeHex = null;
-            // Iniciar reproducción al hacer clic sobre la traza
-            traceOpts.animate = false;      // asegurar que no esté animando un salto previo
+            traceOpts.animate = false;
             traceOpts.replaySpeed = traceOpts.replaySpeed || 1;
             traceOpts.showTime = trailTS;
-            // Arrancar el modo "play" continuo
             playTraceFrom(trailTS);
         }
 
@@ -10813,7 +10804,6 @@ function drawOutlineJson() {
 // ***** INICIAR REPRODUCCIÓN CONTINUA DESDE UN TIMESTAMP *****
 function playTraceFrom(timestamp) {
     if (!SelectedPlane) return;
-    // Forzar que el modo animate esté activo y con velocidad válida
     if (!traceOpts.replaySpeed || traceOpts.replaySpeed <= 0) {
         traceOpts.replaySpeed = 1;
     }
@@ -10824,9 +10814,7 @@ function playTraceFrom(timestamp) {
     traceOpts.animateStepTime = 0;
     traceOpts.showTime = timestamp;
     traceOpts.showTimeEnd = null;
-    // Forzar un legShift para reposicionar y luego iniciar el avance automático
     legShift(0);
-    // Arrancar el "tick" de reproducción
     scheduleNextReplayTick();
 }
 
@@ -10834,18 +10822,15 @@ function playTraceFrom(timestamp) {
 function scheduleNextReplayTick() {
     if (!traceOpts.animate || showTrace === false || !SelectedPlane) return;
     clearTimeout(traceOpts.showTimeout);
-    // Avanzar la posición animada un pequeño delta de tiempo real
-    const stepMs = 200; // cada 200ms avanza "replaySpeed" segundos de traza
+    const stepMs = 200;
     traceOpts.showTimeout = setTimeout(function () {
         if (!traceOpts.animate || !SelectedPlane) return;
-        // Avanzar el tiempo mostrado
         let next = (traceOpts.showTime || 0) + (traceOpts.replaySpeed || 1) * (stepMs / 1000);
-        // No sobrepasar el fin del leg
         if (traceOpts.legEnd != null) {
             const endTs = SelectedPlane.fullTrace.trace[traceOpts.legEnd]?.[0];
             if (endTs != null && next >= endTs) {
                 next = endTs;
-                traceOpts.animate = false; // detener al llegar al final
+                traceOpts.animate = false;
             }
         }
         traceOpts.showTime = next;
@@ -13175,18 +13160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setState(false);
 
-        // btn.addEventListener('click', () => {
-        //     const expanded = btn.getAttribute('aria-expanded') === 'true';
-        //     setState(!expanded);
-        //     if (targetId === 'history_block' && !expanded && !showTrace) {
-        //         const planeTimestamp = SelectedPlane && (Number.isFinite(SelectedPlane.position_time)
-        //             ? SelectedPlane.position_time
-        //             : SelectedPlane.last_message_time);
-        //         if (Number.isFinite(planeTimestamp))
-        //             setTraceDate({ ts: planeTimestamp * 1000 });
-        //         toggleShowTrace();
-        //     }
-        // });
+        // ***** ENTRAR EN MODO HISTORIAL AL DESPLEGAR ACORDEÓN Y SALIR AL CERRAR *****
         btn.addEventListener('click', () => {
             const expanded = btn.getAttribute('aria-expanded') === 'true';
             const willExpand = !expanded;
@@ -13194,7 +13168,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (targetId === 'history_block') {
                 if (willExpand && !showTrace) {
-                    // Abrir: entrar en modo history
                     const planeTimestamp = SelectedPlane && (Number.isFinite(SelectedPlane.position_time)
                         ? SelectedPlane.position_time
                         : SelectedPlane.last_message_time);
@@ -13202,7 +13175,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         setTraceDate({ ts: planeTimestamp * 1000 });
                     toggleShowTrace();
                 } else if (!willExpand && showTrace) {
-                    // Cerrar: salir del modo history y volver a reproducción normal
                     traceOpts.animate = false;
                     if (traceOpts.showTimeout) {
                         clearTimeout(traceOpts.showTimeout);
