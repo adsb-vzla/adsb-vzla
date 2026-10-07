@@ -7,7 +7,7 @@ const ELEV_CONFIG = {
 // ***** CONSERVAR CACHÉ DE PANORAMAS PARA SER REUTILIZADOS *****
 const elevCache = new Map();
 // ***** ESTABLECER UN LÍMITE DE CACHÉ PARA EVITAR QUE CREZCA DEMASIADO *****
-const ELEV_CACHE_MAX_SIZE = 50;
+const ELEV_CACHE_MAX_SIZE = 10;
 
 // ***** DETECTAR SI UN ELEMENTO ESTÁ VISIBLE *****
 function isVisibleElement(element) {
@@ -131,7 +131,7 @@ function togglePanoramaMinimize() {
     // ***** CAMBIAR ÍCONO SI EL OVERLAY VA A MOSTRARSE/OCULTARSE *****
     if (btn) btn.textContent = el.classList.contains('minimized') ? '▲' : '▼';
     // ***** ACTUALIZAR TAMAÑO DEL OVERLAY *****
-    setTimeout(updatePanoramaOverlayBounds, 50);
+    setTimeout(updatePanoramaOverlayBounds, ELEV_CACHE_MAX_SIZE);
 }
 
 // ***** OBTENER ELEMENTO DEL BOTÓN PARA MOSTRAR/OCULTAR Y EJECUTAR FUNCIÓN *****
@@ -456,7 +456,7 @@ function toggleElevationMode() {
 }
 
 // ***** ESTABLECER ANCLA A 50NM DESDE LA POSICIÓN DEL AVIÓN *****
-function computeAnchorFromAircraft(plane, distanceNm = 50) {
+function computeAnchorFromAircraft(plane, distanceNm = ELEV_CACHE_MAX_SIZE) {
     // ***** SALIR SI NO EXISTE AVIÓN O SI EL AVIÓN NO TIENE POSICIÓN *****
     if (!plane || !plane.position) return null;
 
@@ -534,7 +534,6 @@ function computeAnchorFromAircraft(plane, distanceNm = 50) {
 // ***** CICLAR MODOS DE ELEVACIÓN TIERRA-AERONAVE *****
 function onElevationGACycleClick() {
     if (!elevationGroundAircraftMode) {
-        // Primer clic: activar en modo 'aircraft' (solo aeronave, comportamiento original)
         elevationGroundAircraftModeType = 'aircraft';
         startElevationGroundAircraft();
         return;
@@ -543,9 +542,7 @@ function onElevationGACycleClick() {
     const idx = ELEVATION_GA_MODES.indexOf(elevationGroundAircraftModeType);
 
     if (idx >= 0 && idx < ELEVATION_GA_MODES.length - 1) {
-        // Siguiente modo: 'ground_aircraft'
         elevationGroundAircraftModeType = ELEVATION_GA_MODES[idx + 1];
-        // Limpiar sin desactivar
         stopElevationGroundAircraftUpdates();
         stopElevationCountdown();
         elevationGroundAnchor = null;
@@ -557,7 +554,6 @@ function onElevationGACycleClick() {
             elevationNumberSourceGA.clear();
         }
         hidePanoramaOverlay();
-        // Mostrar guía del nuevo modo
         elevationPendingGround = null;
         elevationPendingAircraftHex = null;
         elevationGAAircraftWasFirst = false;
@@ -566,15 +562,15 @@ function onElevationGACycleClick() {
             jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
         }
     } else {
-        // Último modo: desactivar
         startElevationGroundAircraft();
     }
 }
 
+// ***** MENSAJES PARA MODOS TIERRA-AERONAVE *****
 function elevationGAPreMessage() {
     switch (elevationGroundAircraftModeType) {
         case 'aircraft':
-            return getTranslatedText('elevation_ga_mode_aircraft', 'Mode: Aircraft - 50 NM');
+            return getTranslatedText('elevation_ga_mode_aircraft', 'Mode: Aircraft - 10 NM');
         case 'ground_aircraft':
             return getTranslatedText('elevation_ga_mode_ground_aircraft', 'Mode: Point - Aircraft');
         default:
@@ -582,12 +578,13 @@ function elevationGAPreMessage() {
     }
 }
 
+// ***** GUÍA PASO 1 MODO TIERRA-AERONAVE *****
 function elevationGAStep1Message() {
     switch (elevationGroundAircraftModeType) {
         case 'aircraft':
             return getTranslatedText(
                 'elevation_ga_aircraft_step1',
-                'Click on an aircraft to draw the elevation panorama (50 NM ahead).'
+                'Click on an aircraft to draw the elevation panorama (10 NM ahead).'
             );
         case 'ground_aircraft':
             return getTranslatedText(
@@ -599,18 +596,17 @@ function elevationGAStep1Message() {
     }
 }
 
+// ***** GUÍA PASO 2 MODO TIERRA-AERONAVE *****
 function elevationGAStep2Message() {
     switch (elevationGroundAircraftModeType) {
         case 'ground_aircraft':
             if (elevationPendingGround) {
-                // Primer punto fue tierra → ahora falta aeronave
                 return getTranslatedText(
                     'elevation_ga_ground_first_step2',
                     'Now click on an aircraft to complete the pair.'
                 );
             }
             if (elevationPendingAircraftHex) {
-                // Primer punto fue aeronave → ahora falta tierra
                 return getTranslatedText(
                     'elevation_ga_aircraft_first_step2',
                     'Now click on the map to complete the pair with the aircraft.'
@@ -625,10 +621,10 @@ function elevationGAStep2Message() {
     }
 }
 
+// ***** MOSTRAR GUÍAS DE MODO TIERRA-AERONAVE *****
 function showElevationGAGuide(step) {
     const msg = (step === 2) ? elevationGAStep2Message() : elevationGAStep1Message();
     if (step === 2) {
-        // En el paso 2 solo se muestra la instrucción, sin el nombre del modo
         showDistanceGuide(() => `<center>${msg}</center>`);
     } else {
         const pre = elevationGAPreMessage();
@@ -730,6 +726,7 @@ function stopElevationGroundAircraftUpdates() {
     }
 }
 
+// ***** SALIR DEL MODO TIERRA-AERONAVE *****
 function exitElevationGroundAircraftMode() {
     const aircraftHex = elevationAircraftHex || elevationPendingAircraftHex;
 
@@ -780,14 +777,11 @@ function updateElevationGroundAircraftProfile() {
 
     // ***** RECALCULAR ANCLA SEGÚN EL MODO *****
     if (elevationGroundAircraftModeType === 'ground_aircraft') {
-        // En modo ground_aircraft el ancla es el punto en tierra fijo
-        // No recalcular; se mantiene el punto seleccionado por el usuario
         if (!elevationGroundAnchor) {
             return;
         }
     } else {
-        // Modo 'aircraft': recalcular ancla 50NM delante cada 5 segundos
-        elevationGroundAnchor = computeAnchorFromAircraft(plane, 50);
+        elevationGroundAnchor = computeAnchorFromAircraft(plane, ELEV_CACHE_MAX_SIZE);
     }
     // ***** SALIR SI NO HAY ANCLA *****
     if (!elevationGroundAnchor) {
@@ -969,7 +963,7 @@ function initPanoramaObserver() {
     // ***** SI SE DETECTAN CAMBIOS, EJECUTAR FUNCIÓN DE ACTUALIZAR TAMAÑO DEL PANORAMA *****
     if (infoblock) {
         const infoObserver = new MutationObserver(() => {
-            setTimeout(updatePanoramaOverlayBounds, 50);
+            setTimeout(updatePanoramaOverlayBounds, ELEV_CACHE_MAX_SIZE);
         });
         // ***** OBSERVAR CAMBIOS DE ESTILO Y CLASES *****
         infoObserver.observe(infoblock, {
@@ -996,7 +990,6 @@ function handleElevationClick(evt) {
 
     // ***** SI NO HAY ANCLA (PUNTO A) DEFINIDA *****
     if (!elevationAnchor) {
-        // Inicia una medición nueva: eliminar restos de la medición anterior.
         elevationPointSource && elevationPointSource.clear();
         elevationLineSource && elevationLineSource.clear();
 
@@ -1110,7 +1103,7 @@ function handleElevationGroundAircraftClick(evt, planeHex) {
 
     // ***** INDICAR QUE SE SELECCIONE EL AERONAVE REFERENTE A LA CUAL SE QUIERE DIBUJAR LA ELEVACIÓN *****
     if (!planeHex) {
-        showDistanceGuide(() => getTranslatedText('elevation_select_aircraft_only', 'Click on an aircraft to draw the elevation panorama (50 NM ahead).'));
+        showDistanceGuide(() => getTranslatedText('elevation_select_aircraft_only', 'Click on an aircraft to draw the elevation panorama (10 NM ahead).'));
         return;
     }
 
@@ -1134,8 +1127,8 @@ function handleElevationGroundAircraftClick(evt, planeHex) {
     if (typeof InstrumentedAircraft !== 'undefined') {
         InstrumentedAircraft.register(planeHex);
     }
-    // ***** LLAMAR A LA FUNCIÓN QUE CALCULA EL ANCLA A 50NM *****
-    elevationGroundAnchor = computeAnchorFromAircraft(plane, 50);
+    // ***** LLAMAR A LA FUNCIÓN QUE CALCULA EL ANCLA A 10NM *****
+    elevationGroundAnchor = computeAnchorFromAircraft(plane, ELEV_CACHE_MAX_SIZE);
 
     // ***** SI NO SE PUEDE DETERMINAR EL ANCLA POR PROBLEMAS EN LOS DATOS DEL AVIÓN, MOSTRAR MENSAJE *****
     if (!elevationGroundAnchor) {
@@ -1220,9 +1213,7 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
         return;
     }
 
-    // ================================================================
-    // CASO A: CLIC SOBRE UN AVIÓN
-    // ================================================================
+    // ***** MANEJAR LOS CLIC SOBRE EL AVIÓN *****
     if (planeHex) {
         const plane = g.planes[planeHex];
 
@@ -1251,9 +1242,8 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
             return;
         }
     }
-    // ================================================================
-    // CASO B: CLIC SOBRE EL MAPA (TIERRA)
-    // ================================================================
+    
+    // ***** MANEJAR LOS CLIC SOBRE EL MAPA *****
     else {
         const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
         const lonlat = ol.proj.toLonLat(evtCoords);
@@ -1267,7 +1257,6 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
                 return;
             }
             elevationPendingGround = clickedGround;
-            // elevationGAAircraftWasFirst ya es true desde el primer clic
             finalizeElevationGAPair(plane);
             return;
         }
@@ -1275,7 +1264,7 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
         // ***** SI NO HAY NADA PENDIENTE → ESTA TIERRA ES EL PRIMER PUNTO *****
         if (!hasPendingGround) {
             elevationPendingGround = clickedGround;
-            elevationGAAircraftWasFirst = false; // el primer clic fue tierra
+            elevationGAAircraftWasFirst = false;
             drawElevationGroundPoint(elevationPendingGround);
             showElevationGAGuide(2);
             return;
@@ -1343,8 +1332,6 @@ function finalizeElevationGAPair(plane) {
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
         elevationNumberSourceGA.clear();
 
-        // Si el avión fue primero → avión=1, tierra=2
-        // Si la tierra fue primero → tierra=1, avión=2
         const groundNum = aircraftWasFirst ? 'B' : 'A';
         const planeNum = aircraftWasFirst ? 'A' : 'B';
 

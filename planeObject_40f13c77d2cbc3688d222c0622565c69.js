@@ -246,6 +246,24 @@ PlaneObject.prototype.logSel = function(loggable) {
 };
 
 PlaneObject.prototype.isFiltered = function() {
+
+    // ***** FILTRO POR RECEPTOR *****
+    if (typeof receiverFilter !== 'undefined' && receiverFilter !== null) {
+        if (!this.receivers || this.receivers.size === 0) {
+            return true;
+        }
+        let anyMatch = false;
+        for (const r of this.receivers) {
+            if (receiverFilter.has(r)) {
+                anyMatch = true;
+                break;
+            }
+        }
+        if (!anyMatch) {
+            return true;
+        }
+    }
+
     if (this.selected)
         return false;
 

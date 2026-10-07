@@ -2,6 +2,7 @@
 (function () {
     'use strict';
 
+    // ***** ESTABLECER CADA UNO DE LOS SLIDES DEL REPLAY *****
     const SLIDER_CONFIG = {
         '#hourSelect': {
             min: 0,
@@ -26,6 +27,7 @@
         }
     };
 
+    // ***** OBTENER VALOR Y APLICAR AL INPUT *****
     function sliderValueFromInput(sliderEl, rawValue) {
         const cfg = SLIDER_CONFIG[sliderEl];
         if (!cfg) return rawValue;
@@ -37,7 +39,7 @@
         return rawValue;
     }
 
-
+    // ***** FORMATEAR VALOR DEL INPUT *****
     function formatInputValue(sliderEl, value) {
         const cfg = SLIDER_CONFIG[sliderEl];
         if (!cfg) return String(value);
@@ -50,7 +52,7 @@
         return String(Math.round(value)).padStart(cfg.padLength, '0');
     }
 
-
+    // ***** FORMATEAR VALOR DEL TIP DEL SLIDE *****
     function formatTipValue(sliderEl, value) {
         const cfg = SLIDER_CONFIG[sliderEl];
         if (!cfg) return String(value);
@@ -63,7 +65,7 @@
         return String(Math.round(value)).padStart(cfg.padLength, '0') + cfg.suffix;
     }
 
-
+    // ***** COMENZAR EDICIÓN *****
     function startEditing(handle, sliderEl) {
         if (!handle || handle.querySelector('.slider-edit-input')) return;
 
@@ -127,6 +129,7 @@
 
         let finished = false;
 
+        // ***** LIMPIAR VALOR INGRESADO *****
         function cleanup(apply) {
             if (finished) return;
             finished = true;
@@ -167,6 +170,7 @@
             }
         }
 
+        // ***** ESCUCHAR USO DE ENTER PARA PROCESAR INPUT Y ESCAPE PARA SALIR *****
         input.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -194,6 +198,7 @@
         });
     }
 
+    // ***** INICIALIZAR EDICIÓN AL HACER DOBLE CLIC *****
     function onDblClick(e) {
         const handle = e.target.closest('.ui-slider-handle');
         if (!handle) return;
@@ -219,6 +224,8 @@
     }
 
     let initialized = false;
+    
+    // ***** INICIALIZAR FUNCIÓN *****
     function init() {
         if (initialized) return;
         initialized = true;
@@ -232,6 +239,7 @@
         }, true);
     }
 
+    // ***** SINCRONIZAR REPLAY CON EL CONTENIDO DEL INPUT *****
     window.ReplaySliderInputs = {
         init: init,
 

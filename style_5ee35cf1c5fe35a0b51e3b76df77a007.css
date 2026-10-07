@@ -18,18 +18,15 @@
 
 }
 
-/* Color base del sistema*/
 .bg-base-color {
     background-color: var(--BASE-COLOR);
 }
 
-/* Estado activo: fondo blanco, ícono del color base */
 .btn-active {
     background-color: #ffffff !important;
     border-radius: 5px;
 }
 
-/* Font Awesome */
 .btn-active i,
 .btn-active .fa-solid,
 .btn-active .fa-regular,
@@ -37,12 +34,10 @@
     color: var(--BASE-COLOR) !important;
 }
 
-/* Imágenes PNG (como el de replay) */
 .btn-active img {
     filter: invert(1) sepia(1) saturate(3) hue-rotate(190deg) brightness(0.8);
 }
 
-/* Botón presionado - estilo invertido global */
 #header_side .buttonContainer .btn:active {
     background-color: #ffffff !important;
     border-radius: 5px;
@@ -83,11 +78,8 @@ body {
 
     background: linear-gradient(to bottom,
             rgba(0, 0, 0, 0.8) 0%,
-            /* Menos opaco arriba */
             rgba(0, 0, 0, 0.4) 40%,
-            /* Se aclara más rápido */
             rgba(0, 0, 0, 0) 100%
-            /* Transparencia total */
         );
     z-index: 10;
     display: flex;
@@ -100,10 +92,8 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
-    /* Espacio entre reloj, buscador y menú */
 }
 
-/* Reloj UTC */
 #utc_clock {
     color: white;
     font-size: calc(16px * var(--SCALE));
@@ -116,33 +106,26 @@ body {
     margin-left: 2px;
 }
 
-/* boton del sidebar */
-
 #button_container_closed {
     width: calc(40px * var(--SCALE));
     padding-bottom: calc(5px * var(--SCALE));
 }
 
-/* Checkbox del menu de capas*/
 input[type="checkbox"],
 input[type="radio"] {
     accent-color: var(--LIGHTER-BASE-COLOR);
 }
 
-/* Cápsula del buscador */
 #search_form {
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
-    /* Bordes más redondeados para suavizar */
     padding: 2px 12px;
     width: 200px;
     transition: width 0.3s ease;
-    /* Efecto opcional de expansión */
 }
 
-/* El input de texto */
 #search_input {
     border: none;
     background: transparent;
@@ -152,7 +135,6 @@ input[type="radio"] {
     color: #333;
 }
 
-/* El botón de la lupa */
 #search_submit_btn {
     background: none;
     border: none;
@@ -231,24 +213,18 @@ input[type="radio"] {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Aseguramos que la X NO exista por defecto */
 #toggle_sidebar_button::before,
 #toggle_sidebar_button::after {
     content: none;
 }
 
-/* 2. ESTADO: MENÚ ABIERTO (Cuando tiene la clase .show_sidebar) */
-
-/* OCULTAMOS la hamburguesa */
 #toggle_sidebar_button.hide_sidebar svg {
     display: none !important;
 }
 
-/* CREAMOS la X solo aquí */
 #toggle_sidebar_button.hide_sidebar::before,
 #toggle_sidebar_button.hide_sidebar::after {
     content: "";
-    /* Aquí activamos las líneas */
     position: absolute;
     width: calc(20px * var(--SCALE));
     height: 2px;
@@ -258,7 +234,6 @@ input[type="radio"] {
     left: 50%;
 }
 
-/* Posicionamiento exacto de la X */
 #toggle_sidebar_button.hide_sidebar::before {
     transform: translate(-50%, -50%) rotate(45deg);
 }
@@ -283,7 +258,6 @@ select {
     cursor: default;
 }
 
-/* Título de la tabla */
 .planes-table-title {
     font-size: calc(14px * var(--SCALE));
     font-weight: bold;
@@ -293,7 +267,6 @@ select {
     color: white;
 }
 
-/* Centrar encabezados de la tabla */
 #planesTable thead tr td,
 #flightPlansTable thead tr td {
     text-align: center !important;
@@ -301,7 +274,6 @@ select {
     border: 1.5px solid #e4e4e77b;
 }
 
-/* Asegurar que las celdas del cuerpo mantengan su alineación original */
 #planesTable tbody tr td,
 #flightPlansTable tbody tr td {
     text-align: left;
@@ -313,7 +285,6 @@ select {
     overflow-x: auto;
 }
 
-/* Para columnas que específicamente deben estar a la derecha (como números) */
 #planesTable tbody tr td[style*="text-align: right"],
 #planesTable tbody tr td[align="right"] {
     text-align: right !important;
@@ -455,11 +426,9 @@ select {
     display: block;
     position: absolute;
     z-index: 99;
-    /* top: calc(5px * var(--SCALE)); */
     top: 0;
     right: -15px;
     left: calc(0px * var(--SCALE));
-    /* float: right; */
     width: calc(30px * var(--SCALE));
     height: calc(30px * var(--SCALE));
     background-size: calc(30px * var(--SCALE)) calc(30px * var(--SCALE));
@@ -499,40 +468,13 @@ select {
 }
 
 .sidebar-reset-btn {
-    /* Solo posición, sin estilos personalizados que cambien apariencia */
     cursor: pointer;
 }
 
-/* remove the blue highlighting around the map buttons */
 .ol-control button {
     outline: none;
     z-index: 999;
 }
-
-/* .ol-zoom-in {
-    background-image: url("images/zoom-in.png");
-    background-size: cover;
-    color:transparent !important;
-    width: calc( 25px * var(--SCALE)) !important;
-    height: calc( 25px * var(--SCALE)) !important;
-    background-color: transparent !important;
-    margin-bottom: calc( 5px * var(--SCALE)) !important;
-}
-
-.ol-zoom-out {
-    background-image: url("images/zoom-out.png");
-    background-size: cover;
-    color:transparent !important;
-    width: calc( 25px * var(--SCALE)) !important;
-    height: calc( 25px * var(--SCALE)) !important;
-    background-color: transparent !important;
-} */
-
-/* .ol-zoom {
-    background-color: transparent !important;
-    left: calc(100% - calc( 65px * var(--SCALE)));
-    top: calc(100% - calc( 85px * var(--SCALE)));
-} */
 
 .ol-attribution {
     font-size: var(--FS1);
@@ -697,7 +639,6 @@ select {
 .dim {
     opacity: 0.3;
     filter: alpha(opacity=30);
-    /* For IE8 and earlier */
 }
 
 .pointer {
@@ -805,16 +746,6 @@ input.error {
     z-index: 999;
 }
 
-/* .layer-switcher.shown{
-    position: absolute !important;
-    top: 3.5em !important;
-    right: 0.5em !important;
-    margin-right: calc(30px * var(--SCALE)) !important;
-    height: calc(100vh - 5.5em) !important;
-    max-height: calc(100vh - 5.5em) !important;
-    min-height: calc(100vh - 5.5em) !important;
-} */
-
 .layer-switcher.shown {
     position: absolute !important;
     top: calc(3.5em + var(--layer-switcher-offset)) !important;
@@ -839,8 +770,6 @@ input.error {
     box-sizing: border-box;
 }
 
-
-/* new css */
 .dateTime {
     font-weight: bold;
     font-size: calc(16px * var(--SCALE));
@@ -909,20 +838,15 @@ input.error {
     z-index: 9;
 }
 
-/* =========================================
-   BOTÓN ACTIVO (panel abierto)
-   ========================================= */
 .btn-active {
     background-color: #ffffff !important;
     border-radius: 5px;
 }
 
-/* Si el botón contiene un SVG */
 .btn-active svg {
     fill: var(--BASE-COLOR) !important;
 }
 
-/* Si el botón contiene una imagen PNG */
 .btn-active img {
     filter: invert(1) sepia(1) saturate(3) hue-rotate(190deg) brightness(0.8);
 }
@@ -935,41 +859,6 @@ input.error {
     height: calc(38px * var(--SCALE));
     z-index: 9;
 }
-
-/* .svgButton {
-    background-color: rgb(252, 84, 4);
-    width: calc( 27px * var(--SCALE));
-    height: calc( 27px * var(--SCALE));
-    cursor: pointer;
-    background-position: center;
-    margin: calc( 2px * var(--SCALE));
-    display: inline-block;
-    border-radius: calc( 5px * var(--SCALE));
-} */
-
-/* .fullscreenButton {
-    background-image: url('images/fullscreen.svg');
-    background-size: 90%;
-}
-
-.settingsCog {
-    background-image: url('images/cog-white.svg');
-    background-size: 120%;
-} */
-
-
-/* .button {
-    background-color: rgb(252, 84, 4);
-    width: calc( 27px * var(--SCALE));
-    height: calc( 27px * var(--SCALE));
-    border-radius: calc( 5px * var(--SCALE));
-    margin: calc( 2px * var(--SCALE));
-    display: inline-block;
-    cursor: pointer;
-    text-align: center;
-    background-clip: padding-box;
-} */
-
 
 .buttonContainer {
     display: block;
@@ -1024,7 +913,6 @@ input.error {
 }
 
 .highlightedTitle {
-    /* border-bottom: calc(2px * var(--SCALE)) solid var(--LIGHTER-BASE-COLOR); */
     display: inline-block;
     width: 100%;
 }
@@ -1103,10 +991,7 @@ table.infoSectionTable tr td {
 
 .infoBlockTitleText {
     font-weight: bold;
-    /* padding-top: 1rem; */
 }
-
-
 
 .legendTitle {
     line-height: calc(19px * var(--SCALE));
@@ -1225,10 +1110,6 @@ table.infoSectionTable tr td {
     height: auto !important;
 }
 
-/* Class to force replayBar left offset when infoblock is open */
-/* no-op: replay-left-200 removed */
-
-/* Floating window appearance when minimized */
 #selected_infoblock.infoblock-minimized {
     position: fixed !important;
     top: calc(10px * var(--SCALE));
@@ -1439,29 +1320,7 @@ table.infoSectionTable tr td {
     display: table-cell;
 }
 
-/* #altitude_chart {
-    float: right;
-    width: calc(100% - calc( 5px * var(--SCALE)));
-    max-width:  calc(800px * var(--SCALE));
-    right: calc( 85px * var(--SCALE));
-    bottom: calc( 35px * var(--SCALE));
-    background-color: transparent !important;
-}
-
-#altitude_chart_button {
-    background-size: cover;
-    background-color: transparent;
-    width: 100%;
-    height: 0;
-    padding: 0;
-    padding-bottom: calc(100% * 56 / 1815);
-} */
-
 #altitude_chart {
-    /* float: right; */
-    /* width: calc(70% - calc( 5px * var(--SCALE))); */
-    /* max-width:  calc(800px * var(--SCALE));
-    right: calc( 85px * var(--SCALE)); */
     bottom: calc( 35px * var(--SCALE));
     left: 0;
     right: 0;
@@ -1533,14 +1392,12 @@ table.infoSectionTable tr td {
 
 .greyButton:after {
     content: '\02795\FE0E';
-    /* Unicode character for "plus" sign (+) */
     float: right;
     margin-left: calc(5px * var(--SCALE));
 }
 
 .greyButton.active:after {
     content: "\2796\FE0E";
-    /* Unicode character for "minus" sign (-) */
 }
 
 .ui-tabs-nav li a:focus {
@@ -1575,7 +1432,6 @@ table.infoSectionTable tr td {
     cursor: pointer;
 }
 
-/* QUE ES */
 .ui-widget-content .ui-selectable .ui-selected {
     border-color: #cc6600;
 }
@@ -1623,7 +1479,6 @@ html .ui-button.ui-state-disabled:active {
     border: none;
 }
 
-/* QUE ES */
 .ui-state-active,
 .ui-widget-content .ui-state-active,
 .ui-widget-header .ui-state-active,
@@ -1667,76 +1522,6 @@ html .ui-button.ui-state-disabled:active {
 .ui-widget-content {
     color: var(--TXTCOLOR2);
 }
-
-
-/* input{
-  color:var(--BASE-COLOR);
-} */
-/* #histDatePicker{
-  background: var(--BGCOLOR1);
-} */
-
-/* #replayBar {
-  background: var(--BGCOLOR1);
-  display: none;
-  width: calc(100% - 80px);
-  width: 100%;
-  padding-right: 80px;
-  position: absolute;
-  height: 10px;
-  bottom: 0%;
-  grid-template-columns: 1fr 1.5fr 5fr 2fr;
-  grid-template-rows: 20px 40px 20px 20px;
-  justify-items: center;
-  align-items: center;
-  z-index: 9;
-  grid-template-areas:
-    "timezone dateHint timeHint speedHint"
-    "play datepicker hours speedSelect"
-    ". dateHintLocal minutes loading "
-    ". . . .";
-} */
-
-/* #replayLoading {
-  grid-area: loading;
-}
-
-#replayTimeZone{
-  grid-area: timezone;
-}
-#replayPlay{
-  grid-area: play;
-}
-#replayDatepicker{
-  grid-area: datepicker;
-}
-#hourSelect{
-  width: 90%;
-  grid-area: hours;
-  border-radius: 2rem;
-}
-#minuteSelect{
-  width: 90%;
-  grid-area: minutes;
-  border-radius: 2rem;
-}
-#replaySpeedSelect{
-  grid-area: speedSelect;
-  width: 90%;
-}
-#replayTimeHint{
-   grid-area: timeHint;
-}
-#replayDateHintLocal{
-  grid-area: dateHintLocal;
-}
-#replayDateHint{
-  grid-area: dateHint;
-}
-#replaySpeedHint{
-  grid-area: speedHint;
-} */
-
 
 #export_kml_block button {
     width: 88%;
@@ -1829,10 +1614,6 @@ html .ui-button.ui-state-disabled:active {
     background: var(--LIGHTER-BASE-COLOR) !important;
 }
 
-/* #RP img {
-    filter: invert(100);
-} */
-
 #header_side .buttonContainer .btn .header-icon,
 #RP .header-icon,
 #RP img.header-icon {
@@ -1885,8 +1666,6 @@ html .ui-button.ui-state-disabled:active {
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
 
-    /* grid-template-columns:
-        minmax(150px, 150px) minmax(200px, 200px) minmax(150px, auto) minmax(150px, auto) minmax(170px, auto); */
     grid-template-rows: auto 64px;
     grid-template-areas:
         "dateLocal timeHint hoursHint minutesHint speedHint"
@@ -2088,7 +1867,6 @@ html .ui-button.ui-state-disabled:active {
     white-space: nowrap;
 }
 
-/* Forzar apariencia igual para sliders fuera de .settingsOptionContainer */
 #userScaleSlider,
 #iconScaleSlider,
 .settingsOptionContainer+.ui-slider,
@@ -2100,7 +1878,6 @@ html .ui-button.ui-state-disabled:active {
     height: 20px;
 }
 
-/* dibuja la pista cuando no existe .ui-slider-range */
 #userScaleSlider::before,
 #iconScaleSlider::before,
 #userScaleSlider .ui-slider::before,
@@ -2239,7 +2016,6 @@ div.ui-slider .ui-slider-handle {
     color: white;
 }
 
-/* Botón Reset all settings */
 .reset-settings-btn {
     width: 100%;
     text-align: center;
@@ -2270,15 +2046,12 @@ div.ui-slider .ui-slider-handle {
     box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
-/* Contenedor del botón para que tenga el mismo espaciado que las categorías */
 .settingsOptionContainer:has(.reset-settings-btn) {
     padding: 8px 12px;
     margin-top: 16px;
     border-top: 1px solid rgba(128, 128, 128, 0.2);
 }
 
-
-/* Aviones de interés */
 .starred-aircraft-section {
     margin-top: 20px;
     border-top: 2px solid var(--LIGHTER-BASE-COLOR);
@@ -2369,7 +2142,6 @@ div.ui-slider .ui-slider-handle {
     font-size: 12px;
 }
 
-/* Resaltado para aviones marcados como interés */
 .plane-starred-marker {
     filter: drop-shadow(0 0 8px gold) drop-shadow(0 0 4px orange);
     animation: starredPulse 2s ease-in-out infinite;
@@ -2384,13 +2156,11 @@ div.ui-slider .ui-slider-handle {
     }
 }
 
-/* Estilo para fila en tabla de aviones marcados */
 .starred-table-row {
     background: rgba(255, 215, 0, 0.15) !important;
     font-weight: bold;
 }
 
-/* Ajuste del contenedor del título para que todo esté en línea */
 #selected_infoblock .highlightedTitle > div:first-child {
     display: flex !important;
     align-items: center !important;
@@ -2398,7 +2168,6 @@ div.ui-slider .ui-slider-handle {
     flex-wrap: wrap !important;
 }
 
-/* Contenedor principal de las columnas */
 #sortableColumns {
     list-style-type: none;
     margin: 0;
@@ -2410,7 +2179,6 @@ div.ui-slider .ui-slider-handle {
     width: 100% !important;
 }
 
-/* Cada ítem de columna - ocupa espacio proporcional */
 #sortableColumns li {
     margin: 0;
     padding: 6px 10px;
@@ -2428,7 +2196,6 @@ div.ui-slider .ui-slider-handle {
     gap: 8px;
 }
 
-/* El checkbox dentro de cada ítem */
 #sortableColumns .settingsCheckbox {
     display: inline-block;
     width: 16px;
@@ -2445,7 +2212,6 @@ div.ui-slider .ui-slider-handle {
     cursor: pointer;
 }
 
-/* Categorías de columnas */
 .column-category {
     width: 100%;
     margin-bottom: 20px;
@@ -2485,7 +2251,6 @@ div.ui-slider .ui-slider-handle {
     background: var(--LIGHTER-BASE-COLOR);
 }
 
-/* Evitar que jQuery UI tabs intente activar este elemento como pestaña */
 .ui-tabs .ui-tabs-nav li.reset-sidebar-tab-item {
     float: left;
     list-style: none;
@@ -2493,19 +2258,15 @@ div.ui-slider .ui-slider-handle {
     white-space: nowrap;
 }
 
-/* Desactivar la clase activa para este elemento */
 .ui-tabs .ui-tabs-nav li.reset-sidebar-tab-item.ui-tabs-active {
     background: none;
     border: none;
 }
 
-/* Desactivar el borde inferior que indica pestaña activa */
 .ui-tabs .ui-tabs-nav li.reset-sidebar-tab-item.ui-tabs-active a {
     border: none;
 }
 
-
-Estilos para los buscadores unificados
 .filter-group-title {
     font-weight: bold;
     font-size: calc(13px * var(--SCALE));
@@ -2572,7 +2333,6 @@ Estilos para los buscadores unificados
     font-size: calc(11px * var(--SCALE));
 }
 
-/* Ajustar tablas */
 #filterTable tbody tr td,
 #filterTable2 tbody tr td,
 #filterTable3 tbody tr td {
@@ -2580,7 +2340,6 @@ Estilos para los buscadores unificados
     vertical-align: top;
 }
 
-/* Estilos para grupos de filtros selectables (Source y DB Flags) */
 .filter-group-selectable {
     margin-bottom: calc(8px * var(--SCALE));
 }
@@ -2589,7 +2348,6 @@ Estilos para los buscadores unificados
     cursor: pointer;
 }
 
-/* Estilos base del acordeón */
 .filter-group {
     margin-bottom: calc(8px * var(--SCALE));
     border-radius: 8px;
@@ -2635,7 +2393,6 @@ Estilos para los buscadores unificados
     padding: calc(12px * var(--SCALE)) 0;
 }
 
-/* Ajustes para elementos dentro del contenido */
 .filter-group-content .filter-group-search,
 .filter-group-content .filter-group-selectable,
 .filter-group-content .filter-group-fields {
@@ -2647,14 +2404,12 @@ Estilos para los buscadores unificados
     padding-bottom: calc(4px * var(--SCALE));
 }
 
-/* Asegurar que los inputs ocupen todo el ancho */
 .filter-group-content .filterSearchInput,
 .filter-group-content .filterInput {
     width: 100%;
     box-sizing: border-box;
 }
 
-/* Ajustes para los selectables (Source y DB Flags) */
 .filter-group-content .buttonFilter {
     display: flex;
     flex-direction: column;
@@ -2683,17 +2438,14 @@ Estilos para los buscadores unificados
     color: white;
 }
 
-/* Contenedor principal de filtros */
 .filters-accordion {
     width: 100%;
 }
 
-/* Ajuste para que la tabla contenedora no tenga padding extra */
 #filterTable td {
     padding: 0 !important;
 }
 
-/* Hacer que settings_infoblock sea movible */
 #settings_infoblock {
   position: fixed !important;
   top: 80px !important;
@@ -2707,7 +2459,6 @@ Estilos para los buscadores unificados
   user-select: none;
 }
 
-/* Handle para redimensionar (esquina inferior derecha) - fijo */
 #settings_resize_handle {
   position: sticky !important;
   bottom: 0;
@@ -2730,7 +2481,6 @@ Estilos para los buscadores unificados
   overflow-x: hidden;
 }
 
-/* Wrapper para el contenido que permite el scroll */
 #settings_infoblock .settings-scroll-wrapper {
   flex: 1;
   overflow-y: auto;
@@ -2754,17 +2504,11 @@ Estilos para los buscadores unificados
     font-size: 1.2rem;
 }
 
-/* Estilos para inputs con error - ROJO */
 .input-error {
-    /* border: 2px solid #ff4444 !important;
-    background-color: rgba(255, 68, 68, 0.15) !important; */
     transition: all 0.2s ease;
 }
 
-/* Estilos para inputs con filtro activo - VERDE */
 .filter-active {
-    /* border: 2px solid #4CAF50 !important;
-    background-color: rgba(76, 175, 80, 0.15) !important; */
     transition: all 0.2s ease;
 }
 
@@ -2780,7 +2524,6 @@ Estilos para los buscadores unificados
     max-height: 2.5rem;
 }
 
-/* Indicadores h y m */
 .replay-input-label {
     font-size: calc(13px * var(--SCALE));
     font-weight: 600;
@@ -2817,7 +2560,6 @@ Estilos para los buscadores unificados
     
 }
 
-/* Overlay de elevación (panorama) */
 .panorama-overlay {
     position: absolute !important;
     left: 10px !important;
@@ -2909,32 +2651,6 @@ Estilos para los buscadores unificados
     font-size: 11px;
     pointer-events: none;
 }
-
-
-
-
-
-
-
-
-
-
-
-/* Estilo del input editable dentro del handle del slider */
-/* .ui-slider-handle .slider-edit-input {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: rgba(255, 255, 255, 0.15);
-    color: inherit;
-    font: inherit;
-    text-align: center;
-    padding: 0;
-    margin: 0;
-    outline: none;
-    box-sizing: border-box;
-    border-radius: 2px;
-} */
 
 #flight-plans-toggle,
 #logout-sidebar-link,

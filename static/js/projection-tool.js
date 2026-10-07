@@ -1,28 +1,8 @@
-// ============================================================================
-// PROJECTION TOOL - Predicción estática de posición futura de aeronaves
-// ============================================================================
-// Al hacer clic en un avión:
-//   1) Calcula destino UNA SOLA VEZ con gs, track y vert_rate actuales.
-//   2) Dibuja línea segmentada (color por avión) + punto destino.
-//   3) Mueve un "avión fantasma" (color por avión) hacia el destino.
-//   4) Detecta si el avión real alcanza la proyección antes que el fantasma.
-//
-// UI:
-//   - Una etiqueta por proyección, idéntica a las de medición (con 👁 y ✖),
-//     mostrando SOLO el tiempo de proyección (countdown).
-//   - Panel dentro del sidebar derecho (visible solo cuando está ON).
-//   - Menú de control en el dropdown de Measurement.
-//   - Mensajes de estado en badge tooltip (showDistanceGuide).
-//
-// Modos: 5, 10, 15 minutos. Máximo 5 aeronaves.
-// ============================================================================
-
 "use strict";
 
+// ***** INICIALIZAR FUNCIÓN DE PROYECCIÓN *****
 (function () {
-    // ------------------------------------------------------------------------
-    // ESTADO
-    // ------------------------------------------------------------------------
+    // ***** INICIALIZAR ESTADOS *****
     const state = {
         active: false,
         planes: [],
@@ -41,6 +21,7 @@
         uiReady: false
     };
 
+    // ***** COLORES PARA CADA PROYECCIÓN *****
     const COLORS = ['#FF3B30', '#34C759', '#007AFF', '#FF9500', '#AF52DE'];
 
     const SYS = {
@@ -54,16 +35,12 @@
     const ARRIVAL_THRESHOLD_M = 500;
     const DEVIATION_THRESHOLD_M = 5000;
 
-    // ------------------------------------------------------------------------
-    // LOGGING
-    // ------------------------------------------------------------------------
+    // ***** LOGS PARA DEPURACIÓN *****
     const LOG_PREFIX = '[Projection]';
     function log(...a) { console.log(LOG_PREFIX, ...a); }
     function warn(...a) { console.warn(LOG_PREFIX, ...a); }
 
-    // ------------------------------------------------------------------------
-    // TRADUCCIÓN
-    // ------------------------------------------------------------------------
+    // ***** TRADUCIR TEXTOS *****
     function T(key, fallback) {
         try {
             if (typeof window.translate !== 'undefined' && window.translate.t) {
@@ -78,13 +55,12 @@
         return fallback || key;
     }
 
-    // ------------------------------------------------------------------------
-    // HELPERS
-    // ------------------------------------------------------------------------
+    // ***** OBTENER MAPA *****
     function getMap() {
         try { return (typeof OLMap !== 'undefined') ? OLMap : null; } catch (e) { return null; }
     }
 
+    // ***** OBTENER TIEMPO DE PROYECCIÓN *****
     function getProjectionTime() {
         if (replay && Number.isFinite(now)) {
             return now;
@@ -93,6 +69,7 @@
         return Date.now() / 1000;
     }
 
+    // ***** PROYECTAR POSICIÓN FUTURA *****
     function projectPosition(lat, lon, track, distanceMeters) {
         const R = 6378137.0;
         const angularDistance = distanceMeters / R;
@@ -115,6 +92,7 @@
         return { lat: lat2 * 180.0 / Math.PI, lon: lon2 * 180.0 / Math.PI };
     }
 
+    // ***** ALTITUD *****
     function projectAltitude(currentAlt, vertRate, minutes) {
         if (currentAlt == null || currentAlt === 'ground') return 0;
         const rate = (typeof vertRate === 'number' && !isNaN(vertRate)) ? vertRate : 0;
@@ -122,6 +100,7 @@
         return Math.max(0, currentAlt + clamped * minutes);
     }
 
+    // ***** INTERPOLACIÓN *****
     function interpolateGreatCircle(lat1, lon1, lat2, lon2, t) {
         const toRad = Math.PI / 180;
         const toDeg = 180 / Math.PI;
@@ -149,6 +128,7 @@
         return { lat: φ3 * toDeg, lon: λ3 * toDeg };
     }
 
+    // ***** HAVERSINE *****
     function haversineMeters(lat1, lon1, lat2, lon2) {
         const R = 6371000;
         const toRad = Math.PI / 180;
@@ -160,11 +140,7 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    function formatAlt(alt) {
-        if (alt == null || isNaN(alt)) return '?';
-        return (Math.round(alt / 100) * 100).toLocaleString() + ' ft';
-    }
-
+    // ***** FORMATEAR CUENTA REGRESIVA *****
     function formatCountdown(seconds) {
         const s = Math.max(0, Math.round(seconds));
         const m = Math.floor(s / 60);
@@ -172,13 +148,12 @@
         return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
     }
 
+    // ***** FORMATEAR NM *****
     function formatNM(meters) {
         return (meters / 1852).toFixed(1) + ' NM';
     }
 
-    // ------------------------------------------------------------------------
-    // BADGE DE MENSAJES (reutiliza showDistanceGuide para el estilo)
-    // ------------------------------------------------------------------------
+    // ***** MOSTRAR TIEMPO FALTANTE *****
     let _badgeTimer = null;
     function showBadge(html, durationMs) {
         if (typeof window.showDistanceGuide !== 'function') return;
@@ -193,16 +168,8 @@
             }, durationMs);
         }
     }
-    function hideBadge() {
-        if (_badgeTimer) { clearTimeout(_badgeTimer); _badgeTimer = null; }
-        if (typeof window.hideDistanceGuide === 'function') {
-            window.hideDistanceGuide();
-        }
-    }
 
-    // ------------------------------------------------------------------------
-    // CAPAS OL
-    // ------------------------------------------------------------------------
+    // ***** CREAR CAPAS DE LA FUNCIÓN *****
     function createLayers() {
         const map = getMap();
         if (!map) { warn('createLayers: OLMap no disponible'); return false; }
@@ -210,6 +177,7 @@
 
         const renderBuf = (typeof renderBuffer !== 'undefined') ? renderBuffer : 60;
 
+        // ***** LÍNEAS *****
         state.lineSource = new ol.source.Vector();
         state.lineLayer = new ol.layer.Vector({
             name: 'projectionLines',
@@ -221,6 +189,7 @@
             renderBuffer: renderBuf
         });
 
+        // ***** PUNTOS *****
         state.pointSource = new ol.source.Vector();
         state.pointLayer = new ol.layer.Vector({
             name: 'projectionPoints',
@@ -232,6 +201,7 @@
             renderBuffer: renderBuf
         });
 
+        // ***** ESTELA *****
         state.ghostSource = new ol.source.Vector();
         state.ghostLayer = new ol.layer.Vector({
             name: 'projectionGhosts',
@@ -243,11 +213,7 @@
             renderBuffer: renderBuf
         });
 
-        // map.addLayer(state.lineLayer);
-        // map.addLayer(state.pointLayer);
-        // map.addLayer(state.ghostLayer);
-
-        // state.layersReady = true;
+        // ***** CREAR GRUPO EN EL CUAL INSERTAR LAS CAPAS *****
         const projectionGroup = new ol.layer.Group({
             name: 'projection_tool',
             title: 'Projection tool',
@@ -282,13 +248,10 @@
 
         state.layersReady = true;
 
-        log('Capas creadas');
         return true;
     }
 
-    // ------------------------------------------------------------------------
-    // ESTILO DEL AVIÓN FANTASMA
-    // ------------------------------------------------------------------------
+    // ***** ESTILO DE LA ESTELA DEL AVIÓN PROYECTADO *****
     function createGhostStyle(color, track) {
         const svg = `
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
@@ -312,11 +275,7 @@
         });
     }
 
-    // ------------------------------------------------------------------------
-    // OVERLAY HTML POR PROYECCIÓN
-    // Estética idéntica a las etiquetas de medición, pero SOLO muestra
-    // el countdown (tiempo restante de la proyección).
-    // ------------------------------------------------------------------------
+    // ***** CREAR OVERLAY CON EL TIEMPO RESTANTE DE LA PROYECCIÓN *****
     function createProjectionOverlayElement(entry) {
         const el = document.createElement('div');
         el.className = 'projection-label-tag';
@@ -338,7 +297,6 @@
             <div class="proj-text-content" style="text-align:center;font-family:monospace;font-weight:700;font-size:13px;"></div>
         `;
 
-        // Botón ocultar
         el.querySelector('.proj-toggle-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -382,6 +340,7 @@
         return el;
     }
 
+    // ***** ACTUALIZAR CONTENIDO DEL OVERLAY *****
     function updateProjectionOverlayContent(entry, now) {
         const ov = entry.overlay;
         if (!ov) return;
@@ -393,7 +352,6 @@
 
         const remaining = Math.max(0, entry.endTime - now);
 
-        // SOLO el tiempo. Si llegó o está desviado, se indica brevemente.
         let content = formatCountdown(remaining);
         if (entry.arrived) {
             content = `✓ ${formatCountdown(remaining)}`;
@@ -402,7 +360,6 @@
         }
         text.textContent = content;
 
-        // Aplicar visibilidad
         if (entry.hidden) {
             text.style.display = 'none';
         } else {
@@ -410,15 +367,14 @@
         }
     }
 
-    // ------------------------------------------------------------------------
-    // CREAR PROYECCIÓN
-    // ------------------------------------------------------------------------
+    // ***** OBTENER COLOR DISPONIBLE PARA LA SIGUIENTE PROYECCIÓN *****
     function getAvailableColor() {
         const used = new Set(state.planes.map(p => p.color));
         for (const c of COLORS) if (!used.has(c)) return c;
         return COLORS[state.planes.length % COLORS.length];
     }
 
+    // ***** OBTENER RUMBO DE LA PROYECCIÓN *****
     function getProjectionTrack(plane) {
         if (Number.isFinite(plane.track)) {
             return plane.track;
@@ -439,35 +395,35 @@
         return null;
     }
 
+    // ***** CREAR PROYECCIÓN *****
     function createProjection(hex) {
-        if (!state.active) { showBadge(T('projection_not_active', 'El modo proyección no está activo'), 3000); return false; }
+        if (!state.active) { showBadge(T('projection_not_active', 'Projection mode is not active'), 3000); return false; }
         if (state.planes.length >= state.maxPlanes) {
-            showBadge(`${T('projection_max_prefix', 'Máximo')} ${state.maxPlanes} ${T('projection_max_suffix', 'aeronaves permitidas')}`, 3000);
+            showBadge(`${T('projection_max_prefix', 'MAXIMUN')} ${state.maxPlanes} ${T('projection_max_suffix', 'aircraft allowed')}`, 3000);
             return false;
         }
         if (state.planes.some(p => p.hex === hex)) {
-            showBadge(T('projection_dup', 'Esta aeronave ya tiene proyección'), 3000);
+            showBadge(T('projection_dup', 'This aircraft already has a projection'), 3000);
             return false;
         }
 
         const plane = g.planes[hex];
-        if (!plane) { showBadge(T('projection_no_plane', 'Aeronave no encontrada'), 3000); return false; }
+        if (!plane) { showBadge(T('projection_no_plane', 'Aircraft not found'), 3000); return false; }
         if (typeof InstrumentedAircraft !== 'undefined') {
             InstrumentedAircraft.register(hex);
         }
-        if (!plane.position || plane.position.length < 2) { showBadge(T('projection_no_pos', 'Sin posición válida'), 3000); return false; }
+        if (!plane.position || plane.position.length < 2) { showBadge(T('projection_no_pos', 'No valid position'), 3000); return false; }
 
         const track = getProjectionTrack(plane);
 
         if (track == null) {
-            showBadge(T('projection_no_track', 'Sin rumbo válido'), 3000);
+            showBadge(T('projection_no_track', 'No valid track'), 3000);
             return false;
         }
 
         const gs = plane.gs;
-        if (gs == null || isNaN(gs) || gs <= 0) { showBadge(T('projection_no_gs', 'Sin velocidad válida'), 3000); return false; }
+        if (gs == null || isNaN(gs) || gs <= 0) { showBadge(T('projection_no_gs', 'No valid groundspeed'), 3000); return false; }
 
-        // const now = Date.now() / 1000;
         const now = getProjectionTime();
         const minutes = state.minutes;
         const color = getAvailableColor();
@@ -482,7 +438,6 @@
         const projected = projectPosition(startLat, startLon, track, distanceMeters);
         const destAlt = projectAltitude(startAlt, plane.vert_rate, minutes);
 
-        // Línea
         const coords = [
             ol.proj.fromLonLat([startLon, startLat]),
             ol.proj.fromLonLat([projected.lon, projected.lat])
@@ -493,7 +448,6 @@
         }));
         state.lineSource.addFeature(lineFeature);
 
-        // Punto destino
         const pointCoord = ol.proj.fromLonLat([projected.lon, projected.lat]);
         const pointFeature = new ol.Feature(new ol.geom.Point(pointCoord));
         pointFeature.setStyle(new ol.style.Style({
@@ -505,7 +459,6 @@
         }));
         state.pointSource.addFeature(pointFeature);
 
-        // Fantasma
         const ghostFeature = new ol.Feature(
             new ol.geom.Point(ol.proj.fromLonLat([startLon, startLat]))
         );
@@ -535,7 +488,6 @@
             realDistanceToDest: null
         };
 
-        // Overlay por proyección
         const el = createProjectionOverlayElement(entry);
         const overlay = new ol.Overlay({
             element: el,
@@ -558,9 +510,7 @@
         return true;
     }
 
-    // ------------------------------------------------------------------------
-    // ACTUALIZAR FANTASMA + LLEGADA
-    // ------------------------------------------------------------------------
+    // ***** ACTUALIZAR ESTELA AL CUMPLIR LA PROYECCIÓN *****
     function updateGhost(entry, now) {
         const total = entry.endTime - entry.startTime;
         let t = total > 0 ? (now - entry.startTime) / total : 1;
@@ -589,7 +539,6 @@
             entry.overlay.setPosition(coord);
         }
 
-        // Detección llegada del avión real
         const plane = g.planes[entry.hex];
         if (plane && plane.position && plane.position.length >= 2) {
             const dist = haversineMeters(
@@ -627,16 +576,13 @@
         return 'running';
     }
 
-    // ------------------------------------------------------------------------
-    // LOOP
-    // ------------------------------------------------------------------------
+    // ***** INICIAR CICLO DE PROYECCIÓN *****
     function startLoop() {
         if (state.updateInterval) return;
         state.updateInterval = setInterval(() => {
             if (!state.active) return;
             if (state.planes.length === 0) return;
 
-            // const now = Date.now() / 1000;
             const now = getProjectionTime();
             const finished = [];
 
@@ -650,6 +596,7 @@
         }, 250);
     }
 
+    // ***** TERMINAR CICLO DE PROYECCIÓN *****
     function stopLoop() {
         if (state.updateInterval) {
             clearInterval(state.updateInterval);
@@ -657,9 +604,7 @@
         }
     }
 
-    // ------------------------------------------------------------------------
-    // OCULTAR/MOSTRAR
-    // ------------------------------------------------------------------------
+    // ***** OCULTAR/MOSTRAR PROYECCIÓN *****
     function toggleEntryVisibility(hex) {
         const entry = state.planes.find(p => p.hex === hex);
         if (!entry) return;
@@ -700,9 +645,7 @@
         }
     }
 
-    // ------------------------------------------------------------------------
-    // QUITAR / LIMPIAR
-    // ------------------------------------------------------------------------
+    // ***** QUITAR PROYECCIÓN *****
     function removeProjection(hex) {
         const idx = state.planes.findIndex(p => p.hex === hex);
         if (idx === -1) return;
@@ -722,6 +665,7 @@
         log(`Eliminada: ${hex}`);
     }
 
+    // ***** LIMPIAR TODAS LAS PROYECCIONES DE LA LISTA *****
     function clearAll() {
         const hexes = state.planes.map(p => p.hex);
         hexes.forEach(hex => removeProjection(hex));
@@ -732,18 +676,16 @@
         renderSidebarPanel();
     }
 
-    // ------------------------------------------------------------------------
-    // START / STOP
-    // ------------------------------------------------------------------------
+    // ***** INICIAR MODO PROYECCIÓN *****
     function startProjection(minutes) {
         log('startProjection', minutes);
         if (!createLayers()) {
-            showBadge(T('projection_no_layers', 'No se pudieron crear las capas (espera a que cargue el mapa).'), 4000);
+            showBadge(T('projection_no_layers', 'Could not create layers (wait for the map to load).'), 4000);
             return;
         }
         if (minutes != null) {
             if (!state.validMinutes.includes(minutes)) {
-                showBadge(`${T('projection_invalid_min', 'Minutos inválidos')}: ${minutes}`, 3000);
+                showBadge(`${T('projection_invalid_min', 'Invalid minutes')}: ${minutes}`, 3000);
                 return;
             }
             state.minutes = minutes;
@@ -757,6 +699,7 @@
         showBadge(`${T('projection_on', 'Projection Mode: ON')}: ${state.minutes} ${T('projection_min_abbr', 'min')}.`, 3500);
     }
 
+    // ***** DETENER MODO PROYECCIÓN *****
     function stopProjection() {
         log('stopProjection');
         state.active = false;
@@ -767,14 +710,13 @@
         showBadge(T('projection_off', 'Projection Mode: OFF'), 2500);
     }
 
+    // ***** MANEJAR CAMBIO DE ESTADO DEL MODO *****
     function toggleProjection() {
         if (state.active) stopProjection();
         else startProjection();
     }
 
-    // ------------------------------------------------------------------------
-    // CLICK HANDLER
-    // ------------------------------------------------------------------------
+    // ***** MANEJAR CLIC *****
     function handleClick(evt, planeHex) {
         if (!state.active) return false;
         if (planeHex) {
@@ -785,9 +727,7 @@
         return false;
     }
 
-    // ------------------------------------------------------------------------
-    // UI: BOTÓN Y MENÚ DE MINUTOS (en dropdown)
-    // ------------------------------------------------------------------------
+    // ***** ACTUALIZAR ESTADO DEL BOTÓN SEGÚN INICIADO/DETENIDO *****
     function updateToggleBtn() {
         const btn = document.getElementById('projection-toggle-btn');
         if (!btn) return;
@@ -802,6 +742,7 @@
         }
     }
 
+    // ***** ACTUALIZAR TIEMPO DE LA PROYECCIÓN *****
     function updateMinutesRow() {
         const row = document.getElementById('projection-minutes-row');
         if (!row) return;
@@ -810,6 +751,7 @@
         });
     }
 
+    // ***** CONSTRUIR MENÚ DE CON AVIONES PROYECTADOS *****
     function buildProjectionMenu() {
         const dd = document.getElementById('measurement_dropdown');
         if (!dd) { warn('No existe #measurement_dropdown'); return false; }
@@ -909,9 +851,7 @@
         return true;
     }
 
-    // ------------------------------------------------------------------------
-    // PANEL EN SIDEBAR DERECHO (visible solo cuando está ON)
-    // ------------------------------------------------------------------------
+    // ***** COLOCAR PANEL DE AVIONES PROYECTADOS EN EL SIDEBAR DERECHO *****
     function ensureSidebarPanel() {
         let section = document.getElementById('projection-section');
         if (section) return section;
@@ -923,7 +863,6 @@
 
         section = document.createElement('div');
         section.id = 'projection-section';
-        // Por defecto oculto. Solo se muestra cuando state.active === true.
         section.className = 'projection-section';
         section.style.display = 'none';
         section.innerHTML = `
@@ -960,14 +899,16 @@
         return section;
     }
 
+    // ***** MOSTRAR EL PANEL CUANDO SE ACTIVA EL MODO *****
     function showSidebarPanel() {
         const section = ensureSidebarPanel();
         if (section) {
-            section.style.display = '';  // visible
+            section.style.display = '';
             renderSidebarPanel();
         }
     }
 
+    // ***** OCULTAR EL PANEL CUANDO SE DESACTIVA EL MODO *****
     function hideSidebarPanel() {
         const section = document.getElementById('projection-section');
         if (section) {
@@ -975,10 +916,10 @@
         }
     }
 
+    // ***** RENDERIZAR PANEL *****
     function renderSidebarPanel() {
         const section = document.getElementById('projection-section');
         if (!section) return;
-        // No renderizar si no está visible
         if (section.style.display === 'none') return;
 
         const count = section.querySelector('#projection-sidebar-count');
@@ -992,7 +933,6 @@
             return;
         }
 
-        // const now = Date.now() / 1000;
         const now = getProjectionTime();
         let html = '';
         for (const entry of state.planes) {
@@ -1070,9 +1010,7 @@
         });
     }
 
-    // ------------------------------------------------------------------------
-    // INICIALIZACIÓN
-    // ------------------------------------------------------------------------
+    // ***** INICIALIZAR MENÚ *****
     function tryBuildMenu() {
         if (state.uiReady) return true;
         if (buildProjectionMenu()) {
@@ -1084,8 +1022,8 @@
         return false;
     }
 
+    // ***** INICIALIZAR FUNCIÓN *****
     function init() {
-        log('init()');
 
         const readyTimer = setInterval(() => {
             const menuReady = tryBuildMenu();
@@ -1103,9 +1041,7 @@
         }, 15000);
     }
 
-    // ------------------------------------------------------------------------
-    // API PÚBLICA
-    // ------------------------------------------------------------------------
+    // ***** PUBLICAR FUNCIONES PARA USO EXTERNO *****
     window.ProjectionTool = {
         isActive: () => state.active,
         getPlanes: () => state.planes.slice(),
@@ -1132,26 +1068,25 @@
     window.stopProjection = stopProjection;
     window.toggleProjection = toggleProjection;
 
-    // ------------------------------------------------------------------------
-    // ARRANQUE
-    // ------------------------------------------------------------------------
+    // ***** INICIALIZAR CUANDO ESTÉ CARGADO EL DOM *****
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
 
+    // ***** DETECTAR CAMBIO EN EL SELECTOR DE IDIOMA Y ACTUALIZAR *****
     document.addEventListener('languageChanged', () => {
         setTimeout(() => {
             const menuSpan = document.querySelector('#projection-menu-item > div:first-child > span');
-            if (menuSpan) menuSpan.textContent = T('projection_tool', 'Proyección');
+            if (menuSpan) menuSpan.textContent = T('projection_tool', 'Projection tool');
             const clickHint = document.querySelector('#projection-menu-item > div:last-child');
 
             const headerH4 = document.querySelector('#projection-section .projection-header h4');
-            if (headerH4) headerH4.textContent = T('projection_tool', 'Proyección');
+            if (headerH4) headerH4.textContent = T('projection_tool', 'Projection tool');
 
             const clearBtn = document.getElementById('clear-all-projections-btn');
-            if (clearBtn) clearBtn.title = T('projection_clear_all', 'Eliminar todas las proyecciones');
+            if (clearBtn) clearBtn.title = T('projection_clear_all', 'Remove all projections');
 
             renderSidebarPanel();
             if (typeof window.updateDistanceGuideContent === 'function') {
@@ -1159,7 +1094,5 @@
             }
         }, 200);
     });
-
-    log('Script cargado.');
 
 })();

@@ -2,6 +2,7 @@
 (function () {
     'use strict';
 
+    // ***** CLAVES DE SESIÓN *****
     const SESSION_KEY = 'adsb_session';
     const SESSION_TS_KEY = 'adsb_session_ts';
     // ***** MANTENER SESIÓN POR 8 HORAS *****

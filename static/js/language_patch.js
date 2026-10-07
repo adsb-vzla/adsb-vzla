@@ -1,10 +1,8 @@
 (function () {
     'use strict';
 
-    // *****************************************
-    // ***** INICIO TRADUCCIONES ******
-    // *****************************************
     const translations = {
+        // ***** CLAVES EN INGLÉS *****
         en: {
             // ***** LOGIN *****
             'login': 'Log In',
@@ -444,7 +442,6 @@
             'play': 'Play',
             'pause': 'Pause',
             'date_label': 'Date',
-            // 'utc_label': 'UTC:',
             'playback_label': 'Playback',
             'hours_label': 'Hours',
             'minutes_label': 'Minutes',
@@ -706,6 +703,7 @@
             'elevation_ga_step2_generic': 'Now click on the other element (ground or aircraft).',
             'elevation_gg_mode': 'Mode: Ground point - Ground point',
         },
+        // ***** CLAVES EN ESPAÑOL *****
         es: {
             // ***** LOGIN *****
             'login': 'Iniciar Sesión',
@@ -1300,7 +1298,6 @@
             'select_aircraft_valid_position': 'Selecciona una aeronave con posición válida.',
             'select_aircraft_complete_pair': 'Selecciona una aeronave para completar el par.',
             'pairs_mode': 'Modo: Pares',
-            // 'click_two_aircraft_measure': 'Haz clic en dos aeronaves para medir la distancia.',
             'distance_select_plane_a': 'Haz clic en una aeronave para marcar el punto A.',
             'distance_select_plane_b': 'Haz clic en otra aeronave para marcar el punto B.',
             'distance_invalid_aircraft': 'Selecciona una aeronave.',
@@ -1407,13 +1404,8 @@
             'elevation_gg_mode': 'Modo: Punto en tierra - Punto en tierra',
         }
     };
-    // *****************************************
-    // ********* FIN TRADUCCIONES **************
-    // *****************************************
 
-    // *****************************************
-    // *** INICIO FUNCIONES DE TRADUCCIÓN ******
-    // *****************************************
+    // ***** DEFINIR ESPAÑOL COMO IDIOMA POR DEFECTO *****
     const DEFAULT_LANG = 'es';
     let currentLang = localStorage.getItem('app_lang');
 
@@ -1427,11 +1419,13 @@
         localStorage.setItem('app_lang', currentLang);
     }
 
+    // ***** FUNCIÓN DE TRADUCCIÓN *****
     function t(key) {
         const translation = translations[currentLang]?.[key];
         return translation !== undefined ? translation : key;
     }
 
+    // ***** ESTABLECER IDIOMA *****
     function setLang(lang) {
         if (translations[lang]) {
             currentLang = lang;
@@ -1482,11 +1476,7 @@
         return false;
     }
 
-    function t_html(key) {
-        const translation = translations[currentLang]?.[key];
-        return translation !== undefined ? translation : key;
-    }
-
+    // ***** ESCUCHAR CAMBIO EN EL SELECTOR DE IDIOMA *****
     document.addEventListener('languageChanged', function (e) {
         setTimeout(function () {
             if (typeof window.updateDistanceGuideContent === 'function') {
@@ -1495,16 +1485,12 @@
         }, 50);
     });
 
+    // ***** OBTENER IDIOMA ACTUAL *****
     function getLang() {
         return currentLang;
     }
-    // *****************************************
-    // ***** FIN FUNCIONES DE TRADUCCIÓN *******
-    // *****************************************
-
-    // ***********************************************************
-    // ** INICIO FUNCIÓN OBTENER TRADUCCIÓN DE TÍTULOS DE CAPAS **
-    // ***********************************************************
+    
+    // ***** OBTENER TRADUCCIÓN DE TÍTULOS DE CAPAS *****
     function getLayerTitle(layerName, defaultTitle) {
         let key = 'layer_' + layerName.toLowerCase().replace(/[^a-z0-9_]/g, '_');
         const translation = translations[currentLang]?.[key];
@@ -1514,13 +1500,8 @@
         return defaultTitle || layerName;
     }
     window.getLayerTitle = getLayerTitle;
-    // ***********************************************************
-    // *** FIN FUNCIÓN OBTENER TRADUCCIÓN DE TÍTULOS DE CAPAS ****
-    // ***********************************************************
-
-    // *****************************************
-    // ****** INICIO ACTUALIZACIÓN DE UI *******
-    // *****************************************
+    
+    // ***** ACTUALIZACIÓN DE UI SEGÚN CAMBIA EL IDIOMA *****
     function updateUI() {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
@@ -1558,13 +1539,8 @@
             }
         });
     }
-    // *****************************************
-    // ******* FIN ACTUALIZACIÓN DE UI *********
-    // *****************************************
-
-    // *****************************************
-    // ******* INICIO SELECTOR DE IDIOMA *******
-    // *****************************************
+    
+    // ***** SELECTOR DE IDIOMA *****
     function addLanguageSelector() {
         if (document.getElementById('language_selector_patch')) return;
 
@@ -1592,13 +1568,8 @@
             });
         }
     }
-    // *****************************************
-    // ******** FIN SELECTOR DE IDIOMA *********
-    // *****************************************
-
-    // *****************************************
-    // ** INICIO INICIALIZACIÓN DE LA FUNCIÓN **
-    // *****************************************
+    
+    // ***** INICIALIZACIÓN DE LA FUNCIÓN DE TRADUCCIÓN *****
     function initLanguagePatch() {
         updateUI();
         addLanguageSelector();
@@ -1615,13 +1586,8 @@
     } else {
         initLanguagePatch();
     }
-    // *****************************************
-    // *** FIN INICIALIZACIÓN DE LA FUNCIÓN ****
-    // *****************************************
-
-    // ****************************************************
-    // ** INICIO INICIALIZACIÓN DE FUNCIÓN DE TRADUCCIÓN **
-    // ****************************************************
+    
+    // ***** OBTENER TEXTOS TRADUCIDOS SEGÚN CLAVE *****
     function getTranslatedText(key, fallback, allowHtml = false) {
         const translation = translations[currentLang]?.[key];
         if (translation !== undefined) {
@@ -1644,7 +1610,4 @@
             return translation !== undefined ? translation : (fallback || name);
         }
     };
-    // ****************************************************
-    // *** FIN INICIALIZACIÓN DE FUNCIÓN DE TRADUCCIÓN ****
-    // ****************************************************
 })();

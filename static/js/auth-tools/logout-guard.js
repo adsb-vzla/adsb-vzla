@@ -1,3 +1,4 @@
+// ***** MANEJAR CIERRE DE SESIÓN *****
 (function () {
     function bindLogout() {
         const link = document.getElementById('logout-sidebar-link');
@@ -6,6 +7,7 @@
         link.addEventListener('click', function (e) {
             e.preventDefault();
 
+            // ***** REMOVER KEYS PROBLEMÁTICAS *****
             try {
                 const keysToRemove = [];
                 for (let i = 0; i < localStorage.length; i++) {
@@ -40,12 +42,14 @@
         });
     }
 
+    // ***** ESPERAR LA CARGA COMPLETA DEL DOM PARA EJECUTAR CIERRE DE SESIÓN *****
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', bindLogout);
     } else {
         bindLogout();
     }
 
+    // ***** APLICAR TRADUCCIONES *****
     document.addEventListener('languageChanged', function () {
         setTimeout(bindLogout, 100);
     });

@@ -241,6 +241,8 @@ let firstFetch = true;
 let debugCounter = 0;
 let pathName = window.location.pathname.replace(/\/+/, '/') || "/";
 let sourcesFilter = null;
+// ***** FILTRO POR RECEPTOR *****
+let receiverFilter = null;
 let sources = ['adsb', ['uat', 'adsr'], 'mlat', 'tisb', 'modeS', 'other', 'adsc', 'ais'];
 let flagFilter = null;
 let flagFilterValues = ['military', 'pia', 'ladd'];
@@ -844,6 +846,14 @@ function processAircraft(ac, init, uat) {
 
     // Do we already have this plane object in g.planes?
     // If not make it.
+    // let plane = g.planes[hex]
+
+    // if (!plane) {
+    //     plane = new PlaneObject(hex);
+    //     if (uat)
+    //         plane.uat = true;
+    // }
+
     let plane = g.planes[hex]
 
     if (!plane) {
@@ -852,6 +862,14 @@ function processAircraft(ac, init, uat) {
             plane.uat = true;
     }
 
+    // ***** ACUMULAR RECEPTORES QUE VEN ESTA AERONAVE *****
+    const receiverId = ac._receiver || null;
+    if (receiverId) {
+        if (!plane.receivers) {
+            plane.receivers = new Set();
+        }
+        plane.receivers.add(receiverId);
+    }
 
     if (showTrace)
         return;
@@ -928,6 +946,19 @@ function processAircraft(ac, init, uat) {
 let notNewCounter = 0;
 let backwardsCounter = 0;
 function processReceiverUpdate(data, init) {
+    // ***** SI VIENE DE UN RECEPTOR, PROCESAR SIN FILTRO DE TIMESTEP *****
+    if (data._fromReceiver) {
+        if (data.now > now) {
+            last = now;
+            now = data.now;
+            g.now = now;
+        }
+        for (let j = 0; j < data.aircraft.length; j++) {
+            processAircraft(data.aircraft[j], init, false);
+        }
+        return;
+    }
+
     // update now and last
     let uat = data.uat_978;
     if (uat) {
@@ -1015,12 +1046,19 @@ function fetchFail(jqxhr, status, error) {
     }
 }
 
-function fetchDone(data) {
+function fetchDone(data, receiverId) {
     try {
         pendingFetches--;
         if (data == null) {
             return;
         }
+
+        // ***** OBTENER EL ID DEL RECEPTOR *****
+        if (!receiverId) {
+            receiverId = this.receiverId || null;
+        }
+
+        // ***** DECODIFICAR PRIMERO *****
         if (zstd) {
             let arr = new Uint8Array(data);
             lastRequestSize = arr.byteLength;
@@ -1044,6 +1082,18 @@ function fetchDone(data) {
             wqi(data);
         }
         data.urlIndex = this.urlIndex;
+
+        // ***** INYECTAR RECEPTOR *****
+        if (receiverId && data.aircraft) {
+            for (let i = 0; i < data.aircraft.length; i++) {
+                data.aircraft[i]._receiver = receiverId;
+            }
+        }
+
+        // ***** MARCAR EL DATA COMO PROVENIENTE DE UN RECEPTOR *****
+        if (receiverId) {
+            data._fromReceiver = receiverId;
+        }
 
         if (!data.aircraft || !data.now) {
             let error = data.error;
@@ -1320,7 +1370,12 @@ function fetchData(options) {
             }
         }
     } else {
-        ac_url.push('data/aircraft' + suffix);
+        // ac_url.push('data/aircraft' + suffix);
+        // ***** MÚLTIPLES RECEPTORES *****
+        ac_url.push('data-receiver-a/aircraft.json');
+        ac_url.push('data-receiver-b/aircraft.json');
+        ac_url.push('data-receiver-c/aircraft.json');
+        ac_url.push('data-receiver-d/aircraft.json');
     }
 
     pendingFetches += ac_url.length;
@@ -1330,8 +1385,16 @@ function fetchData(options) {
         if (debugFetch) {
             console.log('Fetching: ' + ac_url[i]);
         }
+
         let req;
-        if (binCraft || zstd) {
+        // ***** IDENTIFICAR RECEPTOR POR ÍNDICE DE URL *****
+        const receiverNames = ['a', 'b', 'c', 'd'];
+        const receiverId = receiverNames[i] || null;
+
+        // ***** FORZAR JSON DE TEXTO PARA LOS ARCHIVOS DE RECEPTORES *****
+        const isReceiverFile = typeof ac_url[i] === 'string' && ac_url[i].startsWith('data-receiver-');
+
+        if ((binCraft || zstd) && !isReceiverFile) {
             req = jQuery.ajax({
                 url: `${ac_url[i]}`, method: 'GET',
                 xhr: arraybufferRequest,
@@ -1339,12 +1402,23 @@ function fetchData(options) {
                 urlIndex: i,
             });
         } else {
-            req = jQuery.ajax({ url: `${ac_url[i]}`, dataType: 'json', urlIndex: i });
+            req = jQuery.ajax({
+                url: `${ac_url[i]}`,
+                dataType: 'json',
+                timeout: 15000,
+                urlIndex: i,
+            });
         }
+
+        // ***** PASAR ID DE RECEPTOR COMO ARGUMENTO *****
+        const reqReceiverId = receiverId;
+
         FetchPending.push(req);
 
         req
-            .done(fetchDone)
+            .done(function (data) {
+                fetchDone.call(this, data, reqReceiverId);
+            })
             .fail(fetchFail);
     }
 
@@ -8445,6 +8519,39 @@ function initFilters() {
     `;
     container.appendChild(group6);
 
+    // ***** RECEPTORES *****
+    const group7 = document.createElement('div');
+    group7.className = 'filter-group';
+    group7.innerHTML = `
+        <div class="filter-group-header" data-group="receivers">
+            <span class="filter-group-title">Receptores</span>
+            <span class="accordion-icon">▶</span>
+        </div>
+        <div class="filter-group-content">
+            <div class="filter-group-content-inner">
+                <div id="receiverCheckboxes" style="display: flex; flex-direction: column; gap: 6px; padding: 4px 0;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="a" checked> Receptor A
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="b" checked> Receptor B
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="c" checked> Receptor C
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor D
+                    </label>
+                </div>
+                <div class="filter-buttons" style="margin-top: 8px;">
+                    <button class="formButton" id="receiver_filter_apply">Apply</button>
+                    <button class="formButton" id="receiver_filter_reset_button">Reset</button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(group7);
+
     // ***** TABLA FILTRADA *****
     if (filterTable) {
         filterTable.innerHTML = '';
@@ -8680,7 +8787,7 @@ function initFilters() {
     });
 
     // ***** TRADUCIR TEXTO DE APLICAR FILTRO *****
-    document.querySelectorAll('#altitude_filter_apply, #source_filter_form button[type="submit"], #flag_filter_form button[type="submit"]').forEach(btn => {
+    document.querySelectorAll('#altitude_filter_apply, #source_filter_form button[type="submit"], #flag_filter_form button[type="submit"], #receiver_filter_apply').forEach(btn => {
         let applyText = 'Apply';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
             applyText = window.translate.t('apply') || applyText;
@@ -8691,7 +8798,7 @@ function initFilters() {
     });
 
     // ***** TRADUCIR TEXTO DE RESETEAR FILTRO *****
-    document.querySelectorAll('#altitude_filter_reset_button, #source_filter_reset_button, #flag_filter_reset_button').forEach(btn => {
+    document.querySelectorAll('#altitude_filter_reset_button, #source_filter_reset_button, #flag_filter_reset_button, #receiver_filter_reset_button').forEach(btn => {
         let resetText = 'Reset';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
             resetText = window.translate.t('reset') || resetText;
@@ -8765,6 +8872,39 @@ function initFilters() {
             jQuery("#altitude_filter_min").val("");
             jQuery("#altitude_filter_max").val("");
             updateAltFilter();
+            refreshFilter();
+        });
+    }
+
+    // ***** APLICAR FILTRO DE RECEPTORES *****
+    const receiverApply = document.getElementById('receiver_filter_apply');
+    if (receiverApply) {
+        receiverApply.addEventListener('click', (e) => {
+            e.preventDefault();
+            const checked = [];
+            document.querySelectorAll('.receiver-cb:checked').forEach(cb => {
+                checked.push(cb.value);
+            });
+            if (checked.length === 4) {
+                receiverFilter = null; // todos
+            } else if (checked.length === 0) {
+                receiverFilter = new Set(['__none__']);
+            } else {
+                receiverFilter = new Set(checked);
+            }
+            refreshFilter();
+        });
+    }
+
+    // ***** RESETEAR FILTRO DE RECEPTORES *****
+    const receiverReset = document.getElementById('receiver_filter_reset_button');
+    if (receiverReset) {
+        receiverReset.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.receiver-cb').forEach(cb => {
+                cb.checked = true;
+            });
+            receiverFilter = null;
             refreshFilter();
         });
     }
@@ -9435,6 +9575,18 @@ function refresh(redraw) {
     triggerRefresh = 0;
 }
 
+// function refreshFilter() {
+//     if (filterTracks)
+//         remakeTrails();
+
+//     refresh(true);
+
+//     drawHeatmap();
+//     if (toggles.shareFilters && toggles.shareFilters.state) {
+//         updateAddressBar();
+//     }
+// }
+
 function refreshFilter() {
     if (filterTracks)
         remakeTrails();
@@ -9446,7 +9598,6 @@ function refreshFilter() {
         updateAddressBar();
     }
 }
-
 
 function updateVisible() {
     if (mapIsVisible || !lastRenderExtent) {
@@ -12017,6 +12168,12 @@ function showReplayBar() {
         jQuery('#sidebar_canvas').height('100%');
         jQuery("#selected_showTrace_hide").show();
         restoreAltitudeChartPosition();
+
+        // ***** LIMPIAR URL DEL REPLAY *****
+        updateAddressBarString = "";
+        updateAddressBarPushed = false;
+        window.history.replaceState("object or string", "Title", pathName);
+        shareLink = window.location.origin + pathName;
 
         // ***** CAMBIAR VISUALIZACIÓN DEL OVERLAY DE PANORAMA SEGÚN EL REPLAY *****
         const panorama = document.getElementById('panorama-overlay');

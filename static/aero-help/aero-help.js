@@ -1,7 +1,4 @@
-// static/aero-help/aero-help.js
-// Ayuda aeronáutica integrada en el buscador de tar1090.
-// v4: índice invertido + debounce + zoom suave + i18n en caliente.
-
+// ***** MOSTRAR SUGERENCIAS DE TÉRMINOS EN EL BUSCADOR *****
 (function () {
     'use strict';
 
@@ -10,7 +7,6 @@
     const MIN_CHARS = 2;
     const DEBOUNCE_MS = 120;
 
-    // Zoom final tras saltar a un aeropuerto, según su tamaño
     const ZOOM_BY_SUBTYPE = {
         large_airport: 8,
         medium_airport: 9,
@@ -32,9 +28,7 @@
     let lastResults = [];
     let debounceTimer = null;
 
-    // ------------------------------------------------------------
-    // Utilidades
-    // ------------------------------------------------------------
+    // ***** NORMALIZAR BÚSQUEDA *****
     function normalize(str) {
         if (!str) return '';
         return str
@@ -45,6 +39,7 @@
             .trim();
     }
 
+    // ***** TRADUCCIONES *****
     function tr(key, fallback) {
         if (window.translate && typeof window.translate.t === 'function') {
             const v = window.translate.t(key);
@@ -57,6 +52,7 @@
         return fallback || key;
     }
 
+    // ***** ESCAPAR HTML *****
     function escapeHtml(s) {
         return String(s || '')
             .replace(/&/g, '&amp;')
@@ -65,9 +61,7 @@
             .replace(/"/g, '&quot;');
     }
 
-    // ------------------------------------------------------------
-    // Carga + construcción del índice invertido
-    // ------------------------------------------------------------
+   // ***** CARGAR TÉRMINOS *****
     function loadAeroTerms() {
         if (loadAeroTerms._promise) return loadAeroTerms._promise;
 
@@ -121,9 +115,7 @@
         return loadAeroTerms._promise;
     }
 
-    // ------------------------------------------------------------
-    // Búsqueda O(1) sobre el índice invertido
-    // ------------------------------------------------------------
+    // ***** REALIZAR BÚSQUEDA *****
     function searchTerms(query) {
         const q = normalize(query);
         if (!q || q.length < MIN_CHARS || !termsLoaded) return [];
@@ -133,7 +125,6 @@
         const tokens = q.split(/\s+/).filter(Boolean);
         if (!tokens.length) return [];
 
-        // Ordenar tokens por frecuencia ascendente → menos iteraciones
         tokens.sort((a, b) => {
             const la = termIndex[a] ? termIndex[a].length : Infinity;
             const lb = termIndex[b] ? termIndex[b].length : Infinity;
@@ -182,6 +173,7 @@
         return lastResults;
     }
 
+    // ***** APLICAR UN SCORE A CADA RESULTADO PARA MOSTRAR POR MAYOR PRIORIDAD *****
     function score(t, q) {
         let s = (t.rank != null ? t.rank : 3) * 10;
         const code = normalize(t.code);
@@ -199,9 +191,7 @@
         return s;
     }
 
-    // ------------------------------------------------------------
-    // Render del item
-    // ------------------------------------------------------------
+    // ***** ÍCONO PARA CADA TIPO DE BÚSQUEDA *****
     function iconForType(type) {
         if (type === 'airport') return '✈️';
         if (type === 'airline') return '🛫';
@@ -209,6 +199,7 @@
         return '📌';
     }
 
+    // ***** FORMATEAR RESULTADO DE LA BÚSQUEDA *****
     function formatResult(item) {
         if (!item || !item.data) return item.text;
         const d = item.data;
@@ -232,15 +223,14 @@
             '</div>';
     }
 
+    // ***** FORMATEAR OPCIÓN SELECCIONADA *****
     function formatSelection(item) {
         if (!item || !item.data) return item.text;
         const d = item.data;
         return d.code + (d.iata && d.iata !== d.code ? '/' + d.iata : '');
     }
 
-    // ------------------------------------------------------------
-    // Placeholder (se recalcula al cambiar idioma)
-    // ------------------------------------------------------------
+    // ***** OBTENER PLACEHOLDER *****
     function getExpectedPlaceholder() {
         return tr(
             'search_placeholder_combined',
@@ -248,25 +238,22 @@
         );
     }
 
+    // ***** APLICAR PLACEHOLDER *****
     function applyPlaceholder() {
         const $input = jQuery('#search_input');
         if (!$input.length) return;
 
         const text = getExpectedPlaceholder();
 
-        // 1. Actualizar el atributo del input original
         $input.attr('placeholder', text);
 
-        // 2. Actualizar el nodo que Select2 usa para mostrar el placeholder
         const $ph = jQuery('#search_form .select2-selection__placeholder');
         if ($ph.length) {
             $ph.text(text);
         }
     }
 
-    // ------------------------------------------------------------
-    // Tooltip propio (data-tooltip + CSS) — se actualiza en caliente
-    // ------------------------------------------------------------
+    // ***** OBTENER TOOLTIP *****
     function getExpectedTitle() {
         return tr(
             'search_tooltip_descriptive',
@@ -275,17 +262,15 @@
         );
     }
 
+    // ***** APLICAR TOOLTIPD *****
     function applySearchTooltip() {
         const text = getExpectedTitle();
         const $sel = jQuery('#search_form .select2-selection--single');
 
         if ($sel.length) {
-            // Tooltip propio (CSS ::after)
             $sel.attr('data-tooltip', text);
-            // Quitar el title nativo para evitar doble tooltip
             $sel.removeAttr('title');
 
-            // Ajustar posición si el input está muy abajo
             const rect = $sel[0].getBoundingClientRect();
             if (window.innerHeight - rect.bottom < 120) {
                 $sel.addClass('tooltip-above');
@@ -294,36 +279,30 @@
             }
         }
 
-        // Mantener el title en los otros nodos (por si acaso)
         jQuery('#search_input').attr('title', text);
         jQuery('#search_form').attr('title', text);
     }
 
-    // ------------------------------------------------------------
-    // Reaplicar todos los textos i18n en caliente
-    // ------------------------------------------------------------
+    // ***** ACTUALIZAR AL CAMBIAR IDIOMA *****
     function refreshI18nTexts() {
         applyPlaceholder();
         applySearchTooltip();
     }
 
-    // ------------------------------------------------------------
-    // Acciones al seleccionar
-    // ------------------------------------------------------------
+    // ***** MANEJAR SELECCIÓN DE LA OPCIÓN *****
     function handleSelection(d) {
         if (!d) return;
-        console.log('[aero-help] seleccionado:', d);
 
         if (d.type === 'airport' && d.lat != null && d.lon != null) {
             const subtype = (d.subtype || '').toLowerCase();
             const targetZoom = ZOOM_BY_SUBTYPE[subtype] || ZOOM_DEFAULT;
 
-            // 1. Marcar el punto
+            // ***** MARCAR PUNTO EN EL MAPA *****
             if (typeof window.showAirportMarker === 'function') {
                 window.showAirportMarker([d.lat, d.lon]);
             }
 
-            // 2. Centrar y hacer zoom con animación
+            // ***** HACER ZOOM AL PUNTO *****
             if (window.OLMap && window.ol) {
                 window.OLMap.getView().animate({
                     center: window.ol.proj.fromLonLat([d.lon, d.lat]),
@@ -335,7 +314,6 @@
                 });
             }
 
-            // 3. Refrescar filtros si aplica
             if (typeof window.refreshFilter === 'function') {
                 window.refreshFilter();
             }
@@ -351,9 +329,7 @@
         }, 30);
     }
 
-    // ------------------------------------------------------------
-    // Enter con texto libre → submit nativo de tar1090
-    // ------------------------------------------------------------
+    // ***** ACEPTAR ENTER COMO CONFIRMACIÓN *****
     function handleEnterAsSearch(e) {
         if (e.key !== 'Enter') return;
         const $input = jQuery('#search_input');
@@ -367,9 +343,7 @@
         jQuery('#search_form').trigger('submit');
     }
 
-    // ------------------------------------------------------------
-    // Init Select2
-    // ------------------------------------------------------------
+    // ***** INICIALIZAR SELECT2 *****
     function initSelect2() {
         if (select2Ready) return;
         if (!jQuery || !jQuery.fn.select2) return;
@@ -393,7 +367,6 @@
             selectOnClose: false,
             dropdownParent: jQuery('#tab-search-navbar'),
 
-            // "AJAX local": debounce + solo los ~25 matches actuales
             ajax: {
                 transport: function (params, success, failure) {
                     const term = (params.data && params.data.term) || '';
@@ -420,9 +393,6 @@
             templateSelection: formatSelection,
             escapeMarkup: m => m,
 
-            // El idioma se controla desde language_patch.js.
-            // Aquí solo definimos las funciones para que Select2 las llame
-            // cada vez que abre el dropdown (y así refleje el idioma actual).
             language: {
                 inputTooShort: () => tr('search_min_chars', 'Escribe al menos 2 caracteres…'),
                 noResults: () => tr('search_no_results', 'Sin resultados'),
@@ -436,22 +406,17 @@
             if (d) handleSelection(d);
         });
 
-        // Reaplicar placeholder + tooltip en cada interacción
         $input.on('focus click select2:open select2:close select2:select select2:unselect',
             refreshI18nTexts);
 
         $input.on('keydown', handleEnterAsSearch);
 
-        // Aplicar inmediatamente tras inicializar
         refreshI18nTexts();
 
         select2Ready = true;
-        console.log('[aero-help] Select2 inicializado.');
     }
 
-    // ------------------------------------------------------------
-    // Bootstrap
-    // ------------------------------------------------------------
+    // ***** CARGAR TÉRMINOS CUANDO ESTÉN LISTOS PARA MOSTRARSE *****
     function ready() {
         loadAeroTerms().then(() => {
             let tries = 0;
@@ -472,28 +437,21 @@
         ready();
     }
 
-    // ------------------------------------------------------------
-    // Listeners globales
-    // ------------------------------------------------------------
-
-    // Cambio de idioma → refrescar placeholder y tooltip en caliente
+    // ***** DETECTAR CAMBIO DE IDIOMA PARA ACTUALIZAR TEXTOS *****
     document.addEventListener('languageChanged', function () {
-        // Múltiples tiempos para asegurar que language_patch ya actualizó
-        // window.translate antes de que leamos las traducciones.
         refreshI18nTexts();
         setTimeout(refreshI18nTexts, 50);
         setTimeout(refreshI18nTexts, 200);
         setTimeout(refreshI18nTexts, 500);
     });
 
-    // Resize → repositionar tooltip si es necesario
     window.addEventListener('resize', function () {
         if (document.querySelector('#search_form .select2-selection--single[data-tooltip]')) {
             applySearchTooltip();
         }
     });
 
-    // Observador: si Select2 regenera sus nodos, reaplicar textos
+    // ***** OBSERVAR REGENERACIÓN DE LOS NODOS DE SELECT2 *****
     (function observeSelect2Nodes() {
         const form = document.getElementById('search_form');
         if (!form) return;
@@ -516,9 +474,7 @@
         });
     })();
 
-    // ------------------------------------------------------------
-    // API pública
-    // ------------------------------------------------------------
+    // ***** ACCESO A LA API *****
     window.aeroHelp = {
         search: searchTerms,
         load: loadAeroTerms,

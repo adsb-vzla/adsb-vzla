@@ -1,14 +1,8 @@
-/* ============================================================
-   aero-help.css — Estilos oscuros para Select2 integrado
-   ============================================================ */
-
-/* Contenedor del Select2 dentro de la barra de búsqueda */
 #tab-search-navbar .select2-container {
     flex: 1 1 auto;
     min-width: 200px;
 }
 
-/* Caja de selección (parte visible) */
 .select2-container--default .select2-selection--single {
     background-color: #2b2b2b !important;
     border: 1px solid #4a4a4a !important;
@@ -52,7 +46,6 @@
     border-color: transparent transparent #b8bdc7 transparent !important;
 }
 
-/* Clear button (X) */
 .select2-container--default .select2-selection--single .select2-selection__clear {
     color: #b8bdc7 !important;
     font-weight: bold;
@@ -66,7 +59,6 @@
     color: #ffffff !important;
 }
 
-/* Dropdown */
 .select2-dropdown {
     background-color: #242424 !important;
     border: 1px solid #4a4a4a !important;
@@ -130,7 +122,6 @@
     padding: 10px !important;
 }
 
-/* Layout interno de cada sugerencia */
 .aero-help-item {
     display: flex;
     align-items: center;
@@ -159,7 +150,6 @@
 }
 
 .aero-help-name {
-    /* color: #d8d8d8; */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -182,8 +172,6 @@
 .select2-results__option--highlighted .aero-help-meta {
     color: #cfe3ff !important;
 }
-
-/* Modo seleccionado (input) */
 .aero-help-selected {
     display: flex;
     align-items: center;
@@ -191,17 +179,11 @@
     font-size: 12px;
 }
 
-
 #search_form:focus-within {
     border-color: #0a84ff !important;
     box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.25) !important;
-} */
+}
 
-/* ============================================================
-   BUSCADOR UNIFICADO — hereda el look nativo de tar1090
-   ============================================================ */
-
-/* 1. El input nativo queda fuera de pantalla pero focusable. */
 #search_form > #search_input {
     position: absolute !important;
     left: -9999px !important;
@@ -217,8 +199,6 @@
     padding: 0 !important;
 }
 
-/* 2. El contenedor Select2 se fusiona con el form: mismo alto,
-      mismo ancho, sin borde ni fondo propios. */
 #search_form > .select2-container {
     flex: 1 1 auto !important;
     min-width: 0 !important;
@@ -228,8 +208,6 @@
     z-index: 1 !important;
 }
 
-/* 3. La caja de Select2 toma el fondo y el borde del contenedor
-      padre (el form o su wrapper). NO define borde propio. */
 #search_form .select2-selection--single {
     height: 100% !important;
     min-height: 0 !important;
@@ -244,7 +222,7 @@
 
 #search_form .select2-selection__rendered {
     line-height: normal !important;
-    color: inherit !important;              /* hereda el color del input nativo */
+    color: inherit !important;
     padding-left: 8px !important;
     padding-right: 24px !important;
     font-size: inherit !important;
@@ -264,8 +242,6 @@
     font-size: 14px !important;
 }
 
-/* 4. El botón de submit mantiene su look nativo — solo aseguramos
-      que no haya doble borde ni desalineación. */
 #search_form > #search_submit_btn {
     flex: 0 0 auto !important;
     margin: 0 !important;
@@ -273,16 +249,11 @@
     z-index: 2 !important;
 }
 
-/* ============================================================
-   DROPDOWN OSCURO (independiente del estilo del form)
-   ============================================================ */
-
 .select2-dropdown {
     background-color: #242424 !important;
     border: 1px solid #4a4a4a !important;
     border-radius: 4px !important;
     box-shadow: 0 8px 24px rgba(0,0,0,0.55) !important;
-    /* color: #e9edf7 !important; */
     z-index: 10000 !important;
 }
 
@@ -341,7 +312,6 @@
     padding: 10px !important;
 }
 
-/* Layout interno de cada sugerencia */
 .aero-help-item {
     display: flex;
     align-items: center;

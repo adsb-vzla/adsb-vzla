@@ -4,7 +4,7 @@
 
     const SESSION_KEY = 'adsb_session';
     const SESSION_TS_KEY = 'adsb_session_ts';
-    const MAX_AGE_MS = 8 * 60 * 60 * 1000; // Debe coincidir con auth-guard.js
+    const MAX_AGE_MS = 8 * 60 * 60 * 1000;
 
     let session = null;
     let ts = 0;
@@ -20,12 +20,10 @@
     const valid = session === '1' && !expired;
 
     if (valid) {
-        // Ya hay sesión: saltar directo al dashboard
         window.location.replace('index.html');
         throw new Error('Sesión activa: redirigiendo a index.');
     }
 
-    // Si la sesión expiró, limpiar restos
     if (session || ts) {
         try {
             sessionStorage.removeItem(SESSION_KEY);

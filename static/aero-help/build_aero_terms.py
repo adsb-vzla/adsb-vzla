@@ -1,31 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-build_aero_terms.py — versión optimizada para Select2 + tar1090.
 
-Salida: aero-terms.json con estructura:
-{
-  "generated": "...",
-  "count": N,
-  "terms": [
-    {
-      "id": "airport:LEMD",
-      "type": "airport",
-      "code": "LEMD",
-      "iata": "MAD",
-      "shortLabel": "LEMD — Adolfo Suárez Madrid-Barajas",
-      "label": "Adolfo Suárez Madrid-Barajas Airport (LEMD/MAD) — Madrid, ES",
-      "searchString": "lemd mad lemd mad adolfo suarez madrid barajas airport madrid es",
-      "keywords": ["lemd","mad","adolfo","suarez","madrid","barajas","airport","es"],
-      "rank": 0,
-      "lat": 40.4719,
-      "lon": -3.5626
-    },
-    ...
-  ]
-}
-"""
-
+# ***** LIBRERÍAS PARA EL MANEJO DE CSV - JSON - SYSTEMA - UNICODE - FECHAS - RUTAS *****
 import csv
 import json
 import sys
@@ -33,19 +7,19 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
+# ***** OBTENER LAS RUTAS DE LOS SCRIPTS *****
 SCRIPT_DIR  = Path(__file__).resolve().parent
 RAW_DIR     = SCRIPT_DIR / "raw_data"
 OUTPUT_FILE = SCRIPT_DIR / "aero-terms.json"
 
+# ***** OBTENER LAS RUTAS DE LAS FUENTES *****
 AIRPORTS_CSV = RAW_DIR / "airports.csv"
 AIRLINES_DAT = RAW_DIR / "airlines.dat.txt"
 PLANES_DAT   = RAW_DIR / "planes.dat.txt"
-AIRCRAFT_CSV = RAW_DIR / "aircraft-database-complete.csv"   # opcional
+AIRCRAFT_CSV = RAW_DIR / "aircraft-database-complete.csv"
 
 
-# ============================================================
-# UTILIDADES
-# ============================================================
+# ***** NORMALIZAR TEXTO *****
 def normalize(text) -> str:
     if text is None:
         return ""
@@ -54,7 +28,7 @@ def normalize(text) -> str:
     text = "".join(c for c in text if not unicodedata.combining(c))
     return text.lower().strip()
 
-
+# ***** LIMPIAR CADENAS *****
 def safe_str(value) -> str:
     if value is None:
         return ""
@@ -63,7 +37,7 @@ def safe_str(value) -> str:
         return ""
     return s
 
-
+# ***** LIMPIAR DECIMALES *****
 def safe_float(value):
     try:
         if value is None or str(value).strip() == "":
@@ -72,7 +46,7 @@ def safe_float(value):
     except (ValueError, TypeError):
         return None
 
-
+# ***** AÑADIR TÉRMINO DE BÚSQUEDA *****
 def add_term(terms, seen, term):
     key = term["id"]
     if key in seen:
@@ -81,9 +55,8 @@ def add_term(terms, seen, term):
     terms.append(term)
     return True
 
-
+# ***** CONSTRUIR LAS CLAVES DE BÚSQUEDA *****
 def build_keywords(*parts):
-    """Devuelve lista de tokens únicos no vacíos, normalizados."""
     out = []
     seen = set()
     for p in parts:
@@ -95,10 +68,7 @@ def build_keywords(*parts):
                 out.append(tok)
     return out
 
-
-# ============================================================
-# 1) AEROPUERTOS
-# ============================================================
+# ***** PROCESAR AEROPUERTOS *****
 def process_airports(terms, seen):
     if not AIRPORTS_CSV.exists():
         print(f"[!] No existe {AIRPORTS_CSV}, se omite aeropuertos.")
@@ -127,7 +97,6 @@ def process_airports(terms, seen):
             )
             search_string = " ".join(keywords)
 
-            # shortLabel: código + nombre recortado
             short_name = name
             if len(short_name) > 45:
                 short_name = short_name[:42] + "…"
@@ -137,7 +106,6 @@ def process_airports(terms, seen):
             if short_name:
                 short_label += f" — {short_name}"
 
-            # label completo (para tooltip / selección)
             full_label = name or primary_code
             if iata and iata != primary_code:
                 full_label += f" ({primary_code}/{iata})"
@@ -148,7 +116,6 @@ def process_airports(terms, seen):
             if country:
                 full_label += f", {country}"
 
-            # rank: 0 si es large_airport, 1 medium, 2 small, 3 el resto
             if atype == "large_airport":
                 rank = 0
             elif atype == "medium_airport":
@@ -183,10 +150,7 @@ def process_airports(terms, seen):
     print(f"[✓] Aeropuertos procesados: {count}")
     return count
 
-
-# ============================================================
-# 2) AEROLÍNEAS
-# ============================================================
+# ***** PROCESAR AEROLÍNEAS *****
 def process_airlines(terms, seen):
     if not AIRLINES_DAT.exists():
         print(f"[!] No existe {AIRLINES_DAT}, se omite aerolíneas.")
@@ -261,10 +225,7 @@ def process_airlines(terms, seen):
     print(f"[✓] Aerolíneas procesadas: {count}")
     return count
 
-
-# ============================================================
-# 3) TIPOS DE AERONAVE
-# ============================================================
+# ***** PROCESAR TIPOS DE AERONAVES *****
 def process_aircraft(terms, seen):
     count = 0
 
@@ -368,10 +329,7 @@ def process_aircraft(terms, seen):
     print(f"[✓] Tipos de aeronave (planes.dat): {count}")
     return count
 
-
-# ============================================================
-# MAIN
-# ============================================================
+# ***** FUNCIÓN PRINCIPAL *****
 def main():
     if not RAW_DIR.exists():
         print(f"[ERROR] No existe {RAW_DIR}")
@@ -384,7 +342,6 @@ def main():
     process_airlines(terms, seen)
     process_aircraft(terms, seen)
 
-    # Orden global por rank y luego alfabéticamente
     terms.sort(key=lambda t: (t.get("rank", 9), t.get("label", "").lower()))
 
     payload = {
