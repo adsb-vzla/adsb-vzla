@@ -189,7 +189,8 @@ function updateDistanceLine() {
 
             const bearingAToB = bearingFromLonLat(coords1, coords2);
             const bearingStr = formatTrackDisplay(bearingAToB);
-            const angle = relativeBearing(plane1.track, bearingAToB);
+            // const angle = relativeBearing(plane1.track, bearingAToB);
+            const angle = relativeBearing(bearingAToB, plane1.track);
 
             const turnAngle = angle == null
                 ? null
@@ -214,7 +215,7 @@ function updateDistanceLine() {
             textContainer.innerHTML = `
                 ⟷ ${distText} | ↕ ${altText}<br>
                 ✈ A ${track1Str} | ✈ B ${track2Str} | ✈ A - B ${trackDiffStr}<br>
-                ⏱ A → B ${bearingStr} | ∠ ${formatAngle(angle)} | ↻ A → B ${formatAngle(turnAngle)}
+                ⏱ A → B ${bearingStr} | ∠ ${formatAngle(angle)} | 🕐 ${formatClockPosition(angle)}
             `;
         }
 
@@ -621,7 +622,7 @@ function updateDistanceLine() {
                 textContainer.innerHTML = `
                     ⟷ ${distText} | ↕ ${altText}<br>
                     ✈ A ${trackAStr} | ✈ B ${trackBStr} | ✈ A-B ${trackDiffStr}<br>
-                    ⏱ A → B ${bearingStr} | ∠ ${formatAngle(anglePair)} | ↻ A → B ${formatAngle(turnAnglePair)}
+                    ⏱ A → B ${bearingStr} | ∠ ${formatAngle(anglePair)} | 🕐 ${formatClockPosition(anglePair)}
                 `;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';

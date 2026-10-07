@@ -502,6 +502,14 @@ window.InstrumentedAircraft = {
     }
 };
 
+// ***** CONVERTIR ÁNGULO RELATIVO A POSICIÓN DE RELOJ *****
+function formatClockPosition(angle) {
+    if (angle == null || isNaN(angle)) return '---';
+    let hour = Math.round(angle / 30) % 12;
+    if (hour === 0) hour = 12;
+    return `${hour} en punto`;
+}
+
 // ***** EXPONER FUNCIONES GLOBALMENTE PARA USO EN OTROS ARCHIVOS *****
 window.haversineDistance = haversineDistance;
 window.bearingFromLonLat = bearingFromLonLat;
@@ -521,3 +529,4 @@ window.removePlanePoints = removePlanePoints;
 window.clearPlanePoints = clearPlanePoints;
 window.ensureDistanceGroup = ensureDistanceGroup;
 window.addLayerToDistanceGroup = addLayerToDistanceGroup;
+window.formatClockPosition = formatClockPosition;
