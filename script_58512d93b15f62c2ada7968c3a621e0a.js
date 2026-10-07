@@ -1530,7 +1530,7 @@ function initPage() {
 
     if (!globeIndex && !haveTraces) {
         jQuery("#lastLeg_cb").parent().hide();
-        jQuery('#show_trace').hide();
+        // jQuery('#show_trace').hide();
     }
     if (globeIndex) {
         toggleTableInView('enable');
@@ -1969,7 +1969,7 @@ function earlyInitPage() {
     jQuery("#jump_form").submit(onJump);
     */
 
-    jQuery("#show_trace").click(toggleShowTrace);
+    // jQuery("#show_trace").click(toggleShowTrace);
     jQuery("#trace_back_1d").click(function () { shiftTrace(-1) });
     jQuery("#trace_jump_1d").click(function () { shiftTrace(1) });
 
@@ -2309,7 +2309,7 @@ function earlyInitPage() {
             updateStarredButtonInInfoblock();
         }
     });
-    
+
     // ***** FUNCIÓN PARA OCULTAR TOOLTIPS DEL MENÚ DE CONFIGURACIONES *****
     function setHideSettingsTooltips(state) {
         try {
@@ -2331,7 +2331,7 @@ function earlyInitPage() {
             }
         } catch (e) { console.error(e); }
     };
-    
+
     // ***** FUNCIÓN PARA OCULTAR TODOS LOS TOOLTIPS *****
     function setHideAllTooltips(state) {
         try {
@@ -2353,12 +2353,26 @@ function earlyInitPage() {
         } catch (e) { console.error(e); }
     };
 
-    jQuery('#tStop').on('click', function () { traceOpts.replaySpeed = 0; gotoTime(traceOpts.showTime); });
-    jQuery('#t1x').on('click', function () { replaySpeedChange(1); });
-    jQuery('#t5x').on('click', function () { replaySpeedChange(5); });
-    jQuery('#t10x').on('click', function () { replaySpeedChange(10); });
-    jQuery('#t20x').on('click', function () { replaySpeedChange(20); });
-    jQuery('#t40x').on('click', function () { replaySpeedChange(40); });
+    // jQuery('#tStop').on('click', function () { traceOpts.replaySpeed = 0; gotoTime(traceOpts.showTime); });
+    // jQuery('#t1x').on('click', function () { replaySpeedChange(1); });
+    // jQuery('#t5x').on('click', function () { replaySpeedChange(5); });
+    // jQuery('#t10x').on('click', function () { replaySpeedChange(10); });
+    // jQuery('#t20x').on('click', function () { replaySpeedChange(20); });
+    // jQuery('#t40x').on('click', function () { replaySpeedChange(40); });
+    jQuery('#tStop').on('click', function () {
+        traceOpts.animate = false;
+        traceOpts.replaySpeed = 0;
+        if (traceOpts.showTimeout) {
+            clearTimeout(traceOpts.showTimeout);
+            traceOpts.showTimeout = null;
+        }
+        gotoTime(traceOpts.showTime);
+    });
+    jQuery('#t1x').on('click', function () { traceOpts.animate = true; traceOpts.replaySpeed = 1; if (traceOpts.showTime != null) playTraceFrom(traceOpts.showTime); });
+    jQuery('#t5x').on('click', function () { traceOpts.animate = true; traceOpts.replaySpeed = 5; if (traceOpts.showTime != null) playTraceFrom(traceOpts.showTime); });
+    jQuery('#t10x').on('click', function () { traceOpts.animate = true; traceOpts.replaySpeed = 10; if (traceOpts.showTime != null) playTraceFrom(traceOpts.showTime); });
+    jQuery('#t20x').on('click', function () { traceOpts.animate = true; traceOpts.replaySpeed = 20; if (traceOpts.showTime != null) playTraceFrom(traceOpts.showTime); });
+    jQuery('#t40x').on('click', function () { traceOpts.animate = true; traceOpts.replaySpeed = 40; if (traceOpts.showTime != null) playTraceFrom(traceOpts.showTime); });
 
     // ***** CATEGORÍA SYSTEM *****
 
@@ -2470,7 +2484,7 @@ function earlyInitPage() {
             runAfterLoad(watchPosition);
         }
     });
-    
+
     // ***** CATEGORÍA DISPLAY *****
 
     // ***** AVIONES COLOREADOS SEGÚN LEYENDA DE LA TABLA DE ALTITUD *****
@@ -3910,9 +3924,18 @@ function ol_map_init() {
 
         const dblclick = (evt.type === 'dblclick') && !showTrace;
 
+        // if (showTrace && trailTS) {
+        //     planeHex = null;
+        //     gotoTime(trailTS);
+        // }
         if (showTrace && trailTS) {
             planeHex = null;
-            gotoTime(trailTS);
+            // Iniciar reproducción al hacer clic sobre la traza
+            traceOpts.animate = false;      // asegurar que no esté animando un salto previo
+            traceOpts.replaySpeed = traceOpts.replaySpeed || 1;
+            traceOpts.showTime = trailTS;
+            // Arrancar el modo "play" continuo
+            playTraceFrom(trailTS);
         }
 
         // ***** MANEJADOR DE CLIC (ELEVACIÓN TIERRA-TIERRA) *****
@@ -5345,9 +5368,12 @@ function refreshSelected() {
         if (selected.position_time) {
             const date = new Date(selected.position_time * 1000);
             let timestamp = utcTimesHistoric ? (zuluTime(date) + NBSP + 'Z') : (lDateString(date) + ' ' + localTime(date) + NBSP + TIMEZONE);
-            jQuery('#trace_time').updateText('Time:\n' + timestamp);
+            const timeLabel = getTranslatedText('history_time_label', 'Time:');
+            jQuery('#trace_time').updateText(timeLabel + '\n' + timestamp);
         } else {
-            jQuery('#trace_time').updateText('Time:\n');
+            jQuery('#trace_time').updateText(
+                getTranslatedText('history_time_label', 'Time:') + '\n'
+            );
         }
     }
 
@@ -6594,32 +6620,32 @@ function refreshFeatures() {
             <div class="column-category" id="column-category-table-options">
                 <div class="column-category-title" data-i18n="table_display_options">
                     ${typeof window.translate !== 'undefined' && window.translate.t
-                        ? window.translate.t('table_display_options')
-                        : 'Table display options'}
+                ? window.translate.t('table_display_options')
+                : 'Table display options'}
                 </div>
                 <div class="columns-grid" id="table-options-grid">
                     <li class="ui-state-default" id="table-option-more1" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
                         <div class="settingsCheckbox" id="moreTableLines1_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
                         <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="more_table_lines">
                         ${typeof window.translate !== 'undefined' && window.translate.t
-                        ? window.translate.t('more_table_lines')
-                        : 'More Table Lines'}
+                ? window.translate.t('more_table_lines')
+                : 'More Table Lines'}
                         </span>
                     </li>
                     <li class="ui-state-default" id="table-option-more2" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
                         <div class="settingsCheckbox" id="moreTableLines2_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
                         <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="even_more_table_lines">
                         ${typeof window.translate !== 'undefined' && window.translate.t
-                        ? window.translate.t('even_more_table_lines')
-                        : 'Even More'}
+                ? window.translate.t('even_more_table_lines')
+                : 'Even More'}
                         </span>
                     </li>
                     <li class="ui-state-default" id="table-option-all" style="margin: 0; padding: 6px 10px; width: calc(50% - 8px); min-width: 120px; flex: 1 0 auto; background: var(--BGCOLOR2, #f8f8f8); border: 1px solid var(--BASE-COLOR, #192a56); border-radius: 6px; display: flex; align-items: center; gap: 8px; cursor: default;">
                         <div class="settingsCheckbox" id="allTableLines_checkbox" style="display: inline-block; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;"></div>
                         <span class="settingsText" style="display: inline-block; font-size: calc(12px * var(--SCALE)); line-height: normal; flex: 1; cursor: pointer;" data-i18n="all_table_lines">
                         ${typeof window.translate !== 'undefined' && window.translate.t
-                        ? window.translate.t('all_table_lines')
-                        : 'All Table Lines'}
+                ? window.translate.t('all_table_lines')
+                : 'All Table Lines'}
                         </span>
                     </li>
                 </div>
@@ -6737,7 +6763,7 @@ function refreshFeatures() {
                 inactiveTitle.html(`${inactiveColumnsText} (${uncheckedCount})`);
             }
         }
-        
+
         // ***** ACTUALIZAR ORDEN DE COLUMNAS ACTIVAS/INACTIVAS *****
         function updateColumnsOrderFromDOM() {
             const newOrder = [];
@@ -8789,7 +8815,7 @@ function initFilters() {
         }
         return fallback || key;
     }
-    
+
     // ***** ACTUALIZAR LENGUAJE DE COLUMNAS *****
     function updateTableColumnLanguage() {
         if (typeof TAR === 'undefined' || !TAR.planeMan || !TAR.planeMan.cols) {
@@ -8889,7 +8915,7 @@ function initFilters() {
 
         return updatedCount;
     }
-    
+
     // ***** ACTUALIZAR LENGUAJE DE FILTROS *****
     function updateFilterLanguage() {
         let updatedCount = 0;
@@ -9006,7 +9032,7 @@ function initFilters() {
 
         return updatedCount;
     }
-    
+
     // ***** ACTUALIZAR LENGUAJE DE ELEMENTOS DE UI *****
     function updateUIElements() {
         let updatedCount = 0;
@@ -9044,7 +9070,7 @@ function initFilters() {
 
         return updatedCount;
     }
-    
+
     // ***** EJECUTAR TODAS LAS FUNCIONES DE ACTUALIZACIÓN DE IDIOMA *****
     function updateAllLanguage() {
         if (typeof window.updateAllToggles === 'function') {
@@ -10206,8 +10232,18 @@ function toggleShowTrace() {
         }
     }
 
-    jQuery('#history_collapse').toggle();
-    jQuery('#show_trace').toggleClass('active');
+    // jQuery('#history_collapse').toggle();
+    // jQuery('#show_trace').toggleClass('active');
+    const historyToggle = document.querySelector(
+        '.section-toggle[data-target="history_block"]'
+    );
+
+    if (historyToggle) {
+        const expanded = historyToggle.getAttribute('aria-expanded') === 'true';
+
+        if (expanded !== showTrace)
+            historyToggle.click();
+    }
 }
 
 function legShift(offset, plane) {
@@ -10228,7 +10264,9 @@ function legShift(offset, plane) {
     if (!multiSelect && !plane.fullTrace) {
         let noDataText = getTranslatedText('history_no_data', 'No Data available for');
         jQuery('#leg_sel').text(noDataText + ' ' + traceDateString);
-        jQuery('#trace_time').text(getTranslatedText('history_time_label', 'Time:') + '\n');
+        jQuery('#trace_time').updateText(
+            getTranslatedText('history_time_label', 'Time:') + '\n'
+        );
         return;
     }
     if (!plane.fullTrace) {
@@ -10770,6 +10808,51 @@ function drawOutlineJson() {
     request.fail(function () {
         // no rings available, do nothing
     });
+}
+
+// ***** INICIAR REPRODUCCIÓN CONTINUA DESDE UN TIMESTAMP *****
+function playTraceFrom(timestamp) {
+    if (!SelectedPlane) return;
+    // Forzar que el modo animate esté activo y con velocidad válida
+    if (!traceOpts.replaySpeed || traceOpts.replaySpeed <= 0) {
+        traceOpts.replaySpeed = 1;
+    }
+    traceOpts.animate = true;
+    traceOpts.animateCounter = 1;
+    traceOpts.animateSteps = 1;
+    traceOpts.animateRealtime = 0;
+    traceOpts.animateStepTime = 0;
+    traceOpts.showTime = timestamp;
+    traceOpts.showTimeEnd = null;
+    // Forzar un legShift para reposicionar y luego iniciar el avance automático
+    legShift(0);
+    // Arrancar el "tick" de reproducción
+    scheduleNextReplayTick();
+}
+
+// ***** AGENDAR SIGUIENTE TICK DE REPRODUCCIÓN *****
+function scheduleNextReplayTick() {
+    if (!traceOpts.animate || showTrace === false || !SelectedPlane) return;
+    clearTimeout(traceOpts.showTimeout);
+    // Avanzar la posición animada un pequeño delta de tiempo real
+    const stepMs = 200; // cada 200ms avanza "replaySpeed" segundos de traza
+    traceOpts.showTimeout = setTimeout(function () {
+        if (!traceOpts.animate || !SelectedPlane) return;
+        // Avanzar el tiempo mostrado
+        let next = (traceOpts.showTime || 0) + (traceOpts.replaySpeed || 1) * (stepMs / 1000);
+        // No sobrepasar el fin del leg
+        if (traceOpts.legEnd != null) {
+            const endTs = SelectedPlane.fullTrace.trace[traceOpts.legEnd]?.[0];
+            if (endTs != null && next >= endTs) {
+                next = endTs;
+                traceOpts.animate = false; // detener al llegar al final
+            }
+        }
+        traceOpts.showTime = next;
+        SelectedPlane.processTrace();
+        refreshSelected();
+        scheduleNextReplayTick();
+    }, stepMs);
 }
 
 function gotoTime(timestamp) {
@@ -13092,16 +13175,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setState(false);
 
+        // btn.addEventListener('click', () => {
+        //     const expanded = btn.getAttribute('aria-expanded') === 'true';
+        //     setState(!expanded);
+        //     if (targetId === 'history_block' && !expanded && !showTrace) {
+        //         const planeTimestamp = SelectedPlane && (Number.isFinite(SelectedPlane.position_time)
+        //             ? SelectedPlane.position_time
+        //             : SelectedPlane.last_message_time);
+        //         if (Number.isFinite(planeTimestamp))
+        //             setTraceDate({ ts: planeTimestamp * 1000 });
+        //         toggleShowTrace();
+        //     }
+        // });
         btn.addEventListener('click', () => {
             const expanded = btn.getAttribute('aria-expanded') === 'true';
-            setState(!expanded);
-            if (targetId === 'history_block' && !expanded && !showTrace) {
-                const planeTimestamp = SelectedPlane && (Number.isFinite(SelectedPlane.position_time)
-                    ? SelectedPlane.position_time
-                    : SelectedPlane.last_message_time);
-                if (Number.isFinite(planeTimestamp))
-                    setTraceDate({ ts: planeTimestamp * 1000 });
-                toggleShowTrace();
+            const willExpand = !expanded;
+            setState(willExpand);
+
+            if (targetId === 'history_block') {
+                if (willExpand && !showTrace) {
+                    // Abrir: entrar en modo history
+                    const planeTimestamp = SelectedPlane && (Number.isFinite(SelectedPlane.position_time)
+                        ? SelectedPlane.position_time
+                        : SelectedPlane.last_message_time);
+                    if (Number.isFinite(planeTimestamp))
+                        setTraceDate({ ts: planeTimestamp * 1000 });
+                    toggleShowTrace();
+                } else if (!willExpand && showTrace) {
+                    // Cerrar: salir del modo history y volver a reproducción normal
+                    traceOpts.animate = false;
+                    if (traceOpts.showTimeout) {
+                        clearTimeout(traceOpts.showTimeout);
+                        traceOpts.showTimeout = null;
+                    }
+                    toggleShowTrace();
+                }
             }
         });
     });

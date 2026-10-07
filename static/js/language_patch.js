@@ -819,7 +819,7 @@
             'next_day': 'siguiente',
             'previous_leg': 'anterior',
             'next_leg': 'siguiente',
-            'stop': 'detener',
+            'stop': 'Detener',
             'click_trace_to_play': '¡Haz clic en la línea de ruta para iniciar la reproducción!',
             // *** SPATIAL ***
             'rid': 'rId:',
