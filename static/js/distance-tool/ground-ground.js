@@ -52,14 +52,13 @@ function updateGroundToGroundOverlay() {
         const mid = feat.getGeometry().getCoordinateAt(0.5);
 
         const trueBearing = bearingFromLonLat(a, b);
-        const angle = magneticBearing(a[1], a[0], 0, trueBearing);
+        const angle = normalizeBearing(trueBearing);
 
         let ov = ggOverlays.get(key);
         if (!ov) {
             const el = document.createElement('div');
             el.id = `gg-overlay-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
             el.style.background = 'rgba(0,0,0,0.4)';
-            // el.style.border = '1px solid black';
             el.style.padding = '5px';
             el.style.fontSize = '12px';
             el.style.fontWeight = '600',
@@ -201,17 +200,13 @@ function updateGroundToGroundOverlay() {
                     );
                 }
 
-                // NUEVO: limpiar el número 2 correspondiente a este punto B
                 if (groundToGroundModeType === '1A_nB') {
-                    // Recalcular la key en base a la posición actual del punto B antes de eliminarlo
-                    // Buscar la key original usando la coordenada b
                     const allPointNumberKeys = [];
                     if (_pointNumberSources['tt']) {
                         _pointNumberSources['tt'].forEachFeature(f => {
                             const fGeom = f.getGeometry();
                             if (fGeom) {
                                 const fCoord = ol.proj.toLonLat(fGeom.getCoordinates());
-                                // Si es el número 2 y coincide con b, marcar para eliminar
                                 if (f.get('num') === 'B' &&
                                     Math.abs(fCoord[0] - b[0]) < 1e-6 &&
                                     Math.abs(fCoord[1] - b[1]) < 1e-6) {
@@ -228,12 +223,9 @@ function updateGroundToGroundOverlay() {
                 if (OLMap) OLMap.renderSync();
                 updateGroundToGroundOverlay();
 
-                // NUEVO: limpiar números del par (o solo del punto B en 1A_nB)
                 if (groundToGroundModeType === '1A_nB') {
-                    // En 1A_nB, el punto A es único y compartido. Solo borrar el número del B eliminado
                     removePointNumbers('tt', ['tt_' + key + '_2']);
                 } else {
-                    // En 1A1B y nA_nB, borrar los números del par completo
                     removePointNumbers('tt', ['tt_' + key + '_1', 'tt_' + key + '_2']);
                 }
             });
@@ -250,13 +242,8 @@ function updateGroundToGroundOverlay() {
 
         const textContainer = ov.getElement().querySelector('.gg-text-content');
         if (textContainer) {
-            // textContainer.innerHTML = `Distance: ${distText}`;
-            // let distanceLabel = getTranslatedText('distance_label', 'Distance:');
-            const iconHTML = '⟷';
             const distanceText = showLabelUnits ? distText : format_distance_brief(distM, DisplayUnits);
-            // textContainer.innerHTML = `${distanceLabel} ${distanceText}`;
-            // textContainer.innerHTML = `${iconHTML} ${distanceText}`;
-            textContainer.innerHTML = `${iconHTML} ${distanceText} ∠ ${formatAngle(angle)}`;
+            textContainer.innerHTML = `⟷ ${distanceText} | ⏱: ${formatRelativePosition(angle)}`;
         }
 
         const isHidden = ggHiddenState.get(key) || false;

@@ -188,35 +188,18 @@ function updateDistanceLine() {
             }
 
             const bearingAToB = bearingFromLonLat(coords1, coords2);
-            const bearingStr = formatTrackDisplay(bearingAToB);
-            // const angle = relativeBearing(plane1.track, bearingAToB);
-            const angle = relativeBearing(bearingAToB, plane1.track);
-
-            const turnAngle = angle == null
-                ? null
-                : angle > 180
-                    ? angle - 360
-                    : angle;
-
-            console.log("--- PRUEBA DE RUMBOS ---");
-            console.log("Rumbo geográfico A→B (bearingFromLonLat):", bearingAToB.toFixed(1) + "°");
-            const bearingBToA = bearingFromLonLat(coords2, coords1);
-            const diff = Math.abs(bearingAToB - bearingBToA);
-            console.log("--- VERIFICACIÓN DE BEARING ---");
-            console.log("Bearing A→B:", bearingAToB.toFixed(1) + "°");
-            console.log("Bearing B→A:", bearingBToA.toFixed(1) + "°");
-            console.log("Diferencia:", diff.toFixed(1) + "° (debería ser ~180°)");
-            console.log("-------------------------------");
-            console.log("Suma A→B + B→A:", (bearingAToB + bearingBToA).toFixed(1) + "° (debería ser ~360°)");
+            const angle = relativePositionAngle(bearingAToB, plane1.track);
 
             // textContainer.innerHTML = `
-            // ${distIconHTML} ${distText} ${altDiffIconHTML} ${altText}<br>
-            // ${trackIcon1} ${track1Str} | ${trackIcon2} ${track2Str} | ${trackIcon3} ${trackDiffStr}`;
+            //     ⟷ ${distText} | ↕ ${altText}<br>
+            //     ✈ A ${track1Str} | ✈ B ${track2Str} | ✈ A - B ${trackDiffStr}<br>
+            //     ⏱ B respecto a A: ${formatRelativePosition(angle)}
+            // `;
+
             textContainer.innerHTML = `
-                ⟷ ${distText} | ↕ ${altText}<br>
-                ✈ A ${track1Str} | ✈ B ${track2Str} | ✈ A - B ${trackDiffStr}<br>
-                ⏱ A → B ${bearingStr} | ∠ ${formatAngle(angle)} | 🕐 ${formatClockPosition(angle)}
+                ⟷ ${distText} | ↕ ${altText} | ⏱ ${formatRelativePosition(angle)}
             `;
+
         }
 
         updatePlanePoints('aa', [
@@ -610,19 +593,16 @@ function updateDistanceLine() {
                 }
 
                 const bearingAToB = bearingFromLonLat(coordsA, coordsB);
-                const bearingStr = formatTrackDisplay(bearingAToB);
-                const anglePair = relativeBearing(planeA.track, bearingAToB);
+                const anglePair = relativePositionAngle(bearingAToB, planeA ? planeA.track : null);
 
-                const turnAnglePair = anglePair == null
-                    ? null
-                    : anglePair > 180
-                        ? anglePair - 360
-                        : anglePair;
+                // textContainer.innerHTML = `
+                //     ⟷ ${distText} | ↕ ${altText}<br>
+                //     ✈ A ${trackAStr} | ✈ B ${trackBStr} | ✈ A-B ${trackDiffStr}<br>
+                //     ⏱ B respecto a A: ${formatRelativePosition(anglePair)}
+                // `;
 
                 textContainer.innerHTML = `
-                    ⟷ ${distText} | ↕ ${altText}<br>
-                    ✈ A ${trackAStr} | ✈ B ${trackBStr} | ✈ A-B ${trackDiffStr}<br>
-                    ⏱ A → B ${bearingStr} | ∠ ${formatAngle(anglePair)} | 🕐 ${formatClockPosition(anglePair)}
+                    ⟷ ${distText} | ↕ ${altText} | ⏱ ${formatRelativePosition(anglePair)}
                 `;
                 if (isHidden) textContainer.style.display = 'none';
                 else textContainer.style.display = 'block';

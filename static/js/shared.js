@@ -510,6 +510,24 @@ function formatClockPosition(angle) {
     return `${hour} en punto`;
 }
 
+// ***** FORMATEAR POSICIÓN RELATIVA: "3 en punto (90°)" *****
+function formatRelativePosition(angle) {
+    if (angle == null || isNaN(angle)) return '---';
+    const a = normalizeBearing(angle);
+    const hour = formatClockPosition(a);
+    const deg = `${a.toFixed(1)}°`;
+    return `${hour} (${deg})`;
+}
+
+// ***** CALCULAR ÁNGULO RELATIVO DE B RESPECTO AL RUMBO DE A *****
+function relativePositionAngle(bearingAToB, referenceTrack) {
+    if (bearingAToB == null || isNaN(bearingAToB)) return null;
+    if (referenceTrack == null || isNaN(referenceTrack)) {
+        return normalizeBearing(bearingAToB);
+    }
+    return normalizeBearing(bearingAToB - referenceTrack);
+}
+
 // ***** EXPONER FUNCIONES GLOBALMENTE PARA USO EN OTROS ARCHIVOS *****
 window.haversineDistance = haversineDistance;
 window.bearingFromLonLat = bearingFromLonLat;
@@ -530,3 +548,5 @@ window.clearPlanePoints = clearPlanePoints;
 window.ensureDistanceGroup = ensureDistanceGroup;
 window.addLayerToDistanceGroup = addLayerToDistanceGroup;
 window.formatClockPosition = formatClockPosition;
+window.formatRelativePosition = formatRelativePosition;
+window.relativePositionAngle = relativePositionAngle;
