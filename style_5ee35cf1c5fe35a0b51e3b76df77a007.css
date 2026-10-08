@@ -884,15 +884,15 @@ input.error {
 }
 
 .menu li > a.activeButton {
-    color: #fff;
-    background-color: var(--color-base-content);
+    color: var(--BASE-COLOR);
+    background-color: #fff;
 }
 
-@supports (background-color: color-mix(in oklab, red, red)) {
+/* @supports (background-color: color-mix(in oklab, red, red)) {
     .menu li > a.activeButton {
         background-color: color-mix(in oklab, var(--color-base-content) 10%, transparent);
     }
-}
+} */
 
 .inActiveButton {
     color: #E4E4E7;
