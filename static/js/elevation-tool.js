@@ -791,9 +791,6 @@ function updateElevationGroundAircraftProfile() {
     // ***** ACTUALIZAR POSICIÓN DE LA LÍNEA Y PUNTO B SEGÚN MOVIMIENTO DEL AVIÓN *****
     updateElevationGroundAircraftDrawings(plane);
 
-    // ***** ACTUALIZAR POSICIÓN DE LA LÍNEA Y PUNTO B SEGÚN MOVIMIENTO DEL AVIÓN *****
-    updateElevationGroundAircraftDrawings(plane);
-
     // ***** CONSTRUIR PANORAMA *****
     getElevationProfileLine(
         elevationGroundAnchor.lat,
@@ -857,13 +854,39 @@ function updateElevationGroundAircraftDrawings(plane) {
     elevationPointLayer.setVisible(true);
     elevationLineLayer.setVisible(true);
 
-    // ***** DETECTAR CAMBIO EN LAS CAPAS *****
+        // ***** DETECTAR CAMBIO EN LAS CAPAS *****
     elevationPointSource.changed();
     elevationLineSource.changed();
     elevationPointLayer.changed();
     elevationLineLayer.changed();
 
+    // ***** ACTUALIZAR NUMERACIÓN A/B SEGÚN EL ORDEN DE CLIC (SE MUEVE CON EL AVIÓN) *****
+    if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
+        elevationNumberSourceGA.clear();
+
+        // ***** DETERMINAR QUÉ ETIQUETA LE TOCA A CADA PUNTO SEGÚN QUIÉN FUE PRIMERO *****
+        const aircraftWasFirst = elevationGAAircraftWasFirst;
+        const groundNum = aircraftWasFirst ? 'B' : 'A';
+        const planeNum  = aircraftWasFirst ? 'A' : 'B';
+
+        const fGround = new ol.Feature(
+            new ol.geom.Point(groundCoord)
+        );
+        fGround.set('num', groundNum);
+        fGround.set('isDark', true);
+
+        const fPlane = new ol.Feature(
+            new ol.geom.Point(aircraftCoord)
+        );
+        fPlane.set('num', planeNum);
+        fPlane.set('isDark', false);
+
+        elevationNumberSourceGA.addFeatures([fGround, fPlane]);
+        elevationNumberSourceGA.changed();
+    }
+
     if (OLMap) OLMap.renderSync();
+
 }
 
 // ***** INICIAR TIMER *****
@@ -920,6 +943,13 @@ function drawElevationGroundPoint(point) {
 
     // ***** LIMPIAR CAPA DE PUNTOS EXISTENTE *****
     elevationPointSource.clear();
+
+    // ***** LIMPIAR LÍNEA Y NUMERACIÓN PARA NO ARRASTRAR EL PAR ANTERIOR *****
+    elevationLineSource && elevationLineSource.clear();
+    elevationLineLayer && elevationLineLayer.setVisible(false);
+    if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
+        elevationNumberSourceGA.clear();
+    }
 
     // ***** OBTENER POSICIÓN DEL PUNTO *****
     const feature = new ol.Feature(
@@ -1233,7 +1263,15 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
         // ***** SI NO HAY NADA PENDIENTE → ESTE AVIÓN ES EL PRIMER PUNTO *****
         if (!hasPendingAircraft) {
             elevationPendingAircraftHex = planeHex;
-            elevationGAAircraftWasFirst = true; // el primer clic fue avión
+            elevationGAAircraftWasFirst = true;
+
+            // ***** LIMPIAR LÍNEA Y NUMERACIÓN DEL PAR ANTERIOR ANTES DE DIBUJAR EL NUEVO PUNTO *****
+            elevationLineSource && elevationLineSource.clear();
+            elevationLineLayer && elevationLineLayer.setVisible(false);
+            if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
+                elevationNumberSourceGA.clear();
+            }
+
             if (typeof InstrumentedAircraft !== 'undefined') {
                 InstrumentedAircraft.register(planeHex);
             }
@@ -1265,6 +1303,14 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
         if (!hasPendingGround) {
             elevationPendingGround = clickedGround;
             elevationGAAircraftWasFirst = false;
+
+            // ***** LIMPIAR LÍNEA Y NUMERACIÓN DEL PAR ANTERIOR ANTES DE DIBUJAR EL NUEVO PUNTO *****
+            elevationLineSource && elevationLineSource.clear();
+            elevationLineLayer && elevationLineLayer.setVisible(false);
+            if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
+                elevationNumberSourceGA.clear();
+            }
+
             drawElevationGroundPoint(elevationPendingGround);
             showElevationGAGuide(2);
             return;
@@ -1276,6 +1322,13 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
 function updateElevationGAPendingAircraftVisual(plane) {
     if (!elevationPointSource || !plane || !plane.position) return;
     elevationPointSource.clear();
+
+    // ***** LIMPIAR LÍNEA Y NUMERACIÓN PARA NO ARRASTRAR EL PAR ANTERIOR *****
+    elevationLineSource && elevationLineSource.clear();
+    elevationLineLayer && elevationLineLayer.setVisible(false);
+    if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
+        elevationNumberSourceGA.clear();
+    }
 
     const aircraftCoord = ol.proj.fromLonLat([plane.position[0], plane.position[1]]);
     const fA = new ol.Feature(new ol.geom.Point(aircraftCoord));
@@ -1326,24 +1379,6 @@ function finalizeElevationGAPair(plane) {
             plane.position[1],
             plane.position[0]
         );
-    }
-
-    // ***** POBLAR NUMERACIÓN SEGÚN ORDEN DE CLIC *****
-    if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
-        elevationNumberSourceGA.clear();
-
-        const groundNum = aircraftWasFirst ? 'B' : 'A';
-        const planeNum = aircraftWasFirst ? 'A' : 'B';
-
-        const fGround = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([elevationGroundAnchor.lon, elevationGroundAnchor.lat])));
-        fGround.set('num', groundNum);
-        fGround.set('isDark', true);
-
-        const fPlane = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([plane.position[0], plane.position[1]])));
-        fPlane.set('num', planeNum);
-        fPlane.set('isDark', false);
-
-        elevationNumberSourceGA.addFeatures([fGround, fPlane]);
     }
 
     // ***** ACTUALIZAR CADA 5 SEGUNDOS *****
