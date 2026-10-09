@@ -515,7 +515,6 @@ function updateDistanceToGroundOverlay() {
 
                 updateDistanceToGroundOverlay();
 
-                // NUEVO: según el modo, limpiar solo lo necesario (sin tocar el punto base de tierra)
                 if (distanceToGroundModeType === 'nA_1B') {
                     removePointNumbers('ta', ['ta_' + key + '_a']);
                     removePlanePoints('ta', ['ta_' + key + '_a']);
@@ -552,8 +551,27 @@ function updateDistanceToGroundOverlay() {
             const trackStr = formatTrackDisplay(track);
 
             let angle = null;
-            const bearingAircraftToGround = bearingFromLonLat(pp, gp);
-            angle = relativePositionAngle(bearingAircraftToGround, plane ? plane.track : null);
+
+            // ***** DETERMINAR QUIÉN ES EL PRIMER PUNTO *****
+            const groundWasFirst = (pairFirstType === 'ground');
+
+            if (groundWasFirst) {
+                // ***** OBSERVADOR EN TIERRA: MIRANDO HACIA EL AVIÓN *****
+                const bearingGroundToAircraft = bearingFromLonLat(gp, pp);
+                let declination = 0;
+                if (typeof geoMag === 'function') {
+                    try {
+                        const mag = geoMag(gp[1], gp[0], 0);
+                        declination = (mag && typeof mag.dec === 'number') ? mag.dec : 0;
+                    } catch (e) { declination = 0; }
+                }
+                const bearingGroundToAircraftMag = normalizeBearing(bearingGroundToAircraft - declination);
+                angle = normalizeBearing(bearingGroundToAircraftMag);
+            } else {
+                // ***** OBSERVADOR EN EL AVIÓN: MIRANDO HACIA LA TIERRA *****
+                const bearingAircraftToGround = bearingFromLonLat(pp, gp);
+                angle = relativePositionAngle(bearingAircraftToGround, plane ? plane.track : null);
+            }
 
             textContainer.innerHTML = `
                 ⟷ ${distanceText} | ✈ ${trackStr} | ⏱ ${formatRelativePosition(angle)}
@@ -573,27 +591,16 @@ function updateDistanceToGroundOverlay() {
             if (lineFeat) lineFeat.setStyle(null);
         }
 
-        // Numeración por par usando la key única
-        // Determinar el orden de numeración según el modo
-        // Numeración por par usando la key única
-        // Determinar el orden de numeración según el modo
-        // Numeración por par usando la key única.
-        // Regla general: el primer punto seleccionado es 1, el segundo es 2.
         let groundNum, planeNum;
         if (distanceToGroundModeType === 'nA_1B') {
-            // En nA_1B: si el primer clic fue el avión, el avión es 1 y la tierra es 2.
-            // Si el primer clic fue la tierra, la tierra es 1 y el avión es 2.
             const firstWasPlane = (taFirstPointType === 'aircraft');
             groundNum = firstWasPlane ? 'B' : 'A';
             planeNum = firstWasPlane ? 'A' : 'B';
         } else if (distanceToGroundModeType === '1A_nB') {
-            // En 1A_nB: si el primer clic fue avión, los aviones son 1 y la tierra es 2.
-            // Si el primer clic fue tierra, la tierra es 1 y los aviones son 2.
             const firstWasPlane = (taFirstPointType === 'aircraft');
             groundNum = firstWasPlane ? 'B' : 'A';
             planeNum = firstWasPlane ? 'A' : 'B';
         } else {
-            // 1A1B, nA_nB: usar el tipo del primer punto del par
             const groundIsFirst = (pairFirstType === 'ground');
             groundNum = groundIsFirst ? 'A' : 'B';
             planeNum = groundIsFirst ? 'B' : 'A';
