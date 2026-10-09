@@ -7667,7 +7667,10 @@ function toggleTableInView(arg) {
         loStore['tableInView'] = tableInView;
     }
 
-    jQuery('#with_positions').text(tableInView ? "On Screen:" : "With Position:");
+    // ***** TEXTO TRADUCIDO SEGÚN EL ESTADO Y EL IDIOMA ACTUAL *****
+    const labelKey = tableInView ? 'on_screen' : 'with_position';
+    const labelFallback = tableInView ? 'On Screen:' : 'With Position:';
+    jQuery('#with_positions').text(getTranslatedText(labelKey, labelFallback));
 
     buttonActive('#V', tableInView);
 }
