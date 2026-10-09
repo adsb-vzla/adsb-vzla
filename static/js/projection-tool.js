@@ -18,7 +18,8 @@
         projectionGroup: null,
         layersReady: false,
         updateInterval: null,
-        uiReady: false
+        uiReady: false,
+        sliderActive: false
     };
 
     // ***** COLORES PARA CADA PROYECCIÓN *****
@@ -344,8 +345,6 @@
     }
 
     // ***** ACTUALIZAR CONTENIDO DEL OVERLAY *****
-        // ***** ACTUALIZAR CONTENIDO DEL OVERLAY *****
-        // ***** ACTUALIZAR CONTENIDO DEL OVERLAY *****
     function updateProjectionOverlayContent(entry, now) {
         const ov = entry.overlay;
         if (!ov) return;
@@ -356,8 +355,10 @@
         if (!text) return;
 
         const totalS = entry.minutes * 60;
-        const remaining = Math.max(0, entry.endTime - now);
-        const elapsed = Math.max(0, totalS - remaining);
+
+        const progress = Math.max(0, Math.min(1, entry.progress || 0));
+        const remaining = totalS * (1 - progress);
+        const elapsed = totalS - remaining;
 
         let content = formatCountdown(remaining);
         if (entry.arrived) {
@@ -367,15 +368,11 @@
         }
 
         // ***** SEGUNDOS RESTANTES HASTA EL PRÓXIMO MÚLTIPLO DE 5 S *****
-        // Derivado del propio elapsed, garantiza que ambos contadores
-        // estén sincronizados por construcción.
         const step = TRACK_REFRESH_INTERVAL_S;
-        const intoStep = elapsed % step;                       // 0 .. step-1
+        const intoStep = elapsed % step;
         const refreshRemainingS = (intoStep === 0 && elapsed > 0)
             ? 0
             : (step - intoStep);
-        // Mostrar como entero, redondeando hacia arriba para que en el instante
-        // exacto del chequeo (intoStep=0) muestre (0s) y no (5s).
         const refreshS = Math.ceil(refreshRemainingS) % step;
 
         if (entry.arrived || entry.deviated) {
@@ -498,6 +495,7 @@
             startTime: now,
             endTime: now + minutes * 60,
             lastCheckedStep: -1,
+            progress: 0,
             refreshAtCreation: now,
             startLat, startLon, startAlt,
             destLat: projected.lat,
@@ -538,27 +536,27 @@
         return true;
     }
 
-    // ***** ACTUALIZAR ESTELA AL CUMPLIR LA PROYECCIÓN *****
+    // ***** ACTUALIZAR ESTELA SEGÚN EL PROGRESO DEL SLIDER *****
     function updateGhost(entry, now) {
-        const total = entry.endTime - entry.startTime;
-        let t = total > 0 ? (now - entry.startTime) / total : 1;
-        if (t < 0) t = 0;
+        if (!entry._userDragged) {
+            const total = entry.endTime - entry.startTime;
+            let t = total > 0 ? (now - entry.startTime) / total : 1;
+            if (t < 0) t = 0;
+            if (t > 1) t = 1;
+            entry.progress = t;
+        }
+
+        let t = entry.progress;
+        if (entry.arrived) t = 1;
 
         let ghostLat, ghostLon;
-        if (entry.arrived) {
-            ghostLat = entry.destLat;
-            ghostLon = entry.destLon;
-            t = 1;
-        } else {
-            if (t > 1) t = 1;
-            const pos = interpolateGreatCircle(
-                entry.startLat, entry.startLon,
-                entry.destLat, entry.destLon,
-                t
-            );
-            ghostLat = pos.lat;
-            ghostLon = pos.lon;
-        }
+        const pos = interpolateGreatCircle(
+            entry.startLat, entry.startLon,
+            entry.destLat, entry.destLon,
+            t
+        );
+        ghostLat = pos.lat;
+        ghostLon = pos.lon;
 
         const coord = ol.proj.fromLonLat([ghostLon, ghostLat]);
         entry.ghostFeature.getGeometry().setCoordinates(coord);
@@ -567,6 +565,7 @@
             entry.overlay.setPosition(coord);
         }
 
+        // ***** DETECCIÓN DE LLEGADA / DESVIACIÓN *****
         const plane = g.planes[entry.hex];
         if (plane && plane.position && plane.position.length >= 2) {
             const dist = haversineMeters(
@@ -652,6 +651,8 @@
         entry.startTime = now;
         entry.endTime = now + minutes * 60;
         entry.lastCheckedStep = -1;
+        entry.progress = 0;
+        entry._userDragged = false;
         entry.startLat = startLat;
         entry.startLon = startLon;
         entry.startAlt = startAlt;
@@ -812,6 +813,7 @@
 
     // ***** LIMPIAR TODAS LAS PROYECCIONES DE LA LISTA *****
     function clearAll() {
+        state.sliderActive = false;
         const hexes = state.planes.map(p => p.hex);
         hexes.forEach(hex => removeProjection(hex));
         state.planes = [];
@@ -847,6 +849,7 @@
     // ***** DETENER MODO PROYECCIÓN *****
     function stopProjection() {
         state.active = false;
+        state.sliderActive = false;
         clearAll();
         stopLoop();
         updateToggleBtn();
@@ -1066,6 +1069,9 @@
         if (!section) return;
         if (section.style.display === 'none') return;
 
+        // ***** NO RECONSTRUIR MIENTRAS EL USUARIO ARRASTRA UN SLIDER *****
+        if (state.sliderActive) return;
+
         const count = section.querySelector('#projection-sidebar-count');
         if (count) count.textContent = `${state.planes.length}/${state.maxPlanes}`;
 
@@ -1077,10 +1083,10 @@
             return;
         }
 
-        const now = getProjectionTime();
+                const now = getProjectionTime();
         let html = '';
         for (const entry of state.planes) {
-            const remaining = Math.max(0, entry.endTime - now);
+            const remaining = Math.max(0, entry.minutes * 60 * (1 - (entry.progress || 0)));
             const timeStr = formatCountdown(remaining);
             let statusHtml = `<span style="color:${SYS.textDim};">${timeStr}</span>`;
             if (entry.arrived) {
@@ -1094,30 +1100,40 @@
                 ? T('projection_show', 'Mostrar')
                 : T('projection_hide', 'Ocultar');
             const removeTitle = T('projection_remove', 'Quitar');
+            const progressPct = Math.round((entry.progress || 0) * 100);
 
             html += `
                 <div class="starred-item projection-item" data-hex="${entry.hex}"
-                     style="border-left:4px solid ${entry.color};">
-                    <div class="starred-item-info">
-                        <div class="starred-item-callsign" style="color:${entry.color};">${entry.hex.toUpperCase()}</div>
-                        <div class="starred-item-detail" style="display:flex;gap:8px;align-items:center;">
-                            <span>${entry.minutes}${T('projection_min_abbr', 'min')}</span>
-                            <span>·</span>
-                            <span>${statusHtml}</span>
+                     style="border-left:4px solid ${entry.color}; flex-direction:column; align-items:stretch; gap:6px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                        <div class="starred-item-info">
+                            <div class="starred-item-callsign" style="color:${entry.color};">${entry.hex.toUpperCase()}</div>
+                            <div class="starred-item-detail" style="display:flex;gap:8px;align-items:center;">
+                                <span>${entry.minutes}${T('projection_min_abbr', 'min')}</span>
+                                <span>·</span>
+                                <span>${statusHtml}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:4px;flex-shrink:0;">
+                            <button class="proj-sidebar-btn-hide" data-hex="${entry.hex}"
+                                    title="${hiddenTitle}"
+                                    style="background:${SYS.lighter};border:1px solid ${SYS.base};
+                                           color:${SYS.text};border-radius:3px;width:24px;height:20px;
+                                           cursor:pointer;font-size:11px;padding:0;">${hiddenIcon}</button>
+                            <button class="proj-sidebar-btn-remove" data-hex="${entry.hex}"
+                                    title="${removeTitle}"
+                                    style="background:#8a1a1a;border:1px solid #5a0f0f;
+                                           color:#fff;border-radius:3px;width:24px;height:20px;
+                                           cursor:pointer;font-size:12px;padding:0;
+                                           font-weight:bold;">✖</button>
                         </div>
                     </div>
-                    <div style="display:flex;gap:4px;flex-shrink:0;">
-                        <button class="proj-sidebar-btn-hide" data-hex="${entry.hex}"
-                                title="${hiddenTitle}"
-                                style="background:${SYS.lighter};border:1px solid ${SYS.base};
-                                       color:${SYS.text};border-radius:3px;width:24px;height:20px;
-                                       cursor:pointer;font-size:11px;padding:0;">${hiddenIcon}</button>
-                        <button class="proj-sidebar-btn-remove" data-hex="${entry.hex}"
-                                title="${removeTitle}"
-                                style="background:#8a1a1a;border:1px solid #5a0f0f;
-                                       color:#fff;border-radius:3px;width:24px;height:20px;
-                                       cursor:pointer;font-size:12px;padding:0;
-                                       font-weight:bold;">✖</button>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <input type="range" class="proj-progress-slider"
+                               data-hex="${entry.hex}"
+                               min="0" max="100" step="1" value="${progressPct}"
+                               style="flex:1; height:4px; cursor:pointer; accent-color:${entry.color};">
+                        <span class="proj-progress-value" style="min-width:36px; text-align:right; font-size:11px; color:${SYS.textDim};">${progressPct}%</span>
                     </div>
                 </div>
             `;
@@ -1151,6 +1167,78 @@
                 removeProjection(btn.dataset.hex);
                 renderSidebarPanel();
             });
+        });
+
+        // ***** SLIDER DE PROGRESO DE LA ESTELA *****
+        list.querySelectorAll('.proj-progress-slider').forEach(slider => {
+            const hex = slider.dataset.hex;
+
+            // ***** ACTUALIZACIÓN EN VIVO (SIN REPINTAR EL PANEL) *****
+            const applyProgress = () => {
+                const entry = state.planes.find(p => p.hex === hex);
+                if (!entry) return;
+
+                const pct = parseInt(slider.value, 10) || 0;
+                entry.progress = pct / 100;
+                entry._userDragged = true;
+
+                const now = getProjectionTime();
+                updateGhost(entry, now);
+
+                const valueSpan = slider.parentElement.querySelector('.proj-progress-value');
+                if (valueSpan) valueSpan.textContent = pct + '%';
+
+                const item = slider.closest('.projection-item');
+                if (item && !entry.arrived && !entry.deviated) {
+                    const detail = item.querySelector('.starred-item-detail');
+                    if (detail) {
+                        const timeStr = formatCountdown(entry.minutes * 60 * (1 - entry.progress));
+                        // El tercer span del detail es el tiempo (precedido de "·")
+                        const timeSpan = detail.querySelector('span:last-child');
+                        if (timeSpan) timeSpan.textContent = timeStr;
+                    }
+                }
+
+                if (entry.overlay && entry.ghostFeature) {
+                    entry.overlay.setPosition(entry.ghostFeature.getGeometry().getCoordinates());
+                }
+                if (OLMap) OLMap.renderSync();
+            };
+
+            // ***** AL EMPEZAR A ARRASTRAR: BLOQUEAR REPINTADO *****
+            slider.addEventListener('pointerdown', () => {
+                state.sliderActive = true;
+                slider.setPointerCapture && slider.setPointerCapture(event.pointerId);
+            });
+
+            // ***** DURANTE EL ARRASTRE: ACTUALIZAR EN VIVO *****
+            slider.addEventListener('input', applyProgress);
+
+            // ***** AL SOLTAR: REANUDAR MOVIMIENTO AUTOMÁTICO DESDE AQUÍ *****
+            const releaseSlider = () => {
+                const entry = state.planes.find(p => p.hex === hex);
+                if (!entry) {
+                    state.sliderActive = false;
+                    return;
+                }
+
+                const totalS = entry.minutes * 60;
+                const now = getProjectionTime();
+                entry.startTime = now - entry.progress * totalS;
+                entry.endTime = entry.startTime + totalS;
+                entry.lastCheckedStep = Math.floor((entry.progress * totalS) / TRACK_REFRESH_INTERVAL_S);
+                entry._userDragged = false;
+
+                state.sliderActive = false;
+                renderSidebarPanel();
+            };
+
+            slider.addEventListener('pointerup', releaseSlider);
+            slider.addEventListener('pointercancel', releaseSlider);
+            slider.addEventListener('change', releaseSlider);
+
+            slider.addEventListener('mouseup', releaseSlider);
+            slider.addEventListener('touchend', releaseSlider);
         });
     }
 
