@@ -6013,6 +6013,72 @@ function refreshFeatures() {
         html: flightawareLinks,
         text: 'Callsign'
     };
+    const AIRLINE_PREFIXES_URL = './static/aero-help/airline-prefixes.json';
+    let airlinePrefixes = Object.create(null);
+    let airlinePrefixCodes = [];
+    let airlinePrefixesLoaded = false;
+    let airlinePrefixesPromise = null;
+
+    function loadAirlinePrefixes() {
+        if (airlinePrefixesPromise) return airlinePrefixesPromise;
+
+        airlinePrefixesPromise = fetch(AIRLINE_PREFIXES_URL, { cache: 'force-cache' })
+            .then(function (response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            })
+            .then(function (prefixes) {
+                if (!prefixes || typeof prefixes !== 'object' || Array.isArray(prefixes)) {
+                    throw new Error('Formato inválido en airline-prefixes.json');
+                }
+
+                airlinePrefixes = Object.create(null);
+                for (const [code, name] of Object.entries(prefixes)) {
+                    if (/^[A-Z0-9]{2,3}$/.test(code) && typeof name === 'string' && name) {
+                        airlinePrefixes[code] = name;
+                    }
+                }
+                airlinePrefixCodes = Object.keys(airlinePrefixes)
+                    .sort(function (a, b) { return b.length - a.length; });
+                airlinePrefixesLoaded = true;
+
+                if (TAR.planeMan && TAR.planeMan.redraw) {
+                    TAR.planeMan.redraw();
+                }
+            })
+            .catch(function (error) {
+                airlinePrefixesLoaded = true;
+                console.error('[airline-column] Error cargando prefijos de aerolíneas:', error);
+                if (TAR.planeMan && TAR.planeMan.redraw) {
+                    TAR.planeMan.redraw();
+                }
+            });
+
+        return airlinePrefixesPromise;
+    }
+
+    function getAirlineName(flight) {
+        if (!airlinePrefixesLoaded) {
+            loadAirlinePrefixes();
+            return '';
+        }
+
+        const callsign = String(flight || '').toUpperCase().replace(/\s+/g, '');
+        for (const code of airlinePrefixCodes) {
+            if (callsign.startsWith(code)) return airlinePrefixes[code];
+        }
+        return 'Civil/No disponible';
+    }
+
+    cols.airline = {
+        text: 'Airline',
+        sort: function () {
+            sortBy('airline', compareAlpha, function (plane) {
+                return getAirlineName(plane.flight);
+            });
+        },
+        value: function (plane) { return getAirlineName(plane.flight); }
+    };
     if (routeApiUrl) {
         cols.route = {
             sort: function () { sortBy('route', compareAlpha, function (x) { return x.routeColumn }); },
@@ -6205,7 +6271,7 @@ function refreshFeatures() {
             const savedState = localStorage.getItem(col.toggleKey);
             if (savedState !== null) {
                 col.visible = savedState === 'true';
-            } else if (HideCols.includes('#' + col.id)) {
+            } else if (HideCols.includes('#' + col.id) || col.id === 'airline') {
                 col.visible = false;
             } else {
                 col.visible = true;

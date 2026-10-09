@@ -11,6 +11,7 @@ from pathlib import Path
 SCRIPT_DIR  = Path(__file__).resolve().parent
 RAW_DIR     = SCRIPT_DIR / "raw_data"
 OUTPUT_FILE = SCRIPT_DIR / "aero-terms.json"
+AIRLINE_PREFIXES_FILE = SCRIPT_DIR / "airline-prefixes.json"
 
 # ***** OBTENER LAS RUTAS DE LAS FUENTES *****
 AIRPORTS_CSV = RAW_DIR / "airports.csv"
@@ -225,6 +226,39 @@ def process_airlines(terms, seen):
     print(f"[✓] Aerolíneas procesadas: {count}")
     return count
 
+# ***** GENERAR ÍNDICE LIGERO DE PREFIJOS ICAO *****
+def build_airline_prefixes():
+    if not AIRLINES_DAT.exists():
+        print(f"[!] No existe {AIRLINES_DAT}, no se genera el índice de aerolíneas.")
+        return
+
+    prefixes = {}
+    with AIRLINES_DAT.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.reader(f, quotechar='"', skipinitialspace=True)
+        for row in reader:
+            if not row or row[0].startswith("#") or not row[0].strip() or len(row) < 8:
+                continue
+
+            name = safe_str(row[1])
+            icao = safe_str(row[4]).upper()
+            active = safe_str(row[7]).lower() in ("y", "yes", "1", "true")
+            if (not name or len(icao) not in (2, 3)
+                    or not icao.isascii() or not icao.isalnum()):
+                continue
+
+            current = prefixes.get(icao)
+            if current is None or (active and not current["active"]):
+                prefixes[icao] = {"name": name, "active": active}
+
+    payload = {
+        code: entry["name"]
+        for code, entry in sorted(prefixes.items(), key=lambda item: item[0])
+    }
+    with AIRLINE_PREFIXES_FILE.open("w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
+
+    print(f"[✓] Prefijos ICAO de aerolíneas: {len(payload)}")
+
 # ***** PROCESAR TIPOS DE AERONAVES *****
 def process_aircraft(terms, seen):
     count = 0
@@ -341,6 +375,7 @@ def main():
     process_airports(terms, seen)
     process_airlines(terms, seen)
     process_aircraft(terms, seen)
+    build_airline_prefixes()
 
     terms.sort(key=lambda t: (t.get("rank", 9), t.get("label", "").lower()))
 
