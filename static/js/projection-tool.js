@@ -34,6 +34,9 @@
 
     const ARRIVAL_THRESHOLD_M = 500;
     const DEVIATION_THRESHOLD_M = 5000;
+    const TRACK_CHANGE_THRESHOLD_DEG = 3;
+    const TRACK_REFRESH_INTERVAL_MS = 5000;
+    const TRACK_REFRESH_INTERVAL_S = TRACK_REFRESH_INTERVAL_MS / 1000;
 
     // ***** LOGS PARA DEPURACIÓN *****
     const LOG_PREFIX = '[Projection]';
@@ -341,6 +344,8 @@
     }
 
     // ***** ACTUALIZAR CONTENIDO DEL OVERLAY *****
+        // ***** ACTUALIZAR CONTENIDO DEL OVERLAY *****
+        // ***** ACTUALIZAR CONTENIDO DEL OVERLAY *****
     function updateProjectionOverlayContent(entry, now) {
         const ov = entry.overlay;
         if (!ov) return;
@@ -350,7 +355,9 @@
         const text = el.querySelector('.proj-text-content');
         if (!text) return;
 
+        const totalS = entry.minutes * 60;
         const remaining = Math.max(0, entry.endTime - now);
+        const elapsed = Math.max(0, totalS - remaining);
 
         let content = formatCountdown(remaining);
         if (entry.arrived) {
@@ -358,7 +365,24 @@
         } else if (entry.deviated) {
             content = `⚠ ${formatCountdown(remaining)}`;
         }
-        text.textContent = content;
+
+        // ***** SEGUNDOS RESTANTES HASTA EL PRÓXIMO MÚLTIPLO DE 5 S *****
+        // Derivado del propio elapsed, garantiza que ambos contadores
+        // estén sincronizados por construcción.
+        const step = TRACK_REFRESH_INTERVAL_S;
+        const intoStep = elapsed % step;                       // 0 .. step-1
+        const refreshRemainingS = (intoStep === 0 && elapsed > 0)
+            ? 0
+            : (step - intoStep);
+        // Mostrar como entero, redondeando hacia arriba para que en el instante
+        // exacto del chequeo (intoStep=0) muestre (0s) y no (5s).
+        const refreshS = Math.ceil(refreshRemainingS) % step;
+
+        if (entry.arrived || entry.deviated) {
+            text.textContent = content;
+        } else {
+            text.textContent = `${content} (${refreshS}s)`;
+        }
 
         if (entry.hidden) {
             text.style.display = 'none';
@@ -465,12 +489,16 @@
         ghostFeature.setStyle(createGhostStyle(color, trackAtCreation));
         state.ghostSource.addFeature(ghostFeature);
 
+        state.lastTrackCheck = now;
+
         const entry = {
             hex,
             color,
             minutes,
             startTime: now,
             endTime: now + minutes * 60,
+            lastCheckedStep: -1,
+            refreshAtCreation: now,
             startLat, startLon, startAlt,
             destLat: projected.lat,
             destLon: projected.lon,
@@ -576,7 +604,121 @@
         return 'running';
     }
 
+    // ***** RECALCULAR UNA PROYECCIÓN EXISTENTE (CAMBIO DE RUMBO) *****
+    function refreshEntry(entry) {
+        const plane = g.planes[entry.hex];
+        if (!plane || !plane.position || plane.position.length < 2) return false;
+        if (plane.seen > 15) return false;
+
+        const track = getProjectionTrack(plane);
+        if (track == null) return false;
+
+        const gs = plane.gs;
+        if (gs == null || isNaN(gs) || gs <= 0) return false;
+
+        const now = getProjectionTime();
+        const minutes = state.minutes;
+
+        const startLat = plane.position[1];
+        const startLon = plane.position[0];
+        const startAlt = plane.altitude;
+
+        const distanceMeters = gs * (minutes / 60) * 1852;
+        const projected = projectPosition(startLat, startLon, track, distanceMeters);
+        const destAlt = projectAltitude(startAlt, plane.vert_rate, minutes);
+
+        // ***** ACTUALIZAR GEOMETRÍAS EXISTENTES *****
+        const coords = [
+            ol.proj.fromLonLat([startLon, startLat]),
+            ol.proj.fromLonLat([projected.lon, projected.lat])
+        ];
+        if (entry.lineFeature) {
+            entry.lineFeature.getGeometry().setCoordinates(coords);
+        }
+        if (entry.pointFeature) {
+            entry.pointFeature.getGeometry().setCoordinates(
+                ol.proj.fromLonLat([projected.lon, projected.lat])
+            );
+        }
+        if (entry.ghostFeature) {
+            entry.ghostFeature.getGeometry().setCoordinates(
+                ol.proj.fromLonLat([startLon, startLat])
+            );
+            entry.ghostFeature.setStyle(createGhostStyle(entry.color, track));
+        }
+
+        // ***** ACTUALIZAR DATOS DE LA ENTRY *****
+        entry.minutes = minutes;
+        entry.startTime = now;
+        entry.endTime = now + minutes * 60;
+        entry.lastCheckedStep = -1;
+        entry.startLat = startLat;
+        entry.startLon = startLon;
+        entry.startAlt = startAlt;
+        entry.destLat = projected.lat;
+        entry.destLon = projected.lon;
+        entry.destAlt = destAlt;
+        entry.distanceMeters = distanceMeters;
+        entry.gsAtCreation = gs;
+        entry.trackAtCreation = track;
+        entry.arrived = false;
+        entry.deviated = false;
+        entry.realDistanceToDest = null;
+
+        // ***** REPOSICIONAR OVERLAY Y REFRESCAR TEXTO *****
+        if (entry.overlay && entry.ghostFeature) {
+            entry.overlay.setPosition(entry.ghostFeature.getGeometry().getCoordinates());
+        }
+        updateProjectionOverlayContent(entry, now);
+
+        log(`Refrescada: ${entry.hex} track=${track.toFixed(1)}° → (${projected.lat.toFixed(4)}, ${projected.lon.toFixed(4)}), ${minutes}min, ${formatNM(distanceMeters)}`);
+        return true;
+    }
+
+    // ***** COMPROBAR CAMBIOS DE RUMBO Y REFRESCAR PROYECCIONES *****
+        // ***** COMPROBAR CAMBIOS DE RUMBO EN MÚLTIPLOS DE TRACK_REFRESH_INTERVAL_S *****
+    // Se llama desde el tick de 250 ms. Para cada entrada, calcula cuántos
+    // intervalos de 5 s han transcurrido desde su inicio y, si ha cruzado
+    // uno nuevo, refresca la proyección.
+    function checkTrackChanges(now) {
+        if (!state.active) return;
+        if (state.planes.length === 0) return;
+
+        const step = TRACK_REFRESH_INTERVAL_S;
+
+        for (const entry of state.planes) {
+            const plane = g.planes[entry.hex];
+            if (!plane || !plane.position) continue;
+            if (plane.seen > 15) continue;
+
+            const track = getProjectionTrack(plane);
+            if (track == null) continue;
+
+            // elapsed en segundos desde el inicio de la proyección
+            const elapsed = now - entry.startTime;
+            if (elapsed < 0) continue;
+
+            // Número de intervalos completos de 5 s transcurridos
+            const stepsDone = Math.floor(elapsed / step);
+
+            // Si hemos cruzado al menos un intervalo nuevo desde el último chequeo
+            if (stepsDone > (entry.lastCheckedStep ?? -1)) {
+                entry.lastCheckedStep = stepsDone;
+
+                // Diferencia angular mínima (considerando el wrap 0/360)
+                let diff = Math.abs(track - entry.trackAtCreation);
+                diff = diff % 360;
+                if (diff > 180) diff = 360 - diff;
+
+                if (diff >= TRACK_CHANGE_THRESHOLD_DEG) {
+                    refreshEntry(entry);
+                }
+            }
+        }
+    }
+
     // ***** INICIAR CICLO DE PROYECCIÓN *****
+        // ***** INICIAR CICLO DE PROYECCIÓN *****
     function startLoop() {
         if (state.updateInterval) return;
         state.updateInterval = setInterval(() => {
@@ -591,6 +733,9 @@
                 if (status === 'expired') finished.push(entry.hex);
             }
             finished.forEach(hex => removeProjection(hex));
+
+            // ***** COMPROBAR CAMBIOS DE RUMBO ALINEADOS AL CONTADOR *****
+            checkTrackChanges(now);
 
             renderSidebarPanel();
         }, 250);
@@ -701,7 +846,6 @@
 
     // ***** DETENER MODO PROYECCIÓN *****
     function stopProjection() {
-        log('stopProjection');
         state.active = false;
         clearAll();
         stopLoop();
@@ -1060,6 +1204,14 @@
                 updateMinutesRow();
             }
         },
+        refresh: (hex) => {
+            const entry = state.planes.find(p => p.hex === hex);
+            if (entry) refreshEntry(entry);
+        },
+        refreshAll: () => {
+            for (const entry of state.planes) refreshEntry(entry);
+        },
+        checkTrackChanges: checkTrackChanges,
         init: init,
         _state: state
     };
