@@ -884,15 +884,15 @@ input.error {
 }
 
 .menu li > a.activeButton {
-    color: #fff;
-    background-color: var(--color-base-content);
+    color: var(--BASE-COLOR);
+    background-color: #fff;
 }
 
-@supports (background-color: color-mix(in oklab, red, red)) {
+/* @supports (background-color: color-mix(in oklab, red, red)) {
     .menu li > a.activeButton {
         background-color: color-mix(in oklab, var(--color-base-content) 10%, transparent);
     }
-}
+} */
 
 .inActiveButton {
     color: #E4E4E7;
@@ -1837,7 +1837,6 @@ html .ui-button.ui-state-disabled:active {
 #minuteSelect .ui-slider-handle,
 #replaySpeedSelect .ui-slider-handle {
     height: var(--replay-handle-size) !important;
-    width: 30px !important;
     top: 50% !important;
     transform: translate(-50%, -50%) !important;
     margin: 0 !important;
@@ -1848,6 +1847,7 @@ html .ui-button.ui-state-disabled:active {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.22);
     border-radius: 0.5rem;
     text-align: center;
+    padding: 0.2rem;
 }
 
 #replaySpeedSelect .ui-slider-handle {

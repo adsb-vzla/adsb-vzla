@@ -545,33 +545,18 @@ function updateDistanceToGroundOverlay() {
 
         const textContainer = ov.getElement().querySelector('.ta-text-content');
         if (textContainer) {
-            // textContainer.innerHTML = `Distance: ${slantText}`;
-            // let distanceLabel = getTranslatedText('distance_label', 'Distance:');
-            // let distanceLabel = getTranslatedText('distance_label', 'Distance:');
-            const iconHTML = '⟷';
             const distanceText = showLabelUnits ? slantText : format_distance_brief(slantM, DisplayUnits);
 
             const plane = g.planes[hex];
             const track = plane ? plane.track : null;
             const trackStr = formatTrackDisplay(track);
-            const trackIcon = '✈';
 
             let angle = null;
-            let bearingStr = '---°';
-
-            if (pairFirstType === 'aircraft') {
-                const bearingAircraftToGround = bearingFromLonLat(pp, gp);
-                bearingStr = formatTrackDisplay(bearingAircraftToGround);
-                angle = relativeBearing(plane.track, bearingAircraftToGround);
-            } else {
-                const bearingGroundToAircraft = bearingFromLonLat(gp, pp);
-                bearingStr = formatTrackDisplay(bearingGroundToAircraft);
-                angle = relativeBearing(plane.track, bearingGroundToAircraft);
-            }
+            const bearingAircraftToGround = bearingFromLonLat(pp, gp);
+            angle = relativePositionAngle(bearingAircraftToGround, plane ? plane.track : null);
 
             textContainer.innerHTML = `
-                ⟷ ${distanceText} | ✈ ${trackStr}<br>
-                ⏱ A → B ${bearingStr} | ∠ ${formatAngle(angle)} 
+                ⟷ ${distanceText} | ✈ ${trackStr} | ⏱ ${formatRelativePosition(angle)}
             `;
         }
 

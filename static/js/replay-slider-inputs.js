@@ -164,7 +164,25 @@
                 } else {
                     realVal = uiVal;
                 }
-                tip.textContent = formatTipValue(sliderEl, realVal);
+
+                let restored = false;
+                if (typeof window.replay !== 'undefined' && window.replay) {
+                    if (sliderEl === '#hourSelect') {
+                        tip.textContent = (typeof window.formatHourSliderTip === 'function')
+                            ? window.formatHourSliderTip(window.replay.hours, window.replay.minutes)
+                            : formatTipValue(sliderEl, realVal);
+                        restored = true;
+                    } else if (sliderEl === '#minuteSelect') {
+                        tip.textContent = (typeof window.formatMinuteSliderTip === 'function')
+                            ? window.formatMinuteSliderTip(window.replay.minutes, window.replay.seconds || 0)
+                            : formatTipValue(sliderEl, realVal);
+                        restored = true;
+                    }
+                }
+
+                if (!restored) {
+                    tip.textContent = formatTipValue(sliderEl, realVal);
+                }
             } catch (e) {
 
             }
@@ -224,7 +242,7 @@
     }
 
     let initialized = false;
-    
+
     // ***** INICIALIZAR FUNCIÓN *****
     function init() {
         if (initialized) return;
@@ -256,8 +274,50 @@
                     : uiVal;
                 tip.textContent = formatTipValue(sliderSelector, realVal);
             } catch (e) { }
+        },
+
+        // ***** FORZAR SINCRONIZACIÓN DE LOS INPUTS (HORA/MINUTO) CON EL RELOJ DEL REPLAY *****
+        syncClock: function (hours, minutes) {
+            const hourInput = document.getElementById('replayHourInput');
+            const minuteInput = document.getElementById('replayMinuteInput');
+            if (hourInput && document.activeElement !== hourInput && !window.replayEditLock) {
+                const val = String(hours).padStart(2, '0');
+                if (hourInput.value !== val) hourInput.value = val;
+            }
+            if (minuteInput && document.activeElement !== minuteInput && !window.replayEditLock) {
+                const val = String(minutes).padStart(2, '0');
+                if (minuteInput.value !== val) minuteInput.value = val;
+            }
+        },
+
+        // ***** FORZAR SINCRONIZACIÓN DE LOS SLIDERS (HORA/MINUTO) CON EL RELOJ DEL REPLAY *****
+        syncSliders: function (hours, minutes) {
+            try {
+                const $hourSlider = jQuery('#hourSelect');
+                if ($hourSlider.length && $hourSlider.hasClass('ui-slider')) {
+                    if ($hourSlider.slider('value') !== hours) {
+                        $hourSlider.slider('value', hours);
+                        const handle = $hourSlider.find('.ui-slider-handle');
+                        const tip = handle.find('.slider-tip');
+                        if (tip.length) tip.text(String(hours).padStart(2, '0') + 'h');
+                    }
+                }
+            } catch (e) { }
+            try {
+                const $minuteSlider = jQuery('#minuteSelect');
+                if ($minuteSlider.length && $minuteSlider.hasClass('ui-slider')) {
+                    if ($minuteSlider.slider('value') !== minutes) {
+                        $minuteSlider.slider('value', minutes);
+                        const handle = $minuteSlider.find('.ui-slider-handle');
+                        const tip = handle.find('.slider-tip');
+                        if (tip.length) tip.text(String(minutes).padStart(2, '0') + 'm');
+                    }
+                }
+            } catch (e) { }
         }
     };
+
+
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init, { once: true });

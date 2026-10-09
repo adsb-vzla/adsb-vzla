@@ -381,6 +381,65 @@ function draw3DPanorama(data, totalNm) {
     }
 }
 
+// ***** APAGAR MODO TIERRA-AERONAVE SIN CONDICIONES (PARA EXCLUSIÓN MUTUA) *****
+function forceStopElevationGroundAircraft() {
+    const aircraftHex = elevationAircraftHex || elevationPendingAircraftHex;
+
+    stopElevationGroundAircraftUpdates();
+    stopElevationCountdown();
+    hidePanoramaOverlay();
+
+    elevationPointSource && elevationPointSource.clear();
+    elevationLineSource && elevationLineSource.clear();
+    if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
+        elevationNumberSourceGA.clear();
+    }
+
+    if (aircraftHex && typeof InstrumentedAircraft !== 'undefined') {
+        InstrumentedAircraft.unregister(aircraftHex);
+    }
+
+    elevationGroundAircraftMode = false;
+    elevationGroundAircraftModeType = 'aircraft';
+    elevationGroundAnchor = null;
+    elevationAircraftHex = null;
+    elevationPendingGround = null;
+    elevationPendingAircraftHex = null;
+    elevationGAAircraftWasFirst = false;
+
+    elevationPointLayer && elevationPointLayer.setVisible(false);
+    elevationLineLayer && elevationLineLayer.setVisible(false);
+
+    hideDistanceGuide();
+    buttonActive('#EA', false);
+    if (jQuery('#elevation_dropdown [role="button"].btn')[0]?.__syncBtnState) {
+        jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
+    }
+}
+
+// ***** APAGAR MODO TIERRA-TIERRA SIN CONDICIONES (PARA EXCLUSIÓN MUTUA) *****
+function forceStopElevationGroundGround() {
+    elevationMode = false;
+    elevationAnchor = null;
+
+    hideDistanceGuide();
+    hidePanoramaOverlay();
+
+    elevationPointSource && elevationPointSource.clear();
+    elevationLineSource && elevationLineSource.clear();
+    elevationPointLayer && elevationPointLayer.setVisible(false);
+    elevationLineLayer && elevationLineLayer.setVisible(false);
+
+    if (typeof elevationNumberSourceGG !== 'undefined' && elevationNumberSourceGG) {
+        elevationNumberSourceGG.clear();
+    }
+
+    buttonActive('#E', false);
+    if (jQuery('#elevation_dropdown [role="button"].btn')[0]?.__syncBtnState) {
+        jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
+    }
+}
+
 // ***** HABILITAR/DESHABILITAR FUNCIÓN DE ELEVACIÓN (MODO TIERRA-TIERRA) *****
 function toggleElevationMode() {
     // ***** INVERTIR ESTADO GLOBAL DEL MODO *****
@@ -388,19 +447,11 @@ function toggleElevationMode() {
 
     // ***** SI EL MODO ESTÁ ACTIVO *****
     if (elevationMode) {
-        // ***** SI EL MODO ACTIVO ES EL TIERRA-AERONAVE *****
+        // ***** APAGAR MODO TIERRA-AERONAVE SI ESTÁ ACTIVO (EXCLUSIÓN MUTUA) *****
         if (elevationGroundAircraftMode) {
-            // ***** DESACTIVAR MODO *****
-            elevationGroundAircraftMode = false;
-            // ***** DETENER ACTUALIZACIÓN DEL PANORAMA *****
-            if (typeof stopElevationGroundAircraftUpdates === 'function') {
-                stopElevationGroundAircraftUpdates();
-            }
-            // ***** DETENER TIMER DE 5 SEGUNDOS *****
-            if (typeof stopElevationCountdown === 'function') {
-                stopElevationCountdown();
-            }
+            forceStopElevationGroundAircraft();
         }
+
         // ***** LIMPIAR ANCLA *****
         elevationAnchor = null;
         // ***** MOSTRAR MENSAJE GUÍA DEL PASO 1 *****
@@ -409,12 +460,10 @@ function toggleElevationMode() {
                 'elevation_gg_mode',
                 'Mode: Ground point - Ground point'
             );
-
             const stepText = getTranslatedText(
                 'elevation_mark_point_a',
                 'Click on the map to mark point A.'
             );
-
             return `<center>${modeText}</center><br><center>${stepText}</center>`;
         });
         // ***** OCULTAR OVERLAY *****
@@ -426,33 +475,15 @@ function toggleElevationMode() {
         elevationPointLayer && elevationPointLayer.setVisible(true);
         elevationLineLayer && elevationLineLayer.setVisible(false);
 
-        // ***** SI EL MODO NO ESTÁ ACTIVO *****
-    } else {
-        // ***** LIMPIAR ANCLA *****
-        elevationAnchor = null;
-        // ***** OCULTAR GUÍA *****
-        hideDistanceGuide();
-        // ***** OCULTAR OVERLAY *****
-        hidePanoramaOverlay();
-        // ***** LIMPIAR CAPAS DE LÍNEAS Y PUNTOS *****
-        elevationPointSource && elevationPointSource.clear();
-        elevationLineSource && elevationLineSource.clear();
-        elevationPointLayer && elevationPointLayer.setVisible(false);
-        elevationLineLayer && elevationLineLayer.setVisible(false);
-        // ***** LIMPIAR NUMERACIÓN *****
-        if (typeof elevationNumberSourceGG !== 'undefined' && elevationNumberSourceGG) {
-            elevationNumberSourceGG.clear();
+        buttonActive('#E', true);
+        if (jQuery('#elevation_dropdown [role="button"].btn')[0]?.__syncBtnState) {
+            jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
         }
-        if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
-            elevationNumberSourceGA.clear();
-        }
+        return;
     }
 
-    // ***** ACTUALIZAR ESTADO DEL BOTÓN PARA CAMBIO DE COLOR| *****
-    buttonActive('#E', elevationMode);
-    if (jQuery('#elevation_dropdown [role="button"].btn')[0]?.__syncBtnState) {
-        jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
-    }
+    // ***** SI EL MODO NO ESTÁ ACTIVO *****
+    forceStopElevationGroundGround();
 }
 
 // ***** ESTABLECER ANCLA A 50NM DESDE LA POSICIÓN DEL AVIÓN *****
@@ -534,6 +565,10 @@ function computeAnchorFromAircraft(plane, distanceNm = ELEV_CACHE_MAX_SIZE) {
 // ***** CICLAR MODOS DE ELEVACIÓN TIERRA-AERONAVE *****
 function onElevationGACycleClick() {
     if (!elevationGroundAircraftMode) {
+        // ***** APAGAR TIERRA-TIERRA SI ESTÁ ACTIVO (EXCLUSIÓN MUTUA) *****
+        if (elevationMode) {
+            forceStopElevationGroundGround();
+        }
         elevationGroundAircraftModeType = 'aircraft';
         startElevationGroundAircraft();
         return;
@@ -562,7 +597,8 @@ function onElevationGACycleClick() {
             jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
         }
     } else {
-        startElevationGroundAircraft();
+        // ***** AL CERRAR EL CICLO, APAGAR GA FORZOSAMENTE *****
+        forceStopElevationGroundAircraft();
     }
 }
 
@@ -639,13 +675,11 @@ function startElevationGroundAircraft() {
 
     // ***** SI EL MODO ESTÁ ACTIVO *****
     if (elevationGroundAircraftMode) {
-        // ***** SI EL MODO ACTIVO ES EL TIERRA-AERONAVE *****
+        // ***** APAGAR MODO TIERRA-TIERRA SI ESTÁ ACTIVO (EXCLUSIÓN MUTUA) *****
         if (elevationMode) {
-            // ***** DESACTIVAR MODO *****
-            elevationMode = false;
-            // ***** LIMPIAR ANCLA *****
-            elevationAnchor = null;
+            forceStopElevationGroundGround();
         }
+
         // ***** LIMPIAR CAPAS DE LÍNEAS Y PUNTOS *****
         elevationPointSource && elevationPointSource.clear();
         elevationLineSource && elevationLineSource.clear();
@@ -673,49 +707,14 @@ function startElevationGroundAircraft() {
         stopElevationGroundAircraftUpdates();
 
         buttonActive('#EA', true);
-
-        // ***** SI NO ESTÁ ACTIVO *****
-    } else {
-        // ***** LIMPIAR ANCLA EN TIERRA Y AVIÓN SELECCIONADO *****
-        elevationGroundAnchor = null;
-        elevationAircraftHex = null;
-        elevationPendingGround = null;
-        elevationPendingAircraftHex = null;
-        elevationGAAircraftWasFirst = false;
-        elevationGroundAircraftModeType = 'aircraft';
-
-        // ***** DETENER ACTUALIZACIÓN DEL PANORAMA Y TIMER DE 5 SEGUNDOS *****
-        stopElevationGroundAircraftUpdates();
-        stopElevationCountdown();
-
-        // ***** LIMPIAR CAPAS DE LÍNEAS Y PUNTOS *****
-        elevationPointSource && elevationPointSource.clear();
-        elevationLineSource && elevationLineSource.clear();
-        elevationPointLayer && elevationPointLayer.setVisible(false);
-        elevationLineLayer && elevationLineLayer.setVisible(false);
-        // ***** LIMPIAR NUMERACIÓN *****
-        if (typeof elevationNumberSourceGG !== 'undefined' && elevationNumberSourceGG) {
-            elevationNumberSourceGG.clear();
-        }
-        if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
-            elevationNumberSourceGA.clear();
-        }
-
-        // ***** OCULTAR GUÍA *****
-        hidePanoramaOverlay();
-        // ***** OCULTAR OVERLAY *****
-        hideDistanceGuide();
-
-        // ***** ACTUALIZAR ESTADO DEL BOTÓN PARA CAMBIO DE COLOR *****
-        buttonActive('#EA', elevationGroundAircraftMode);
         if (jQuery('#elevation_dropdown [role="button"].btn')[0]?.__syncBtnState) {
             jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
         }
-
-        if (elevationAircraftHex && typeof InstrumentedAircraft !== 'undefined') {
-            InstrumentedAircraft.unregister(elevationAircraftHex);
-        }
+        return;
     }
+
+    // ***** SI EL MODO NO ESTÁ ACTIVO *****
+    forceStopElevationGroundAircraft();
 }
 
 // ***** DETENER ACTUALIZACIÓN DEL PANORAMA *****
@@ -728,33 +727,7 @@ function stopElevationGroundAircraftUpdates() {
 
 // ***** SALIR DEL MODO TIERRA-AERONAVE *****
 function exitElevationGroundAircraftMode() {
-    const aircraftHex = elevationAircraftHex || elevationPendingAircraftHex;
-
-    stopElevationGroundAircraftUpdates();
-    stopElevationCountdown();
-    hidePanoramaOverlay();
-
-    elevationPointSource && elevationPointSource.clear();
-    elevationLineSource && elevationLineSource.clear();
-    elevationNumberSourceGA && elevationNumberSourceGA.clear();
-
-    if (aircraftHex && typeof InstrumentedAircraft !== 'undefined') {
-        InstrumentedAircraft.unregister(aircraftHex);
-    }
-
-    elevationGroundAircraftMode = false;
-    elevationGroundAircraftModeType = 'aircraft';
-    elevationGroundAnchor = null;
-    elevationAircraftHex = null;
-    elevationPendingGround = null;
-    elevationPendingAircraftHex = null;
-    elevationGAAircraftWasFirst = false;
-
-    elevationPointLayer && elevationPointLayer.setVisible(false);
-    elevationLineLayer && elevationLineLayer.setVisible(false);
-
-    hideDistanceGuide();
-    buttonActive('#EA', false);
+    forceStopElevationGroundAircraft();
 }
 
 // ***** ACTUALIZAR PANORAMA SEGÚN TIMER *****
@@ -1418,3 +1391,6 @@ window.onElevationGACycleClick = onElevationGACycleClick;
 window.finalizeElevationGAPair = finalizeElevationGAPair;
 window.updateElevationGAPendingAircraftVisual = updateElevationGAPendingAircraftVisual;
 window.showElevationGAGuide = showElevationGAGuide;
+window.forceStopElevationGroundAircraft = forceStopElevationGroundAircraft;
+window.forceStopElevationGroundGround = forceStopElevationGroundGround;
+window.exitElevationGroundAircraftMode = exitElevationGroundAircraftMode;

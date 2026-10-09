@@ -56,6 +56,17 @@ let followPos = [];
 
 let replayEditLock = false;
 let replayPendingJump = false;
+// ***** EXPONER FUNCIÓN QUE BLOQUEA EL REPLAY AL EDITAR *****
+Object.defineProperty(window, 'replayEditLock', {
+    get() { return replayEditLock; },
+    set(v) { replayEditLock = v; },
+    configurable: true,
+});
+// ***** EXPONER REPLAY PARA MÓDULOS EXTERNOS *****
+Object.defineProperty(window, 'replay', {
+    get() { return (typeof replay !== 'undefined') ? replay : null; },
+    configurable: true,
+});
 let replayHourValue = 0;
 let replayMinuteValue = 0;
 
@@ -7722,7 +7733,10 @@ function toggleTableInView(arg) {
         loStore['tableInView'] = tableInView;
     }
 
-    jQuery('#with_positions').text(tableInView ? "On Screen:" : "With Position:");
+    // ***** TEXTO TRADUCIDO SEGÚN EL ESTADO Y EL IDIOMA ACTUAL *****
+    const labelKey = tableInView ? 'on_screen' : 'with_position';
+    const labelFallback = tableInView ? 'On Screen:' : 'With Position:';
+    jQuery('#with_positions').text(getTranslatedText(labelKey, labelFallback));
 
     buttonActive('#V', tableInView);
 }
@@ -11613,6 +11627,9 @@ function loadReplay(ts) {
     if (isNaN(ts.getTime())) {
         ts = new Date();
     }
+
+    stopReplayClock();
+
     let lastAvailable = new Date();
     lastAvailable.setUTCMinutes(Math.floor(lastAvailable.getUTCMinutes() / 30) * 30);
     lastAvailable.setUTCSeconds(0);
@@ -11864,8 +11881,133 @@ function replaySetTimeHint(arg) {
         minuteInput.style.color = '#e9edf7';
     }
 
+    // ***** MOVER LOS SLIDERS AL VALOR ACTUAL DEL REPLAY *****
+    syncReplaySlidersToReplay();
+
     replayJumpEnabled = true;
 
+}
+
+// ***** ACTUALIZAR HORA/MINUTO DEL REPLAY SEGÚN VELOCIDAD *****
+let replayClockInterval = null;
+
+function startReplayClock() {
+    if (replayClockInterval) return;
+    replayClockInterval = setInterval(updateReplayClock, 250);
+}
+
+function stopReplayClock() {
+    if (replayClockInterval) {
+        clearInterval(replayClockInterval);
+        replayClockInterval = null;
+    }
+}
+
+// ***** ACTUALIZAR LOS INPUTS DE HORA Y MINUTO SEGÚN EL TIEMPO DEL REPLAY *****
+function updateReplayClock() {
+    if (!replay || showTrace) return;
+    if (!replay.playing) return;
+
+    let ts = replay.ts;
+    if (replay.points && replay.pointsU && replay.slices && replay.index != null) {
+        const i = replay.slices[Math.min(replay.index, replay.slices.length - 1)];
+        if (i != null) {
+            const epochSec = replay.pointsU[i + 2] / 1000 + replay.pointsU[i + 1] * 4294967.296;
+            ts = new Date(epochSec * 1000);
+        }
+    }
+
+    const hours = ts.getUTCHours();
+    const minutes = ts.getUTCMinutes();
+
+    const hourInput = document.getElementById('replayHourInput');
+    const minuteInput = document.getElementById('replayMinuteInput');
+
+    // ***** ACTUALIZAR LOS INPUTS DE TEXTO (HORA / MINUTO) *****
+    if (hourInput && document.activeElement !== hourInput && !replayEditLock) {
+        const val = String(hours).padStart(2, '0');
+        if (hourInput.value !== val) {
+            hourInput.value = val;
+            hourInput.style.color = '#e9edf7';
+        }
+    }
+
+    if (minuteInput && document.activeElement !== minuteInput && !replayEditLock) {
+        const val = String(minutes).padStart(2, '0');
+        if (minuteInput.value !== val) {
+            minuteInput.value = val;
+            minuteInput.style.color = '#e9edf7';
+        }
+    }
+
+    // ***** MOVER LOS SLIDERS DE HORA Y MINUTO SEGÚN EL REPLAY *****
+    try {
+        const $hourSlider = jQuery('#hourSelect');
+        if ($hourSlider.length && $hourSlider.hasClass('ui-slider')) {
+            const currentHour = $hourSlider.slider('value');
+            if (currentHour !== hours) {
+                $hourSlider.slider('value', hours);
+            }
+        }
+    } catch (e) { }
+
+    try {
+        const $minuteSlider = jQuery('#minuteSelect');
+        if ($minuteSlider.length && $minuteSlider.hasClass('ui-slider')) {
+            const currentMinute = $minuteSlider.slider('value');
+            if (currentMinute !== minutes) {
+                $minuteSlider.slider('value', minutes);
+            }
+        }
+    } catch (e) { }
+
+    // ***** ACTUALIZAR LOS TIPS CON H:M Y M:S *****
+    updateReplaySliderTips(hours, minutes, ts.getUTCSeconds());
+
+    setReplayTimeHintFromClock(ts);
+}
+
+// ***** SINCRONIZAR SLIDERS DE HORA Y MINUTO CON EL ESTADO DEL REPLAY *****
+function syncReplaySlidersToReplay() {
+    if (!replay) return;
+    try {
+        const $hourSlider = jQuery('#hourSelect');
+        if ($hourSlider.length && $hourSlider.hasClass('ui-slider')) {
+            const currentHour = $hourSlider.slider('value');
+            if (currentHour !== replay.hours) {
+                $hourSlider.slider('value', replay.hours);
+            }
+        }
+    } catch (e) { }
+
+    try {
+        const $minuteSlider = jQuery('#minuteSelect');
+        if ($minuteSlider.length && $minuteSlider.hasClass('ui-slider')) {
+            const currentMinute = $minuteSlider.slider('value');
+            if (currentMinute !== replay.minutes) {
+                $minuteSlider.slider('value', replay.minutes);
+            }
+        }
+    } catch (e) { }
+
+    updateReplaySliderTips(replay.hours, replay.minutes, replay.seconds || 0);
+}
+
+// ***** VERSIÓN DE setReplayTimeHint QUE NO REESCRIBE HORA/MINUTO *****
+function setReplayTimeHintFromClock(ts) {
+    if (!replay || !ts) return;
+
+    const dateString = zDateString(ts);
+    if (replay.datepickerDate !== dateString) {
+        replay.datepickerDate = dateString;
+        jQuery("#replayDatepicker").datepicker('setDate', dateString);
+    }
+
+    replay.hours = ts.getUTCHours();
+    replay.minutes = ts.getUTCMinutes();
+    replay.seconds = ts.getUTCSeconds();
+
+    setReplayTimeHint(ts);
 }
 
 function replayStep(arg) {
@@ -12065,6 +12207,8 @@ function replayStep(arg) {
                 }
             });
         }
+        updateReplayClock();
+        syncReplaySlidersToReplay();
     }
     replay.index = index + 1;
 }
@@ -12209,9 +12353,12 @@ function playReplay(state) {
         }
 
         jQuery("#replayPlay").html(pauseText);
+        startReplayClock();
         replayStep();
     } else {
         replay.playing = false;
+        stopReplayClock();
+
         let playText = 'Play';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
             playText = window.translate.t('play') || playText;
@@ -12229,6 +12376,7 @@ function showReplayBar() {
     showingReplayBar = !showingReplayBar;
     if (!showingReplayBar) {
         jQuery("#replayBar").hide();
+        stopReplayClock();
         replay = null;
         jQuery('#map_canvas').height('100%');
         jQuery('#sidebar_canvas').height('100%');
@@ -12372,6 +12520,44 @@ function showReplayBar() {
 function updateSliderTip(handle, value, suffix) {
     const formatted = value.toString().padStart(2, '0') + suffix;
     jQuery(handle).find('.slider-tip').text(formatted);
+}
+
+// ***** TIP DE HORA *****
+function formatHourSliderTip(hours, minutes) {
+    const h = String(hours).padStart(2, '0');
+    const m = String(minutes).padStart(2, '0');
+    return h + 'h:' + m + 'm';
+}
+
+// ***** TIP DE MINUTO *****
+// minutes = 0..59, seconds = 0..59
+function formatMinuteSliderTip(minutes, seconds) {
+    const m = String(minutes).padStart(2, '0');
+    const s = String(seconds).padStart(2, '0');
+    return m + 'm:' + s + 's';
+}
+
+// ***** ACTUALIZAR LOS TIPS DE HORA Y MINUTO CON H:M Y M:S *****
+function updateReplaySliderTips(hours, minutes, seconds) {
+    try {
+        const $hourSlider = jQuery('#hourSelect');
+        if ($hourSlider.length && $hourSlider.hasClass('ui-slider')) {
+            const handle = $hourSlider.find('.ui-slider-handle');
+            if (handle.length) {
+                handle.find('.slider-tip').text(formatHourSliderTip(hours, minutes));
+            }
+        }
+    } catch (e) { }
+
+    try {
+        const $minuteSlider = jQuery('#minuteSelect');
+        if ($minuteSlider.length && $minuteSlider.hasClass('ui-slider')) {
+            const handle = $minuteSlider.find('.ui-slider-handle');
+            if (handle.length) {
+                handle.find('.slider-tip').text(formatMinuteSliderTip(minutes, seconds));
+            }
+        }
+    } catch (e) { }
 }
 
 function setupSliderDecorations(selector, minTxt, maxTxt) {
@@ -13880,3 +14066,7 @@ window.forceRecreateLayerSwitcher = forceRecreateLayerSwitcher;
 window.getLayerTitle = getLayerTitle;
 window.updateLayerTitles = updateLayerTitles;
 window.refreshLayerSwitcher = refreshLayerSwitcher;
+window.formatHourSliderTip = formatHourSliderTip;
+window.formatMinuteSliderTip = formatMinuteSliderTip;
+window.updateReplaySliderTips = updateReplaySliderTips;
+window.syncReplaySlidersToReplay = syncReplaySlidersToReplay;

@@ -362,7 +362,7 @@
             allowClear: true,
             minimumInputLength: MIN_CHARS,
             width: '100%',
-            dropdownAutoWidth: true,
+            dropdownAutoWidth: false,
             closeOnSelect: true,
             selectOnClose: false,
             dropdownParent: jQuery('#tab-search-navbar'),
@@ -408,6 +408,28 @@
 
         $input.on('focus click select2:open select2:close select2:select select2:unselect',
             refreshI18nTexts);
+
+        // ***** FORZAR REPOSICIONAMIENTO DEL DROPDOWN AL ABRIR *****
+        $input.on('select2:open', function () {
+            setTimeout(() => {
+                const $dropdown = jQuery('.select2-container--open .select2-dropdown');
+                if (!$dropdown.length) return;
+
+                const rect = $dropdown[0].getBoundingClientRect();
+                const vw = window.innerWidth;
+                const margin = 8;
+
+                if (rect.right > vw - margin) {
+                    const shift = rect.right - (vw - margin);
+                    $dropdown.css('margin-left', `-${shift}px`);
+                }
+
+                else if (rect.left < margin) {
+                    const shift = margin - rect.left;
+                    $dropdown.css('margin-left', `${shift}px`);
+                }
+            }, 0);
+        });
 
         $input.on('keydown', handleEnterAsSearch);
 
