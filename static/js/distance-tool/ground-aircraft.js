@@ -552,13 +552,8 @@ function updateDistanceToGroundOverlay() {
             const trackStr = formatTrackDisplay(track);
 
             let angle = null;
-            if (pairFirstType === 'aircraft') {
-                const bearingAircraftToGround = bearingFromLonLat(pp, gp);
-                angle = relativePositionAngle(bearingAircraftToGround, plane ? plane.track : null);
-            } else {
-                const bearingGroundToAircraft = bearingFromLonLat(gp, pp);
-                angle = relativePositionAngle(bearingGroundToAircraft, plane ? plane.track : null);
-            }
+            const bearingAircraftToGround = bearingFromLonLat(pp, gp);
+            angle = relativePositionAngle(bearingAircraftToGround, plane ? plane.track : null);
 
             textContainer.innerHTML = `
                 ⟷ ${distanceText} | ✈ ${trackStr} | ⏱ ${formatRelativePosition(angle)}
