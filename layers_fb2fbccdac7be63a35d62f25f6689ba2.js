@@ -28,6 +28,7 @@ function createBaseLayers() {
     let TMA_MIQ = new ol.Collection();
     let TMA_BNA = new ol.Collection();
     let TMA_GNA = new ol.Collection();
+    let venezuela = new ol.Collection();
 
     const tileTransition = onMobile ? 0 : 0;
 
@@ -2037,6 +2038,38 @@ function createBaseLayers() {
             true
         )
     );
+
+    venezuela.push(new ol.layer.Vector({
+        type: 'overlay',
+        title: 'Aerodromes',
+        name: 'aerodromes_vzla',
+        zIndex: 99,
+        visible: false,
+        source: new ol.source.Vector({
+            url: 'geojson/aerodromes-vzla.geojson',
+            transition: tileTransition,
+            format: new ol.format.GeoJSON({
+                defaultDataProjection: 'EPSG:4326',
+                projection: 'EPSG:3857'
+            })
+        }),
+        style: function (feature) {
+            return new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 5,
+                    fill: new ol.style.Fill({ color: '#f28c28' }),
+                    stroke: new ol.style.Stroke({ color: '#ffffff', width: 2 })
+                }),
+                text: new ol.style.Text({
+                    text: feature.get('hovered') ? (feature.get('name') || feature.get('icao') || '') : '',
+                    font: '12px sans-serif',
+                    offsetY: -12,
+                    fill: new ol.style.Fill({ color: '#222222' }),
+                    stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 })
+                })
+            });
+        }
+    }));
     fir.push(
         createGeoJsonLayer(
             'FIR Baranquilla',
@@ -2214,6 +2247,14 @@ function createBaseLayers() {
 
 
 
+    if (venezuela.getLength() > 0) {
+        layers.push(new ol.layer.Group({
+            name: 'venezuela',
+            title: 'Venezuela',
+            layers: venezuela,
+            fold: 'close',
+        }));
+    }
     if (world.getLength() > 0) {
         layers.push(new ol.layer.Group({
             name: 'world',
@@ -2279,7 +2320,6 @@ function createBaseLayers() {
             fold: 'close',
         }));
     }
-
     // ***** TRADUCIR NOMBRE DE LAS CAPAS *****
     function translateLayersRecursive(layerCollection) {
         if (!layerCollection || typeof layerCollection.forEach !== 'function') {

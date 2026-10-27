@@ -671,9 +671,11 @@
             'layer_group_ifrlow': 'IFR Low',
             // *** Dropdown Worldwide ***
             'layer_group_world': 'Worldwide',
+            'layer_group_venezuela': 'Venezuela',
             'layer_osm_tiles_offline': 'Map Offline',
             'layer_rainviewer_radar': 'RainViewer Radar',
             // *** Overlays IFR/VFR/TMA ***
+            'layer_aerodromes_vzla': 'Aerodromes',
             'layer_base': 'Base',
             'layer_map': 'Map',
             'layer_airports_aerodromes': 'Airports / Aerodromes',
@@ -1373,9 +1375,11 @@
             'layer_group_ifrlow': 'IFR Bajo',
             // *** Dropdown Worldwide ***
             'layer_group_world': 'Mundial',
+            'layer_group_venezuela': 'Venezuela',
             'layer_osm_tiles_offline': 'Mapa sin conexión',
             'layer_rainviewer_radar': 'Radar RainViewer',
             // *** Overlays IFR/VFR/TMA ***
+            'layer_aerodromes_vzla': 'Aeródromos',
             'layer_base': 'Base',
             'layer_map': 'Mapa',
             'layer_airports_aerodromes': 'Aeropuertos / Aeródromos',

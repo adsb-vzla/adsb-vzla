@@ -3781,6 +3781,44 @@ function ol_map_init() {
         maxTilesLoading: 4,
     });
 
+    const venezuelaGroup = layers_group.getLayers().getArray()
+        .find(layer => layer.get('name') === 'venezuela');
+    const aerodromesLayer = venezuelaGroup && venezuelaGroup.getLayers().getArray()
+        .find(layer => layer.get('name') === 'aerodromes_vzla');
+    if (aerodromesLayer) {
+        let hoveredAerodrome = null;
+        const mapTarget = OLMap.getTargetElement();
+
+        function clearAerodromeHover() {
+            if (hoveredAerodrome) {
+                hoveredAerodrome.set('hovered', false);
+                hoveredAerodrome = null;
+            }
+            mapTarget.style.cursor = '';
+        }
+
+        OLMap.on('pointermove', function (evt) {
+            if (evt.dragging) return;
+
+            const feature = OLMap.forEachFeatureAtPixel(evt.pixel, function (candidate) {
+                return candidate;
+            }, {
+                layerFilter: layer => layer === aerodromesLayer,
+                hitTolerance: 4
+            }) || null;
+
+            if (feature === hoveredAerodrome) return;
+
+            clearAerodromeHover();
+            if (feature) {
+                hoveredAerodrome = feature;
+                hoveredAerodrome.set('hovered', true);
+                mapTarget.style.cursor = 'pointer';
+            }
+        });
+        mapTarget.addEventListener('pointerleave', clearAerodromeHover);
+    }
+
     console.time('webglInit');
     webglInit();
     console.timeEnd('webglInit');

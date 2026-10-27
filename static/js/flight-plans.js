@@ -196,15 +196,15 @@
                 });
             } else if (resultState === 'empty') {
                 status.textContent = text('empty');
-            } else if (resultState === 'error') {
-                status.textContent = resultError instanceof TypeError
-                    ? text('corsError')
-                    : text('requestError', {
-                        message: resultError.translationKey
-                            ? text(resultError.translationKey, resultError.translationValues)
-                            : resultError.message
-                    });
-            }
+            }// else if (resultState === 'error') {
+                //status.textContent = resultError instanceof TypeError
+                    //? text('corsError')
+                    //: text('requestError', {
+                        //message: resultError.translationKey
+                            //? text(resultError.translationKey, resultError.translationValues)
+                            //: resultError.message
+                    //});
+            //}
         }
 
         function updateLanguage() {
