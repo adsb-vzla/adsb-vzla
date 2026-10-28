@@ -8662,6 +8662,30 @@ function initFilters() {
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                         <input type="checkbox" class="receiver-cb" value="d" checked> Receptor D
                     </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor E
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor F
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor G
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor H
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor I
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor J
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor K
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor L
+                    </label>
                 </div>
                 <div class="filter-buttons" style="margin-top: 8px;">
                     <button class="formButton" id="receiver_filter_apply">Apply</button>
