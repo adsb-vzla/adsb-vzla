@@ -1057,7 +1057,7 @@ function fetchFail(jqxhr, status, error) {
     }
 }
 
-function fetchDone(data, receiverId) {
+function fetchDone(data, receiverId, isJsonFeed) {
     try {
         pendingFetches--;
         if (data == null) {
@@ -1070,7 +1070,7 @@ function fetchDone(data, receiverId) {
         }
 
         // ***** DECODIFICAR PRIMERO *****
-        if (zstd) {
+        if (zstd && !isJsonFeed) {
             let arr = new Uint8Array(data);
             lastRequestSize = arr.byteLength;
             let res;
@@ -1087,7 +1087,7 @@ function fetchDone(data, receiverId) {
             // return type is Uint8Array, wqi requires the ArrayBuffer
             data = { buffer: arrayBuffer, };
             wqi(data);
-        } else if (binCraft) {
+        } else if (binCraft && !isJsonFeed) {
             lastRequestSize = data.byteLength / 2;
             data = { buffer: data, };
             wqi(data);
@@ -1382,11 +1382,12 @@ function fetchData(options) {
         }
     } else {
         // ac_url.push('data/aircraft' + suffix);
-        // ***** MÚLTIPLES RECEPTORES *****
+        // ***** MÚLTIPLES RECEPTORES Y OPEN SKY *****
         ac_url.push('data-receiver-a/aircraft.json');
         ac_url.push('data-receiver-b/aircraft.json');
         ac_url.push('data-receiver-c/aircraft.json');
         ac_url.push('data-receiver-d/aircraft.json');
+        ac_url.push('data-opensky/aircraft.json');
     }
 
     pendingFetches += ac_url.length;
@@ -1402,10 +1403,11 @@ function fetchData(options) {
         const receiverNames = ['a', 'b', 'c', 'd'];
         const receiverId = receiverNames[i] || null;
 
-        // ***** FORZAR JSON DE TEXTO PARA LOS ARCHIVOS DE RECEPTORES *****
-        const isReceiverFile = typeof ac_url[i] === 'string' && ac_url[i].startsWith('data-receiver-');
+        // ***** FORZAR JSON DE TEXTO PARA LOS FEEDS JSON *****
+        const isJsonFeed = typeof ac_url[i] === 'string'
+            && (ac_url[i].startsWith('data-receiver-') || ac_url[i].startsWith('data-opensky/'));
 
-        if ((binCraft || zstd) && !isReceiverFile) {
+        if ((binCraft || zstd) && !isJsonFeed) {
             req = jQuery.ajax({
                 url: `${ac_url[i]}`, method: 'GET',
                 xhr: arraybufferRequest,
@@ -1428,7 +1430,7 @@ function fetchData(options) {
 
         req
             .done(function (data) {
-                fetchDone.call(this, data, reqReceiverId);
+                fetchDone.call(this, data, reqReceiverId, isJsonFeed);
             })
             .fail(fetchFail);
     }

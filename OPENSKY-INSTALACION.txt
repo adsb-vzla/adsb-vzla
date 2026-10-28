@@ -1,0 +1,223 @@
+INSTALACION DEL FEED DE OPENSKY PARA TAR1090 (LIGHTTPD)
+=======================================================
+
+Esta guia instala el servicio OpenSky del proyecto y lo publica en el mapa
+actual, servido por Lighttpd bajo la ruta /SVZM/. No modifica readsb.
+
+El servicio consulta OpenSky cada 10 segundos por defecto, guarda en memoria
+el ultimo resultado correcto y ofrece los datos en formato aircraft.json.
+Lighttpd publica el endpoint en:
+
+    /SVZM/data-opensky/aircraft.json
+
+ANTES DE EMPEZAR
+----------------
+
+Se asume que:
+
+  - El codigo del proyecto esta instalado en:
+      /usr/local/share/tar1090/html
+  - El sitio tar1090 se abre con el prefijo /SVZM/.
+  - Lighttpd y systemd estan instalados.
+  - Lighttpd ya carga mod_proxy (en la instalacion actual del proyecto ya
+    esta cargado).
+
+La configuracion actual conocida usa el socket Lighttpd :63500 para tar1090.
+Si el sitio se publica en otro host, puerto o prefijo, adapta la URL de prueba
+y la condicion URL del archivo de Lighttpd que aparece mas abajo.
+
+1. COMPROBAR LOS ARCHIVOS DEL SERVICIO
+--------------------------------------
+
+Comprueba que el servicio y sus archivos estan presentes:
+
+    ls -l /usr/local/share/tar1090/html/services/opensky_service.py
+    ls -l /usr/local/share/tar1090/html/deploy/opensky.service
+    ls -l /usr/local/share/tar1090/html/deploy/lighttpd-opensky.conf
+
+El proceso corre como www-data. El usuario debe poder atravesar los
+directorios y leer opensky_service.py. No guardes credenciales en el codigo
+ni en archivos JavaScript del navegador.
+
+2. GUARDAR credentials.json DE FORMA SEGURA
+-------------------------------------------
+
+El archivo que OpenSky entrega contiene las claves JSON "clientId" y
+"clientSecret". El servicio ya puede leer ese formato directamente.
+
+IMPORTANTE: credentials.json es un archivo privado para el backend. No lo
+copies a /var/www/html, /usr/local/share/tar1090/html ni a otra carpeta
+publicada por Lighttpd. No crees un alias ni una ruta web para el archivo.
+Lighttpd solo debe publicar el endpoint de aviones; el proceso Python lee las
+credenciales localmente y las usa para autenticarse con OpenSky.
+
+En este equipo el archivo esta en el Escritorio. Crea una carpeta fuera de la
+raiz web y copialo con permisos restringidos:
+
+    sudo install -d -o root -g www-data -m 0750 /etc/tar1090-opensky
+    sudo install -o root -g www-data -m 0640 \
+      "/home/ikarissu/Escritorio/credentials.json" \
+      /etc/tar1090-opensky/credentials.json
+
+El archivo original del Escritorio puede permanecer alli, pero es mejor
+eliminarlo una vez verificada la instalacion si no necesitas conservar otra
+copia. No pegues ni publiques su contenido.
+
+Comprueba solo permisos y existencia; no muestres el contenido:
+
+    sudo stat -c '%A %U:%G %n' /etc/tar1090-opensky/credentials.json
+
+Debe mostrar permisos -rw-r----- y propietario root:www-data.
+
+El servicio busca las credenciales, por defecto, en:
+
+    /etc/tar1090-opensky/credentials.json
+
+Si prefieres guardarlo en otra ruta privada, define
+OPENSKY_CREDENTIALS_FILE con esa ruta en el archivo de configuracion del
+siguiente paso.
+
+3. CREAR CONFIGURACION OPCIONAL DEL SERVICIO
+--------------------------------------------
+
+Este archivo contiene opciones no secretas; las credenciales permanecen en
+credentials.json. Crealo:
+
+    sudo install -o root -g www-data -m 0640 /dev/null \
+      /etc/default/tar1090-opensky
+    sudo nano /etc/default/tar1090-opensky
+
+Para usar la ubicacion predeterminada no hace falta agregar nada. Si guardaste
+el JSON en otra ruta, agrega por ejemplo:
+
+    OPENSKY_CREDENTIALS_FILE=/etc/otra-carpeta/credentials.json
+
+Opcionalmente puedes establecer el area geografica y el intervalo de consulta.
+El valor predeterminado cubre Venezuela (latitud 0 a 17, longitud -74 a -59):
+
+    OPENSKY_LAT_MIN=0
+    OPENSKY_LAT_MAX=17
+    OPENSKY_LON_MIN=-74
+    OPENSKY_LON_MAX=-59
+    OPENSKY_POLL_INTERVAL=10
+    OPENSKY_PORT=8087
+
+El intervalo minimo permitido es 10 segundos. El puerto del servicio debe
+permanecer en localhost; no abras el puerto 8087 a Internet.
+
+4. INSTALAR LA UNIDAD SYSTEMD
+-----------------------------
+
+Copia la unidad incluida en el proyecto:
+
+    sudo install -o root -g root -m 0644 \
+      /usr/local/share/tar1090/html/deploy/opensky.service \
+      /etc/systemd/system/opensky.service
+
+La unidad ejecuta Python 3 con la biblioteca estandar, sin instalar paquetes
+adicionales. Lee la ruta opcional de configuracion desde
+/etc/default/tar1090-opensky, las credenciales desde credentials.json y
+escucha unicamente en 127.0.0.1:8087.
+
+5. PUBLICAR EL ENDPOINT EN LIGHTTPD
+------------------------------------
+
+La configuracion del sitio actual usa /SVZM/ y ya carga mod_proxy. Instala el
+fragmento incluido en el proyecto:
+
+    sudo install -o root -g root -m 0644 \
+      /usr/local/share/tar1090/html/deploy/lighttpd-opensky.conf \
+      /etc/lighttpd/conf-available/89-opensky.conf
+
+Activa el archivo creando el enlace:
+
+    sudo ln -s /etc/lighttpd/conf-available/89-opensky.conf \
+      /etc/lighttpd/conf-enabled/89-opensky.conf
+
+El fragmento enruta exactamente /SVZM/data-opensky/aircraft.json al servicio
+local en el puerto 8087. No reenvia otras rutas.
+
+Si el enlace ya existe, no vuelvas a crearlo. Para un sitio servido con otro
+prefijo, cambia la ruta en el archivo de configuracion antes de instalarlo y
+asegurate de que esa misma ruta esta permitida en
+services/opensky_service.py.
+
+6. VALIDAR Y REINICIAR
+----------------------
+
+Comprueba la configuracion y activa el servicio:
+
+    sudo lighttpd -tt -f /etc/lighttpd/lighttpd.conf
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now opensky
+    sudo systemctl restart lighttpd
+
+Si lighttpd -tt informa un error, no reinicies Lighttpd hasta corregirlo.
+En la configuracion inspeccionada para esta instalacion, la validacion puede
+detectar un error preexistente "Duplicate array-key '.xlsx'". Si aparece,
+revisa /etc/lighttpd/lighttpd.conf y sus includes; no es causado por el
+fragmento OpenSky.
+
+7. COMPROBAR QUE FUNCIONA
+-------------------------
+
+El primer sondeo ocurre al iniciar el servicio. Puede tardar hasta 15 segundos
+en responder OpenSky. Comprueba primero el estado y los logs:
+
+    sudo systemctl status opensky --no-pager
+    sudo journalctl -u opensky -n 50 --no-pager
+    curl -i http://127.0.0.1:8087/health
+    curl -i http://127.0.0.1:8087/aircraft.json
+
+Despues prueba la ruta publicada por Lighttpd. Para la configuracion actual
+que escucha en el puerto 63500:
+
+    curl -i http://127.0.0.1:63500/SVZM/data-opensky/aircraft.json
+
+Si el servicio esta publicado bajo otro puerto, host o HTTPS, usa la URL
+correspondiente a tu sitio. La respuesta correcta es JSON con las propiedades
+"now", "messages" y "aircraft". Si el arreglo "aircraft" esta vacio, el
+endpoint funciona pero OpenSky no ha devuelto aeronaves dentro del area
+configurada en ese momento.
+
+Abre el mapa y confirma que se muestren los aviones disponibles. El navegador
+actualiza el feed junto con los otros feeds de readsb.
+
+DIAGNOSTICO
+-----------
+
+  - HTTP 503 antes del primer resultado: espera unos segundos y revisa
+    journalctl. El servicio no ha recibido todavia una respuesta valida.
+  - Error 401/403 de OpenSky: revisa que Client ID y Client Secret sean
+    correctos y esten ambos en credentials.json; comprueba tambien permisos
+    de lectura para www-data, sin mostrar ni copiar los valores a un log.
+  - Error 429: OpenSky esta aplicando un limite de consultas. Mantén el
+    intervalo de 10 segundos o aumentalo.
+  - HTTP 404 desde Lighttpd: verifica que el fragmento este en
+    conf-enabled, que el prefijo sea /SVZM/ y que Lighttpd se haya reiniciado.
+  - HTTP 502 desde Lighttpd: verifica que el servicio este activo y escuche
+    en 127.0.0.1:8087.
+  - El servicio conserva el ultimo resultado correcto si OpenSky falla
+    temporalmente; el fallo queda registrado en el journal.
+
+COMANDOS DE ADMINISTRACION
+--------------------------
+
+    sudo systemctl restart opensky
+    sudo systemctl stop opensky
+    sudo systemctl start opensky
+    sudo journalctl -u opensky -f
+
+Para retirar la integracion:
+
+    sudo systemctl disable --now opensky
+    sudo rm /etc/systemd/system/opensky.service
+    sudo rm /etc/lighttpd/conf-enabled/89-opensky.conf
+    sudo rm /etc/lighttpd/conf-available/89-opensky.conf
+    sudo systemctl daemon-reload
+    sudo systemctl restart lighttpd
+
+Conserva /etc/default/tar1090-opensky solo si quieres guardar la configuracion
+para una instalacion futura. El archivo /etc/tar1090-opensky/credentials.json
+contiene credenciales sensibles: al retirarlo de forma definitiva, eliminalo
+con cuidado y elimina tambien cualquier copia que hayas guardado.

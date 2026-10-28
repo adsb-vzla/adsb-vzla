@@ -1,0 +1,19 @@
+[Unit]
+Description=OpenSky Network aircraft feed for tar1090
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+EnvironmentFile=-/etc/default/tar1090-opensky
+ExecStart=/usr/bin/python3 /usr/local/share/tar1090/html/services/opensky_service.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
