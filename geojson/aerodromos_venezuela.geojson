@@ -1,0 +1,794 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVAC",
+        "name": "Acarigua / Batalla de Araure",
+        "elevation_m": 227,
+        "elevation_ft": 743,
+        "magnetic_variation": "11° W (2020)",
+        "traffic": "IFR/VFR"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -69.237222,
+          9.553333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVBC",
+        "name": "Barcelona / G/D Jose Antonio Anzoategui - Intl",
+        "elevation_m": 9,
+        "elevation_ft": 30,
+        "magnetic_variation": "14° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4C"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -64.692222,
+          10.111111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVBI",
+        "name": "Aeropuerto Nacional de Barinas Luisa Caceres de Arismendi",
+        "elevation_m": 187,
+        "elevation_ft": 615,
+        "magnetic_variation": "11° W (2020)",
+        "traffic": "IFR/VFR"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.214167,
+          8.615
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVBL",
+        "name": "Base Aerea El Libertador Intl Uso Limitado (MIL)",
+        "elevation_m": 433,
+        "elevation_ft": 1421,
+        "magnetic_variation": "12° W (2020)",
+        "traffic": "IFR/VFR",
+        "remarks": "No se permite aterrizaje sin permiso previo FAV",
+        "restricted_use": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -67.556944,
+          10.183056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVBM",
+        "name": "Barquisimeto / Gral. Jacinto Lara - Intl",
+        "elevation_m": 623,
+        "elevation_ft": 2044,
+        "magnetic_variation": "11° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4C"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -69.360556,
+          10.042222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVCB",
+        "name": "Ciudad Bolivar / Gral. Tomas de Heres",
+        "elevation_m": 50,
+        "elevation_ft": 164,
+        "magnetic_variation": "14° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "3D"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.536667,
+          8.122222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVCD",
+        "name": "Caicara del Orinoco",
+        "elevation_m": 43,
+        "elevation_ft": 141,
+        "magnetic_variation": "13° W (2020)",
+        "traffic": "VFR"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.166667,
+          7.616667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVCL",
+        "name": "Calabozo NTL",
+        "elevation_m": 109,
+        "elevation_ft": 358,
+        "magnetic_variation": "12° W (2020)",
+        "traffic": "VFR"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -67.416944,
+          8.924722
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVCN",
+        "name": "Canaima NTL",
+        "elevation_m": 408,
+        "elevation_ft": 1339,
+        "magnetic_variation": "15° W (2020)",
+        "traffic": "VFR"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -62.854722,
+          6.231944
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVCP",
+        "name": "Carupano / Sucre General en Jefe Jose Francisco Bermudez NTL",
+        "elevation_m": 26,
+        "elevation_ft": 85,
+        "magnetic_variation": "14° W (2020)",
+        "traffic": "VFR",
+        "reference_code": "4C"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.261389,
+          10.66
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVCR",
+        "name": "Coro / Jose Leonardo Chirino NTL",
+        "elevation_m": 16,
+        "elevation_ft": 52,
+        "magnetic_variation": "11° W (2020)",
+        "traffic": "IFR/VFR"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -69.681667,
+          11.414722
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVCS",
+        "name": "Caracas / Oscar Machado Zuloaga - Intl",
+        "elevation_m": 653,
+        "elevation_ft": 2142,
+        "magnetic_variation": "13° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "3B"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.816106,
+          10.286917
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVCU",
+        "name": "Cumana / Mariscal Antonio Jose de Sucre NTL",
+        "elevation_m": 9,
+        "elevation_ft": 30,
+        "magnetic_variation": "14° W (2020)",
+        "traffic": "IFR/VFR"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -64.132222,
+          10.449167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "SVGD",
+        "name": "Guasdualito Vara de Maria NTL",
+        "elevation_m": 130,
+        "elevation_ft": 427,
+        "magnetic_variation": "10° W (2020)",
+        "traffic": "VFR",
+        "reference_code": "2C"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.756389,
+          7.210833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -62.3125,
+          10.573889
+        ]
+      },
+      "properties": {
+        "icao": "SVGI",
+        "name": "Guiria / Almirante Cristobal Colon NTL",
+        "elevation_m": 21,
+        "elevation_ft": 69,
+        "gund_m": -40,
+        "gund_ft": -131,
+        "magnetic_variation": "15° W (2020)",
+        "traffic": "VFR",
+        "reference_code": "3C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -69.755278,
+          9.026944
+        ]
+      },
+      "properties": {
+        "icao": "SVGU",
+        "name": "Guanare NTL",
+        "elevation_m": 162,
+        "elevation_ft": 531,
+        "magnetic_variation": "11° W (2020)",
+        "traffic": "IFR/VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.092778,
+          10.462222
+        ]
+      },
+      "properties": {
+        "icao": "SVHG",
+        "name": "Higuerote",
+        "elevation_m": 4,
+        "elevation_ft": 12,
+        "magnetic_variation": "13° W (2020)",
+        "traffic": "VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.149742,
+          11.78105
+        ]
+      },
+      "properties": {
+        "icao": "SVJC",
+        "name": "Paraguana / Josefa Camejo - Intl",
+        "elevation_m": 28,
+        "elevation_ft": 92,
+        "gund_m": -22,
+        "gund_ft": -72,
+        "magnetic_variation": "11° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -65.540556,
+          3.171944
+        ]
+      },
+      "properties": {
+        "icao": "SVLE",
+        "name": "La Esmeralda (Militar)",
+        "elevation_m": 116,
+        "elevation_ft": 380,
+        "gund_m": -6,
+        "gund_ft": -21,
+        "magnetic_variation": "13° W (2020)",
+        "traffic": "VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.270833,
+          8.238889
+        ]
+      },
+      "properties": {
+        "icao": "SVLF",
+        "name": "Francisco Javier Garcia de Hevia, La Fria",
+        "elevation_m": 98,
+        "elevation_ft": 322,
+        "gund_m": -5,
+        "gund_ft": -15,
+        "magnetic_variation": "9° W (2020)",
+        "traffic": "IFR/VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.728819,
+          10.558431
+        ]
+      },
+      "properties": {
+        "icao": "SVMC",
+        "name": "Maracaibo / La Chinita - Intl",
+        "elevation_m": 73,
+        "elevation_ft": 240,
+        "gund_m": -14,
+        "gund_ft": -46,
+        "magnetic_variation": "10° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.161111,
+          8.582222
+        ]
+      },
+      "properties": {
+        "icao": "SVMD",
+        "name": "Merida / Alberto Carnevalli NTL",
+        "elevation_m": 1527,
+        "elevation_ft": 5010,
+        "gund_m": 0,
+        "gund_ft": -1,
+        "magnetic_variation": "10° W (2020)",
+        "traffic": "VFR",
+        "reference_code": "3C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.966389,
+          10.9125
+        ]
+      },
+      "properties": {
+        "icao": "SVMG",
+        "name": "Margarita / General en Jefe Santiago Marino - Intl",
+        "elevation_m": 22,
+        "elevation_ft": 72,
+        "gund_m": -30,
+        "gund_ft": -98,
+        "magnetic_variation": "14° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.153333,
+          9.748889
+        ]
+      },
+      "properties": {
+        "icao": "SVMT",
+        "name": "Maturin / Intl Gral. Jose Tadeo Monagas",
+        "elevation_m": 65,
+        "elevation_ft": 213,
+        "gund_m": -40,
+        "gund_ft": -131,
+        "magnetic_variation": "14° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -67.606111,
+          5.62
+        ]
+      },
+      "properties": {
+        "icao": "SVPA",
+        "name": "Puerto Ayacucho / Cacique Aramare NTL",
+        "elevation_m": 72,
+        "elevation_ft": 236,
+        "gund_m": -8,
+        "gund_ft": -26,
+        "magnetic_variation": "12° W (2020)",
+        "traffic": "IFR/VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -68.072778,
+          10.480278
+        ]
+      },
+      "properties": {
+        "icao": "SVPC",
+        "name": "Gral. Bartolome Salom",
+        "elevation_m": 9,
+        "elevation_ft": 30,
+        "gund_m": -19,
+        "gund_ft": -62,
+        "magnetic_variation": "12° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -62.231111,
+          9.978611
+        ]
+      },
+      "properties": {
+        "icao": "SVPE",
+        "name": "Pedernales / Capure Delta Amacuro NTL",
+        "elevation_m": 2,
+        "elevation_ft": 7,
+        "magnetic_variation": "15° W (2020)",
+        "traffic": "VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.200556,
+          7.804722
+        ]
+      },
+      "properties": {
+        "icao": "SVPM",
+        "name": "San Cristobal, Paramillo",
+        "elevation_m": 1000,
+        "elevation_ft": 3281,
+        "magnetic_variation": "9° W (2020)",
+        "traffic": "VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -62.760278,
+          8.288333
+        ]
+      },
+      "properties": {
+        "icao": "SVPR",
+        "name": "Ciudad Guayana / Gral. Manuel Carlos Piar del Orinoco - Intl",
+        "elevation_m": 144,
+        "elevation_ft": 472,
+        "gund_m": -27,
+        "gund_ft": -89,
+        "magnetic_variation": "15° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.670278,
+          11.945833
+        ]
+      },
+      "properties": {
+        "icao": "SVRS",
+        "name": "El Gran Roque NTL",
+        "elevation_m": 3,
+        "elevation_ft": 10,
+        "gund_m": -29,
+        "gund_ft": -95,
+        "magnetic_variation": "13° W (2020)",
+        "traffic": "VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.439722,
+          7.840556
+        ]
+      },
+      "properties": {
+        "icao": "SVSA",
+        "name": "Gral. Cipriano Castro Intl",
+        "elevation_m": 401,
+        "elevation_ft": 1316,
+        "gund_m": 2,
+        "gund_ft": 7,
+        "magnetic_variation": "9° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "3C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -61.145,
+          4.554722
+        ]
+      },
+      "properties": {
+        "icao": "SVSE",
+        "name": "Santa Elena de Uairen NTL",
+        "elevation_m": 899,
+        "elevation_ft": 2949,
+        "gund_m": -14,
+        "gund_ft": -46,
+        "magnetic_variation": "15° W (2020)",
+        "traffic": "VFR",
+        "reference_code": "3C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.035,
+          7.565
+        ]
+      },
+      "properties": {
+        "icao": "SVSO",
+        "name": "Santo Domingo / B.A. Mayor Buenaventura Vivas Intl",
+        "elevation_m": 330,
+        "elevation_ft": 1083,
+        "gund_m": 0,
+        "gund_ft": 1,
+        "magnetic_variation": "9° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -67.443611,
+          7.883056
+        ]
+      },
+      "properties": {
+        "icao": "SVSR",
+        "name": "San Fernando de Apure / Las Flecheras NTL",
+        "elevation_m": 48,
+        "elevation_ft": 157,
+        "gund_m": -12,
+        "gund_ft": -39,
+        "magnetic_variation": "12° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -64.150833,
+          8.945
+        ]
+      },
+      "properties": {
+        "icao": "SVST",
+        "name": "San Tome / Don Edmundo Barrios NTL",
+        "elevation_m": 264,
+        "elevation_ft": 866,
+        "gund_m": -28,
+        "gund_ft": -92,
+        "magnetic_variation": "14° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "3D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.943056,
+          8.974167
+        ]
+      },
+      "properties": {
+        "icao": "SVSZ",
+        "name": "Santa Barbara del Zulia / Dr Miguel A. Urdaneta F.",
+        "elevation_m": 5,
+        "elevation_ft": 16,
+        "gund_m": -11,
+        "gund_ft": -36,
+        "magnetic_variation": "10° W (2020)",
+        "traffic": "IFR/VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -67.923,
+          10.15
+        ]
+      },
+      "properties": {
+        "icao": "SVVA",
+        "name": "Valencia / Arturo Michelena Intl",
+        "elevation_m": 432,
+        "elevation_ft": 1417,
+        "gund_m": -16,
+        "gund_ft": -52,
+        "magnetic_variation": "12° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.675,
+          8.623611
+        ]
+      },
+      "properties": {
+        "icao": "SVVG",
+        "name": "El Vigia / Juan Pablo Perez Alfonzo NTL",
+        "elevation_m": 76,
+        "elevation_ft": 249,
+        "gund_m": -6,
+        "gund_ft": -20,
+        "magnetic_variation": "10° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.584167,
+          9.340556
+        ]
+      },
+      "properties": {
+        "icao": "SVVL",
+        "name": "Valera / Doctor Antonio Nicolas Briceno",
+        "elevation_m": 593,
+        "elevation_ft": 1946,
+        "gund_m": -7,
+        "gund_ft": -23,
+        "magnetic_variation": "10° W (2020)",
+        "traffic": "IFR/VFR"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.991222,
+          10.601194
+        ]
+      },
+      "properties": {
+        "icao": "SVMI",
+        "name": "Maiquetia / Simon Bolivar Intl",
+        "elevation_m": 71,
+        "elevation_ft": 234,
+        "gund_m": -19,
+        "gund_ft": -62,
+        "magnetic_variation": "13° W (2020)",
+        "traffic": "IFR/VFR",
+        "reference_code": "4E",
+        "remarks": "Aeropuerto certificado. Capacidad declarada ATFM en pista: 34 aeronaves por hora."
+      }
+    }
+  ]
+}
