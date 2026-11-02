@@ -72,54 +72,28 @@ if (form) {
         }
 
         try {
-            // ***** OBTENER ARCHIVO CON LAS CREDENCIALES (SIN CACHÉ) *****
-            const cacheBuster = `?t=${Date.now()}-${Math.random().toString(36).slice(2)}`;
-            const response = await fetch(`./login-credentials.xlsx${cacheBuster}`, {
-                cache: 'no-store',
+            // ***** PETICIÓN AL NUEVO BACKEND (FLASK) *****
+            const response = await fetch('http://127.0.0.1:5000/api/login', {
+                method: 'POST',
                 headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
-                }
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: inputUser,
+                    password: inputPass
+                })
             });
 
-            // ***** SI FALLÓ LA PETICIÓN AL ARCHIVO, MOSTRAR ERROR *****
-            if (!response.ok) {
-                throw new Error(`Error HTTP ${response.status}`);
-            }
+            const result = await response.json();
 
-            // ***** OBTENER CRUDOS DEL ARCHIVO *****
-            const data = await response.arrayBuffer();
-
-            // ***** LEER Y PROCESAR DATOS OBTENIDOS *****
-            const workbook = XLSX.read(data, { type: 'array' });
-            // ***** OBTENER LOS DATOS DE LA PRIMERA HOJA DEL LIBRO *****
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            // ***** CONVERTIR DATOS OBTENIDOS A JSON *****
-            const users = XLSX.utils.sheet_to_json(firstSheet);
-
-            // ***** VERIFICAR SI EL USUARIO INGRESADO EXISTE EN EL ARCHIVO DE CREDENCIALES *****
-            const validUser = users.find(u => {
-                const keys = Object.keys(u);
-
-                // ***** BUSCAR COINCIDENCIA IGNORANDO MAYÚSCULAS/MINÚSCULAS *****
-                const userKey = keys.find(k => k.trim().toLowerCase().includes('user'));
-                const passKey = keys.find(k => k.trim().toLowerCase().includes('pass'));
-
-                // ***** SI HUBO COINCIDENCIA, OBTENERLA Y ALMACENARLO EN UNA VARIABLE *****
-                const dbUser = userKey ? String(u[userKey]).trim() : '';
-                const dbPass = passKey ? String(u[passKey]).trim() : '';
-
-                // ***** EL USUARIO Y CONTRASEÑA ESCRITOS EXISTEN EN EL ARCHIVO *****
-                return dbUser === inputUser && dbPass === inputPass;
-            });
-
-            // ***** ALERTA PARA USUARIO EXISTENTE *****
-            if (validUser) {
-                // ***** GUARDAR SESIÓN ACTIVA *****
+            if (result.success) {
+                // ***** GUARDAR SESIÓN *****
                 try {
                     sessionStorage.setItem('adsb_session', '1');
                     sessionStorage.setItem('adsb_session_ts', String(Date.now()));
                     sessionStorage.setItem('adsb_session_user', inputUser);
+                    sessionStorage.setItem('adsb_role', result.role); // GUARDAMOS EL ROL
+                    sessionStorage.setItem('adsb_user_id', result.user_id);
                 } catch (e) {
                     console.warn('No se pudo guardar la sesión:', e);
                 }
@@ -131,18 +105,21 @@ if (form) {
                 }).then(() => {
                     window.location.href = './index.html';
                 });
-                // ***** ALERTA PARA USUARIO NO EXISTENTE *****
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: t('swal_access_denied'),
-                    text: t('swal_invalid_credentials'),
+                    text: result.message || t('swal_invalid_credentials'),
                     confirmButtonColor: '#d33'
                 });
             }
-            // ***** ALERTA PARA ERROR AL LEER ARCHIVO *****
         } catch (error) {
             console.error('Error durante la autenticación:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor de autenticación.'
+            });
         }
     });
 } else {
