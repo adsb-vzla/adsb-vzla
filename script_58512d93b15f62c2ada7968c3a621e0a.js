@@ -29,6 +29,11 @@ let OLMap = null;
 let OLProj = null;
 let OLProjExtent = null;
 let PlaneIconFeatures = new ol.source.Vector();
+
+// ***** CAPAS DE BADGE CON COLORES SEGÚN RECEPTOR *****
+let receiverBadgeFeatures = new ol.source.Vector();
+let receiverBadgeLayer;
+
 let trailGroup = new ol.Collection();
 let siteCircleLayer;
 let siteCircleFeatures = new ol.source.Vector();
@@ -252,8 +257,173 @@ let firstFetch = true;
 let debugCounter = 0;
 let pathName = window.location.pathname.replace(/\/+/, '/') || "/";
 let sourcesFilter = null;
+
 // ***** FILTRO POR RECEPTOR *****
 let receiverFilter = null;
+
+// ***** CONFIGURACIÓN DE LOS RECEPTORES: ID, NOMBRE Y COLOR *****
+const RECEIVERS = [
+    { id: 'a', name: 'Receptor A', color: '#e6194b' },
+    { id: 'b', name: 'Receptor B', color: '#3cb44b' },
+    { id: 'c', name: 'Receptor C', color: '#ffe119' },
+    { id: 'd', name: 'Receptor D', color: '#4363d8' },
+    { id: 'e', name: 'Receptor E', color: '#f58231' },
+    { id: 'f', name: 'Receptor F', color: '#911eb4' },
+    { id: 'g', name: 'Receptor G', color: '#46f0f0' },
+    { id: 'h', name: 'Receptor H', color: '#f032e6' },
+    { id: 'i', name: 'Receptor I', color: '#bcf60c' },
+    { id: 'j', name: 'Receptor J', color: '#fabebe' },
+    { id: 'k', name: 'Receptor K', color: '#008080' },
+    { id: 'l', name: 'Receptor L', color: '#9a6324' }
+];
+// ***** DETECTAR RECEPTOR POR ID *****
+const RECEIVER_BY_ID = new Map(RECEIVERS.map(r => [r.id, r]));
+// ***** ÍNDICE DEL RECEPTOR *****
+const RECEIVER_INDEX = new Map(RECEIVERS.map((r, i) => [r.id, i]));
+// ***** TIMER EN QUE EL RECEPTOR TRATARÁ DE BUSCAR LA SEÑAL SI LA PIERDE *****
+const RECEIVER_RETRY_MS = 60000;
+// ***** DISPONIBILIDAD DEL BADGE *****
+const receiverAvailability = new Map();
+// ***** ESTILO DEL BADGE ALMACENADO EN CACHE *****
+const receiverBadgeStyleCache = new Map();
+// ***** ESTILO DEL BADGE DE RECEPTORES: RING (ANILLO) O PIE (PASTEL) *****
+let receiverBadgeShape = 'ring';
+
+// ***** FUNCIÓN PARA OBTENER LOS IDS DE RECEPTORES A CONSULTAR (INCLUYE LOS NO DISPONIBLES TRAS EL TIEMPO DE REINTENTO) *****
+function getReceiverFetchIds() {
+    const t = Date.now();
+    return RECEIVERS
+        // ***** FILTRA RECEPTORES: MANTIENE LOS DISPONIBLES/DESCONOCIDOS Y LOS NO DISPONIBLES QUE YA PASARON EL TIEMPO DE REINTENTO *****
+        .filter(function (receiver) {
+            const state = receiverAvailability.get(receiver.id);
+            if (!state || state.available !== false) return true;
+            return t - state.lastTry > RECEIVER_RETRY_MS;
+        })
+        // ***** EXTRAE SOLO EL ID DE CADA RECEPTOR FILTRADO *****
+        .map(function (receiver) { return receiver.id; });
+}
+
+// ***** FUNCIÓN PARA OBTENER LOS IDS DE RECEPTORES ASOCIADOS A UN AVIÓN, FILTRADOS Y ORDENADOS *****
+function getPlaneReceiverIds(plane, onlyEnabled) {
+    const result = [];
+    if (!plane || !plane.receivers) return result;
+
+    // ***** RECORRE LOS RECEPTORES DEL AVIÓN VALIDANDO EXISTENCIA Y FILTRO ACTIVO *****
+    for (const receiverId of plane.receivers) {
+        if (!RECEIVER_BY_ID.has(receiverId)) continue;
+        if (onlyEnabled && receiverFilter !== null && !receiverFilter.has(receiverId)) continue;
+        result.push(receiverId);
+    }
+
+    // ***** ORDENA LOS IDS SEGÚN EL ÍNDICE GLOBAL DE RECEPTORES *****
+    result.sort(function (a, b) {
+        return RECEIVER_INDEX.get(a) - RECEIVER_INDEX.get(b);
+    });
+    return result;
+}
+
+// ***** FUNCIÓN PARA GENERAR (CON CACHÉ) EL ESTILO SVG DEL BADGE DE RECEPTORES, EN MODO ANILLO O PASTEL *****
+function getReceiverBadgeStyle(receiverIds, size) {
+    if (!receiverIds || receiverIds.length === 0) return null;
+
+    // ***** INCLUIR LA FORMA EN LA CLAVE DE CACHÉ PARA EVITAR COLISIONES *****
+    const shape = receiverBadgeShape;
+    const key = receiverIds.join('|') + '@' + size + '#' + shape;
+    const cached = receiverBadgeStyleCache.get(key);
+    if (cached) return cached;
+
+    const outerRadius = 10;
+    const innerRadius = 6.6;
+    const count = receiverIds.length;
+    let shapes = '';
+
+    if (shape === 'pie') {
+        // ***** MODO CÍRCULO (PASTEL) *****
+        const radius = 8.3;
+        shapes += '<circle cx="12" cy="12" r="' + radius + '" fill="none" stroke="rgba(0,0,0,0.65)" stroke-width="1"/>';
+
+        // ***** CASO DE UN SOLO RECEPTOR: CÍRCULO COMPLETO CON SU COLOR *****
+        if (count === 1) {
+            const color = RECEIVER_BY_ID.get(receiverIds[0]).color;
+            shapes += '<circle cx="12" cy="12" r="' + radius + '" fill="' + color + '" stroke="#111" stroke-opacity="0.55" stroke-width="0.5"/>';
+        } else {
+            // ***** CASO DE VARIOS RECEPTORES: GENERA SECTORES CIRCULARES CON PEQUEÑOS HUECOS ENTRE ELLOS *****
+            const gap = Math.min(0.035, (Math.PI * 2 / count) * 0.06);
+            for (let i = 0; i < count; i++) {
+                const start = -Math.PI / 2 + i * Math.PI * 2 / count + gap;
+                const end = -Math.PI / 2 + (i + 1) * Math.PI * 2 / count - gap;
+                const largeArc = (end - start) > Math.PI ? 1 : 0;
+
+                const x0 = 12 + radius * Math.cos(start);
+                const y0 = 12 + radius * Math.sin(start);
+                const x1 = 12 + radius * Math.cos(end);
+                const y1 = 12 + radius * Math.sin(end);
+                const color = RECEIVER_BY_ID.get(receiverIds[i]).color;
+
+                // ***** RELLENAR FORMA CON EL COLOR *****
+                shapes += '<path d="M 12 12 L ' + x0.toFixed(2) + ' ' + y0.toFixed(2)
+                    + ' A ' + radius + ' ' + radius + ' 0 ' + largeArc + ' 1 ' + x1.toFixed(2) + ' ' + y1.toFixed(2)
+                    + ' Z" fill="' + color + '" stroke="#111" stroke-opacity="0.55" stroke-width="0.35"/>';
+            }
+        }
+    } else {
+        // ***** MODO ANILLO (ACTUAL) *****
+        shapes = '<circle cx="12" cy="12" r="8.3" fill="none" stroke="rgba(0,0,0,0.65)" stroke-width="4"/>';
+
+        // ***** CASO DE UN SOLO RECEPTOR: ANILLO COMPLETO CON SU COLOR *****
+        if (count === 1) {
+            const color = RECEIVER_BY_ID.get(receiverIds[0]).color;
+            shapes += '<circle cx="12" cy="12" r="8.3" fill="none" stroke="' + color + '" stroke-width="3.4"/>';
+        } else {
+            // ***** CASO DE VARIOS RECEPTORES: GENERA SEGMENTOS DE ANILLO (ARCOS EXTERIOR E INTERIOR) CON HUECOS *****
+            const gap = Math.min(0.035, (Math.PI * 2 / count) * 0.06);
+            for (let i = 0; i < count; i++) {
+                const start = -Math.PI / 2 + i * Math.PI * 2 / count + gap;
+                const end = -Math.PI / 2 + (i + 1) * Math.PI * 2 / count - gap;
+                const largeArc = (end - start) > Math.PI ? 1 : 0;
+
+                // ***** CÁLCULO DE LOS CUATRO VÉRTICES DEL SEGMENTO DE ANILLO (EXTERIOR E INTERIOR) *****
+                const x0 = 12 + outerRadius * Math.cos(start);
+                const y0 = 12 + outerRadius * Math.sin(start);
+                const x1 = 12 + outerRadius * Math.cos(end);
+                const y1 = 12 + outerRadius * Math.sin(end);
+                const x2 = 12 + innerRadius * Math.cos(end);
+                const y2 = 12 + innerRadius * Math.sin(end);
+                const x3 = 12 + innerRadius * Math.cos(start);
+                const y3 = 12 + innerRadius * Math.sin(start);
+                const color = RECEIVER_BY_ID.get(receiverIds[i]).color;
+
+                // ***** CONSTRUYE EL PATH DEL SEGMENTO: ARCO EXTERIOR + LÍNEA + ARCO INTERIOR + CIERRE *****
+                shapes += '<path d="M ' + x0.toFixed(2) + ' ' + y0.toFixed(2)
+                    + ' A ' + outerRadius + ' ' + outerRadius + ' 0 ' + largeArc + ' 1 ' + x1.toFixed(2) + ' ' + y1.toFixed(2)
+                    + ' L ' + x2.toFixed(2) + ' ' + y2.toFixed(2)
+                    + ' A ' + innerRadius + ' ' + innerRadius + ' 0 ' + largeArc + ' 0 ' + x3.toFixed(2) + ' ' + y3.toFixed(2)
+                    + ' Z" fill="' + color + '" stroke="#111" stroke-opacity="0.55" stroke-width="0.35"/>';
+            }
+        }
+    }
+
+    // ***** ENVUELVE LOS SHAPES EN UN SVG Y LO CONVIERTE EN DATA URI *****
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">' + shapes + '</svg>';
+    const src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+
+    // ***** CREA EL ESTILO DE OPENLAYERS CON EL ICONO SVG ESCALADO AL TAMAÑO SOLICITADO *****
+    const style = new ol.style.Style({
+        image: new ol.style.Icon({
+            src: src,
+            imgSize: [24, 24],
+            anchor: [0.5, 0.5],
+            scale: size / 24,
+            rotateWithView: false,
+        }),
+        zIndex: 1000,
+    });
+
+    // ***** GUARDA EL ESTILO EN LA CACHÉ Y LO DEVUELVE *****
+    receiverBadgeStyleCache.set(key, style);
+    return style;
+}
+
 let sources = ['adsb', ['uat', 'adsr'], 'mlat', 'tisb', 'modeS', 'other', 'adsc', 'ais'];
 let flagFilter = null;
 let flagFilterValues = ['military', 'pia', 'ladd'];
@@ -1029,7 +1199,7 @@ function processReceiverUpdate(data, init) {
         processAircraft(data.aircraft[j], init, uat);
     }
 }
-function fetchFail(jqxhr, status, error) {
+function fetchFail(jqxhr, status, error, receiverId) {
     try {
         pendingFetches--;
         if (pendingFetches <= 0 && !tabHidden) {
@@ -1037,6 +1207,7 @@ function fetchFail(jqxhr, status, error) {
             checkMovement();
         }
         status = jqxhr.status;
+
         // if (jqxhr.readyState == 0) error = "Can't connect to server, check your network!";
         if (jqxhr.readyState == 0) error = getTranslatedText('error_connect_server', "Can't connect to server, check your network!");
         let errText = status + (error ? (": " + error) : "");
@@ -1382,11 +1553,12 @@ function fetchData(options) {
         }
     } else {
         // ac_url.push('data/aircraft' + suffix);
-        // ***** MÚLTIPLES RECEPTORES Y OPEN SKY *****
-        ac_url.push('data-receiver-a/aircraft.json');
-        ac_url.push('data-receiver-b/aircraft.json');
-        ac_url.push('data-receiver-c/aircraft.json');
-        ac_url.push('data-receiver-d/aircraft.json');
+        // ***** DATOS DE AVIONES DE LOS MÚLTIPLES RECEPTORES *****
+        for (const receiverId of getReceiverFetchIds()) {
+            ac_url.push('data-receiver-' + receiverId + '/aircraft.json');
+        }
+
+        // ***** DATOS DE AVIONES DE OPENSKY *****
         ac_url.push('data-opensky/aircraft.json');
     }
 
@@ -1399,9 +1571,10 @@ function fetchData(options) {
         }
 
         let req;
-        // ***** IDENTIFICAR RECEPTOR POR ÍNDICE DE URL *****
-        const receiverNames = ['a', 'b', 'c', 'd'];
-        const receiverId = receiverNames[i] || null;
+
+        // ***** IDENTIFICAR RECEPTOR DESDE LA URL *****
+        const receiverMatch = typeof ac_url[i] === 'string' && ac_url[i].match(/^data-receiver-([a-z0-9]+)\//i);
+        const receiverId = receiverMatch ? receiverMatch[1].toLowerCase() : null;
 
         // ***** FORZAR JSON DE TEXTO PARA LOS FEEDS JSON *****
         const isJsonFeed = typeof ac_url[i] === 'string'
@@ -1426,13 +1599,18 @@ function fetchData(options) {
         // ***** PASAR ID DE RECEPTOR COMO ARGUMENTO *****
         const reqReceiverId = receiverId;
 
+        // ***** AÑADE LA PETICIÓN A LA LISTA DE PENDIENTES PARA PODER CANCELARLAS O SEGUIRLAS *****
         FetchPending.push(req);
 
         req
+            // ***** CALLBACK DE ÉXITO: CONTINÚA CON EL PROCESAMIENTO DE DATOS *****
             .done(function (data) {
-                fetchDone.call(this, data, reqReceiverId, isJsonFeed);
+                fetchDone.call(this, data, reqReceiverId);
             })
-            .fail(fetchFail);
+            // ***** CALLBACK DE ERROR: DELEGA EN fetchFail PASANDO EL ID DE RECEPTOR PARA GESTIONAR EL FALLO *****
+            .fail(function (jqxhr, status, error) {
+                fetchFail.call(this, jqxhr, status, error, reqReceiverId);
+            });
     }
 
 
@@ -2605,6 +2783,29 @@ function earlyInitPage() {
                 monochromeTracks = "#000000";
 
             remakeTrails();
+        }
+    });
+
+    // ***** FORMA DEL BADGE DE RECEPTORES: ANILLO O CÍRCULO (PASTEL) *****
+    createToggle({
+        key: "receiverBadgePie",
+        display: 'receiver_badge_pie',
+        displayKey: 'receiver_badge_pie',
+        tooltip: 'receiver_badge_pie_tooltip',
+        tooltipKey: 'receiver_badge_pie_tooltip',
+        container: "#category-display-container",
+        init: false,
+        setState: function (state) {
+            receiverBadgeShape = state ? 'pie' : 'ring';
+            // ***** LIMPIAR CACHÉ DE ESTILOS Y FORZAR REDIBUJADO *****
+            receiverBadgeStyleCache.clear();
+            for (let i in g.planesOrdered) {
+                const plane = g.planesOrdered[i];
+                if (plane.receiverBadge) {
+                    plane.receiverBadgeKey = null;
+                }
+            }
+            refreshFeatures();
         }
     });
 
@@ -4277,6 +4478,18 @@ function initMap() {
         renderBuffer: renderBuffer,
     });
     layers.push(iconLayer);
+
+    // ***** ANILLO DE COLORES DE RECEPTORES *****
+    receiverBadgeLayer = new ol.layer.Vector({
+        name: 'receiverBadgeLayer',
+        type: 'overlay',
+        title: 'Receiver color badge',
+        source: receiverBadgeFeatures,
+        declutter: false,
+        zIndex: 201,
+        renderBuffer: renderBuffer,
+    });
+    layers.push(receiverBadgeLayer);
 
     // ***** DROPDOWN PARA LOS MENÚS DE DISTANCIA *****
     try {
@@ -8639,57 +8852,31 @@ function initFilters() {
     `;
     container.appendChild(group6);
 
+    // ***** PUNTO DE COLOR DE LOS RECEPTORES *****
+    const receiverCheckboxHtml = RECEIVERS.map(function (receiver) {
+        return '<label class="receiver-filter-row">'
+            + '<span class="receiver-color-dot" style="background-color:' + receiver.color + ';"></span>'
+            + '<input type="checkbox" class="receiver-cb" value="' + receiver.id + '" data-receiver="' + receiver.id + '" checked>'
+            + '<span class="receiver-filter-name">' + receiver.name + '</span>'
+            + '</label>';
+    }).join('');
+
     // ***** RECEPTORES *****
     const group7 = document.createElement('div');
     group7.className = 'filter-group';
     group7.innerHTML = `
         <div class="filter-group-header" data-group="receivers">
-            <span class="filter-group-title">Receptores</span>
+            <span class="filter-group-title" data-i18n="receiver_title">Receivers</span>
             <span class="accordion-icon">▶</span>
         </div>
         <div class="filter-group-content">
             <div class="filter-group-content-inner">
                 <div id="receiverCheckboxes" style="display: flex; flex-direction: column; gap: 6px; padding: 4px 0;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="a" checked> Receptor A
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="b" checked> Receptor B
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="c" checked> Receptor C
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor D
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor E
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor F
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor G
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor H
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor I
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor J
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor K
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor L
-                    </label>
+                    ${receiverCheckboxHtml}
                 </div>
                 <div class="filter-buttons" style="margin-top: 8px;">
-                    <button class="formButton" id="receiver_filter_apply">Apply</button>
-                    <button class="formButton" id="receiver_filter_reset_button">Reset</button>
+                    <button class="formButton" id="receiver_filter_apply" data-i18n="apply">Apply</button>
+                    <button class="formButton" id="receiver_filter_reset_button" data-i18n="reset">Reset</button>
                 </div>
             </div>
         </div>
@@ -9029,13 +9216,13 @@ function initFilters() {
             document.querySelectorAll('.receiver-cb:checked').forEach(cb => {
                 checked.push(cb.value);
             });
-            if (checked.length === 4) {
-                receiverFilter = null; // todos
-            } else if (checked.length === 0) {
-                receiverFilter = new Set(['__none__']);
+            // ***** NO APLICAR FILTRO SI NO HAY NINGÚN CHECK MARCADO *****
+            if (checked.length === RECEIVERS.length) {
+                receiverFilter = null;
             } else {
                 receiverFilter = new Set(checked);
             }
+            // ***** REFRESCAR FILTRO *****
             refreshFilter();
         });
     }
@@ -9049,6 +9236,7 @@ function initFilters() {
                 cb.checked = true;
             });
             receiverFilter = null;
+            // ***** REFRESCAR FILTRO *****
             refreshFilter();
         });
     }

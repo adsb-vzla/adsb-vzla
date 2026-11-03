@@ -1001,6 +1001,62 @@ table.infoSectionTable tr td {
     border-radius: 0.3rem;
 }
 
+/* ***** LEYENDA DE RECEPTORES ***** */
+.receiver-legend-section {
+    flex-basis: 100%;
+    width: 100%;
+    margin-top: calc(8px * var(--SCALE));
+    padding-top: calc(6px * var(--SCALE));
+    border-top: 1px solid var(--LIGHTER-BASE-COLOR);
+}
+
+.receiver-legend-title {
+    font-weight: bold;
+    font-size: calc(12px * var(--SCALE));
+    margin-bottom: calc(4px * var(--SCALE));
+}
+
+.receiver-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(3px * var(--SCALE)) calc(10px * var(--SCALE));
+}
+
+.receiver-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(4px * var(--SCALE));
+    font-size: calc(11px * var(--SCALE));
+    line-height: 1.4;
+    transition: opacity 0.15s ease;
+}
+
+.receiver-legend-item.disabled,
+.receiver-legend-item.unavailable {
+    opacity: 0.35;
+}
+
+.receiver-color-dot {
+    display: inline-block;
+    width: calc(11px * var(--SCALE));
+    height: calc(11px * var(--SCALE));
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+    flex: 0 0 auto;
+}
+
+.receiver-filter-row {
+    display: flex;
+    align-items: center;
+    gap: calc(8px * var(--SCALE));
+    cursor: pointer;
+}
+
+.receiver-filter-name {
+    white-space: nowrap;
+}
+
 #settings_infoblock {
     position: fixed;
     top: 1%;

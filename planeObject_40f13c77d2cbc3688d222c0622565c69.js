@@ -1739,6 +1739,7 @@ PlaneObject.prototype.updateFeatures = function(redraw) {
 
 PlaneObject.prototype.clearMarker = function() {
     this.markerDrawn = false;
+    this.clearReceiverBadge();
     if (this.marker && this.marker.visible) {
         PlaneIconFeatures.removeFeature(this.marker);
         this.marker.visible = false;
@@ -1751,6 +1752,72 @@ PlaneObject.prototype.clearMarker = function() {
     delete this.glMarker;
     delete this.styleKey;
     delete this.olPoint;
+};
+
+// ***** ANILLO SEGMENTADO CON LOS COLORES DE LOS RECEPTORES *****
+PlaneObject.prototype.updateReceiverBadge = function() {
+    // ***** VALIDACIÓN DE DEPENDENCIAS: COMPRUEBA QUE EXISTAN LAS FUNCIONES AUXILIARES NECESARIAS *****
+    if (typeof getPlaneReceiverIds !== 'function' || typeof getReceiverBadgeStyle !== 'function') {
+        return;
+    }
+    // ***** COMPROBACIÓN DE VISIBILIDAD Y GEOMETRÍA: SI NO ES VISIBLE O NO TIENE PUNTO, LIMPIA EL BADGE *****
+    if (!this.visible || this.position == null || !this.olPoint) {
+        this.clearReceiverBadge();
+        return;
+    }
+
+    // ***** OBTENCIÓN DE LOS IDS DE RECEPTORES ASOCIADOS AL AVIÓN *****
+    const receiverIds = getPlaneReceiverIds(this, true);
+    // ***** SI NO HAY RECEPTORES, LIMPIA EL BADGE Y SALE *****
+    if (receiverIds.length === 0) {
+        this.clearReceiverBadge();
+        return;
+    }
+
+    // ***** CÁLCULO DEL TAMAÑO DEL BADGE ESCALADO SEGÚN EL ZOOM GLOBAL *****
+    const size = Math.max(14, Math.round(22 * globalScale));
+    // ***** INCLUIR LA FORMA EN LA CLAVE PARA FORZAR REDIBUJADO AL CAMBIAR *****
+    const key = receiverIds.join('|') + '@' + size + '#' + receiverBadgeShape;
+
+    // ***** INICIALIZACIÓN DEL FEATURE DEL BADGE SI NO EXISTE, ASOCIÁNDOLO AL PUNTO OL *****
+    if (!this.receiverBadge) {
+        this.receiverBadge = new ol.Feature(this.olPoint);
+        this.receiverBadge.hex = `${this.icao}`;
+        this.receiverBadge.visible = false;
+        this.receiverBadgeKey = null;
+    } else if (this.receiverBadge.getGeometry() !== this.olPoint) {
+        // ***** ACTUALIZACIÓN DE LA GEOMETRÍA SI EL PUNTO OL HA CAMBIADO *****
+        this.receiverBadge.setGeometry(this.olPoint);
+    }
+
+    // ***** REGENERACIÓN DEL ESTILO SI LA CLAVE (RECEPTORES/TAMAÑO/FORMA) HA CAMBIADO *****
+    if (this.receiverBadgeKey !== key) {
+        const style = getReceiverBadgeStyle(receiverIds, size);
+        if (!style) {
+            this.clearReceiverBadge();
+            return;
+        }
+        this.receiverBadge.setStyle(style);
+        this.receiverBadgeKey = key;
+    }
+
+    // ***** AÑADIR EL FEATURE A LA CAPA DE BADGES SI AÚN NO ESTÁ VISIBLE *****
+    if (!this.receiverBadge.visible) {
+        this.receiverBadge.visible = true;
+        receiverBadgeFeatures.addFeature(this.receiverBadge);
+    }
+};
+
+// ***** FUNCIÓN PARA ELIMINAR EL BADGE DE RECEPTORES DEL AVIÓN *****
+PlaneObject.prototype.clearReceiverBadge = function() {
+    // ***** SI EL BADGE EXISTE Y ESTÁ VISIBLE, LO QUITA DE LA CAPA Y LO MARCA COMO NO VISIBLE *****
+    if (this.receiverBadge && this.receiverBadge.visible) {
+        receiverBadgeFeatures.removeFeature(this.receiverBadge);
+        this.receiverBadge.visible = false;
+    }
+    // ***** ELIMINA LAS REFERENCIAS AL FEATURE Y A LA CLAVE DE CACHÉ *****
+    delete this.receiverBadge;
+    delete this.receiverBadgeKey;
 };
 
 // Update our marker on the map
@@ -1835,6 +1902,8 @@ PlaneObject.prototype.updateMarker = function(moved) {
         webglFeatures.removeFeature(this.glMarker);
         this.glMarker.visible = false;
     }
+    // ***** ACTUALIZAR BADGE *****
+    this.updateReceiverBadge();
 };
 
 

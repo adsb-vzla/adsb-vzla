@@ -270,6 +270,9 @@
             'label_units_tooltip': 'Show units (ft, kts, etc.) in the labels.',
             'webgl': 'Canvas WebGL',
             'webgl_tooltip': 'Use WebGL to display aircraft icons. This can significantly improve performance, especially when many aircraft are displayed, but may cause issues on some devices/browsers.',
+            'receiver_badge_pie': 'Display circular badge',
+            'receiver_badge_pie_tooltip': 'Switch the receiver color badge between the segmented ring and a circular pie chart.',
+            'receiver_title': 'Receivers',
             // *** FILTERS ***
             'ground_vehicles': 'Ground vehicles',
             'ground_vehicles_tooltip': 'Displays ground service vehicles that emit ADS-B signal.',
@@ -647,6 +650,7 @@
             // *** MENÚ DE CAPAS ***
             'layer_tools_title': 'Layer tools',
             'layer_webgllayer': 'Aircraft pos. webGL',
+            'layer_receiverBadgeLayer': 'Receiver color badge',
             'layer_iconlayer': 'Aircraft label',
             'layer_locationdot': 'Site position',
             'layer_sitecircles': 'Range rings',
@@ -975,6 +979,9 @@
             'label_units_tooltip': 'Muestra unidades (ft, kts, etc.) en las etiquetas.',
             'webgl': 'Canvas WebGL',
             'webgl_tooltip': 'Usa WebGL para mostrar los iconos de aeronaves. Esto puede mejorar significativamente el rendimiento, especialmente cuando se muestran muchas aeronaves, pero puede causar problemas en algunos dispositivos/navegadores.',
+            'receiver_badge_pie': 'Mostrar badge circular',
+            'receiver_badge_pie_tooltip': 'Cambia el badge de colores de receptores entre el anillo segmentado y un gráfico circular.',
+            'receiver_title': 'Receptores',
             // *** FILTERS ***
             'ground_vehicles': 'Vehículos terrestres',
             'ground_vehicles_tooltip': 'Muestra vehículos de servicios terrestres que emiten señal ADS-B.',
@@ -1351,6 +1358,7 @@
             // *** MENÚ DE CAPAS ***
             'layer_tools_title': 'Herramientas de capas',
             'layer_webgllayer': 'Pos. aeronave webGL',
+            'layer_receiverBadgeLayer': 'Badge de colores de los receptores',
             'layer_iconlayer': 'Etiqueta de aeronave',
             'layer_locationdot': 'Posición del sitio',
             'layer_sitecircles': 'Anillos de distancia',
