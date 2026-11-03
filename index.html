@@ -485,11 +485,9 @@
           <div id="selected_showTrace_hide">
             <!-- ***** DROPDOWN DE RECEPTORES ***** -->
             <div id="receivers_row" data-i18n-title="receivers_section">
-              <div class="infoHeading" data-i18n="receivers_section">Receivers:</div>
-              <div class="infoData">
-                <span id="selected_receivers_count" style="cursor: pointer;" onclick="toggleReceiversDropdown();">n/a
-                  ▾</span>
-                <div id="selected_receivers_list" class="receivers-dropdown" style="display: none;"></div>
+              <span class="infoHeading" data-i18n="receivers_section">Receivers:</span>
+              <span class="infoData" id="selected_receivers_count">n/a</span>
+              <div id="selected_receivers_list" class="receivers-inline-list" style="width: 100%; margin-top: 2px;">
               </div>
             </div>
             <div data-i18n-title="rssi_tooltip" title="Signal strength from this aircraft on your receiver in dBFS">

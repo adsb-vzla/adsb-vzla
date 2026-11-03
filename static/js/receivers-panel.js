@@ -2,13 +2,12 @@
 (function () {
     'use strict';
 
-    // ***** ACTUALIZAR EL DROPDOWN DE RECEPTORES EN EL INFOBLOCK SELECCIONADO *****
+    // ***** ACTUALIZAR LA LISTA PLANA DE RECEPTORES EN EL INFOBLOCK SELECCIONADO *****
     function updateSelectedReceiversDropdown(plane) {
         const countEl = document.getElementById('selected_receivers_count');
         const listEl = document.getElementById('selected_receivers_list');
         if (!countEl || !listEl) return;
 
-        // ***** OBTENER ARRAY DE RECEPTORES *****
         let ids = [];
         if (plane && plane.receivers && typeof window.getPlaneReceiverIds === 'function') {
             ids = window.getPlaneReceiverIds(plane, false);
@@ -16,30 +15,21 @@
             ids = Array.from(plane.receivers);
         }
 
-        // ***** CONTAR RECEPTORES OBTENIDOS DESDE EL ARRAY *****
         const count = ids.length;
-        // ***** MENSAJE SI NO HAY RECEPTORES *****
         const noneText = window.getTranslatedText
             ? window.getTranslatedText('receivers_none', 'None')
             : 'None';
-        // ***** CONTEO DE RECEPTORES *****
         const countTpl = window.getTranslatedText
             ? window.getTranslatedText('receivers_count', '{n} receiver(s)')
             : '{n} receiver(s)';
 
-        // ***** MOSTRAR TEXTO CONFORME SI HAY O NO RECEPTORES *****
-        if (count > 0) {
-            countEl.textContent = String(count) + ' ▾';
-        } else {
-            countEl.textContent = noneText;
-        }
+        // ***** TEXTO DEL CONTADOR (SOLO NÚMERO EN LÍNEA CON EL TÍTULO) *****
+        countEl.textContent = count > 0 ? String(count) : noneText;
         countEl.title = countTpl.replace('{n}', count);
 
-        // ***** CONSTRUIR CLASE DE LOS RECEPTORES QUE VEN LA AERONAVE *****
+        // ***** CONSTRUIR LA LISTA PLANA CON CÍRCULO DE COLOR + NOMBRE *****
         let html = '';
-        if (count === 0) {
-            html = '<div class="receiver-entry">' + noneText + '</div>';
-        } else {
+        if (count > 0) {
             for (const id of ids) {
                 const receiver = (typeof window.RECEIVER_BY_ID !== 'undefined')
                     ? window.RECEIVER_BY_ID.get(id)
@@ -49,21 +39,14 @@
                 const safeName = (typeof window.escapeHtml === 'function')
                     ? window.escapeHtml(name)
                     : name;
-                html += '<div class="receiver-entry">'
+
+                html += '<div class="receiver-entry" style="padding-left: 2px;">'
                     + '<span class="receiver-color-dot" style="background-color:' + color + ';"></span>'
-                    + '<span>' + safeName + '</span>'
+                    + '<span class="receiver-entry-name">' + safeName + '</span>'
                     + '</div>';
             }
         }
         listEl.innerHTML = html;
-    }
-
-    // ***** MOSTRAR U OCULTAR EL DROPDOWN DE RECEPTORES *****
-    function toggleReceiversDropdown() {
-        const listEl = document.getElementById('selected_receivers_list');
-        if (!listEl) return;
-        listEl.style.display =
-            (listEl.style.display === 'none' || !listEl.style.display) ? 'block' : 'none';
     }
 
     // ***** REGISTRAR LA COLUMNA EN LA TABLA (CUANDO planeMan EXISTA) *****
@@ -124,7 +107,6 @@
 
     // ***** EXPONER FUNCIONES AL SCOPE GLOBAL *****
     window.updateSelectedReceiversDropdown = updateSelectedReceiversDropdown;
-    window.toggleReceiversDropdown = toggleReceiversDropdown;
 
     // ***** ARRANCAR EL REGISTRO DE LA COLUMNA *****
     if (document.readyState === 'loading') {
