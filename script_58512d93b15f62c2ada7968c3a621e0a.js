@@ -6443,7 +6443,7 @@ function refreshFeatures() {
             const count = plane.receivers ? plane.receivers.size : 0;
             return count > 0 ? String(count) : '0';
         },
-        align: 'right'
+        align: 'center'
     };
     cols.lat = {
         text: 'Latitude',

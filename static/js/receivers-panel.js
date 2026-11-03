@@ -98,7 +98,7 @@
                 const count = plane.receivers ? plane.receivers.size : 0;
                 return count > 0 ? String(count) : '0';
             },
-            align: 'right'
+            align: 'center'
         };
 
         // ***** COMPLETAR PROPIEDADES REQUERIDAS POR planeMan *****
