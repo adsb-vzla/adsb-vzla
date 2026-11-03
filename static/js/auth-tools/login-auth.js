@@ -72,8 +72,15 @@ if (form) {
         }
 
         try {
-            // ***** OBTENER ARCHIVO CON LAS CREDENCIALES *****
-            const response = await fetch('./login-credentials.xlsx');
+            // ***** OBTENER ARCHIVO CON LAS CREDENCIALES (SIN CACHÉ) *****
+            const cacheBuster = `?t=${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            const response = await fetch(`./login-credentials.xlsx${cacheBuster}`, {
+                cache: 'no-store',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
 
             // ***** SI FALLÓ LA PETICIÓN AL ARCHIVO, MOSTRAR ERROR *****
             if (!response.ok) {
@@ -116,7 +123,7 @@ if (form) {
                 } catch (e) {
                     console.warn('No se pudo guardar la sesión:', e);
                 }
-                
+
                 Swal.fire({
                     icon: 'success',
                     title: t('swal_access_granted'),
