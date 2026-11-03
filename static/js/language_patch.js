@@ -658,6 +658,7 @@
             'layer_iconlayer': 'Aircraft label',
             'layer_locationdot': 'Site position',
             'layer_sitecircles': 'Range rings',
+            'layer_group_receivers_locations': 'Receivers locations',
             // *** Dropdown de distancia ***
             'layer_group_distance_tools': 'Distance tools',
             'layer_group_ground_point_ground_point': 'Ground point-ground point',
@@ -1370,6 +1371,8 @@
             'layer_iconlayer': 'Etiqueta de aeronave',
             'layer_locationdot': 'Posición del sitio',
             'layer_sitecircles': 'Anillos de distancia',
+            'layer_receiverbadgelayer': 'Badge de color de los receptores',
+            'layer_group_receivers_locations': 'Ubicaciones de receptores',
             // *** Dropdown de distancia ***
             'layer_group_distance_tools': 'Herramientas de distancia',
             'layer_group_ground_point_ground_point': 'Punto en tierra-punto en tierra',

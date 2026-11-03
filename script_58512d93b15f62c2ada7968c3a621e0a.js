@@ -1208,6 +1208,11 @@ function fetchFail(jqxhr, status, error, receiverId) {
         }
         status = jqxhr.status;
 
+        // ***** SILENCIAR 404 DE RECEPTORES SIN INSTANCIA CONFIGURADA *****
+        if (status == 404 && receiverId) {
+            return;
+        }
+
         // if (jqxhr.readyState == 0) error = "Can't connect to server, check your network!";
         if (jqxhr.readyState == 0) error = getTranslatedText('error_connect_server', "Can't connect to server, check your network!");
         let errText = status + (error ? (": " + error) : "");
@@ -1553,11 +1558,14 @@ function fetchData(options) {
         }
     } else {
         // ac_url.push('data/aircraft' + suffix);
-        // ***** DATOS DE AVIONES DE LOS MÚLTIPLES RECEPTORES *****
-        for (const receiverId of getReceiverFetchIds()) {
+        // ***** SOLO PEDIR RECEPTORES CONFIGURADOS (locations.json) PARA EVITAR 404 DE E-L *****
+        const configured = (typeof window.configuredReceiverIds !== 'undefined' && window.configuredReceiverIds.length)
+            ? window.configuredReceiverIds
+            : getReceiverFetchIds();
+        for (const receiverId of configured) {
             ac_url.push('data-receiver-' + receiverId + '/aircraft.json');
         }
-
+        
         // ***** DATOS DE AVIONES DE OPENSKY *****
         ac_url.push('data-opensky/aircraft.json');
     }
@@ -3011,6 +3019,35 @@ function earlyInitPage() {
     filterGroundVehicles(false);
     filterBlockedMLAT(false);
 
+    // ***** FORZAR EL ORDEN VISUAL DE LOS GRUPOS EN EL MENÚ DE CAPAS *****
+    try {
+        const visualOrder = [
+            'venezuela',
+            'world',
+            'tma_gna',
+            'tma_bna',
+            'tma_miq',
+            'ifrlow',
+            'ifrhigh',
+            'vfr',
+            'fir',
+            'elevation_tool',
+            'distance_tools',
+            'receivers_locations',
+            'projection_tool'
+        ];
+        const baseZ = 10;
+        ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
+            if (!lyr || !lyr.get) return;
+            const nm = lyr.get('name');
+            const idx = visualOrder.indexOf(nm);
+            if (idx >= 0) {
+                // ***** CUANTO MÁS TARDE EN EL ARRAY, MAYOR ZINDEX: SE RENDERIZA ABAJO *****
+                lyr.setZIndex(baseZ + (visualOrder.length - idx));
+            }
+        });
+    } catch (e) { console.warn('No se pudo forzar el orden de capas:', e); }
+
     TAR.altitudeChart.init();
 
     if (aggregator) {
@@ -4411,7 +4448,7 @@ function initMap() {
         renderOrder: null,
         renderBuffer: renderBuffer,
     });
-    layers.push(locationDotLayer);
+    // layers.push(locationDotLayer);
 
     locationDotLayer.on('change:visible', function (evt) {
         if (evt.target.getVisible()) {
@@ -14345,3 +14382,9 @@ window.RECEIVER_INDEX = RECEIVER_INDEX;
 window.RECEIVERS = RECEIVERS;
 window.escapeHtml = escapeHtml;
 window.getPlaneReceiverIds = getPlaneReceiverIds;
+
+// ***** EXPONER LA COLECCIÓN DE CAPAS HIJO *****
+Object.defineProperty(window, 'layersGroup', {
+    get() { return layers; },
+    configurable: true,
+});

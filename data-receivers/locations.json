@@ -1,0 +1,6 @@
+{
+  "a": { "lat": 10.423611, "lon": -67.207778, "name": "Receptor A" },
+  "b": { "lat": 10.596100, "lon": -66.990600, "name": "Receptor B" },
+  "c": { "lat": 10.696200, "lon": -66.990700, "name": "Receptor C" },
+  "d": { "lat": 10.200000, "lon": -67.800000, "name": "Receptor D" }
+}
