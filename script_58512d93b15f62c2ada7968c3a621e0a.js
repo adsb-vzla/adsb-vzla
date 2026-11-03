@@ -2125,7 +2125,7 @@ function earlyInitPage() {
         tooltip: 'hide_aircraft_functions_tooltip',
         tooltipKey: 'hide_aircraft_functions_tooltip',
         container: "#category-filters-container",
-        init: true,
+        init: false,
         setState: function (state) {
             jQuery("#aircraft_dropdown").toggle(!state);
         }
@@ -2139,7 +2139,7 @@ function earlyInitPage() {
         tooltip: 'hide_elevation_function_tooltip',
         tooltipKey: 'hide_elevation_function_tooltip',
         container: "#category-filters-container",
-        init: true,
+        init: false,
         setState: function (state) {
             jQuery("#elevation_dropdown").toggle(!state);
         }
@@ -2153,7 +2153,7 @@ function earlyInitPage() {
         tooltip: 'hide_distance_functions_tooltip',
         tooltipKey: 'hide_distance_functions_tooltip',
         container: "#category-filters-container",
-        init: true,
+        init: false,
         setState: function (state) {
             jQuery("#measurement_dropdown").toggle(!state);
         }
@@ -2167,7 +2167,7 @@ function earlyInitPage() {
         tooltip: 'hide_label_functions_tooltip',
         tooltipKey: 'hide_label_functions_tooltip',
         container: "#category-filters-container",
-        init: true,
+        init: false,
         setState: function (state) {
             jQuery("#label_dropdown").toggle(!state);
         }
@@ -2181,7 +2181,7 @@ function earlyInitPage() {
         tooltip: 'hide_layer_functions_tooltip',
         tooltipKey: 'hide_layer_functions_tooltip',
         container: "#category-filters-container",
-        init: true,
+        init: false,
         setState: function (state) {
             jQuery("#layer-select").toggle(!state);
         }
@@ -2195,7 +2195,7 @@ function earlyInitPage() {
         tooltip: 'hide_recenter_function_tooltip',
         tooltipKey: 'hide_recenter_function_tooltip',
         container: "#category-filters-container",
-        init: true,
+        init: false,
         setState: function (state) {
             jQuery("#H").toggle(!state);
         }
@@ -2209,7 +2209,7 @@ function earlyInitPage() {
         tooltip: 'hide_replay_function_tooltip',
         tooltipKey: 'hide_replay_function_tooltip',
         container: "#category-filters-container",
-        init: true,
+        init: false,
         setState: function (state) {
             jQuery("#RP").toggle(!state);
         }
@@ -2223,7 +2223,7 @@ function earlyInitPage() {
         tooltip: 'hide_track_functions_tooltip',
         tooltipKey: 'hide_track_functions_tooltip',
         container: "#category-filters-container",
-        init: true,
+        init: false,
         setState: function (state) {
             jQuery("#track_dropdown").toggle(!state);
         }
@@ -2237,7 +2237,7 @@ function earlyInitPage() {
         tooltip: 'hide_zoom_functions_tooltip',
         tooltipKey: 'hide_zoom_functions_tooltip',
         container: "#category-filters-container",
-        init: true,
+        init: false,
         setState: function (state) {
             jQuery("#ZI, #ZO").toggle(!state);
         }
@@ -2944,22 +2944,22 @@ function resetCategory(category) {
             if (toggles['ColoredTrails']) toggles['ColoredTrails'].toggle(true);
             if (toggles['altitudeChart']) toggles['altitudeChart'].toggle(false);
             if (toggles['webgl']) toggles['webgl'].toggle(true);
-            if (toggles['MapDim']) toggles['MapDim'].toggle(true);
+            if (toggles['MapDim']) toggles['MapDim'].toggle(false);
             if (toggles['showLabelUnits']) toggles['showLabelUnits'].toggle(true);
             if (toggles['windLabelsSlim']) toggles['windLabelsSlim'].toggle(false);
             break;
 
         // ***** FILTERS *****
         case 'filters':
-            if (toggles['hideAircraftFunctions']) toggles['hideAircraftFunctions'].toggle(true);
-            if (toggles['hideElevationFunction']) toggles['hideElevationFunction'].toggle(true);
-            if (toggles['hideDistanceFunctions']) toggles['hideDistanceFunctions'].toggle(true);
-            if (toggles['hideLabelFunctions']) toggles['hideLabelFunctions'].toggle(true);
-            if (toggles['hideLayerFunctions']) toggles['hideLayerFunctions'].toggle(true);
-            if (toggles['hideRecenterFunction']) toggles['hideRecenterFunction'].toggle(true);
-            if (toggles['hideReplayFunction']) toggles['hideReplayFunction'].toggle(true);
-            if (toggles['hideTrackFunctions']) toggles['hideTrackFunctions'].toggle(true);
-            if (toggles['hideZoomFunctions']) toggles['hideZoomFunctions'].toggle(true);
+            if (toggles['hideAircraftFunctions']) toggles['hideAircraftFunctions'].toggle(false);
+            if (toggles['hideElevationFunction']) toggles['hideElevationFunction'].toggle(false);
+            if (toggles['hideDistanceFunctions']) toggles['hideDistanceFunctions'].toggle(false);
+            if (toggles['hideLabelFunctions']) toggles['hideLabelFunctions'].toggle(false);
+            if (toggles['hideLayerFunctions']) toggles['hideLayerFunctions'].toggle(false);
+            if (toggles['hideRecenterFunction']) toggles['hideRecenterFunction'].toggle(false);
+            if (toggles['hideReplayFunction']) toggles['hideReplayFunction'].toggle(false);
+            if (toggles['hideTrackFunctions']) toggles['hideTrackFunctions'].toggle(false);
+            if (toggles['hideZoomFunctions']) toggles['hideZoomFunctions'].toggle(false);
             break;
 
         // ***** DATA *****
@@ -4932,7 +4932,8 @@ function initMap() {
         tooltip: 'dim_map_tooltip',
         tooltipKey: 'dim_map_tooltip',
         container: "#category-display-container",
-        init: MapDim,
+        // init: MapDim,
+        init: false,
         setState: function (state) {
             if (loadFinished) {
                 OLMap.render();
