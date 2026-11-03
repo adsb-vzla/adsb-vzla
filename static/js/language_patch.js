@@ -650,7 +650,7 @@
             // *** MENÚ DE CAPAS ***
             'layer_tools_title': 'Layer tools',
             'layer_webgllayer': 'Aircraft pos. webGL',
-            'layer_receiverBadgeLayer': 'Receiver color badge',
+            'layer_receiverbadgelayer': 'Receiver color badge',
             'layer_iconlayer': 'Aircraft label',
             'layer_locationdot': 'Site position',
             'layer_sitecircles': 'Range rings',
@@ -1358,7 +1358,7 @@
             // *** MENÚ DE CAPAS ***
             'layer_tools_title': 'Herramientas de capas',
             'layer_webgllayer': 'Pos. aeronave webGL',
-            'layer_receiverBadgeLayer': 'Badge de colores de los receptores',
+            'layer_receiverbadgelayer': 'Badge de color de los receptores',
             'layer_iconlayer': 'Etiqueta de aeronave',
             'layer_locationdot': 'Posición del sitio',
             'layer_sitecircles': 'Anillos de distancia',
