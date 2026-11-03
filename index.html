@@ -310,6 +310,7 @@
                 <div class="infoData"><span id="selected_fir_value_sidebar">n/a</span></div>
               </td>
             </tr>
+
             <tr data-i18n-title="photo_link_tooltip" id="photoLinkRow" class="hidden">
               <td title="Opens an external image or photo of the aircraft.">
                 <div class="infoHeading">
@@ -482,6 +483,15 @@
             </div>
           </div>
           <div id="selected_showTrace_hide">
+            <!-- ***** DROPDOWN DE RECEPTORES ***** -->
+            <div id="receivers_row" data-i18n-title="receivers_section">
+              <div class="infoHeading" data-i18n="receivers_section">Receivers:</div>
+              <div class="infoData">
+                <span id="selected_receivers_count" style="cursor: pointer;" onclick="toggleReceiversDropdown();">n/a
+                  ▾</span>
+                <div id="selected_receivers_list" class="receivers-dropdown" style="display: none;"></div>
+              </div>
+            </div>
             <div data-i18n-title="rssi_tooltip" title="Signal strength from this aircraft on your receiver in dBFS">
               <div class="infoHeading" data-i18n="rssi">
                 <span>RSSI:</span>
@@ -1641,9 +1651,12 @@
   <!-- ***** AJUSTAR TAMAÑO DEL MENÚ DE CAPAS SEGÚN DROPDOWNS ABIERTOS ***** -->
   <script src="./static/js/layers-menu-utilities.js"></script>
 
+  <!-- ***** PANEL DE RECEPTORES EN MENÚ LATERAL IZQUIERDO ***** -->
+  <script src="./static/js/receivers-panel.js"></script>
+
   <!-- TURF.JS -->
   <script src="libs/turf.min.js"></script>
-  
+
 
   <!-- ***** PLANES DE VUELO ***** -->
   <script src="./static/js/flight-plans.js"></script>

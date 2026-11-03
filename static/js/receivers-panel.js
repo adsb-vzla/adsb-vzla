@@ -1,0 +1,142 @@
+// ***** PANEL DE RECEPTORES: DROPDOWN EN INFOBLOCK + COLUMNA EN TABLA *****
+(function () {
+    'use strict';
+
+    // ***** ACTUALIZAR EL DROPDOWN DE RECEPTORES EN EL INFOBLOCK SELECCIONADO *****
+    function updateSelectedReceiversDropdown(plane) {
+        const countEl = document.getElementById('selected_receivers_count');
+        const listEl = document.getElementById('selected_receivers_list');
+        if (!countEl || !listEl) return;
+
+        // ***** OBTENER ARRAY DE RECEPTORES *****
+        let ids = [];
+        if (plane && plane.receivers && typeof window.getPlaneReceiverIds === 'function') {
+            ids = window.getPlaneReceiverIds(plane, false);
+        } else if (plane && plane.receivers) {
+            ids = Array.from(plane.receivers);
+        }
+
+        // ***** CONTAR RECEPTORES OBTENIDOS DESDE EL ARRAY *****
+        const count = ids.length;
+        // ***** MENSAJE SI NO HAY RECEPTORES *****
+        const noneText = window.getTranslatedText
+            ? window.getTranslatedText('receivers_none', 'None')
+            : 'None';
+        // ***** CONTEO DE RECEPTORES *****
+        const countTpl = window.getTranslatedText
+            ? window.getTranslatedText('receivers_count', '{n} receiver(s)')
+            : '{n} receiver(s)';
+
+        // ***** MOSTRAR TEXTO CONFORME SI HAY O NO RECEPTORES *****
+        if (count > 0) {
+            countEl.textContent = String(count) + ' ▾';
+        } else {
+            countEl.textContent = noneText;
+        }
+        countEl.title = countTpl.replace('{n}', count);
+
+        // ***** CONSTRUIR CLASE DE LOS RECEPTORES QUE VEN LA AERONAVE *****
+        let html = '';
+        if (count === 0) {
+            html = '<div class="receiver-entry">' + noneText + '</div>';
+        } else {
+            for (const id of ids) {
+                const receiver = (typeof window.RECEIVER_BY_ID !== 'undefined')
+                    ? window.RECEIVER_BY_ID.get(id)
+                    : null;
+                const name = receiver ? receiver.name : id;
+                const color = receiver ? receiver.color : '#888';
+                const safeName = (typeof window.escapeHtml === 'function')
+                    ? window.escapeHtml(name)
+                    : name;
+                html += '<div class="receiver-entry">'
+                    + '<span class="receiver-color-dot" style="background-color:' + color + ';"></span>'
+                    + '<span>' + safeName + '</span>'
+                    + '</div>';
+            }
+        }
+        listEl.innerHTML = html;
+    }
+
+    // ***** MOSTRAR U OCULTAR EL DROPDOWN DE RECEPTORES *****
+    function toggleReceiversDropdown() {
+        const listEl = document.getElementById('selected_receivers_list');
+        if (!listEl) return;
+        listEl.style.display =
+            (listEl.style.display === 'none' || !listEl.style.display) ? 'block' : 'none';
+    }
+
+    // ***** REGISTRAR LA COLUMNA EN LA TABLA (CUANDO planeMan EXISTA) *****
+    function registerReceiversColumn() {
+        if (typeof TAR === 'undefined' || !TAR.planeMan || !TAR.planeMan.cols) {
+            setTimeout(registerReceiversColumn, 200);
+            return;
+        }
+        const cols = TAR.planeMan.cols;
+        if (cols.receivers) return;
+
+        // ***** HELPERS INTERNOS DE ORDENACIÓN *****
+        function compareNumeric(xf, yf) {
+            if (Math.abs(xf - yf) < 1e-9) return 0;
+            return xf - yf;
+        }
+
+        cols.receivers = {
+            text: 'Receivers',
+            sort: function () {
+                // ***** REDIBUJAR APLICANDO ORDEN POR CONTEO DE RECEPTORES *****
+                const planes = g.planesOrdered.slice();
+                planes.sort(function (a, b) {
+                    const ca = a.receivers ? a.receivers.size : 0;
+                    const cb = b.receivers ? b.receivers.size : 0;
+                    return compareNumeric(ca, cb);
+                });
+                // ***** NO TOCAR EL ORDEN GLOBAL; SOLO REFRESCAR LA TABLA *****
+                TAR.planeMan.refresh();
+            },
+            value: function (plane) {
+                const count = plane.receivers ? plane.receivers.size : 0;
+                return count > 0 ? String(count) : '0';
+            },
+            align: 'right'
+        };
+
+        // ***** COMPLETAR PROPIEDADES REQUERIDAS POR planeMan *****
+        const col = cols.receivers;
+        col.id = 'receivers';
+        col.header = function () {
+            let text = col.text || col.id;
+            if (typeof window.translate !== 'undefined' && window.translate.t) {
+                const tr = window.translate.t('col_receivers');
+                if (tr && tr !== 'col_receivers') text = tr;
+            }
+            return text;
+        };
+        col.td = '<td style="text-align: right">';
+        col.visible = true;
+        col.toggleKey = 'column_receivers';
+
+        // ***** REFRESCAR REDIBUJADO PARA INCLUIR LA NUEVA COLUMNA *****
+        if (typeof TAR.planeMan.redraw === 'function') {
+            TAR.planeMan.redraw();
+        }
+    }
+
+    // ***** EXPONER FUNCIONES AL SCOPE GLOBAL *****
+    window.updateSelectedReceiversDropdown = updateSelectedReceiversDropdown;
+    window.toggleReceiversDropdown = toggleReceiversDropdown;
+
+    // ***** ARRANCAR EL REGISTRO DE LA COLUMNA *****
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', registerReceiversColumn);
+    } else {
+        registerReceiversColumn();
+    }
+
+    // ***** ESCUCHAR CAMBIO DE IDIOMA PARA REPINTAR EL HEADER DE LA COLUMNA *****
+    document.addEventListener('languageChanged', function () {
+        if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.cols && TAR.planeMan.cols.receivers) {
+            if (typeof TAR.planeMan.redraw === 'function') TAR.planeMan.redraw();
+        }
+    });
+})();

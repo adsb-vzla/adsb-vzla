@@ -2721,3 +2721,24 @@ div.ui-slider .ui-slider-handle {
     border-radius: 3px;
     cursor: pointer;
 }
+
+.receivers-dropdown {
+    margin-top: 4px;
+    padding: 4px 6px;
+    border: 1px solid var(--LIGHTER-BASE-COLOR, #ccc);
+    border-radius: 4px;
+    background: var(--BGCOLOR2, #242424);
+    font-size: calc(11px * var(--SCALE, 1));
+}
+.receivers-dropdown .receiver-entry {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+}
+.receivers-dropdown .receiver-color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}

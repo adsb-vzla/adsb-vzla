@@ -5976,6 +5976,10 @@ function refreshSelected() {
         jQuery('#selected_message_count').prop('title', 'The total number of messages received from this aircraft');
         jQuery('#selected_message_count').updateText(selected.messages);
     }
+    // ***** ACTUALIZAR LOS RECEPTORES QUE VEN A LA AERONAVE *****
+    if (typeof window.updateSelectedReceiversDropdown === 'function') {
+        window.updateSelectedReceiversDropdown(selected);
+    }
     jQuery('#selected_message_rate').updateText((selected.messageRate != null) ? (selected.messageRate.toFixed(1)) : "n/a");
     jQuery('#selected_photo_link').html(getPhotoLink(selected));
 
@@ -6425,6 +6429,20 @@ function refreshFeatures() {
         text: 'RSSI',
         sort: function () { sortBy('rssi', compareNumeric, function (x) { return x.rssi; }); },
         value: function (plane) { return (plane.rssi != null ? plane.rssi.toFixed(1) : ""); },
+        align: 'right'
+    };
+    // ***** DROPDOWN DE RECEPTORES *****
+    cols.receivers = {
+        text: 'Receivers',
+        sort: function () {
+            sortBy('receivers', compareNumeric, function (x) {
+                return (x.receivers ? x.receivers.size : 0);
+            });
+        },
+        value: function (plane) {
+            const count = plane.receivers ? plane.receivers.size : 0;
+            return count > 0 ? String(count) : '0';
+        },
         align: 'right'
     };
     cols.lat = {
@@ -14322,3 +14340,8 @@ window.formatHourSliderTip = formatHourSliderTip;
 window.formatMinuteSliderTip = formatMinuteSliderTip;
 window.updateReplaySliderTips = updateReplaySliderTips;
 window.syncReplaySlidersToReplay = syncReplaySlidersToReplay;
+window.RECEIVER_BY_ID = RECEIVER_BY_ID;
+window.RECEIVER_INDEX = RECEIVER_INDEX;
+window.RECEIVERS = RECEIVERS;
+window.escapeHtml = escapeHtml;
+window.getPlaneReceiverIds = getPlaneReceiverIds;
