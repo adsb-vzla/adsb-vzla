@@ -761,16 +761,25 @@ function updateElevationGroundAircraftProfile() {
         return;
     }
 
-    // ***** ACTUALIZAR POSICIÓN DE LA LÍNEA Y PUNTO B SEGÚN MOVIMIENTO DEL AVIÓN *****
+    // ***** ACTUALIZAR POSICIÓN DE LA LÍNEA Y PUNTOS SEGÚN MOVIMIENTO DEL AVIÓN *****
     updateElevationGroundAircraftDrawings(plane);
 
     // ***** CONSTRUIR PANORAMA *****
-    getElevationProfileLine(
-        elevationGroundAnchor.lat,
-        elevationGroundAnchor.lon,
-        plane.position[1],
-        plane.position[0]
-    );
+    if (elevationGroundAircraftModeType === 'aircraft') {
+        getElevationProfileLine(
+            plane.position[1],
+            plane.position[0],
+            elevationGroundAnchor.lat,
+            elevationGroundAnchor.lon
+        );
+    } else {
+        getElevationProfileLine(
+            elevationGroundAnchor.lat,
+            elevationGroundAnchor.lon,
+            plane.position[1],
+            plane.position[0]
+        );
+    }
 }
 
 // ***** ACTUALIZAR POSICIÓN DE LA LÍNEA Y PUNTO B SEGÚN MOVIMIENTO DEL AVIÓN *****
@@ -833,12 +842,13 @@ function updateElevationGroundAircraftDrawings(plane) {
     elevationPointLayer.changed();
     elevationLineLayer.changed();
 
-    // ***** ACTUALIZAR NUMERACIÓN A/B SEGÚN EL ORDEN DE CLIC (SE MUEVE CON EL AVIÓN) *****
+    // ***** ACTUALIZAR NUMERACIÓN A/B SEGÚN EL MODO (SE MUEVE CON EL AVIÓN) *****
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
         elevationNumberSourceGA.clear();
 
         // ***** DETERMINAR QUÉ ETIQUETA LE TOCA A CADA PUNTO SEGÚN QUIÉN FUE PRIMERO *****
-        const aircraftWasFirst = elevationGAAircraftWasFirst;
+        const aircraftWasFirst = elevationGroundAircraftModeType === 'aircraft' ||
+            elevationGAAircraftWasFirst;
         const groundNum = aircraftWasFirst ? 'B' : 'A';
         const planeNum  = aircraftWasFirst ? 'A' : 'B';
 
@@ -1154,7 +1164,7 @@ function handleElevationGroundAircraftClick(evt, planeHex) {
                 ])
             )
         );
-        groundFeature.set('num', 'A');
+        groundFeature.set('num', 'B');
         groundFeature.set('isDark', true);
 
         const aircraftFeature = new ol.Feature(
@@ -1165,7 +1175,7 @@ function handleElevationGroundAircraftClick(evt, planeHex) {
                 ])
             )
         );
-        aircraftFeature.set('num', 'B');
+        aircraftFeature.set('num', 'A');
         aircraftFeature.set('isDark', false);
 
         elevationNumberSourceGA.addFeatures([
@@ -1178,12 +1188,21 @@ function handleElevationGroundAircraftClick(evt, planeHex) {
 
     // ***** SI LA FUNCIÓN ESTÁ DISPONIBLE, DIBUJAR EL PERFIL CONFORME EL AVIÓN SE MUEVE *****
     if (typeof getElevationProfileLine === 'function') {
-        getElevationProfileLine(
-            elevationGroundAnchor.lat,
-            elevationGroundAnchor.lon,
-            plane.position[1],
-            plane.position[0]
-        );
+        if (elevationGroundAircraftModeType === 'aircraft') {
+            getElevationProfileLine(
+                plane.position[1],
+                plane.position[0],
+                elevationGroundAnchor.lat,
+                elevationGroundAnchor.lon
+            );
+        } else {
+            getElevationProfileLine(
+                elevationGroundAnchor.lat,
+                elevationGroundAnchor.lon,
+                plane.position[1],
+                plane.position[0]
+            );
+        }
     }
 
     // ***** CADA 5 SEGUNDOS, ACTUALIZAR EL PERFIL *****
