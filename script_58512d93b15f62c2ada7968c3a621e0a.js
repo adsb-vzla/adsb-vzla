@@ -327,6 +327,7 @@ let FetchPending = [];
 let FetchPendingUAT = null;
 let MessageCountHistory = [];
 let MessageRate = 0;
+let ReceiverMessageRates = Object.create(null);
 let layers;
 let layers_group;
 const nullStyle = new ol.style.Style({});
@@ -954,11 +955,39 @@ function processAircraft(ac, init, uat) {
     }
 }
 
+function updateReceiverMessageRate(data) {
+    const receiverId = data._fromReceiver;
+    const messageCount = Number(data.messages);
+    if (!receiverId || !Number.isFinite(messageCount) || !Number.isFinite(data.now)) {
+        return;
+    }
+
+    const previous = ReceiverMessageRates[receiverId];
+    let rate = 0;
+    if (previous && data.now > previous.time && messageCount >= previous.messages) {
+        rate = (messageCount - previous.messages) / (data.now - previous.time);
+    }
+
+    ReceiverMessageRates[receiverId] = {
+        time: data.now,
+        messages: messageCount,
+        rate,
+    };
+
+    MessageRate = Object.values(ReceiverMessageRates).reduce((total, receiver) => {
+        if (data.now - receiver.time <= 10.5) {
+            return total + receiver.rate;
+        }
+        return total;
+    }, 0);
+}
+
 let notNewCounter = 0;
 let backwardsCounter = 0;
 function processReceiverUpdate(data, init) {
     // ***** SI VIENE DE UN RECEPTOR, PROCESAR SIN FILTRO DE TIMESTEP *****
     if (data._fromReceiver) {
+        updateReceiverMessageRate(data);
         if (data.now > now) {
             last = now;
             now = data.now;
