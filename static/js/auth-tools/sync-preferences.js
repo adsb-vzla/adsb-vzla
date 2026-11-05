@@ -4,6 +4,7 @@
 
     // En producción (servidor), esta URL debería ser relativa: '/api/'
     // En tu WSL, como el HTML se sirve por un lado y Flask por otro, usamos la URL absoluta.
+    // ***** EN EL SERVIDOR ES SÓLO /api *****
     const API_BASE_URL = 'http://127.0.0.1:5000/api';
 
     const userId = sessionStorage.getItem('adsb_user_id');
