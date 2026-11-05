@@ -1092,6 +1092,12 @@ function fetchFail(jqxhr, status, error) {
 
 function fetchDone(data, receiverId) {
     try {
+        // --- PARCHE PARA IGNORAR ARCHIVOS VACÍOS O ERRORES DE NGINX ---
+        if (data && data.byteLength && data.byteLength < 50) {
+            pendingFetches--; // Restamos la petición pendiente para que no se quede colgado
+            return; // Ignoramos este archivo silenciosamente
+        }
+
         pendingFetches--;
         if (data == null) {
             return;
@@ -1119,10 +1125,18 @@ function fetchDone(data, receiverId) {
             let arrayBuffer = res.buffer
             // return type is Uint8Array, wqi requires the ArrayBuffer
             data = { buffer: arrayBuffer, };
+            // --- PARCHE DE SEGURIDAD CONTRA ARCHIVOS VACÍOS (13 bytes) ---
+            if ((data && data.buffer && data.buffer.byteLength < 50) || (data && data.byteLength && data.byteLength < 50)) {
+                return;
+            }
             wqi(data);
         } else if (binCraft) {
             lastRequestSize = data.byteLength / 2;
             data = { buffer: data, };
+            // --- PARCHE DE SEGURIDAD CONTRA ARCHIVOS VACÍOS (13 bytes) ---
+            if ((data && data.buffer && data.buffer.byteLength < 50) || (data && data.byteLength && data.byteLength < 50)) {
+                return;
+            }
             wqi(data);
         }
         data.urlIndex = this.urlIndex;
@@ -1334,7 +1348,11 @@ function fetchData(options) {
         });
     }
 
-    let suffix = zstd ? '.binCraft.zst' : (binCraft ? '.binCraft' : '.json');
+    // let suffix = zstd ? '.binCraft.zst' : (binCraft ? '.binCraft' : '.json');
+    // if (enableDynamicCachebusting) {
+    //     suffix += `?${currentTime}`;
+    // }
+    let suffix = '.json';
     if (enableDynamicCachebusting) {
         suffix += `?${currentTime}`;
     }
