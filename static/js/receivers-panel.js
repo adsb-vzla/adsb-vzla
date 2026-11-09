@@ -2,6 +2,8 @@
 (function () {
     'use strict';
 
+    let lastSelectedPlane = null;
+
     // ***** ACTUALIZAR LA LISTA PLANA DE RECEPTORES EN EL INFOBLOCK SELECCIONADO *****
     function updateSelectedReceiversDropdown(plane) {
         const countEl = document.getElementById('selected_receivers_count');
@@ -34,7 +36,11 @@
                 const receiver = (typeof window.RECEIVER_BY_ID !== 'undefined')
                     ? window.RECEIVER_BY_ID.get(id)
                     : null;
-                const name = receiver ? receiver.name : id;
+                const name = receiver
+                    ? (typeof window.getReceiverDisplayName === 'function'
+                        ? window.getReceiverDisplayName(receiver)
+                        : receiver.name)
+                    : id;
                 const color = receiver ? receiver.color : '#888';
                 const safeName = (typeof window.escapeHtml === 'function')
                     ? window.escapeHtml(name)
@@ -117,8 +123,15 @@
 
     // ***** ESCUCHAR CAMBIO DE IDIOMA PARA REPINTAR EL HEADER DE LA COLUMNA *****
     document.addEventListener('languageChanged', function () {
+        if (lastSelectedPlane) updateSelectedReceiversDropdown(lastSelectedPlane);
         if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.cols && TAR.planeMan.cols.receivers) {
             if (typeof TAR.planeMan.redraw === 'function') TAR.planeMan.redraw();
         }
     });
+
+    const originalUpdate = window.updateSelectedReceiversDropdown;
+    window.updateSelectedReceiversDropdown = function (plane) {
+        lastSelectedPlane = plane;
+        originalUpdate(plane);
+    };
 })();

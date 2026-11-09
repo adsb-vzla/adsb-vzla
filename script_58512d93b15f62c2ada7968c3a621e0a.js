@@ -280,6 +280,19 @@ const RECEIVERS = [
 const RECEIVER_BY_ID = new Map(RECEIVERS.map(r => [r.id, r]));
 // ***** ÍNDICE DEL RECEPTOR *****
 const RECEIVER_INDEX = new Map(RECEIVERS.map((r, i) => [r.id, i]));
+
+// ***** OBTENER EL NOMBRE DEL RECEPTOR EN EL IDIOMA ACTUAL *****
+function getReceiverDisplayName(receiver) {
+    if (!receiver) return '';
+
+    const key = 'receiver_' + receiver.id;
+    if (typeof window.translate !== 'undefined' && typeof window.translate.t === 'function') {
+        const translated = window.translate.t(key);
+        if (translated && translated !== key) return translated;
+    }
+    return receiver.name;
+}
+
 // ***** TIMER EN QUE EL RECEPTOR TRATARÁ DE BUSCAR LA SEÑAL SI LA PIERDE *****
 const RECEIVER_RETRY_MS = 60000;
 // ***** DISPONIBILIDAD DEL BADGE *****
@@ -8955,7 +8968,8 @@ function initFilters() {
         return '<label class="receiver-filter-row">'
             + '<span class="receiver-color-dot" style="background-color:' + receiver.color + ';"></span>'
             + '<input type="checkbox" class="receiver-cb" value="' + receiver.id + '" data-receiver="' + receiver.id + '" checked>'
-            + '<span class="receiver-filter-name">' + receiver.name + '</span>'
+            + '<span class="receiver-filter-name" data-i18n="receiver_' + receiver.id + '">'
+            + getReceiverDisplayName(receiver) + '</span>'
             + '</label>';
     }).join('');
 
@@ -14451,6 +14465,7 @@ window.syncReplaySlidersToReplay = syncReplaySlidersToReplay;
 window.RECEIVER_BY_ID = RECEIVER_BY_ID;
 window.RECEIVER_INDEX = RECEIVER_INDEX;
 window.RECEIVERS = RECEIVERS;
+window.getReceiverDisplayName = getReceiverDisplayName;
 window.escapeHtml = escapeHtml;
 window.getPlaneReceiverIds = getPlaneReceiverIds;
 

@@ -42,7 +42,12 @@
     function receiverName(id) {
         if (typeof window.RECEIVERS !== 'undefined') {
             const rec = window.RECEIVERS.find(function (r) { return r.id === id; });
-            if (rec) return rec.name;
+            if (rec) {
+                if (typeof window.getReceiverDisplayName === 'function') {
+                    return window.getReceiverDisplayName(rec);
+                }
+                return rec.name;
+            }
         }
         return id.toUpperCase();
     }
@@ -50,7 +55,7 @@
     // ***** CREAR (O RECREAR) LA CAPA DE UN RECEPTOR CONCRETO *****
     function ensureReceiverLayer(id, lat, lon, name) {
         const color = receiverColor(id);
-        const displayName = name || receiverName(id);
+        const displayName = receiverName(id) || name;
 
         // ***** SI YA EXISTE LA CAPA, SOLO MOVEMOS EL PUNTO *****
         if (layersById.has(id)) {
@@ -107,6 +112,23 @@
         layersById.set(id, layer);
         sourcesById.set(id, source);
         return layer;
+    }
+
+    // ***** ACTUALIZAR LOS NOMBRES DE LAS CAPAS AL CAMBIAR IDIOMA *****
+    function updateReceiverLayerTitles() {
+        layersById.forEach(function (layer, id) {
+            const displayName = receiverName(id);
+            layer.set('title', displayName);
+            const source = sourcesById.get(id);
+            if (source) {
+                source.getFeatures().forEach(function (feature) {
+                    feature.set('receiverName', displayName);
+                });
+            }
+        });
+        if (typeof window.refreshLayerSwitcher === 'function') {
+            window.refreshLayerSwitcher();
+        }
     }
 
     // ***** CREAR EL GRUPO CONTENEDOR CON TODAS LAS CAPAS DE RECEPTORES *****
@@ -250,6 +272,7 @@
 
     // ***** REPINTAR TÍTULOS AL CAMBIAR DE IDIOMA *****
     document.addEventListener('languageChanged', function () {
+        updateReceiverLayerTitles();
         if (typeof window.updateLayerTitles === 'function') {
             setTimeout(window.updateLayerTitles, 150);
         }
