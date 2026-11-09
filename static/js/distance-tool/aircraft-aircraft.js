@@ -1,5 +1,22 @@
 // ***** AERONAVE-AERONAVE *****
 // ***********************************************************
+function getAircraftAltitudeDifferenceText(plane1, plane2) {
+    const plane1OnGround = plane1.altitude === 'ground';
+    const plane2OnGround = plane2.altitude === 'ground';
+
+    if (plane1OnGround && plane2OnGround) {
+        return getTranslatedText('both_aircraft_on_ground', 'Both aircraft are on the ground.');
+    }
+    if (plane1OnGround || plane2OnGround) {
+        return getTranslatedText('aircraft_on_ground', 'One aircraft is on the ground.');
+    }
+
+    const altDiff = Math.abs(plane1.altitude - plane2.altitude);
+    const altValue = Math.round(convert_altitude(altDiff, DisplayUnits));
+    const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
+    return altValue + altUnit;
+}
+
 // ** INICIO FUNCIÓN ACTUALIZAR DISTANCIA AERONAVE-AERONAVE **
 // ***********************************************************
 function updateDistanceLine() {
@@ -133,8 +150,6 @@ function updateDistanceLine() {
         let coords2 = plane2.position;
 
         let distance = haversineDistance(coords1[1], coords1[0], coords2[1], coords2[0]);
-        let altDiff = Math.abs(plane1.altitude - plane2.altitude);
-
         let lineCoords = [ol.proj.fromLonLat(coords1), ol.proj.fromLonLat(coords2)];
         if (!distanceLineFeature) {
             distanceLineFeature = new ol.Feature({
@@ -164,9 +179,7 @@ function updateDistanceLine() {
             // const distText = format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM');
             // const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
             const distText = showLabelUnits ? format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM') : format_distance_brief(distM, DisplayUnits);
-            const altValue = Math.round(convert_altitude(altDiff, DisplayUnits));
-            const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
-            const altText = altValue + altUnit;
+            const altText = getAircraftAltitudeDifferenceText(plane1, plane2);
 
             // --- OBTENER RUMBOS ---
             const track1 = plane1.track;
@@ -453,8 +466,6 @@ function updateDistanceLine() {
             const coordsA = planeA.position;
             const coordsB = planeB.position;
             const distance = haversineDistance(coordsA[1], coordsA[0], coordsB[1], coordsB[0]);
-            const altDiff = Math.abs((planeA.altitude || 0) - (planeB.altitude || 0));
-
             const lineCoords = [ol.proj.fromLonLat(coordsA), ol.proj.fromLonLat(coordsB)];
             let feat = distanceLineFeaturesMap.get(key);
             if (!feat) {
@@ -571,12 +582,9 @@ function updateDistanceLine() {
                 // const altText = Math.round(convert_altitude(altDiff, DisplayUnits)) + NNBSP + get_unit_label("altitude", DisplayUnits);
 
                 const distText = showLabelUnits ? format_distance_long(distM, DisplayUnits).replace(/nmi?/i, 'NM') : format_distance_brief(distM, DisplayUnits);
-                const altValue = Math.round(convert_altitude(altDiff, DisplayUnits));
-                const altUnit = showLabelUnits ? NNBSP + get_unit_label("altitude", DisplayUnits) : '';
-                const altText = altValue + altUnit;
-
                 const planeA = g.planes[hexA];
                 const planeB = g.planes[hexB];
+                const altText = getAircraftAltitudeDifferenceText(planeA, planeB);
                 const trackA = planeA ? planeA.track : null;
                 const trackB = planeB ? planeB.track : null;
                 const trackAStr = formatTrackDisplay(trackA);
