@@ -1185,7 +1185,7 @@ table.infoSectionTable tr td {
     position: fixed;
     top: calc(10px * var(--SCALE));
     left: calc(10px * var(--SCALE));
-    z-index: 9998;
+    z-index: 10030;
     box-sizing: border-box;
     padding: calc(8px * var(--SCALE));
     gap: calc(10px * var(--SCALE));
@@ -1193,13 +1193,19 @@ table.infoSectionTable tr td {
     flex-direction: column;
     align-items: flex-start;
     pointer-events: auto;
-    max-width: calc(280px * var(--SCALE));
+    max-width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    height: fit-content;
 }
 
 .plane-card {
     display: flex;
     flex-direction: column;
-    width: calc(260px * var(--SCALE));
+    width: min(calc(260px * var(--SCALE)), calc(100vw - 20px));
+    max-width: 100%;
     background: rgba(18, 18, 18, 0.96);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: calc(8px * var(--SCALE));
@@ -1212,7 +1218,7 @@ table.infoSectionTable tr td {
 }
 
 .plane-card.expanded {
-    width: calc(320px * var(--SCALE));
+    width: min(calc(320px * var(--SCALE)), calc(100vw - 20px));
 }
 
 .plane-card.expanded .plane-card-summary {
@@ -1254,6 +1260,8 @@ table.infoSectionTable tr td {
     border-radius: calc(4px * var(--SCALE));
     color: var(--TXTCOLOR1);
     cursor: pointer;
+    border: 0;
+    font: inherit;
 }
 
 .plane-card-actions .infoblockCloseBox {
