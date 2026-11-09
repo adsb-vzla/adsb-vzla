@@ -764,22 +764,26 @@ function updateElevationGroundAircraftProfile() {
     // ***** ACTUALIZAR POSICIÓN DE LA LÍNEA Y PUNTOS SEGÚN MOVIMIENTO DEL AVIÓN *****
     updateElevationGroundAircraftDrawings(plane);
 
-    // ***** CONSTRUIR PANORAMA *****
-    if (elevationGroundAircraftModeType === 'aircraft') {
-        getElevationProfileLine(
-            plane.position[1],
-            plane.position[0],
-            elevationGroundAnchor.lat,
-            elevationGroundAnchor.lon
-        );
-    } else {
-        getElevationProfileLine(
-            elevationGroundAnchor.lat,
-            elevationGroundAnchor.lon,
-            plane.position[1],
-            plane.position[0]
-        );
-    }
+    // ***** CONSTRUIR PANORAMA CONSERVANDO EL ORDEN A -> B *****
+    const profileEndpoints = getElevationGroundAircraftProfileEndpoints(plane);
+    getElevationProfileLine(...profileEndpoints);
+}
+
+function getElevationGroundAircraftProfileEndpoints(plane) {
+    const aircraftCoordinates = [
+        plane.position[1],
+        plane.position[0]
+    ];
+    const groundCoordinates = [
+        elevationGroundAnchor.lat,
+        elevationGroundAnchor.lon
+    ];
+    const aircraftWasFirst = elevationGroundAircraftModeType === 'aircraft' ||
+        elevationGAAircraftWasFirst;
+
+    return aircraftWasFirst
+        ? [...aircraftCoordinates, ...groundCoordinates]
+        : [...groundCoordinates, ...aircraftCoordinates];
 }
 
 // ***** ACTUALIZAR POSICIÓN DE LA LÍNEA Y PUNTO B SEGÚN MOVIMIENTO DEL AVIÓN *****
@@ -1188,21 +1192,7 @@ function handleElevationGroundAircraftClick(evt, planeHex) {
 
     // ***** SI LA FUNCIÓN ESTÁ DISPONIBLE, DIBUJAR EL PERFIL CONFORME EL AVIÓN SE MUEVE *****
     if (typeof getElevationProfileLine === 'function') {
-        if (elevationGroundAircraftModeType === 'aircraft') {
-            getElevationProfileLine(
-                plane.position[1],
-                plane.position[0],
-                elevationGroundAnchor.lat,
-                elevationGroundAnchor.lon
-            );
-        } else {
-            getElevationProfileLine(
-                elevationGroundAnchor.lat,
-                elevationGroundAnchor.lon,
-                plane.position[1],
-                plane.position[0]
-            );
-        }
+        getElevationProfileLine(...getElevationGroundAircraftProfileEndpoints(plane));
     }
 
     // ***** CADA 5 SEGUNDOS, ACTUALIZAR EL PERFIL *****
@@ -1344,9 +1334,6 @@ function finalizeElevationGAPair(plane) {
     const groundAnchor = elevationPendingGround;
     if (!groundAnchor) return;
 
-    // ***** USAR EL FLAG PARA SABER QUIÉN FUE PRIMERO *****
-    const aircraftWasFirst = elevationGAAircraftWasFirst;
-
     // ***** ESTABLECER AVIÓN SELECCIONADO *****
     elevationAircraftHex = plane.icao;
     if (typeof InstrumentedAircraft !== 'undefined') {
@@ -1363,13 +1350,10 @@ function finalizeElevationGAPair(plane) {
     // ***** INICIAR TIMER *****
     startElevationCountdown();
 
-    // ***** DIBUJAR PERFIL DE ELEVACIÓN *****
+    // ***** DIBUJAR PERFIL DE ELEVACIÓN CONSERVANDO EL ORDEN A -> B *****
     if (typeof getElevationProfileLine === 'function') {
         getElevationProfileLine(
-            elevationGroundAnchor.lat,
-            elevationGroundAnchor.lon,
-            plane.position[1],
-            plane.position[0]
+            ...getElevationGroundAircraftProfileEndpoints(plane)
         );
     }
 

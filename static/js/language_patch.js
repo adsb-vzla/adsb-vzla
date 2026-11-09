@@ -1235,9 +1235,9 @@
             'unit_kt': 'kt',
             'unit_nm': 'MN',
 
-            'more_table_lines': 'Más líneas en tabla',
-            'even_more_table_lines': 'Aún más líneas',
-            'all_table_lines': 'Todas las líneas',
+            'more_table_lines': 'Más filas en tabla',
+            'even_more_table_lines': 'Aún más filas',
+            'all_table_lines': 'Todas las filas',
             'more_table_lines_tooltip': 'Aumenta el número de aeronaves mostradas en la tabla.',
             'even_more_table_lines_tooltip': 'Aumenta aún más el número de aeronaves mostradas en la tabla.',
             'all_table_lines_tooltip': 'Mostrar todas las aeronaves en la tabla (puede afectar el rendimiento).',
