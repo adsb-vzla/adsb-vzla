@@ -592,6 +592,8 @@
             // *** FUNCIONES DE DISTANCIA ***
             'signal_lost': 'SIGNAL LOST',
             'retrying': 'Retrying...',
+            'waiting_for_aircraft_position': 'Waiting for the aircraft position...',
+            'pair_reset_missing_aircraft': 'The pair was reset because an aircraft lost its position. Select an aircraft with a valid position.',
             'dist_label': 'Dist:',
             'alt_diff_label': 'Alt Diff:',
             'nm': 'NM',
@@ -1299,6 +1301,8 @@
             // *** FUNCIONES DE DISTANCIA ***
             'signal_lost': 'SEÑAL PERDIDA',
             'retrying': 'Reintentando...',
+            'waiting_for_aircraft_position': 'Esperando la posición de la aeronave...',
+            'pair_reset_missing_aircraft': 'El par se reinició porque una aeronave perdió su posición. Selecciona una aeronave con posición válida.',
             'dist_label': 'Distancia:',
             'alt_diff_label': 'Dif. Alt.:',
             'nm': 'NM',

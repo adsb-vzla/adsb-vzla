@@ -66,6 +66,7 @@ function updateDistanceToGroundOverlay() {
             groundPlaneMissingSince.set(key, started);
             const secondsMissing = (Date.now() - started) / 1000;
             const remaining = Math.max(0, Math.ceil(15 - secondsMissing));
+            showDistanceGuide(() => `<center><b>${getTranslatedText('signal_lost', 'SIGNAL LOST')}</b></center><br>${getTranslatedText('waiting_for_aircraft_position', 'Waiting for the aircraft position...')} ${remaining}s`);
             let ov = groundPlaneOverlays.get(key);
             if (!ov) {
                 const el = document.createElement('div');
@@ -184,6 +185,12 @@ function updateDistanceToGroundOverlay() {
 
                     else if (distanceToGroundModeType === '1A_nB') {
                         planesForGround = planesForGround.filter(h => h !== hex);
+
+                        if (taFirstPointType === 'ground' && groundPoints.length === 1) {
+                            updatePointNumbers('ta', [
+                                { key: 'ta_pending_ground', coord: groundPoints[0], num: 'A', isDark: true }
+                            ]);
+                        }
                     }
                     else if (distanceToGroundModeType === 'nA_1B') {
                         planesForGround = [];
@@ -262,6 +269,10 @@ function updateDistanceToGroundOverlay() {
             ov.setPosition(overlayPos);
 
             if (secondsMissing >= 15) {
+                showDistanceGuide(() => `<center>${getTranslatedText(
+                    'pair_reset_missing_aircraft',
+                    'The pair was reset because an aircraft lost its position. Select an aircraft with a valid position.'
+                )}</center>`);
                 if (distanceToGroundModeType === '1A1B') {
                     clearPointNumbers('ta');
                     clearPlanePoints('ta');
@@ -507,6 +518,12 @@ function updateDistanceToGroundOverlay() {
                 }
                 else if (distanceToGroundModeType === '1A_nB') {
                     planesForGround = planesForGround.filter(h => h !== hex);
+
+                    if (taFirstPointType === 'ground' && groundPoints.length === 1) {
+                        updatePointNumbers('ta', [
+                            { key: 'ta_pending_ground', coord: groundPoints[0], num: 'A', isDark: true }
+                        ]);
+                    }
                 }
                 else if (distanceToGroundModeType === 'nA_1B') {
                     planesForGround = [];
@@ -997,6 +1014,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     firstPointType: 'ground'  // NUEVO: el primer punto fue tierra
                 });
                 // No volver a agregar el punto tierra (ya se agregó en el primer clic)
+                removePointNumbers('ta', ['ta_pending_ground']);
                 hideDistanceGuide();
                 taFirstPointType = null; // RESET para permitir nuevo par
 
@@ -1022,7 +1040,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
             // Los aviones tocados antes de la tierra se marcan como 1.
             // Si ya hay tierra seleccionada, los aviones son 2.
             const firstWasGround = (taFirstPointType === 'ground');
-            const planeNum = firstWasGround ? 2 : 1;
+            const planeNum = firstWasGround ? 'B' : 'A';
 
             if (!planesForGround.includes(planeHex)) {
                 planesForGround.push(planeHex);
@@ -1042,6 +1060,10 @@ function handleDistanceToGroundClick(evt, planeHex) {
                 ]);
             }
 
+            if (firstWasGround) {
+                removePointNumbers('ta', ['ta_pending_ground']);
+            }
+
             // Mostrar el paso 2 correcto según el primer punto
             if (!firstWasGround) {
                 // Los aviones fueron primero → ahora pedir el punto en el mapa
@@ -1057,6 +1079,8 @@ function handleDistanceToGroundClick(evt, planeHex) {
             const firstWasPlane = (taFirstPointType === 'aircraft');
             const planeNum = firstWasPlane ? 'A' : 'B';
 
+            clearPointNumbers('ta');
+            clearPlanePoints('ta');
             planesForGround = [planeHex];
 
             // Marcar el punto del avión inmediatamente
@@ -1088,6 +1112,8 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     clearPointNumbers('ta');
                     clearPlanePoints('ta');
                 }
+                removePointNumbers('ta', ['ta_pending_ground']);
+                removePlanePoints('ta', ['ta_pending_ground']);
                 planesForGround = [planeHex];
                 selectedPlaneForGround = p;
                 hideDistanceGuide();
@@ -1143,6 +1169,9 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     const gpKey = `${lonlat[0].toFixed(6)},${lonlat[1].toFixed(6)}`;
                     groundPointFeaturesByCoord.set(gpKey, featA);
                 }
+                updatePointNumbers('ta', [
+                    { key: 'ta_pending_ground_' + lonlat[0].toFixed(6) + '_' + lonlat[1].toFixed(6), coord: lonlat, num: 'A', isDark: true }
+                ]);
                 showDistanceGuide(() => getTranslatedText(
                     'ta_click_second_point',
                     'Now click on the other element (ground or aircraft).'
@@ -1157,6 +1186,9 @@ function handleDistanceToGroundClick(evt, planeHex) {
                         new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                     );
                 }
+                updatePointNumbers('ta', [
+                    { key: 'ta_pending_ground_' + lonlat[0].toFixed(6) + '_' + lonlat[1].toFixed(6), coord: lonlat, num: taFirstPointType === 'aircraft' ? 'B' : 'A', isDark: true }
+                ]);
             }
             // Mostrar el paso 2 correcto según el primer punto seleccionado
             showDistanceGuide(() => taStep2Message());
@@ -1175,6 +1207,10 @@ function handleDistanceToGroundClick(evt, planeHex) {
                         new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                     );
                 }
+                if (!firstWasGround) {
+                    clearPointNumbers('ta');
+                    clearPlanePoints('ta');
+                }
             } else {
                 // Ya había tierra: reemplazarla (1A_nB solo admite una).
                 groundPoints = [lonlat];
@@ -1186,6 +1222,9 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     );
                 }
             }
+            updatePointNumbers('ta', [
+                { key: 'ta_pending_ground', coord: lonlat, num: firstWasGround ? 'A' : 'B', isDark: true }
+            ]);
 
             // Mostrar el paso 2 según el orden del primer punto:
             // - Si la tierra fue primero → pedir aeronaves
@@ -1200,6 +1239,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
             // Modo 1A1B
             if (hasPlane) {
                 // Primer clic fue avión → esta tierra completa el par
+                const pendingPlaneHex = planesForGround[0];
                 groundPoints = [lonlat];
                 groundPointCoord = lonlat;
                 if (groundPointSource) {
@@ -1208,6 +1248,8 @@ function handleDistanceToGroundClick(evt, planeHex) {
                         new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                     );
                 }
+                removePointNumbers('ta', ['ta_pending_num_' + pendingPlaneHex]);
+                removePlanePoints('ta', ['ta_pending_' + pendingPlaneHex]);
                 hideDistanceGuide();
                 // RESET para permitir nuevo par
                 // No resetear planesForGround aún (se necesita para el dibujo).
@@ -1222,6 +1264,9 @@ function handleDistanceToGroundClick(evt, planeHex) {
                         new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
                     );
                 }
+                updatePointNumbers('ta', [
+                    { key: 'ta_pending_ground', coord: lonlat, num: firstWasGround ? 'A' : 'B', isDark: true }
+                ]);
                 showDistanceGuide(() => getTranslatedText(
                     'ta_click_second_point',
                     'Now click on the other element (ground or aircraft).'
