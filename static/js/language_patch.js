@@ -58,6 +58,10 @@
             'route_short': 'Route:',
             'type_short': 'Type:',
             'source_short': 'Source:',
+            'plane_card_remove': 'Remove',
+            'plane_card_expand': 'Expand',
+            'plane_card_collapse': 'Collapse',
+            'plane_card_more_selected': '{count} more selected aircraft',
             // *** anon_mlat_info ***
             'non_icao_hex_info': 'Non-ICAO hex, info:',
             'anonymized_mlat_result': 'Anonymized MLAT result',
@@ -761,6 +765,10 @@
             'route_short': 'Ruta:',
             'type_short': 'Tipo:',
             'source_short': 'Fuente:',
+            'plane_card_remove': 'Quitar',
+            'plane_card_expand': 'Expandir',
+            'plane_card_collapse': 'Contraer',
+            'plane_card_more_selected': '{count} aeronaves seleccionadas adicionales',
             // *** anon_mlat_info ***
             'non_icao_hex_info': 'Hex no-ICAO, info:',
             'anonymized_mlat_result': 'Resultado MLAT anonimizado',

@@ -4896,7 +4896,12 @@ function initMap() {
     });
 
     jQuery(document).on('click', '#infoblocks_container .plane-card-minimize', function () {
-        jQuery(this).closest('.plane-card').toggleClass('expanded');
+        const card = jQuery(this).closest('.plane-card');
+        const expanded = card.toggleClass('expanded').hasClass('expanded');
+        jQuery(this)
+            .attr('title', getPlaneCardText(expanded ? 'plane_card_collapse' : 'plane_card_expand'))
+            .attr('aria-label', getPlaneCardText(expanded ? 'plane_card_collapse' : 'plane_card_expand'));
+        updateMultiInfoblocksLayout();
     });
 
     jQuery(document).on('click', '#infoblocks_container .plane-card-close', function () {
@@ -4904,6 +4909,12 @@ function initMap() {
         if (hex && g.planes && g.planes[hex]) {
             deselect(g.planes[hex]);
             refreshSelected();
+        }
+    });
+
+    document.addEventListener('languageChanged', function () {
+        if (multiSelect) {
+            renderMultiInfoblocks();
         }
     });
 
@@ -7459,6 +7470,8 @@ function updateReplayBarPosition() {
             altitudeChart.css('bottom', '35px');
         }
     }
+
+    updateMultiInfoblocksLayout();
 }
 
 // ***** ACTUALIZAR POSICIÓN DEL CHART DE ALTITUD *****
@@ -12406,6 +12419,7 @@ function showReplayBar() {
     showingReplayBar = !showingReplayBar;
     if (!showingReplayBar) {
         jQuery("#replayBar").hide();
+        updateMultiInfoblocksLayout();
         stopReplayClock();
         replay = null;
         jQuery('#map_canvas').height('100%');
@@ -12438,6 +12452,7 @@ function showReplayBar() {
         jQuery('#map_canvas').height('calc(100% - 110px)');
         jQuery('#sidebar_canvas').height('calc(100% - 100px)');
         updateReplayBarPosition();
+        updateMultiInfoblocksLayout();
         if (!replay) {
             replay = replayDefaults(new Date());
             replay.playing = false;
@@ -13091,6 +13106,17 @@ function fetchPlanePhoto(selected, cb) {
     }
 }
 
+function getPlaneCardText(key, fallback) {
+    if (typeof window.getTranslatedText === 'function') {
+        return window.getTranslatedText(key, fallback || key);
+    }
+    if (window.translate && typeof window.translate.t === 'function') {
+        const translated = window.translate.t(key);
+        return translated === key ? (fallback || key) : translated;
+    }
+    return fallback || key;
+}
+
 function createPlaneCard(plane) {
     const registration = plane.registration || plane.icao || 'n/a';
     const altitude = plane.altitude != null ? (plane.altitude === 'ground' ? 'GND' : plane.altitude) : 'n/a';
@@ -13110,28 +13136,49 @@ function createPlaneCard(plane) {
     }
     const callsign = plane.name ? plane.name.toUpperCase() : registration;
     const photoHtml = getPlaneCardPhotoHtml(plane);
+    const expandText = getPlaneCardText('plane_card_expand', 'Expand');
+    const removeText = getPlaneCardText('plane_card_remove', 'Remove');
 
     return `
         <div class="plane-card minimized" data-hex="${plane.icao}">
             <div class="plane-card-header">
                 <div class="plane-card-title">${callsign}</div>
                 <div class="plane-card-actions">
-                    <div class="infoblockCloseBox plane-card-close" title="Quitar">×</div>
+                    <button type="button" class="infoblockMinimizeBox plane-card-minimize" title="${expandText}" aria-label="${expandText}">−</button>
+                    <button type="button" class="infoblockCloseBox plane-card-close" title="${removeText}" aria-label="${removeText}">×</button>
                 </div>
             </div>
             <div class="plane-card-summary">
                 <div class="plane-card-photo">${photoHtml}</div>
                 <div class="plane-card-details">
-                    <div class="summaryRow"><span class="infoHeading">Reg.:</span><span class="infoData">${registration}</span></div>
-                    <div class="summaryRow"><span class="infoHeading">Alt.:</span><span class="infoData">${altitude}</span></div>
-                    <div class="summaryRow"><span class="infoHeading">Spd.:</span><span class="infoData">${speed}</span></div>
-                    <div class="summaryRow"><span class="infoHeading">Route:</span><span class="infoData">${route}</span></div>
-                    <div class="summaryRow"><span class="infoHeading">Type:</span><span class="infoData">${typecode}</span></div>
-                    <div class="summaryRow"><span class="infoHeading">Source:</span><span class="infoData">${source}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">${getPlaneCardText('reg_short', 'Reg.:')}</span><span class="infoData">${registration}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">${getPlaneCardText('alt_short', 'Alt.:')}</span><span class="infoData">${altitude}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">${getPlaneCardText('spd_short', 'Spd.:')}</span><span class="infoData">${speed}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">${getPlaneCardText('route_short', 'Route:')}</span><span class="infoData">${route}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">${getPlaneCardText('type_short', 'Type:')}</span><span class="infoData">${typecode}</span></div>
+                    <div class="summaryRow"><span class="infoHeading">${getPlaneCardText('source_short', 'Source:')}</span><span class="infoData">${source}</span></div>
                 </div>
             </div>
         </div>`;
 }
+
+function updateMultiInfoblocksLayout() {
+    const container = document.getElementById('infoblocks_container');
+    if (!container) return;
+
+    const replayBar = document.getElementById('replayBar');
+    const replayHeight = replayBar && getComputedStyle(replayBar).display !== 'none'
+        ? replayBar.getBoundingClientRect().height
+        : 0;
+    const edge = Math.max(10, 10 * (typeof globalScale === 'number' ? globalScale : 1));
+    const bottomSpace = replayHeight + edge;
+
+    container.style.setProperty('--infoblocks-bottom-space', `${bottomSpace}px`);
+    container.style.maxHeight = `calc(100vh - ${bottomSpace + edge}px)`;
+    container.style.maxWidth = `calc(100vw - ${edge * 2}px)`;
+}
+
+window.addEventListener('resize', updateMultiInfoblocksLayout);
 
 function renderMultiInfoblocks() {
     const planes = selectedPlanes();
@@ -13142,15 +13189,9 @@ function renderMultiInfoblocks() {
         return;
     }
 
-    const limit = typeof multiInfoBlockLimit !== 'undefined' ? multiInfoBlockLimit : 2;
-    const visiblePlanes = planes.slice(0, limit);
-    visiblePlanes.forEach((plane) => container.append(createPlaneCard(plane)));
-
-    if (planes.length > limit) {
-        container.append(`<div class="infoblock-limit-note">+${planes.length - limit} more selected aircraft</div>`);
-    }
-
+    planes.forEach((plane) => container.append(createPlaneCard(plane)));
     container.show();
+    updateMultiInfoblocksLayout();
 }
 
 // Exports currently selected aircraft as KML.
