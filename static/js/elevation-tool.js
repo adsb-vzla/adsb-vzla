@@ -1377,10 +1377,9 @@ function finalizeElevationGAPair(plane) {
     elevationGroundAircraftUpdateInterval =
         setInterval(updateElevationGroundAircraftProfile, 5000);
 
-    // ***** LIMPIAR PENDIENTES Y FLAG *****
+    // ***** LIMPIAR PENDIENTES; CONSERVAR EL ORDEN DEL PAR PARA LOS REFRESCOS *****
     elevationPendingGround = null;
     elevationPendingAircraftHex = null;
-    elevationGAAircraftWasFirst = false;
 
     // ***** OCULTAR GUÍA *****
     hideDistanceGuide();
