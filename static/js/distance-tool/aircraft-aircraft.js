@@ -94,11 +94,14 @@ function updateDistanceLine() {
                 let retrying = getTranslatedText('retrying', 'Retrying...');
                 textContainer.innerHTML = `<b style="color:red;">${signalLost}</b><br>${retrying} ${Math.ceil(15 - secondsMissing)}s`;
             }
-
             if (secondsMissing >= 15) {
                 // For single-pair mode, reset everything; for multi, mark removed
                 if (planeDistanceModeType === '1A1B') {
                     ppMissingSince.delete(key);
+                    showDistanceGuide(() => `<center>${getTranslatedText(
+                        'pair_reset_missing_aircraft',
+                        'The pair was reset because an aircraft lost its position. Select an aircraft with a valid position.'
+                    )}</center>`);
                     resetDistanceCalculation();
                 } else {
                     ppMissingSince.delete(key);
@@ -297,6 +300,7 @@ function updateDistanceLine() {
                 const secondsMissing = (Date.now() - started) / 1000;
                 const remaining = Math.max(0, Math.ceil(15 - secondsMissing));
 
+
                 let ov = distanceOverlaysMap.get(key);
                 if (!ov) {
                     const el = document.createElement('div');
@@ -383,6 +387,7 @@ function updateDistanceLine() {
                                 if (selectedPlaneA === anchorToCheck) selectedPlaneA = null;
                             }
                         }
+                        cleanupUnusedAnchorPoints();
 
                         if (typeof InstrumentedAircraft !== 'undefined') {
                             InstrumentedAircraft.unregister(hexA);
@@ -542,6 +547,7 @@ function updateDistanceLine() {
                             if (selectedPlaneA === anchorToCheck) selectedPlaneA = null;
                         }
                     }
+                    cleanupUnusedAnchorPoints();
 
                     if (typeof InstrumentedAircraft !== 'undefined') {
                         InstrumentedAircraft.unregister(hexA);
@@ -615,10 +621,18 @@ function updateDistanceLine() {
             ]);
 
             // Marcar cada par con puntos (avión)
-            updatePlanePoints('aa', [
-                { key: 'aa_' + key + '_1', coord: coordsA, hex: hexA },
-                { key: 'aa_' + key + '_2', coord: coordsB, hex: hexB }
-            ]);
+            if (selectedPlaneA === hexA) {
+                updatePlanePoints('aa', [
+                    { key: 'aa_anchor_' + hexA, coord: coordsA, hex: hexA },
+                    { key: 'aa_' + key + '_2', coord: coordsB, hex: hexB }
+                ]);
+                removePlanePoints('aa', ['aa_' + key + '_1']);
+            } else {
+                updatePlanePoints('aa', [
+                    { key: 'aa_' + key + '_1', coord: coordsA, hex: hexA },
+                    { key: 'aa_' + key + '_2', coord: coordsB, hex: hexB }
+                ]);
+            }
 
             const midPoint = [(coordsA[0] + coordsB[0]) / 2, (coordsA[1] + coordsB[1]) / 2];
             ov.setPosition(ol.proj.fromLonLat(midPoint));
@@ -706,6 +720,26 @@ function resetDistanceCalculation() {
     clearPointNumbers('aa');
     clearPlanePoints('aa');
 
+}
+
+function cleanupUnusedAnchorPoints() {
+    if (!planePointSourceAA) return;
+
+    const activeAnchors = new Set(
+        Array.from(pairMap.values(), pair => pair.a)
+    );
+    const featuresToRemove = [];
+
+    planePointSourceAA.forEachFeature(feature => {
+        const key = feature.get('planePointKey');
+        if (typeof key === 'string' && key.startsWith('aa_anchor_')) {
+            const hex = feature.get('hex');
+            if (!activeAnchors.has(hex)) featuresToRemove.push(feature);
+        }
+    });
+
+    featuresToRemove.forEach(feature => planePointSourceAA.removeFeature(feature));
+    if (!pairMap.size) selectedPlaneA = null;
 }
 
 // *****************************************************
@@ -800,9 +834,12 @@ function handleDistanceBetweenPlanesClick(evt, planeHex) {
         let plane = g.planes[planeHex];
         if (!plane || !plane.position || plane.seen > 15) {
             // NUEVO: guía si el avión no tiene posición válida o está desactualizado
+            if (selectedPlanesForDistance.length === 1) {
+                resetDistanceCalculation();
+            }
             showDistanceGuide(() => getTranslatedText(
                 'pair_invalid_aircraft',
-                'Aircraft has no valid position or signal is stale. Try another aircraft.'
+                'The pending point was reset because this aircraft has no valid position or its signal is stale. Select an aircraft with a valid position.'
             ));
             return;
         }
@@ -895,9 +932,9 @@ function handleDistanceBetweenPlanesClick(evt, planeHex) {
             const planeNew = g.planes[planeHex];
             if (planeAnchor && planeAnchor.position && planeNew && planeNew.position) {
                 updatePlanePoints('aa', [
-                    { key: 'aa_' + key + '_1', coord: planeAnchor.position, hex: selectedPlaneA },
                     { key: 'aa_' + key + '_2', coord: planeNew.position, hex: planeHex }
                 ]);
+                removePlanePoints('aa', ['aa_' + key + '_1']);
             }
             showDistanceGuide(() => getTranslatedText('pair_added', 'Pair added.'));
             setTimeout(() => {

@@ -198,6 +198,7 @@ function updateGroundToGroundOverlay() {
                     ggPointsB = ggPointsB.filter(p =>
                         Math.abs(p[0] - b[0]) > 1e-8 || Math.abs(p[1] - b[1]) > 1e-8
                     );
+                    clearPointNumbers('tt');
                 }
 
                 if (groundToGroundModeType === '1A_nB') {
@@ -469,6 +470,9 @@ function handleGroundToGroundClick(evt, planeHex) {
             ggPointSource && ggPointSource.addFeature(
                 new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
             );
+            updatePointNumbers('tt', [
+                { key: 'tt_pending_a', coord: lonlat, num: 'A', isDark: true }
+            ]);
             showDistanceGuide(() => ggStep2Message());
         } else {
             const a = ggPendingA;
@@ -479,6 +483,7 @@ function handleGroundToGroundClick(evt, planeHex) {
                 new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(b)))
             );
             ggPendingA = null;
+            removePointNumbers('tt', ['tt_pending_a']);
             hideDistanceGuide();
         }
 
@@ -495,6 +500,9 @@ function handleGroundToGroundClick(evt, planeHex) {
         ggPointSource && ggPointSource.addFeature(
             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
         );
+        updatePointNumbers('tt', [
+            { key: 'tt_pending_a', coord: lonlat, num: 'A', isDark: true }
+        ]);
         showDistanceGuide(() => ggStep2Message());
     } else if (groundToGroundModeType === '1A1B') {
         ggPointsB = [lonlat];
@@ -509,12 +517,17 @@ function handleGroundToGroundClick(evt, planeHex) {
         ggPointSource && ggPointSource.addFeature(
             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
         );
+        removePointNumbers('tt', ['tt_pending_a']);
         hideDistanceGuide();
     } else {
         ggPointsB.push(lonlat);
         ggPointSource && ggPointSource.addFeature(
             new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(lonlat)))
         );
+        removePointNumbers('tt', ['tt_pending_a']);
+        updatePointNumbers('tt', [
+            { key: 'tt_pending_b_' + ggPointsB.length, coord: lonlat, num: 'B', isDark: true }
+        ]);
         hideDistanceGuide();
     }
 
