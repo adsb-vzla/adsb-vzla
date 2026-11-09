@@ -73,8 +73,8 @@ if (form) {
 
         try {
             // ***** PETICIÓN AL NUEVO BACKEND (FLASK) *****
-            // ***** EN EL SERVIDOR ES SÓLO /api/login *****
-            const response = await fetch('http://127.0.0.1:5000/api/login', {
+            // ***** EN EL SERVIDOR ES SÓLO /auth-api/login *****
+            const response = await fetch('http://127.0.0.1:5000/auth-api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
