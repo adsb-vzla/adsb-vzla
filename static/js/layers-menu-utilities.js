@@ -105,6 +105,94 @@
   updateLayerSelectOffset();
 })();
 
+// ***** DESHABILITAR TEMPORALMENTE DROPDOWNS DE CAPAS EN DESARROLLO *****
+(function () {
+  // Comenta o descomenta estas entradas mientras se trabaja en sus capas internas.
+  const TEMPORARILY_DISABLED_LAYER_GROUPS = [
+    'vfr',
+    'ifrhigh',
+    'ifrlow',
+    'tma_miq',
+    'tma_bna',
+    'tma_gna'
+  ];
+
+  const layerGroupTitles = {
+    vfr: ['VFR'],
+    ifrhigh: ['IFR High', 'IFR Alto'],
+    ifrlow: ['IFR Low', 'IFR Bajo'],
+    tma_miq: ['TMA/MIQ'],
+    tma_bna: ['TMA/BNA'],
+    tma_gna: ['TMA/GNA']
+  };
+
+  function isDisabledGroupTitle(title) {
+    return TEMPORARILY_DISABLED_LAYER_GROUPS.some(name =>
+      (layerGroupTitles[name] || []).includes(title)
+    );
+  }
+
+  function updateDisabledLayerGroups() {
+    document.querySelectorAll('.layer-switcher li.group').forEach(group => {
+      const label = group.querySelector(':scope > label');
+      const foldButton = group.querySelector(':scope > button');
+      const disabled = label && isDisabledGroupTitle(label.textContent.trim());
+
+      group.classList.toggle('layer-group-temporarily-disabled', !!disabled);
+      if (disabled) {
+        group.setAttribute('aria-disabled', 'true');
+        if (label) {
+          label.classList.add('disabled');
+          label.setAttribute('aria-disabled', 'true');
+        }
+        if (foldButton) {
+          foldButton.disabled = true;
+          foldButton.tabIndex = -1;
+          foldButton.setAttribute('aria-hidden', 'true');
+        }
+      } else {
+        group.removeAttribute('aria-disabled');
+        if (label) {
+          label.classList.remove('disabled');
+          label.removeAttribute('aria-disabled');
+        }
+        if (foldButton) {
+          foldButton.disabled = false;
+          foldButton.tabIndex = 0;
+          foldButton.removeAttribute('aria-hidden');
+        }
+      }
+    });
+  }
+
+  function blockDisabledGroupInteraction(event) {
+    const group = event.target.closest('.layer-group-temporarily-disabled');
+    if (!group) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function initialize() {
+    updateDisabledLayerGroups();
+
+    const layerSelect = document.getElementById('layer-select');
+    if (!layerSelect) return;
+
+    layerSelect.addEventListener('click', blockDisabledGroupInteraction, true);
+    layerSelect.addEventListener('keydown', blockDisabledGroupInteraction, true);
+
+    const observer = new MutationObserver(updateDisabledLayerGroups);
+    observer.observe(layerSelect, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+  } else {
+    initialize();
+  }
+})();
+
 // ***** COLOCAR NOMBRE EN EL ENCABEZADO DEL MENÚ DE CAPAS *****
 (function () {
   const TITLE_CLASS = 'layer-panel-title';
