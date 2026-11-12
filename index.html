@@ -108,7 +108,7 @@
           <div id="selected_icao" data-i18n-title="icao_tooltip"
             title="The aircraft's unique ICAO identification number shown in hexadecimal format as set in the aircrafts transponder (can be wrong, we will still display the data with the wrong hex).">
           </div>
-          <div style="display: none" id="creditsSelected">
+          <div style="display: none" id="creditsSelected" data-i18n-title="credits_tooltip">
             <table class="infoSectionTable">
               <tr>
                 <td>
@@ -1069,7 +1069,7 @@
       <!-- ***** FIN MENÚ CONFIGURACIONES ***** -->
 
       <!-- ***** INICIO CRÉDITOS DE IMAGEN ***** -->
-      <div style="display: none" id="credits">
+      <div style="display: none" id="credits" data-i18n-title="credits_tooltip">
         <span class=credits-image></span>
         <span class=credits-text>aggregator.com</span>
       </div>
@@ -1082,8 +1082,8 @@
             <span data-i18n="utc">UTC</span>
           </div>
           <div id="zoom_indicator" class="dateTime" data-i18n-title="zoom_tooltip" title="Zoom">Zoom: 100%</div>
-          <div id="tab-search-navbar" data-i18n-title="search_tooltip"
-            title="Search by name, city, ICAO/IATA code, airline or aircraft type. Also accepts coordinates (lat,lon) or ICAO24 hex.">
+          <div id="tab-search-navbar" data-i18n-title="search_placeholder_combined"
+            title="Search planes, airports, airlines or types…">
             <form id="search_form">
               <input id="search_input" name="searchBox" type="text" data-i18n="search_placeholder"
                 placeholder="Search for planes, airports..." maxlength="128">
@@ -1362,7 +1362,7 @@
             <!-- ***** FIN INFORMACIÓN DEL AGREGADOR ***** -->
             <tr class="infoblock_heading">
               <td style="text-align: center" class="infoBlockTitleText">
-                <p>ADS-B VZLA</p>
+                <p data-i18n-title="adsb_vzla_tooltip">ADS-B VZLA</p>
               </td>
             </tr>
             <tr class="rSpacer">
@@ -1377,14 +1377,14 @@
               <td>
                 <table style="width: 100%">
                   <tr class="infoblock_heading">
-                    <td style="width: 50%"><span class="infoBlockTitleText" data-i18n="total_aircraft">Total
+                    <td style="width: 50%" data-i18n-title="total_aircraft_tooltip"><span class="infoBlockTitleText" data-i18n="total_aircraft">Total
                         Aircraft:</span> <span id="dump1090_total_ac">n/a</span></td>
-                    <td id="dump1090_message_rate_td"><span class="infoBlockTitleText"
+                    <td id="dump1090_message_rate_td" data-i18n-title="messages_tooltip_sidebar"><span class="infoBlockTitleText"
                         data-i18n="messages">Messages:</span> <span id="dump1090_message_rate">n/a</span
                         data-i18n="per_sec">/sec</td>
                   </tr>
                   <tr class="infoblock_body">
-                    <td style="width: 50%"><span id="with_positions" class="infoBlockTitleText"
+                    <td style="width: 50%" data-i18n-title="with_position_tooltip"><span id="with_positions" class="infoBlockTitleText"
                         data-i18n="with_position">With Position:</span>
                       <span id="dump1090_total_ac_positions">n/a</span>
                     </td>
@@ -1428,7 +1428,7 @@
                   title="Restore sidebar to default width" data-i18n="restore">Restore</button>
               </li>
               <li id="flight-plans-tab" class="reset-sidebar-tab-item">
-                <button type="button" id="flight-plans-toggle" aria-expanded="false">
+                <button type="button" id="flight-plans-toggle" aria-expanded="false" data-i18n-title="flight_plans_tooltip">
                   Planes de vuelo
                 </button>
               </li>
@@ -1448,7 +1448,7 @@
                   <tr>
                     <td>
                       <form id="altitude_filter_form">
-                        <div class="infoBlockTitleText">Filter by altitude:</div>
+                        <div class="infoBlockTitleText" data-i18n="filter_by_altitude">Filter by altitude:</div>
                         <input id="altitude_filter_min" name="minAltitude" type="text" class="altitudeFilterInput"
                           maxlength="6">
                         <label for="altitude_filter_min" class="altitudeUnit"></label>
@@ -1457,8 +1457,8 @@
                           maxlength="6">
                         <label for="altitude_filter_max" class="altitudeUnit"></label>
                         <div id="search_warning" style="display:none"></div>
-                        <button class="formButton" type="submit">Filter</button>
-                        <button class="formButton" id="altitude_filter_reset_button">Reset</button>
+                        <button class="formButton" type="submit" data-i18n="filter">Filter</button>
+                        <button class="formButton" id="altitude_filter_reset_button" data-i18n="reset">Reset</button>
                       </form>
                     </td>
                   </tr>
@@ -1532,7 +1532,7 @@
 
           <!-- ***** INICIO TABLA DE AVIONES ***** -->
           <div class="planes-table-wrapper">
-            <div class="planes-table-title" data-i18n="aircraft_list">Aircraft List</div>
+            <div class="planes-table-title" data-i18n="aircraft_list" data-i18n-title="aircraft_list_tooltip">Aircraft List</div>
             <table id="planesTable" style="width: 100%">
             </table>
           </div>

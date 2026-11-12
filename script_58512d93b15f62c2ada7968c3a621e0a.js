@@ -1641,6 +1641,7 @@ function fetchData(options) {
             req = jQuery.ajax({
                 url: `${ac_url[i]}`,
                 dataType: 'json',
+                cache: true,
                 timeout: 15000,
                 urlIndex: i,
             });
@@ -1809,11 +1810,14 @@ function initPage() {
     if (globeIndex) {
         // ***** TABS PARA VER MÁS FILAS DE LA TABLA DE AERONAVES *****
         window.setGlobeTableLimit = function () {
-            let mult = 1 + 4 * (toggles['moreTableLines1'] ? toggles['moreTableLines1'].state : 0) + 16 * (toggles['moreTableLines2'] && toggles['moreTableLines2'].state);
+            const more = toggles['moreTableLines1'] && toggles['moreTableLines1'].state ? 1 : 0;
+            const evenMore = toggles['moreTableLines2'] && toggles['moreTableLines2'].state ? 1 : 0;
+            const all = toggles['allTableLines'] && toggles['allTableLines'].state;
+            let mult = 1 + 4 * more + 16 * evenMore;
             globeTableLimit = globeTableLimitBase * mult;
-            if (toggles['allTableLines'] && toggles['allTableLines'].state)
+            if (all)
                 globeTableLimit = 1e9;
-            if (onMobile)
+            if (onMobile && !all)
                 globeTableLimit /= 2;
 
             if (typeof TAR !== 'undefined' && TAR.planeMan && TAR.planeMan.refresh) {
@@ -3318,6 +3322,9 @@ function initSourceFilter(colors) {
     const createFilter = function (color, text, key) {
         return '<li class="ui-widget-content" style="background-color:' + color + ';" id="source-filter-' + key + '">' + text + '</li>';
     };
+    const sourceText = (key, fallback) => typeof getTranslatedText === 'function'
+        ? getTranslatedText(key, fallback)
+        : fallback;
 
     let html = '';
     html += createFilter(colors['adsb'], 'ADS-B', sources[0]);
@@ -3325,8 +3332,8 @@ function initSourceFilter(colors) {
     html += createFilter(colors['uat'], 'UAT / ADS-R', sources[1][0]);
     html += createFilter(colors['mlat'], 'MLAT', sources[2]);
     html += createFilter(colors['tisb'], 'TIS-B', sources[3]);
-    html += createFilter(colors['modeS'], 'Mode-S', sources[4]);
-    html += createFilter(colors['other'], 'Other', sources[5]);
+    html += createFilter(colors['modeS'], sourceText('source_mode_s', 'Mode-S'), sources[4]);
+    html += createFilter(colors['other'], sourceText('source_other', 'Other'), sources[5]);
     html += createFilter(colors['adsc'], jaeroLabel, sources[6]);
 
     if (aiscatcher_server) {
@@ -3350,6 +3357,13 @@ function initSourceFilter(colors) {
 
     jQuery("#sourceFilter").on("selectablestart", function (event, ui) {
         event.originalEvent.ctrlKey = true;
+    });
+
+    document.addEventListener('languageChanged', function updateSourceFilterLanguage() {
+        const modeS = document.querySelector(`#source-filter-${sources[4]}`);
+        const other = document.querySelector(`#source-filter-${sources[5]}`);
+        if (modeS) modeS.textContent = sourceText('source_mode_s', 'Mode-S');
+        if (other) other.textContent = sourceText('source_other', 'Other');
     });
 }
 
@@ -7575,8 +7589,15 @@ function toggleFollow(override) {
     traceOpts.follow = FollowSelected;
 
     if (FollowSelected) {
-        if (!SelectedPlane || !SelectedPlane.position)
+        if (!SelectedPlane || !SelectedPlane.position) {
             FollowSelected = false;
+            if (typeof showDistanceGuide === 'function') {
+                showDistanceGuide(() => getTranslatedText(
+                    'follow_no_selection',
+                    'Select an aircraft first to activate follow mode.'
+                ), 5000);
+            }
+        }
     }
     if (FollowSelected) {
         //if (override == undefined && OLMap.getView().getZoom() < 8)
@@ -7920,6 +7941,15 @@ function toggleIsolation(state, noRefresh) {
         onlySelected = true;
     if (state === "off")
         onlySelected = false;
+
+    if (onlySelected && !SelectedPlane && (!SelPlanes || !Object.keys(SelPlanes).length)) {
+        if (typeof showDistanceGuide === 'function') {
+            showDistanceGuide(() => getTranslatedText(
+                'isolate_no_selection',
+                'Isolate is active, but no aircraft is selected. Select an aircraft to show it here.'
+            ), 5000);
+        }
+    }
 
     buttonActive('#I', onlySelected);
 
@@ -8580,21 +8610,54 @@ function onResetAltitudeFilter(e) {
     refreshFilter();
 }
 
+// ***** LÍMITES CONFIGURABLES DEL FILTRO DE ALTITUD *****
+const ALTITUDE_FILTER_MIN_LIMIT = 10000;
+const ALTITUDE_FILTER_MAX_LIMIT = 20000;
+const ALTITUDE_FILTER_NO_MIN = -1e6;
+const ALTITUDE_FILTER_NO_MAX = 1e6;
+
 // ***** ACTUALIZAR FILTRO DE ALTITUD *****
 function updateAltFilter() {
-    let minAltitude = parseFloat(jQuery("#altitude_filter_min").val().trim());
-    let maxAltitude = parseFloat(jQuery("#altitude_filter_max").val().trim());
+    const minValue = jQuery("#altitude_filter_min").val().trim();
+    const maxValue = jQuery("#altitude_filter_max").val().trim();
+    let minAltitude = parseFloat(minValue);
+    let maxAltitude = parseFloat(maxValue);
     let enabled = false;
 
-    if (isNaN(minAltitude)) {
-        minAltitude = -1e6;
-    }
-    if (isNaN(maxAltitude)) {
-        maxAltitude = 1e6;
+    const hasMinInput = minValue !== '';
+    const hasMaxInput = maxValue !== '';
+    const hasInvalidLimit =
+        (hasMinInput && (!Number.isFinite(minAltitude) ||
+            minAltitude < ALTITUDE_FILTER_MIN_LIMIT ||
+            minAltitude > ALTITUDE_FILTER_MAX_LIMIT)) ||
+        (hasMaxInput && (!Number.isFinite(maxAltitude) ||
+            maxAltitude < ALTITUDE_FILTER_MIN_LIMIT ||
+            maxAltitude > ALTITUDE_FILTER_MAX_LIMIT));
+
+    if (hasInvalidLimit) {
+        const errorText = getTranslatedText(
+            'error_altitude_out_of_range',
+            'Altitude limits must be between {min} and {max}.'
+        ).replace(/\{min\}/g, ALTITUDE_FILTER_MIN_LIMIT)
+            .replace(/\{max\}/g, ALTITUDE_FILTER_MAX_LIMIT);
+        showSearchWarning(errorText);
+        jQuery("#altitude_filter_min, #altitude_filter_max")
+            .addClass('input-error').removeClass('filter-active');
+        PlaneFilter.enabled = false;
+        PlaneFilter.minAltitude = undefined;
+        PlaneFilter.maxAltitude = undefined;
+        return;
     }
 
-    const hasMinValid = minAltitude !== -1e6;
-    const hasMaxValid = maxAltitude !== 1e6;
+    if (!hasMinInput) {
+        minAltitude = ALTITUDE_FILTER_NO_MIN;
+    }
+    if (!hasMaxInput) {
+        maxAltitude = ALTITUDE_FILTER_NO_MAX;
+    }
+
+    const hasMinValid = hasMinInput;
+    const hasMaxValid = hasMaxInput;
 
     if (hasMinValid && hasMaxValid && minAltitude > maxAltitude) {
         let errorText = 'ERROR: Minimum altitude ({min}) cannot be greater than maximum altitude ({max}). Please correct the values.';
@@ -8621,18 +8684,14 @@ function updateAltFilter() {
         jQuery("#altitude_filter_max").removeClass('input-error');
     }
 
-    if (minAltitude < -1e6 || minAltitude > 1e6 || isNaN(minAltitude))
-        minAltitude = -1e6;
-    else
+    if (hasMinInput)
         enabled = true;
 
-    if (maxAltitude < -1e6 || maxAltitude > 1e6 || isNaN(maxAltitude))
-        maxAltitude = 1e6;
-    else
+    if (hasMaxInput)
         enabled = true;
 
-    const hasMinValidFinal = minAltitude !== -1e6;
-    const hasMaxValidFinal = maxAltitude !== 1e6;
+    const hasMinValidFinal = hasMinInput;
+    const hasMaxValidFinal = hasMaxInput;
 
     if (!hasMinValidFinal && !hasMaxValidFinal) {
         enabled = false;
@@ -8662,8 +8721,8 @@ function updateAltFilter() {
         successPrefix = window.t('altitude_filter_active') || successPrefix;
     }
 
-    const minDisplay = minAltitude !== -1e6 ? minAltitude : noLimitText;
-    const maxDisplay = maxAltitude !== 1e6 ? maxAltitude : noLimitText;
+    const minDisplay = hasMinInput ? minAltitude : noLimitText;
+    const maxDisplay = hasMaxInput ? maxAltitude : noLimitText;
     const unit = DisplayUnits === "metric" ? "m" : "ft";
     showSuccessMessage(successPrefix + ' ' + minDisplay + ' ' + toText + ' ' + maxDisplay + ' ' + unit);
 
@@ -8676,8 +8735,8 @@ function updateAltFilter() {
     let maxAltFeet = maxAltitude;
 
     if (DisplayUnits === "metric") {
-        minAltFeet = minAltitude !== -1e6 ? minAltitude * 3.28084 : -1e6;
-        maxAltFeet = maxAltitude !== 1e6 ? maxAltitude * 3.28084 : 1e6;
+        minAltFeet = hasMinInput ? minAltitude * 3.28084 : ALTITUDE_FILTER_NO_MIN;
+        maxAltFeet = hasMaxInput ? maxAltitude * 3.28084 : ALTITUDE_FILTER_NO_MAX;
     }
 
     PlaneFilter.minAltitude = minAltFeet;
@@ -8833,7 +8892,7 @@ function initFilters() {
     const group1 = document.createElement('div');
     group1.className = 'filter-group';
     group1.innerHTML = `
-        <div class="filter-group-header" data-group="flight">
+        <div class="filter-group-header" data-group="flight" data-i18n-title="filter_flight_tooltip">
             <span class="filter-group-title">Flight</span>
             <span class="accordion-icon">▶</span>
         </div>
@@ -8855,7 +8914,7 @@ function initFilters() {
     const group2 = document.createElement('div');
     group2.className = 'filter-group';
     group2.innerHTML = `
-        <div class="filter-group-header" data-group="type">
+        <div class="filter-group-header" data-group="type" data-i18n-title="filter_type_tooltip">
             <span class="filter-group-title">Aircraft type</span>
             <span class="accordion-icon">▶</span>
         </div>
@@ -8877,7 +8936,7 @@ function initFilters() {
     const group3 = document.createElement('div');
     group3.className = 'filter-group';
     group3.innerHTML = `
-        <div class="filter-group-header" data-group="reg">
+        <div class="filter-group-header" data-group="reg" data-i18n-title="filter_registration_tooltip">
             <span class="filter-group-title">Registration & route</span>
             <span class="accordion-icon">▶</span>
         </div>
@@ -8899,7 +8958,7 @@ function initFilters() {
     const group4 = document.createElement('div');
     group4.className = 'filter-group';
     group4.innerHTML = `
-        <div class="filter-group-header" data-group="source">
+        <div class="filter-group-header" data-group="source" data-i18n-title="filter_source_tooltip">
             <span class="filter-group-title">Source</span>
             <span class="accordion-icon">▶</span>
         </div>
@@ -8921,7 +8980,7 @@ function initFilters() {
     const group5 = document.createElement('div');
     group5.className = 'filter-group';
     group5.innerHTML = `
-        <div class="filter-group-header" data-group="flags">
+        <div class="filter-group-header" data-group="flags" data-i18n-title="filter_flags_tooltip">
             <span class="filter-group-title">DB Flags</span>
             <span class="accordion-icon">▶</span>
         </div>
@@ -8943,17 +9002,18 @@ function initFilters() {
     const group6 = document.createElement('div');
     group6.className = 'filter-group';
     group6.innerHTML = `
-        <div class="filter-group-header" data-group="altitude">
+        <div class="filter-group-header" data-group="altitude" data-i18n-title="filter_altitude_tooltip">
             <span class="filter-group-title">Altitude</span>
             <span class="accordion-icon">▶</span>
         </div>
         <div class="filter-group-content">
             <div class="filter-group-content-inner">
                 <div class="filter-group-fields" style="display: grid; grid-template-columns: 1fr auto 1fr; gap: calc(8px * var(--SCALE));">
-                    <input id="altitude_filter_min" name="minAltitude" type="text" class="filterInput" data-i18n="min_ft" placeholder="Min ft" maxlength="6">
+                    <input id="altitude_filter_min" name="minAltitude" type="text" class="filterInput" data-i18n="min_ft" placeholder="Min ft" maxlength="8">
                     <span style="text-align: center; color: var(--TXTCOLOR3);">to</span>
-                    <input id="altitude_filter_max" name="maxAltitude" type="text" class="filterInput" data-i18n="max_ft" placeholder="Max ft" maxlength="6">
+                    <input id="altitude_filter_max" name="maxAltitude" type="text" class="filterInput" data-i18n="max_ft" placeholder="Max ft" maxlength="8">
                 </div>
+                <small class="filter-help" data-i18n="altitude_filter_help"></small>
                 <div class="filter-buttons">
                     <button class="formButton" id="altitude_filter_apply">Apply</button>
                     <button class="formButton" id="altitude_filter_reset_button">Reset</button>
@@ -9373,6 +9433,9 @@ function initFilters() {
     }
 
     initAccordion();
+    if (window.translate && typeof window.translate.updateUI === 'function') {
+        window.translate.updateUI();
+    }
 }
 
 // ***** ACTUALIZAR IDIOMA DE COLUMNAS Y FILTROS *****
@@ -10395,10 +10458,16 @@ function findPlanes(queries, byIcao, byCallsign, byReg, byType, showWarnings) {
             }
         }
         if (foundByHex === 0 && showWarnings) {
-            if (globeIndex) {
-                showSearchWarning("No match found in current view: " + queries);
+            const queryText = queries.join(', ');
+            if (typeof showDistanceGuide === 'function') {
+                showDistanceGuide(() => getTranslatedText(
+                    'search_not_found_guide',
+                    'No matching data is currently available on screen.'
+                ), 5000);
             } else {
-                showSearchWarning("No match found for query: " + queries);
+                showSearchWarning(
+                    (globeIndex ? 'No match found in current view: ' : 'No match found for query: ') + queryText
+                );
             }
         }
     }

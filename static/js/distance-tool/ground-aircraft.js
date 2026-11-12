@@ -40,7 +40,7 @@ function updateDistanceToGroundOverlay() {
     if (!pairs.length) return;
     const active = new Set();
 
-    for (const { key, gp, hex, firstPointType } of pairs) {
+    for (const [pairIndex, { key, gp, hex, firstPointType }] of pairs.entries()) {
         let plane = g.planes[hex];
         const missingPlane = !plane || !plane.position;
         const isStale = missingPlane || plane.seen > 15;
@@ -66,7 +66,6 @@ function updateDistanceToGroundOverlay() {
             groundPlaneMissingSince.set(key, started);
             const secondsMissing = (Date.now() - started) / 1000;
             const remaining = Math.max(0, Math.ceil(15 - secondsMissing));
-            showDistanceGuide(() => `<center><b>${getTranslatedText('signal_lost', 'SIGNAL LOST')}</b></center><br>${getTranslatedText('waiting_for_aircraft_position', 'Waiting for the aircraft position...')} ${remaining}s`);
             let ov = groundPlaneOverlays.get(key);
             if (!ov) {
                 const el = document.createElement('div');
@@ -130,13 +129,8 @@ function updateDistanceToGroundOverlay() {
                     groundPlaneRemoved.delete(key);
 
                     if (distanceToGroundModeType === '1A1B') {
-                        // Resetear variables de estado para permitir nuevo par
-                        groundPoints = [];
-                        groundPointCoord = null;
-                        planesForGround = [];
-                        selectedPlaneForGround = null;
-                        taFirstPointType = null;
-                        // NO limpiar groundPointSource ni ocultar groundPointLayer
+                        clearTAGroundDrawings();
+                        return;
                     }
                     else if (distanceToGroundModeType === 'nA_nB') {
                         // Calcular la gpKey de este par ANTES de eliminarlo
@@ -144,6 +138,10 @@ function updateDistanceToGroundOverlay() {
 
                         // Eliminar el par
                         taPairs = taPairs.filter(p => p.key !== key);
+                        if (!taPairs.length) {
+                            clearTAGroundDrawings();
+                            return;
+                        }
 
                         // Verificar si OTROS pares siguen usando esta misma tierra
                         const stillUsed = taPairs.some(p => p.key.startsWith(gpKey + '|'));
@@ -185,6 +183,10 @@ function updateDistanceToGroundOverlay() {
 
                     else if (distanceToGroundModeType === '1A_nB') {
                         planesForGround = planesForGround.filter(h => h !== hex);
+                        if (!planesForGround.length) {
+                            clearTAGroundDrawings();
+                            return;
+                        }
 
                         if (taFirstPointType === 'ground' && groundPoints.length === 1) {
                             updatePointNumbers('ta', [
@@ -193,8 +195,13 @@ function updateDistanceToGroundOverlay() {
                         }
                     }
                     else if (distanceToGroundModeType === 'nA_1B') {
-                        planesForGround = [];
-                        selectedPlaneForGround = null;
+                        const pointIndex = Number(key.split('|')[0]);
+                        groundPoints.splice(pointIndex, 1);
+                        groundPointCoord = groundPoints[0] || null;
+                        if (!groundPoints.length) {
+                            clearTAGroundDrawings();
+                            return;
+                        }
                     }
 
                     updateDistanceToGroundOverlay();
@@ -335,6 +342,10 @@ function updateDistanceToGroundOverlay() {
                     }
 
                     taPairs = taPairs.filter(p => p.key !== key);
+                    if (!taPairs.length) {
+                        clearTAGroundDrawings();
+                        return;
+                    }
                     if (groundPointSource && groundPointSource.getFeatures().length === 0) {
                         if (groundPointLayer) {
                             groundPointLayer.setVisible(false);
@@ -350,9 +361,26 @@ function updateDistanceToGroundOverlay() {
                     }
                 } else if (distanceToGroundModeType === '1A_nB') {
                     planesForGround = planesForGround.filter(h => h !== hex);
+                    if (!planesForGround.length) {
+                        clearTAGroundDrawings();
+                        return;
+                    }
                 } else if (distanceToGroundModeType === 'nA_1B') {
-                    planesForGround = [];
-                    selectedPlaneForGround = null;
+                    const pointIndex = Number(key.split('|')[0]);
+                    groundPoints.splice(pointIndex, 1);
+                    groundPointCoord = groundPoints[0] || null;
+                    if (!groundPoints.length) {
+                        clearTAGroundDrawings();
+                        return;
+                    }
+                    if (groundPointSource) {
+                        groundPointSource.clear();
+                        groundPoints.forEach(point => {
+                            groundPointSource.addFeature(
+                                new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(point)))
+                            );
+                        });
+                    }
                 }
 
                 if (OLMap) OLMap.renderSync();
@@ -518,6 +546,10 @@ function updateDistanceToGroundOverlay() {
                 }
                 else if (distanceToGroundModeType === '1A_nB') {
                     planesForGround = planesForGround.filter(h => h !== hex);
+                    if (!planesForGround.length) {
+                        clearTAGroundDrawings();
+                        return;
+                    }
 
                     if (taFirstPointType === 'ground' && groundPoints.length === 1) {
                         updatePointNumbers('ta', [
@@ -526,8 +558,30 @@ function updateDistanceToGroundOverlay() {
                     }
                 }
                 else if (distanceToGroundModeType === 'nA_1B') {
-                    planesForGround = [];
-                    selectedPlaneForGround = null;
+                    const pointIndex = Number(key.split('|')[0]);
+                    groundPoints.splice(pointIndex, 1);
+                    groundPointCoord = groundPoints[0] || null;
+                    if (groundPointSource) {
+                        groundPointSource.clear();
+                        groundPoints.forEach(point => {
+                            groundPointSource.addFeature(
+                                new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(point)))
+                            );
+                        });
+                    }
+                    if (!groundPoints.length) {
+                        clearTAGroundDrawings();
+                        return;
+                    }
+                    clearPointNumbers('ta');
+                    groundPoints.forEach((point, index) => {
+                        updatePointNumbers('ta', [{
+                            key: `ta_pending_ground_${index}`,
+                            coord: point,
+                            num: `${taFirstPointType === 'aircraft' ? 'B' : 'A'}${index}`,
+                            isDark: true
+                        }]);
+                    });
                 }
 
                 updateDistanceToGroundOverlay();
@@ -611,14 +665,14 @@ function updateDistanceToGroundOverlay() {
         let groundNum, planeNum;
         if (distanceToGroundModeType === 'nA_1B') {
             const firstWasPlane = (taFirstPointType === 'aircraft');
-            groundNum = firstWasPlane ? 'B' : 'A';
+            groundNum = `${firstWasPlane ? 'B' : 'A'}${pairIndex}`;
             planeNum = firstWasPlane ? 'A' : 'B';
         } else if (distanceToGroundModeType === '1A_nB') {
             const firstWasPlane = (taFirstPointType === 'aircraft');
             groundNum = firstWasPlane ? 'B' : 'A';
-            planeNum = firstWasPlane ? 'A' : 'B';
+            planeNum = `${firstWasPlane ? 'A' : 'B'}${pairIndex}`;
         } else {
-            const groundIsFirst = (pairFirstType === 'ground');
+            const groundIsFirst = (firstPointType === 'ground');
             groundNum = groundIsFirst ? 'A' : 'B';
             planeNum = groundIsFirst ? 'B' : 'A';
         }
@@ -942,6 +996,11 @@ function taPreMessage() {
 function handleDistanceToGroundClick(evt, planeHex) {
     const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
 
+    if (distanceToGroundModeType === '1A1B' &&
+        groundPoints.length === 1 && planesForGround.length === 1) {
+        clearTAGroundDrawings();
+    }
+
     // === DETECTAR ESTADO ACTUAL ===
     const hasGround = groundPoints.length > 0 || groundPointCoord !== null;
     const hasPlane = planesForGround.length > 0;
@@ -1040,7 +1099,9 @@ function handleDistanceToGroundClick(evt, planeHex) {
             // Los aviones tocados antes de la tierra se marcan como 1.
             // Si ya hay tierra seleccionada, los aviones son 2.
             const firstWasGround = (taFirstPointType === 'ground');
-            const planeNum = firstWasGround ? 'B' : 'A';
+            const planeNum = firstWasGround
+                ? `B${planesForGround.length}`
+                : `A${planesForGround.length}`;
 
             if (!planesForGround.includes(planeHex)) {
                 planesForGround.push(planeHex);
@@ -1058,10 +1119,6 @@ function handleDistanceToGroundClick(evt, planeHex) {
                 updatePointNumbers('ta', [
                     { key: 'ta_pending_num_' + planeHex, coord: p.position, num: planeNum, isDark: false }
                 ]);
-            }
-
-            if (firstWasGround) {
-                removePointNumbers('ta', ['ta_pending_ground']);
             }
 
             // Mostrar el paso 2 correcto según el primer punto
@@ -1187,7 +1244,12 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     );
                 }
                 updatePointNumbers('ta', [
-                    { key: 'ta_pending_ground_' + lonlat[0].toFixed(6) + '_' + lonlat[1].toFixed(6), coord: lonlat, num: taFirstPointType === 'aircraft' ? 'B' : 'A', isDark: true }
+                    {
+                        key: 'ta_pending_ground_' + lonlat[0].toFixed(6) + '_' + lonlat[1].toFixed(6),
+                        coord: lonlat,
+                        num: `${taFirstPointType === 'aircraft' ? 'B' : 'A'}${groundPoints.length - 1}`,
+                        isDark: true
+                    }
                 ]);
             }
             // Mostrar el paso 2 correcto según el primer punto seleccionado
@@ -1223,7 +1285,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
                 }
             }
             updatePointNumbers('ta', [
-                { key: 'ta_pending_ground', coord: lonlat, num: firstWasGround ? 'A' : 'B', isDark: true }
+                { key: 'ta_pending_ground', coord: lonlat, num: 'A', isDark: true }
             ]);
 
             // Mostrar el paso 2 según el orden del primer punto:
@@ -1250,6 +1312,9 @@ function handleDistanceToGroundClick(evt, planeHex) {
                 }
                 removePointNumbers('ta', ['ta_pending_num_' + pendingPlaneHex]);
                 removePlanePoints('ta', ['ta_pending_' + pendingPlaneHex]);
+                updatePointNumbers('ta', [
+                    { key: 'ta_pending_ground', coord: lonlat, num: 'B', isDark: true }
+                ]);
                 hideDistanceGuide();
                 // RESET para permitir nuevo par
                 // No resetear planesForGround aún (se necesita para el dibujo).
@@ -1265,7 +1330,7 @@ function handleDistanceToGroundClick(evt, planeHex) {
                     );
                 }
                 updatePointNumbers('ta', [
-                    { key: 'ta_pending_ground', coord: lonlat, num: firstWasGround ? 'A' : 'B', isDark: true }
+                    { key: 'ta_pending_ground', coord: lonlat, num: 'A', isDark: true }
                 ]);
                 showDistanceGuide(() => getTranslatedText(
                     'ta_click_second_point',

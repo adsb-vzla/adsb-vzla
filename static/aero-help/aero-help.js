@@ -234,7 +234,7 @@
     function getExpectedPlaceholder() {
         return tr(
             'search_placeholder_combined',
-            'Buscar aviones, aeropuertos, aerolíneas o tipos…'
+            'Search planes, airports, airlines or types…'
         );
     }
 
@@ -256,37 +256,54 @@
     // ***** OBTENER TOOLTIP *****
     function getExpectedTitle() {
         return tr(
-            'search_tooltip_descriptive',
-            'Busca por nombre, ciudad, código ICAO/IATA, aerolínea o tipo de aeronave. ' +
-            'También acepta coordenadas (lat,lon) o hex ICAO24.'
+            'search_placeholder_combined',
+            'Search planes, airports, airlines or types…'
         );
     }
 
-    // ***** APLICAR TOOLTIPD *****
+    // ***** APLICAR TOOLTIP *****
     function applySearchTooltip() {
         const text = getExpectedTitle();
-        const $sel = jQuery('#search_form .select2-selection--single');
+        const $targets = jQuery(
+            '#tab-search-navbar, #search_form, #search_input, ' +
+            '#search_form .select2-selection--single'
+        );
 
-        if ($sel.length) {
-            $sel.attr('data-tooltip', text);
-            $sel.removeAttr('title');
+        $targets.each(function () {
+            this.title = text;
+            this.setAttribute('data-tooltip', text);
+        });
 
-            const rect = $sel[0].getBoundingClientRect();
+        const selection = document.querySelector('#search_form .select2-selection--single');
+        if (selection) {
+            const rect = selection.getBoundingClientRect();
             if (window.innerHeight - rect.bottom < 120) {
-                $sel.addClass('tooltip-above');
+                selection.classList.add('tooltip-above');
             } else {
-                $sel.removeClass('tooltip-above');
+                selection.classList.remove('tooltip-above');
             }
         }
-
-        jQuery('#search_input').attr('title', text);
-        jQuery('#search_form').attr('title', text);
     }
 
     // ***** ACTUALIZAR AL CAMBIAR IDIOMA *****
     function refreshI18nTexts() {
         applyPlaceholder();
         applySearchTooltip();
+
+        const text = getExpectedTitle();
+        
+        jQuery(
+            '#search_form .select2-selection--single, ' +
+            '#search_form .select2-selection__rendered, ' +
+            '#search_form .select2-selection__placeholder, ' +
+            '.select2-container--open .select2-search__field'
+        ).each(function () {
+            if (this.getAttribute('title') !== text) {
+                this.removeAttribute('title');
+                this.setAttribute('title', text);
+                this.setAttribute('data-tooltip', text);
+            }
+        });
     }
 
     // ***** MANEJAR SELECCIÓN DE LA OPCIÓN *****
@@ -321,6 +338,12 @@
             try { window.findPlanes(d.code, false, false, false, true, true); } catch (e) { }
         } else if (d.type === 'airline' && typeof window.findPlanes === 'function') {
             const q = d.icao || d.iata || d.code;
+            if (typeof window.showDistanceGuide === 'function') {
+                window.showDistanceGuide(() => tr(
+                    'search_airline_guide',
+                    'Airline search filters the aircraft currently available on the map. If none appear, try the airline ICAO/IATA code or operator name.'
+                ), 6000);
+            }
             try { window.findPlanes(q, false, true, false, false, true); } catch (e) { }
         }
 
@@ -395,7 +418,15 @@
 
             language: {
                 inputTooShort: () => tr('search_min_chars', 'Escribe al menos 2 caracteres…'),
-                noResults: () => tr('search_no_results', 'Sin resultados'),
+                noResults: () => {
+                    if (typeof window.showDistanceGuide === 'function') {
+                        window.showDistanceGuide(() => tr(
+                            'search_not_found_guide',
+                            'No matching data is currently available on screen.'
+                        ), 5000);
+                    }
+                    return tr('search_no_results', 'No results');
+                },
                 searching: () => tr('search_searching', 'Buscando…'),
                 errorLoading: () => tr('search_error', 'Error al buscar'),
             },
@@ -461,10 +492,9 @@
 
     // ***** DETECTAR CAMBIO DE IDIOMA PARA ACTUALIZAR TEXTOS *****
     document.addEventListener('languageChanged', function () {
-        refreshI18nTexts();
-        setTimeout(refreshI18nTexts, 50);
-        setTimeout(refreshI18nTexts, 200);
-        setTimeout(refreshI18nTexts, 500);
+        [0, 50, 200, 500].forEach(delay => {
+            setTimeout(refreshI18nTexts, delay);
+        });
     });
 
     window.addEventListener('resize', function () {
