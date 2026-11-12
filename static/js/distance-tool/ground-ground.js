@@ -464,6 +464,11 @@ function handleGroundToGroundClick(evt, planeHex) {
     const lonlat = ol.proj.toLonLat(evtCoords);
     if (ggPointLayer) ggPointLayer.setVisible(true);
 
+    if (groundToGroundModeType === '1A1B' && ggPointA && ggPointsB.length === 1) {
+        clearGroundToGround();
+        if (ggPointLayer) ggPointLayer.setVisible(true);
+    }
+
     if (groundToGroundModeType === 'nA_nB') {
         if (!ggPendingA) {
             ggPendingA = lonlat;

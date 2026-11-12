@@ -2,8 +2,13 @@
 
 // ***** ESTRUCTURA BASE PARA LAS GUÍAS DE DISTANCIA *****
 let _distanceGuideRenderer = null;
+let _distanceGuideTimeout = null;
 
-function showDistanceGuide(textOrRenderer) {
+function showDistanceGuide(textOrRenderer, durationMs) {
+    if (_distanceGuideTimeout) {
+        clearTimeout(_distanceGuideTimeout);
+        _distanceGuideTimeout = null;
+    }
     // ***** DETECTAR FUNCIÓN DE RENDERIZADO DE TEXTO *****
     _distanceGuideRenderer =
         typeof textOrRenderer === 'function' ? textOrRenderer : () => textOrRenderer;
@@ -42,10 +47,20 @@ function showDistanceGuide(textOrRenderer) {
     // ***** SI EL ELEMENTO EXISTE, APLICAR ESTILO *****
     guideEl.innerHTML = _distanceGuideRenderer();
     guideEl.style.display = 'block';
+
+    if (Number.isFinite(durationMs) && durationMs > 0) {
+        _distanceGuideTimeout = setTimeout(() => {
+            hideDistanceGuide();
+        }, durationMs);
+    }
 }
 
 // ***** OCULTAR GUÍA *****
 function hideDistanceGuide() {
+    if (_distanceGuideTimeout) {
+        clearTimeout(_distanceGuideTimeout);
+        _distanceGuideTimeout = null;
+    }
     // ***** OBTENER ELEMENTO Y APLICAR PROPIEDAD NONE *****
     const guideEl = document.getElementById('distance-guide-element');
     if (guideEl) {
