@@ -1955,7 +1955,7 @@ div.ui-slider .ui-slider-handle {
 #settings_infoblock .panel-title {
     font-size: 1.5rem;
     font-weight: 800;
-    padding: 1.5rem 0.75rem 0.75rem;
+    padding: 2.5rem 0.75rem 0.75rem;
 }
 
 .layer-switcher .layer-panel-title {
@@ -2664,4 +2664,21 @@ div.ui-slider .ui-slider-handle {
     line-height: 1.3;
     border-radius: 3px;
     cursor: pointer;
+}
+
+/* ***** FIJAR ENCABEZADO DE CONFIGURACIONES AL HACER SCROLL ***** */
+#settings_window_header {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1050 !important;
+    background: var(--BGCOLOR1, #313131) !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 8px !important;
+}
+
+/* Asegurar que el contenedor permita el scroll interno */
+#settings_infoblock {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
