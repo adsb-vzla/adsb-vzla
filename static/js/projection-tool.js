@@ -922,7 +922,10 @@
         const row = document.getElementById('projection-minutes-row');
         if (!row) return;
         row.querySelectorAll('.proj-min-btn').forEach(b => {
-            b.classList.toggle('proj-min-active', state.active && parseInt(b.dataset.min, 10) === state.minutes);
+            b.classList.remove('proj-min-active');
+            if (state.active && parseInt(b.dataset.min, 10) === state.minutes) {
+                b.classList.add('proj-min-active');
+            }
         });
     }
 
@@ -956,11 +959,16 @@
                     transition: all 0.15s !important;
                 }
                 .proj-min-btn:hover { background: #3455a8 !important; }
-                .proj-min-active {
+                .proj-min-btn.proj-min-active {
                     background: #ffffff !important;
                     color: ${SYS.base} !important;
                     font-weight: bold !important;
                     border-color: #ffffff !important;
+                }
+                .proj-min-btn:not(.proj-min-active) {
+                    background: ${SYS.lighter} !important;
+                    color: ${SYS.text} !important;
+                    border-color: ${SYS.darker} !important;
                 }
                 #projection-toggle-btn {
                     background: ${SYS.lighter} !important;

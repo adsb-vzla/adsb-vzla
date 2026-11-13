@@ -40,6 +40,9 @@
 
   const layerSelect = document.getElementById('layer-select');
   if (!layerSelect) return;
+  let scheduledUpdate = null;
+  let lastOffset = null;
+  let lastHeight = null;
 
   function isOpen(root) {
     const content = root.querySelector('.dropdown-content');
@@ -72,6 +75,7 @@
       if (!root) continue;
       const content = root.querySelector('.dropdown-content');
       if (!content) continue;
+      if (!isOpen(root)) continue;
       const cs = getComputedStyle(content);
       if (cs.display === 'none' || cs.visibility === 'hidden') continue;
       const rect = content.getBoundingClientRect();
@@ -79,7 +83,11 @@
       needed = Math.max(needed, push);
     }
 
-    layerSelect.style.setProperty('--layer-switcher-offset', `${needed}px`);
+    const offset = `${needed}px`;
+    if (offset !== lastOffset) {
+      layerSelect.style.setProperty('--layer-switcher-offset', offset);
+      lastOffset = offset;
+    }
 
     if (layerSelect.classList.contains('shown')) {
       const top = layerSelect.getBoundingClientRect().top;
@@ -89,30 +97,49 @@
         replayStyle.display !== 'none' && replayStyle.visibility !== 'hidden';
       const bottom = replayVisible ? replayRect.top : window.innerHeight;
       const available = Math.max(0, bottom - top - 12);
-      layerSelect.style.setProperty('--layer-switcher-height', `${available}px`);
+      const height = `${available}px`;
+      if (height !== lastHeight) {
+        layerSelect.style.setProperty('--layer-switcher-height', height);
+        lastHeight = height;
+      }
     } else {
-      layerSelect.style.removeProperty('--layer-switcher-height');
+      if (lastHeight !== null) {
+        layerSelect.style.removeProperty('--layer-switcher-height');
+        lastHeight = null;
+      }
     }
   }
 
-  document.addEventListener('focusin', updateLayerSelectOffset);
-  document.addEventListener('focusout', () => setTimeout(updateLayerSelectOffset, 0));
-  document.addEventListener('click', () => setTimeout(updateLayerSelectOffset, 0));
+  function scheduleLayerSelectOffset() {
+    if (scheduledUpdate !== null) return;
+    scheduledUpdate = requestAnimationFrame(() => {
+      scheduledUpdate = null;
+      updateLayerSelectOffset();
+    });
+  }
+
+  document.addEventListener('focusin', scheduleLayerSelectOffset);
+  document.addEventListener('focusout', scheduleLayerSelectOffset);
+  document.addEventListener('click', scheduleLayerSelectOffset);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') setTimeout(updateLayerSelectOffset, 0);
+    if (e.key === 'Escape') scheduleLayerSelectOffset();
   });
   window.addEventListener('resize', updateLayerSelectOffset);
 
-  const observer = new MutationObserver(updateLayerSelectOffset);
+  const observer = new MutationObserver(scheduleLayerSelectOffset);
   observer.observe(layerSelect, { attributes: true, attributeFilter: ['class', 'style'] });
 
   if (window.ResizeObserver) {
     const menuResizeObserver = new ResizeObserver(() => {
-      requestAnimationFrame(updateLayerSelectOffset);
+      scheduleLayerSelectOffset();
     });
     menuIds.forEach(id => {
       const root = document.getElementById(id);
-      if (root) menuResizeObserver.observe(root);
+      if (root) {
+        menuResizeObserver.observe(root);
+        const content = root.querySelector('.dropdown-content');
+        if (content) menuResizeObserver.observe(content);
+      }
     });
     const replayBar = document.getElementById('replayBar');
     if (replayBar) menuResizeObserver.observe(replayBar);
@@ -120,8 +147,14 @@
 
   const replayBar = document.getElementById('replayBar');
   if (replayBar && window.MutationObserver) {
-    const replayObserver = new MutationObserver(() => requestAnimationFrame(updateLayerSelectOffset));
+    const replayObserver = new MutationObserver(scheduleLayerSelectOffset);
     replayObserver.observe(replayBar, { attributes: true, attributeFilter: ['class', 'style'] });
+  }
+
+  const settings = document.getElementById('settings_infoblock');
+  if (settings && window.MutationObserver) {
+    const settingsObserver = new MutationObserver(scheduleLayerSelectOffset);
+    settingsObserver.observe(settings, { attributes: true, attributeFilter: ['class', 'style'] });
   }
 
   updateLayerSelectOffset();

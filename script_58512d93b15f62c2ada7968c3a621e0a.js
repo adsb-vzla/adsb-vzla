@@ -3864,41 +3864,6 @@ function ol_map_init() {
                     const onVisible = lyr.get('onVisible');
                     onVisible && onVisible(lyr);
 
-                    // ***** ACTIVAR/DESACTIVAR GRUPOS DE CAPAS *****
-                    try {
-                        let currentParentGroup = null;
-                        layers_group.getLayers().forEach(group => {
-                            if (group instanceof ol.layer.Group) {
-                                if (group.getLayers().getArray().includes(evt.target)) {
-                                    currentParentGroup = group;
-                                }
-                            }
-                        });
-                        if (currentParentGroup) {
-                            layers_group.getLayers().forEach(group => {
-                                if (group instanceof ol.layer.Group) {
-                                    if (['fir', 'world', 'projection_tool'].includes(group.get('name'))) {
-                                        return;
-                                    }
-                                    if (group === currentParentGroup) {
-                                        group.getLayers().forEach(l => {
-                                            if (l.get('type') === 'overlay') {
-                                                l.setVisible(true);
-                                            }
-                                        });
-                                    } else {
-                                        group.getLayers().forEach(l => {
-                                            if (l.get('type') === 'overlay') {
-                                                l.setVisible(false);
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                        }
-                    } catch (e) {
-                        console.error("Error en gestión de capas:", e);
-                    }
                 }
             });
         } else if (lyr.get('type') === 'overlay') {
