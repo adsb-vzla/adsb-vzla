@@ -3915,6 +3915,9 @@ function ol_map_init() {
 
             lyr.on('change:visible', function (evt) {
                 loStore['layer_' + evt.target.get('name')] = evt.target.getVisible();
+                if (typeof refreshLayerSwitcher === 'function') {
+                    setTimeout(refreshLayerSwitcher, 0);
+                }
             });
         }
     })
@@ -6264,7 +6267,10 @@ function refreshFeatures() {
         sort: function () { sortBy('ws', compareNumeric, function (x) { return x.ws; }); },
         value: function (plane) { return format_speed_brief(plane.ws, DisplayUnits); },
         align: 'right',
-        header: function () { return 'Wind' + NBSP + '(' + get_unit_label("speed", DisplayUnits) + ')'; },
+        header: function () {
+            return getTranslatedText('wind_label', 'Wind') + NBSP +
+                '(' + get_unit_label("speed", DisplayUnits) + ')';
+        },
     };
 
     let originalColumnsOrder = [];
@@ -7839,6 +7845,11 @@ function toggleExtendedLabels(options) {
         g.extendedLabels = 0;
 
     options = options || {};
+    if (!g.enableLabels) {
+        g.enableLabels = true;
+        loStore['enableLabels'] = true;
+        buttonActive('#L', true);
+    }
     if (!options.noIncrement) {
         g.extendedLabels++;
     }
@@ -12484,12 +12495,40 @@ function playReplay(state) {
 };
 
 // ***** MOSTRAR REPLAY *****
+function refreshReplayDatepickerLanguage() {
+    const picker = jQuery("#replayDatepicker");
+    if (!picker.length || !picker.hasClass('hasDatepicker')) return;
+    const lang = window.translate && window.translate.getLang
+        ? window.translate.getLang()
+        : 'en';
+    const monthNames = Array.from({ length: 12 }, (_, i) =>
+        new Intl.DateTimeFormat(lang, { month: 'long' }).format(new Date(2020, i, 1)));
+    const dayNames = Array.from({ length: 7 }, (_, i) =>
+        new Intl.DateTimeFormat(lang, { weekday: 'long' }).format(new Date(2020, 5, 7 + i)));
+    const dayNamesMin = Array.from({ length: 7 }, (_, i) =>
+        new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(new Date(2020, 5, 7 + i)));
+    picker.datepicker('option', { monthNames, dayNames, dayNamesMin });
+}
+
+window.refreshReplayDatepickerLanguage = refreshReplayDatepickerLanguage;
+
 function showReplayBar() {
     showingReplayBar = !showingReplayBar;
     if (!showingReplayBar) {
         jQuery("#replayBar").hide();
         updateMultiInfoblocksLayout();
         stopReplayClock();
+        jQuery("#replayDatepicker").val("").datepicker("setDate", null);
+        jQuery("#hourSelect, #minuteSelect, #replaySpeedSelect").each(function () {
+            if (jQuery(this).hasClass('ui-slider')) {
+                jQuery(this).slider('value', 0);
+            }
+        });
+        jQuery("#replayLoading").empty();
+        replayHourValue = 0;
+        replayMinuteValue = 0;
+        replayEditLock = false;
+        replayPendingJump = false;
         replay = null;
         jQuery('#map_canvas').height('100%');
         jQuery('#sidebar_canvas').height('100%');
@@ -12527,10 +12566,22 @@ function showReplayBar() {
             replay.playing = false;
         }
         //ts.setUTCMinutes((parseInt((ts.getUTCMinutes() + 7.5)/15) * 15) % 60);
+        const replayLang = (window.translate && window.translate.getLang)
+            ? window.translate.getLang()
+            : 'en';
+        const monthNames = Array.from({ length: 12 }, (_, i) =>
+            new Intl.DateTimeFormat(replayLang, { month: 'long' }).format(new Date(2020, i, 1)));
+        const dayNames = Array.from({ length: 7 }, (_, i) =>
+            new Intl.DateTimeFormat(replayLang, { weekday: 'long' }).format(new Date(2020, 5, 7 + i)));
+        const dayNamesMin = Array.from({ length: 7 }, (_, i) =>
+            new Intl.DateTimeFormat(replayLang, { weekday: 'short' }).format(new Date(2020, 5, 7 + i)));
         let datepickerOptions = {
             maxDate: '+1d',
             dateFormat: "yy-mm-dd",
             autoSize: true,
+            monthNames,
+            dayNames,
+            dayNamesMin,
             onSelect: function (dateText) {
                 replay.dateText = dateText;
                 replayJump();
@@ -12546,6 +12597,7 @@ function showReplayBar() {
         }
 
         jQuery("#replayDatepicker").datepicker(datepickerOptions);
+        refreshReplayDatepickerLanguage();
 
         jQuery('#hourSelect').slider({
             step: 1, min: 0, max: 23,

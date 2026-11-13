@@ -5,7 +5,16 @@
 // *** INICIO FUNCIÓN ACTUALIZAR DISTANCIA TIERRA-AERONAVE ***
 // ***********************************************************
 function updateDistanceToGroundOverlay() {
-    if (groundToPlaneLineLayer && !groundToPlaneLineLayer.getVisible()) return;
+    if (groundToPlaneLineLayer && !groundToPlaneLineLayer.getVisible()) {
+        if (distanceGroundOverlay) distanceGroundOverlay.setPosition(undefined);
+        if (groundPlaneOverlays) {
+            groundPlaneOverlays.forEach(overlay => overlay.setPosition(undefined));
+        }
+        if (typeof groundPlaneOverlaysByHex !== 'undefined' && groundPlaneOverlaysByHex) {
+            groundPlaneOverlaysByHex.forEach(overlay => overlay.setPosition(undefined));
+        }
+        return;
+    }
 
     const pairs = [];
 
@@ -170,12 +179,6 @@ function updateDistanceToGroundOverlay() {
                             groundPointSource.changed();
                         }
 
-                        // La capa debe permanecer visible siempre (aunque no queden puntos)
-                        if (groundPointLayer) {
-                            groundPointLayer.setVisible(true);
-                            groundPointLayer.changed();
-                        }
-
                         if (OLMap) {
                             OLMap.renderSync();
                         }
@@ -221,10 +224,6 @@ function updateDistanceToGroundOverlay() {
                         // 1A_nB y nA_nB: limpiar números del par y punto del avión
                         removePointNumbers('ta', ['ta_' + key + '_g', 'ta_' + key + '_a']);
                         removePlanePoints('ta', ['ta_' + key + '_a']);
-                    }
-                    if (groundPointLayer) {
-                        groundPointLayer.setVisible(true);
-                        groundPointLayer.changed();
                     }
                 });
 
@@ -351,9 +350,6 @@ function updateDistanceToGroundOverlay() {
                             groundPointLayer.setVisible(false);
                             groundPointLayer.changed();
                         }
-                    } else if (groundPointLayer && !groundPointLayer.getVisible()) {
-                        groundPointLayer.setVisible(true);
-                        groundPointLayer.changed();
                     }
 
                     if (OLMap) {
@@ -535,9 +531,6 @@ function updateDistanceToGroundOverlay() {
                             groundPointLayer.setVisible(false);
                             groundPointLayer.changed();
                         }
-                    } else if (groundPointLayer && !groundPointLayer.getVisible()) {
-                        groundPointLayer.setVisible(true);
-                        groundPointLayer.changed();
                     }
 
                     if (OLMap) {
@@ -597,10 +590,6 @@ function updateDistanceToGroundOverlay() {
                     removePlanePoints('ta', ['ta_' + key + '_a']);
                 }
 
-                if (groundPointLayer) {
-                    groundPointLayer.setVisible(true);
-                    groundPointLayer.changed();
-                }
             });
 
             ov = new ol.Overlay({
@@ -746,8 +735,6 @@ function setGroundPoint(lonlat) {
         if (!exists) OLMap.addLayer(groundPointLayer);
     }
 
-    if (groundPointLayer) groundPointLayer.setVisible(true);
-
 }
 // *******************************************************************
 // *** FIN FUNCIÓN ACTUALIZAR PUNTO A EN EL MAPA (TIERRA-AERONAVE)****
@@ -831,6 +818,17 @@ function DistanceToGround() {
     distanceToGroundMode = !distanceToGroundMode;
 
     if (distanceToGroundMode) {
+        if (window.ProjectionTool && window.ProjectionTool.isActive()) {
+            window.ProjectionTool.stop();
+        }
+        if (typeof elevationMode !== 'undefined' && elevationMode &&
+            typeof forceStopElevationGroundGround === 'function') {
+            forceStopElevationGroundGround();
+        }
+        if (typeof elevationGroundAircraftMode !== 'undefined' && elevationGroundAircraftMode &&
+            typeof forceStopElevationGroundAircraft === 'function') {
+            forceStopElevationGroundAircraft();
+        }
         if (distanceBetweenPlanesMode) {
             distanceBetweenPlanesMode = false;
             resetDistanceCalculation();
@@ -847,13 +845,11 @@ function DistanceToGround() {
         if (!groundPointSource) groundPointSource = new ol.source.Vector();
         if (groundPointLayer) {
             groundPointLayer.setSource(groundPointSource);
-            groundPointLayer.setVisible(true);
         }
 
         if (!groundToPlaneLineSource) groundToPlaneLineSource = new ol.source.Vector();
         if (groundToPlaneLineLayer) {
             groundToPlaneLineLayer.setSource(groundToPlaneLineSource);
-            groundToPlaneLineLayer.setVisible(true);
         }
 
         showDistanceGuide(() => `<center>${taPreMessage()}</center><br><center>${taStep1Message()}</center>`);

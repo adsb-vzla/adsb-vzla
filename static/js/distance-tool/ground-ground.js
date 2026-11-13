@@ -6,7 +6,12 @@
 // **** INICIO FUNCIÓN ACTUALIZAR DISTANCIA TIERRA-TIERRA ****
 // ***********************************************************
 function updateGroundToGroundOverlay() {
-    if (ggLineLayer && !ggLineLayer.getVisible()) return;
+    if (ggLineLayer && !ggLineLayer.getVisible()) {
+        if (ggOverlays) {
+            ggOverlays.forEach(overlay => overlay.setPosition(undefined));
+        }
+        return;
+    }
     const pairs = [];
 
     if (groundToGroundModeType === '1A1B') {
@@ -175,9 +180,6 @@ function updateGroundToGroundOverlay() {
                     if (ggPointSource && ggPointSource.getFeatures().length === 0 && ggPointLayer) {
                         ggPointLayer.setVisible(false);
                         ggPointLayer.changed();
-                    } else if (ggPointLayer && !ggPointLayer.getVisible() && ggPointSource.getFeatures().length > 0) {
-                        ggPointLayer.setVisible(true);
-                        ggPointLayer.changed();
                     }
                 }
                 else if (groundToGroundModeType === '1A_nB') {
@@ -332,6 +334,17 @@ function clearGroundToGround(opts = {}) {
 function DistanceGroundToGround() {
     groundToGroundMode = !groundToGroundMode;
     if (groundToGroundMode) {
+        if (window.ProjectionTool && window.ProjectionTool.isActive()) {
+            window.ProjectionTool.stop();
+        }
+        if (typeof elevationMode !== 'undefined' && elevationMode &&
+            typeof forceStopElevationGroundGround === 'function') {
+            forceStopElevationGroundGround();
+        }
+        if (typeof elevationGroundAircraftMode !== 'undefined' && elevationGroundAircraftMode &&
+            typeof forceStopElevationGroundAircraft === 'function') {
+            forceStopElevationGroundAircraft();
+        }
         if (distanceBetweenPlanesMode) {
             distanceBetweenPlanesMode = false;
             resetDistanceCalculation();
@@ -348,13 +361,11 @@ function DistanceGroundToGround() {
         if (!ggPointSource) ggPointSource = new ol.source.Vector();
         if (ggPointLayer) {
             ggPointLayer.setSource(ggPointSource);
-            ggPointLayer.setVisible(true);
         }
 
         if (!ggLineSource) ggLineSource = new ol.source.Vector();
         if (ggLineLayer) {
             ggLineLayer.setSource(ggLineSource);
-            ggLineLayer.setVisible(true);
         }
 
         showDistanceGuide(() => `<center>${ggPreMessage()}</center><br><center>${ggStep1Message()}</center>`);
@@ -384,8 +395,6 @@ function onTTCycleClick() {
     if (idx >= 0 && idx < GG_MODES.length - 1) {
         groundToGroundModeType = GG_MODES[idx + 1];
         clearGroundToGround();
-
-        if (ggPointLayer) ggPointLayer.setVisible(true);
 
         showDistanceGuide(() => `<center>${ggPreMessage()}</center><br><center>${ggStep1Message()}</center>`);
         updateGroundToGroundOverlay();
@@ -462,11 +471,8 @@ function ggStep2Message() {
 function handleGroundToGroundClick(evt, planeHex) {
     const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
     const lonlat = ol.proj.toLonLat(evtCoords);
-    if (ggPointLayer) ggPointLayer.setVisible(true);
-
     if (groundToGroundModeType === '1A1B' && ggPointA && ggPointsB.length === 1) {
         clearGroundToGround();
-        if (ggPointLayer) ggPointLayer.setVisible(true);
     }
 
     if (groundToGroundModeType === 'nA_nB') {

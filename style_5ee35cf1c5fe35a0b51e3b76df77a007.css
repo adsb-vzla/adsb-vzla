@@ -751,8 +751,8 @@ input.error {
     top: calc(3.5em + var(--layer-switcher-offset)) !important;
     right: 0.5em !important;
     margin-right: calc(30px * var(--SCALE)) !important;
-    height: calc(100vh - 5.5em - var(--layer-switcher-offset)) !important;
-    max-height: calc(100vh - 5.5em - var(--layer-switcher-offset)) !important;
+    height: var(--layer-switcher-height, calc(100vh - 5.5em - var(--layer-switcher-offset))) !important;
+    max-height: var(--layer-switcher-height, calc(100vh - 5.5em - var(--layer-switcher-offset))) !important;
     min-height: 0 !important;
 }
 
@@ -809,6 +809,11 @@ input.error {
     display: flex;
     flex-wrap: wrap;
     padding-top: calc(10px * var(--SCALE));
+    margin-bottom: calc(24px * var(--SCALE));
+}
+
+.projection-section {
+    margin-top: calc(24px * var(--SCALE));
 }
 
 
@@ -2621,6 +2626,31 @@ div.ui-slider .ui-slider-handle {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+}
+
+.panorama-controls {
+    position: absolute;
+    right: 8px;
+    top: 6px;
+    display: flex;
+    gap: 4px;
+    z-index: 1001;
+}
+
+.panorama-control {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.9);
+    color: #000;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+}
+
+.panorama-controls .panorama-close {
+    position: static !important;
 }
 
 #panorama-container svg {

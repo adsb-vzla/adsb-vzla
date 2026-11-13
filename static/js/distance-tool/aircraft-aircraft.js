@@ -21,6 +21,13 @@ function getAircraftAltitudeDifferenceText(plane1, plane2) {
 // ***********************************************************
 function updateDistanceLine() {
     if (!distanceBetweenPlanesMode) return;
+    if (distanceLineLayer && !distanceLineLayer.getVisible()) {
+        if (distanceOverlay) distanceOverlay.setPosition(undefined);
+        if (distanceOverlaysMap) {
+            distanceOverlaysMap.forEach(overlay => overlay.setPosition(undefined));
+        }
+        return;
+    }
 
     if (planeDistanceModeType === '1A1B') {
         if (selectedPlanesForDistance.length !== 2) return;
@@ -755,6 +762,17 @@ function cleanupUnusedAnchorPoints() {
 // *****************************************************
 function toggleDistance() {
     if (!distanceBetweenPlanesMode) {
+        if (window.ProjectionTool && window.ProjectionTool.isActive()) {
+            window.ProjectionTool.stop();
+        }
+        if (typeof elevationMode !== 'undefined' && elevationMode &&
+            typeof forceStopElevationGroundGround === 'function') {
+            forceStopElevationGroundGround();
+        }
+        if (typeof elevationGroundAircraftMode !== 'undefined' && elevationGroundAircraftMode &&
+            typeof forceStopElevationGroundAircraft === 'function') {
+            forceStopElevationGroundAircraft();
+        }
         if (distanceToGroundMode) {
             DistanceToGround();
         }
