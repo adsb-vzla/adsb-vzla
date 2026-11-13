@@ -421,10 +421,6 @@ function forceStopElevationGroundAircraft() {
     elevationPendingAircraftHex = null;
     elevationGAAircraftWasFirst = false;
 
-    elevationPointLayer && elevationPointLayer.setVisible(false);
-    elevationLineLayer && elevationLineLayer.setVisible(false);
-    elevationNumberLayerGA && elevationNumberLayerGA.setVisible(false);
-
     hideDistanceGuide();
     buttonActive('#EA', false);
     if (jQuery('#elevation_dropdown [role="button"].btn')[0]?.__syncBtnState) {
@@ -442,10 +438,6 @@ function forceStopElevationGroundGround() {
 
     elevationPointSource && elevationPointSource.clear();
     elevationLineSource && elevationLineSource.clear();
-    elevationPointLayer && elevationPointLayer.setVisible(false);
-    elevationLineLayer && elevationLineLayer.setVisible(false);
-    elevationNumberLayerGG && elevationNumberLayerGG.setVisible(false);
-
     if (typeof elevationNumberSourceGG !== 'undefined' && elevationNumberSourceGG) {
         elevationNumberSourceGG.clear();
     }
@@ -500,8 +492,6 @@ function toggleElevationMode() {
         // ***** LIMPIAR CAPAS DE LÍNEAS Y PUNTOS *****
         if (elevationPointSource) elevationPointSource.clear();
         if (elevationLineSource) elevationLineSource.clear();
-        elevationLineLayer && elevationLineLayer.setVisible(false);
-
         buttonActive('#E', true);
         if (jQuery('#elevation_dropdown [role="button"].btn')[0]?.__syncBtnState) {
             jQuery('#elevation_dropdown [role="button"].btn')[0].__syncBtnState();
@@ -722,7 +712,6 @@ function startElevationGroundAircraft() {
         // ***** LIMPIAR CAPAS DE LÍNEAS Y PUNTOS *****
         elevationPointSource && elevationPointSource.clear();
         elevationLineSource && elevationLineSource.clear();
-        elevationLineLayer && elevationLineLayer.setVisible(false);
         // ***** LIMPIAR NUMERACIÓN *****
         if (typeof elevationNumberSourceGG !== 'undefined' && elevationNumberSourceGG) {
             elevationNumberSourceGG.clear();
@@ -967,7 +956,6 @@ function drawElevationGroundPoint(point) {
 
     // ***** LIMPIAR LÍNEA Y NUMERACIÓN PARA NO ARRASTRAR EL PAR ANTERIOR *****
     elevationLineSource && elevationLineSource.clear();
-    elevationLineLayer && elevationLineLayer.setVisible(false);
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
         elevationNumberSourceGA.clear();
     }
@@ -1054,7 +1042,6 @@ function handleElevationClick(evt) {
             elevationNumberSourceGG.clear();
         }
 
-        elevationLineLayer && elevationLineLayer.setVisible(false);
         elevationAnchor = clicked;
 
         // ***** INSERTAR PUNTO MARCADO EN LA CAPA *****
@@ -1074,8 +1061,6 @@ function handleElevationClick(evt) {
 
         // ***** LIMPIAR Y OCULTAR CAPAS DE LÍNEAS Y PUNTOS *****
         if (elevationLineSource) elevationLineSource.clear();
-        elevationLineLayer && elevationLineLayer.setVisible(false);
-
         // ***** INDICAR AL USUARIO QUE SELECCIONE EL PUNTO B *****
         showDistanceGuide(() => getTranslatedText('elevation_mark_point_b', 'Click on the map to mark point B.'));
         return;
@@ -1292,7 +1277,6 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
 
             // ***** LIMPIAR LÍNEA Y NUMERACIÓN DEL PAR ANTERIOR ANTES DE DIBUJAR EL NUEVO PUNTO *****
             elevationLineSource && elevationLineSource.clear();
-            elevationLineLayer && elevationLineLayer.setVisible(false);
             if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
                 elevationNumberSourceGA.clear();
             }
@@ -1331,7 +1315,6 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
 
             // ***** LIMPIAR LÍNEA Y NUMERACIÓN DEL PAR ANTERIOR ANTES DE DIBUJAR EL NUEVO PUNTO *****
             elevationLineSource && elevationLineSource.clear();
-            elevationLineLayer && elevationLineLayer.setVisible(false);
             if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
                 elevationNumberSourceGA.clear();
             }
@@ -1350,7 +1333,6 @@ function updateElevationGAPendingAircraftVisual(plane) {
 
     // ***** LIMPIAR LÍNEA Y NUMERACIÓN PARA NO ARRASTRAR EL PAR ANTERIOR *****
     elevationLineSource && elevationLineSource.clear();
-    elevationLineLayer && elevationLineLayer.setVisible(false);
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
         elevationNumberSourceGA.clear();
     }
