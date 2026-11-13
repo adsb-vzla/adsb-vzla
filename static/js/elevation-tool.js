@@ -140,11 +140,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) btn.addEventListener('click', togglePanoramaMinimize);
     const hide = document.getElementById('panorama-hide');
     if (hide) hide.addEventListener('click', () => {
-        const visible = elevationPointLayer && elevationPointLayer.getVisible();
-        if (elevationPointLayer) elevationPointLayer.setVisible(!visible);
-        if (elevationLineLayer) elevationLineLayer.setVisible(!visible);
-        if (elevationNumberLayerGA) elevationNumberLayerGA.setVisible(!visible);
-        if (elevationNumberLayerGG) elevationNumberLayerGG.setVisible(!visible);
+        const visible = elevationPointLayer
+            ? elevationPointLayer.getVisible()
+            : (elevationPointLayerGA && elevationPointLayerGA.getVisible());
+        [
+            elevationPointLayer,
+            elevationLineLayer,
+            elevationNumberLayerGG,
+            elevationPointLayerGA,
+            elevationLineLayerGA,
+            elevationNumberLayerGA
+        ].forEach(layer => {
+            if (layer) layer.setVisible(!visible);
+        });
     });
     const remove = document.getElementById('panorama-remove');
     if (remove) remove.addEventListener('click', () => {
@@ -403,8 +411,8 @@ function forceStopElevationGroundAircraft() {
     stopElevationCountdown();
     hidePanoramaOverlay();
 
-    elevationPointSource && elevationPointSource.clear();
-    elevationLineSource && elevationLineSource.clear();
+    elevationPointSourceGA && elevationPointSourceGA.clear();
+    elevationLineSourceGA && elevationLineSourceGA.clear();
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
         elevationNumberSourceGA.clear();
     }
@@ -600,8 +608,8 @@ function onElevationGACycleClick() {
         elevationGroundAnchor = null;
         elevationAircraftHex = null;
         elevationPendingGround = null;
-        if (elevationPointSource) elevationPointSource.clear();
-        if (elevationLineSource) elevationLineSource.clear();
+        if (elevationPointSourceGA) elevationPointSourceGA.clear();
+        if (elevationLineSourceGA) elevationLineSourceGA.clear();
         if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
             elevationNumberSourceGA.clear();
         }
@@ -710,12 +718,9 @@ function startElevationGroundAircraft() {
         }
 
         // ***** LIMPIAR CAPAS DE LÍNEAS Y PUNTOS *****
-        elevationPointSource && elevationPointSource.clear();
-        elevationLineSource && elevationLineSource.clear();
+        elevationPointSourceGA && elevationPointSourceGA.clear();
+        elevationLineSourceGA && elevationLineSourceGA.clear();
         // ***** LIMPIAR NUMERACIÓN *****
-        if (typeof elevationNumberSourceGG !== 'undefined' && elevationNumberSourceGG) {
-            elevationNumberSourceGG.clear();
-        }
         if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
             elevationNumberSourceGA.clear();
         }
@@ -817,7 +822,7 @@ function getElevationGroundAircraftProfileEndpoints(plane) {
 function updateElevationGroundAircraftDrawings(plane) {
     // ***** SALIR SI NO EXISTE ANCLA, AVIÓN, POSICIÓN DEL AVIÓN, PUNTOS O LÍNEA DEL PANORAMA *****
     if (!elevationGroundAnchor || !plane || !plane.position) return;
-    if (!elevationPointSource || !elevationLineSource) return;
+    if (!elevationPointSourceGA || !elevationLineSourceGA) return;
 
     // ***** OBTENER COORDENADAS DEL PUNTO EN TIERRA *****
     const groundCoord = ol.proj.fromLonLat([
@@ -832,8 +837,8 @@ function updateElevationGroundAircraftDrawings(plane) {
     ]);
 
     // ***** LIMPIAR CAPAS DE LÍNEAS Y PUNTOS *****
-    elevationPointSource.clear();
-    elevationLineSource.clear();
+    elevationPointSourceGA.clear();
+    elevationLineSourceGA.clear();
 
     // ***** ESTABLECER PUNTO EN TIERRA *****
     const groundFeature = new ol.Feature(
@@ -848,13 +853,13 @@ function updateElevationGroundAircraftDrawings(plane) {
     aircraftFeature.set('role', 'aircraft');
 
     // ***** CONSTRUIR CAPA DE PUNTOS *****
-    elevationPointSource.addFeatures([
+    elevationPointSourceGA.addFeatures([
         groundFeature,
         aircraftFeature
     ]);
 
     // ***** CONSTRUIR CAPA DE LÍNEA *****
-    elevationLineSource.addFeature(
+    elevationLineSourceGA.addFeature(
         new ol.Feature(
             new ol.geom.LineString([
                 groundCoord,
@@ -864,10 +869,10 @@ function updateElevationGroundAircraftDrawings(plane) {
     );
 
         // ***** DETECTAR CAMBIO EN LAS CAPAS *****
-    elevationPointSource.changed();
-    elevationLineSource.changed();
-    elevationPointLayer.changed();
-    elevationLineLayer.changed();
+    elevationPointSourceGA.changed();
+    elevationLineSourceGA.changed();
+    elevationPointLayerGA.changed();
+    elevationLineLayerGA.changed();
 
     // ***** ACTUALIZAR NUMERACIÓN A/B SEGÚN EL MODO (SE MUEVE CON EL AVIÓN) *****
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
@@ -949,13 +954,13 @@ function stopElevationCountdown() {
 // ***** DIBUJAR CAPA DE PUNTOS *****
 function drawElevationGroundPoint(point) {
     // ***** SALIR SI NO HAY PUNTOS DISPONIBLE *****
-    if (!elevationPointSource || !point) return;
+    if (!elevationPointSourceGA || !point) return;
 
     // ***** LIMPIAR CAPA DE PUNTOS EXISTENTE *****
-    elevationPointSource.clear();
+    elevationPointSourceGA.clear();
 
     // ***** LIMPIAR LÍNEA Y NUMERACIÓN PARA NO ARRASTRAR EL PAR ANTERIOR *****
-    elevationLineSource && elevationLineSource.clear();
+    elevationLineSourceGA && elevationLineSourceGA.clear();
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
         elevationNumberSourceGA.clear();
     }
@@ -969,8 +974,8 @@ function drawElevationGroundPoint(point) {
 
     feature.set('role', 'ground');
 
-    // ***** AÑADIR PUNTO A LA CAPA Y HACERLA VISIBLE *****
-    elevationPointSource.addFeature(feature);
+    // ***** AÑADIR PUNTO A LA CAPA *****
+    elevationPointSourceGA.addFeature(feature);
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
         const fNum = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([point.lon, point.lat])));
         fNum.set('num', elevationGAAircraftWasFirst ? 'B' : 'A');
@@ -980,8 +985,8 @@ function drawElevationGroundPoint(point) {
     }
 
     // ***** DETECTAR CAMBIOS EN LA POSICIÓN DEL PUNTO *****
-    elevationPointSource.changed();
-    elevationPointLayer && elevationPointLayer.changed();
+    elevationPointSourceGA.changed();
+    elevationPointLayerGA && elevationPointLayerGA.changed();
     OLMap && OLMap.renderSync();
 }
 
@@ -1276,7 +1281,7 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
             elevationGAAircraftWasFirst = true;
 
             // ***** LIMPIAR LÍNEA Y NUMERACIÓN DEL PAR ANTERIOR ANTES DE DIBUJAR EL NUEVO PUNTO *****
-            elevationLineSource && elevationLineSource.clear();
+            elevationLineSourceGA && elevationLineSourceGA.clear();
             if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
                 elevationNumberSourceGA.clear();
             }
@@ -1314,7 +1319,7 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
             elevationGAAircraftWasFirst = false;
 
             // ***** LIMPIAR LÍNEA Y NUMERACIÓN DEL PAR ANTERIOR ANTES DE DIBUJAR EL NUEVO PUNTO *****
-            elevationLineSource && elevationLineSource.clear();
+            elevationLineSourceGA && elevationLineSourceGA.clear();
             if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
                 elevationNumberSourceGA.clear();
             }
@@ -1328,11 +1333,11 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
 
 // ***** MOSTRAR VISUALMENTE EL AVIÓN PENDIENTE (PRIMER PUNTO = AVIÓN) *****
 function updateElevationGAPendingAircraftVisual(plane) {
-    if (!elevationPointSource || !plane || !plane.position) return;
-    elevationPointSource.clear();
+    if (!elevationPointSourceGA || !plane || !plane.position) return;
+    elevationPointSourceGA.clear();
 
     // ***** LIMPIAR LÍNEA Y NUMERACIÓN PARA NO ARRASTRAR EL PAR ANTERIOR *****
-    elevationLineSource && elevationLineSource.clear();
+    elevationLineSourceGA && elevationLineSourceGA.clear();
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
         elevationNumberSourceGA.clear();
     }
@@ -1340,7 +1345,7 @@ function updateElevationGAPendingAircraftVisual(plane) {
     const aircraftCoord = ol.proj.fromLonLat([plane.position[0], plane.position[1]]);
     const fA = new ol.Feature(new ol.geom.Point(aircraftCoord));
     fA.set('role', 'aircraft');
-    elevationPointSource.addFeature(fA);
+    elevationPointSourceGA.addFeature(fA);
     if (typeof elevationNumberSourceGA !== 'undefined' && elevationNumberSourceGA) {
         const fNum = new ol.Feature(new ol.geom.Point(aircraftCoord));
         fNum.set('num', 'A');
@@ -1348,8 +1353,8 @@ function updateElevationGAPendingAircraftVisual(plane) {
         elevationNumberSourceGA.addFeature(fNum);
         elevationNumberSourceGA.changed();
     }
-    elevationPointSource.changed();
-    elevationPointLayer && elevationPointLayer.changed();
+    elevationPointSourceGA.changed();
+    elevationPointLayerGA && elevationPointLayerGA.changed();
     OLMap && OLMap.renderSync();
 }
 

@@ -881,6 +881,7 @@
         clearAll();
         stopLoop();
         updateToggleBtn();
+        updateMinutesRow();
         hideSidebarPanel();
         showBadge(T('projection_off', 'Projection Mode: OFF'), 2500);
     }
