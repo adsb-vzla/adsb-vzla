@@ -1288,7 +1288,11 @@
 
       <!-- ***** INICIO OVERLAY DE PANORAMA DE ELEVACIÓN ***** -->
       <div id="panorama-overlay" class="panorama-overlay hidden">
-        <button id="panorama-close" class="panorama-close" type="button">▼</button>
+        <div class="panorama-controls">
+          <button id="panorama-hide" class="panorama-control" type="button" aria-label="Hide elevation">◉</button>
+          <button id="panorama-close" class="panorama-close" type="button" aria-label="Minimize elevation">▼</button>
+          <button id="panorama-remove" class="panorama-control" type="button" aria-label="Close elevation">✕</button>
+        </div>
         <div id="panorama-update-countdown" class="panorama-update-countdown"></div>
         <div id="panorama-container"></div>
       </div>

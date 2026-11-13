@@ -157,6 +157,12 @@
         return (meters / 1852).toFixed(1) + ' NM';
     }
 
+    function getPlaneLabel(hex, plane) {
+        return String(
+            (plane && (plane.flight || plane.callsign || plane.registration)) || hex
+        ).trim().toUpperCase();
+    }
+
     // ***** MOSTRAR TIEMPO FALTANTE *****
     let _badgeTimer = null;
     function showBadge(html, durationMs) {
@@ -294,9 +300,15 @@
         el.style.borderRadius = '4px';
 
         el.innerHTML = `
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
-                <i class="fa-solid fa-eye-slash proj-toggle-btn" style="cursor: pointer; color: white;"></i>
-                <i class="fa-solid fa-xmark proj-close-btn" style="cursor: pointer; color: #c00;"></i>
+            <div style="display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 4px; padding-bottom: 2px;">
+                <button type="button" class="proj-toggle-btn" aria-label="${T('projection_hide', 'Hide')}"
+                        style="cursor: pointer; color: white; width: 28px; height: 26px; padding: 0;">
+                    <i class="fa-solid fa-eye-slash"></i>
+                </button>
+                <button type="button" class="proj-close-btn" aria-label="${T('projection_remove', 'Remove')}"
+                        style="cursor: pointer; color: #c00; width: 28px; height: 26px; padding: 0;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
             <div class="proj-text-content" style="text-align:center;font-family:monospace;font-weight:700;font-size:13px;"></div>
         `;
@@ -313,13 +325,13 @@
             const ghostFeat = entry.ghostFeature;
             if (entry.hidden) {
                 if (text) text.style.display = 'none';
-                icon.className = 'fa-solid fa-eye proj-toggle-btn';
+                icon.innerHTML = '<i class="fa-solid fa-eye"></i>';
                 if (lineFeat) lineFeat.setStyle(new ol.style.Style({}));
                 if (pointFeat) pointFeat.setStyle(new ol.style.Style({}));
                 if (ghostFeat) ghostFeat.setStyle(new ol.style.Style({}));
             } else {
                 if (text) text.style.display = 'block';
-                icon.className = 'fa-solid fa-eye-slash proj-toggle-btn';
+                icon.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
                 if (lineFeat) lineFeat.setStyle(new ol.style.Style({
                     stroke: new ol.style.Stroke({ color: entry.color, width: 2, lineDash: [8, 6] })
                 }));
@@ -420,7 +432,7 @@
     function createProjection(hex) {
         if (!state.active) { showBadge(T('projection_not_active', 'Projection mode is not active'), 3000); return false; }
         if (state.planes.length >= state.maxPlanes) {
-            showBadge(`${T('projection_max_prefix', 'MAXIMUN')} ${state.maxPlanes} ${T('projection_max_suffix', 'aircraft allowed')}`, 3000);
+            showBadge(T('projection_max', 'Maximum number of projections reached'), 3000);
             return false;
         }
         if (state.planes.some(p => p.hex === hex)) {
@@ -532,7 +544,7 @@
 
         renderSidebarPanel();
         startLoop();
-        showBadge(`${T('projection_created', 'Proyección')} ${minutes}${T('projection_min_abbr', 'min')} ${T('projection_for', 'para')} ${hex.toUpperCase()} (${formatNM(distanceMeters)})`, 3500);
+        showBadge(`${T('projection_created', 'Projection created for aircraft')} ${getPlaneLabel(hex, plane)}`, 3500);
         return true;
     }
 
@@ -588,7 +600,7 @@
             if (entry.realDistanceToDest != null && entry.realDistanceToDest > DEVIATION_THRESHOLD_M) {
                 entry.deviated = true;
                 log(`${entry.hex} DESVIADO (dist=${entry.realDistanceToDest.toFixed(0)}m)`);
-                showBadge(`${entry.hex.toUpperCase()} ${T('projection_deviated_toast', 'desviado de la proyección')}`, 3000);
+                showBadge(`${T('projection_deviated_toast', 'Aircraft')} ${getPlaneLabel(entry.hex, plane)} ${T('projection_deviated_suffix', 'has deviated from the projection')}`, 3000);
                 renderSidebarPanel();
                 updateProjectionOverlayContent(entry, now);
                 setTimeout(() => {
@@ -830,6 +842,22 @@
             showBadge(T('projection_no_layers', 'Could not create layers (wait for the map to load).'), 4000);
             return;
         }
+        if (typeof distanceBetweenPlanesMode !== 'undefined' && distanceBetweenPlanesMode) {
+            DistanceBetweenPlanes();
+        }
+        if (typeof distanceToGroundMode !== 'undefined' && distanceToGroundMode) {
+            DistanceToGround();
+        }
+        if (typeof groundToGroundMode !== 'undefined' && groundToGroundMode) {
+            DistanceGroundToGround();
+        }
+        if (typeof elevationMode !== 'undefined' && elevationMode && typeof forceStopElevationGroundGround === 'function') {
+            forceStopElevationGroundGround();
+        }
+        if (typeof elevationGroundAircraftMode !== 'undefined' && elevationGroundAircraftMode &&
+            typeof forceStopElevationGroundAircraft === 'function') {
+            forceStopElevationGroundAircraft();
+        }
         if (minutes != null) {
             if (!state.validMinutes.includes(minutes)) {
                 showBadge(`${T('projection_invalid_min', 'Invalid minutes')}: ${minutes}`, 3000);
@@ -843,7 +871,7 @@
         updateMinutesRow();
         showSidebarPanel();
         startLoop();
-        showBadge(`${T('projection_on', 'Projection Mode: ON')}: ${state.minutes} ${T('projection_min_abbr', 'min')}.`, 3500);
+        showBadge(`${T('projection_on', 'Projection Mode: ON')} (${state.minutes} ${T('projection_min_abbr', 'minutes')})`, 3500);
     }
 
     // ***** DETENER MODO PROYECCIÓN *****
@@ -894,7 +922,7 @@
         const row = document.getElementById('projection-minutes-row');
         if (!row) return;
         row.querySelectorAll('.proj-min-btn').forEach(b => {
-            b.classList.toggle('proj-min-active', parseInt(b.dataset.min, 10) === state.minutes);
+            b.classList.toggle('proj-min-active', state.active && parseInt(b.dataset.min, 10) === state.minutes);
         });
     }
 
@@ -965,7 +993,7 @@
                 <span style="flex:1;font-weight:bold;color:${SYS.text};">${T('projection_tool', 'Proyección')}</span>
                 <button id="projection-toggle-btn">OFF</button>
             </div>
-            <div id="projection-minutes-row" style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;padding-bottom:4px;">
+            <div id="projection-minutes-row" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;padding-bottom:4px;">
                 ${state.validMinutes.map(m =>
             `<button class="proj-min-btn" data-min="${m}">${m}m</button>`
         ).join('')}
@@ -988,7 +1016,7 @@
                 if (!state.validMinutes.includes(min)) return;
                 state.minutes = min;
                 updateMinutesRow();
-                showBadge(`${T('projection_base_time', 'Base time')}: ${min} ${T('projection_min_abbr', 'min')} (${T('projection_applies_new', 'applies to new projections')})`, 2500);
+                showBadge(`${T('projection_base_time', 'Projection time set to')} ${min} ${T('projection_min_abbr', 'minutes')}`, 2500);
             });
         });
 
@@ -1118,13 +1146,13 @@
                             <button class="proj-sidebar-btn-hide" data-hex="${entry.hex}"
                                     title="${hiddenTitle}"
                                     style="background:${SYS.lighter};border:1px solid ${SYS.base};
-                                           color:${SYS.text};border-radius:3px;width:24px;height:20px;
-                                           cursor:pointer;font-size:11px;padding:0;">${hiddenIcon}</button>
+                                           color:${SYS.text};border-radius:3px;width:30px;height:26px;
+                                           cursor:pointer;font-size:13px;padding:0;">${hiddenIcon}</button>
                             <button class="proj-sidebar-btn-remove" data-hex="${entry.hex}"
                                     title="${removeTitle}"
                                     style="background:#8a1a1a;border:1px solid #5a0f0f;
-                                           color:#fff;border-radius:3px;width:24px;height:20px;
-                                           cursor:pointer;font-size:12px;padding:0;
+                                           color:#fff;border-radius:3px;width:30px;height:26px;
+                                           cursor:pointer;font-size:13px;padding:0;
                                            font-weight:bold;">✖</button>
                         </div>
                     </div>
@@ -1323,7 +1351,7 @@
             const clickHint = document.querySelector('#projection-menu-item > div:last-child');
 
             const headerH4 = document.querySelector('#projection-section .projection-header h4');
-            if (headerH4) headerH4.textContent = T('projection_tool', 'Projection tool');
+            if (headerH4) headerH4.textContent = T('projection_tool', 'Projection');
 
             const clearBtn = document.getElementById('clear-all-projections-btn');
             if (clearBtn) clearBtn.title = T('projection_clear_all', 'Remove all projections');

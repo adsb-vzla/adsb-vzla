@@ -593,7 +593,8 @@
 
             // *** PROYECCIÓN ***
             'projection_label': 'PROY',
-            'projection_min_abbr': 'min',
+            'projection_tool': 'Projection',
+            'projection_min_abbr': 'minutes',
             'projection_mode': 'PROJECTION MODE',
             'projection_aircrafts': 'aircraft',
             'projection_empty': 'No active projections',
@@ -605,13 +606,14 @@
             'projection_arrived_short': 'REACHED',
             'projection_deviated': 'DEVIATED',
             'projection_deviated_short': 'DEV.',
-            'projection_deviated_toast': 'deviated from projection',
-            'projection_created': 'Projection',
+            'projection_deviated_toast': 'Aircraft',
+            'projection_deviated_suffix': 'has deviated from the projection',
+            'projection_created': 'Projection created for aircraft',
             'projection_for': 'for',
             'projection_on': 'Projection Mode: ON',
             'projection_off': 'Projection Mode: OFF',
             'projection_not_active': 'Projection mode is not active',
-            'projection_max': 'Maximum {n} aircraft allowed',
+            'projection_max': 'Maximum number of projections reached',
             'projection_dup': 'This aircraft already has a projection',
             'projection_no_plane': 'Aircraft not found',
             'projection_no_pos': 'No valid position',
@@ -619,8 +621,9 @@
             'projection_no_gs': 'No valid groundspeed',
             'projection_no_layers': 'Could not create layers (wait for the map to load).',
             'projection_invalid_min': 'Invalid minutes',
-            'projection_base_time': 'Base time',
+            'projection_base_time': 'Projection time set to',
             'projection_applies_new': 'applies to new projections',
+            'wind_label': 'Wind',
             'projection_reached': 'reached its projection',
             'layer_group_projection_tool': 'Projection tool',
             'layer_projectionlines': 'Projection lines',
@@ -1345,8 +1348,9 @@
             'error_fetching_data': 'Problema al obtener datos del servidor:',
 
             // *** PROYECCIÓN ***
+            'projection_tool': 'Proyección',
             'projection_label': 'PROY',
-            'projection_min_abbr': 'min',
+            'projection_min_abbr': 'minutos',
             'projection_mode': 'MODO PROYECCIÓN',
             'projection_aircrafts': 'aviones',
             'projection_empty': 'Sin proyecciones activas',
@@ -1358,13 +1362,14 @@
             'projection_arrived_short': 'LLEGÓ',
             'projection_deviated': 'DESVIADO',
             'projection_deviated_short': 'DESV.',
-            'projection_deviated_toast': 'desviado de la proyección',
-            'projection_created': 'Proyección',
+            'projection_deviated_toast': 'La aeronave',
+            'projection_deviated_suffix': 'se ha desviado de la proyección',
+            'projection_created': 'Proyección creada para la aeronave',
             'projection_for': 'para',
             'projection_on': 'Modo Proyección: Encendido',
             'projection_off': 'Modo Proyección: Apagado',
             'projection_not_active': 'El modo proyección no está activo',
-            'projection_max': 'Máximo {n} aeronaves permitidas',
+            'projection_max': 'Cantidad máxima de proyecciones permitidas alcanzada',
             'projection_dup': 'Esta aeronave ya tiene proyección',
             'projection_no_plane': 'Aeronave no encontrada',
             'projection_no_pos': 'Sin posición válida',
@@ -1372,8 +1377,9 @@
             'projection_no_gs': 'Sin velocidad válida',
             'projection_no_layers': 'No se pudieron crear las capas (espera a que cargue el mapa).',
             'projection_invalid_min': 'Minutos inválidos',
-            'projection_base_time': 'Tiempo base',
+            'projection_base_time': 'Tiempo de proyección establecido en',
             'projection_applies_new': 'aplica a nuevas proyecciones',
+            'wind_label': 'Viento',
             'projection_reached': 'alcanzó su proyección',
             'layer_group_projection_tool': 'Herramientas de proyección',
             'layer_projectionlines': 'Líneas de proyección',
@@ -1586,6 +1592,9 @@
         setTimeout(function () {
             if (typeof window.updateDistanceGuideContent === 'function') {
                 window.updateDistanceGuideContent();
+            }
+            if (typeof window.refreshReplayDatepickerLanguage === 'function') {
+                window.refreshReplayDatepickerLanguage();
             }
         }, 50);
     });

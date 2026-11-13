@@ -63,6 +63,7 @@
     ];
     const navbar = document.getElementById('navbar');
     const navbarBottom = navbar ? navbar.getBoundingClientRect().bottom : 0;
+    const replayBar = document.getElementById('replayBar');
 
     let needed = 0;
 
@@ -82,12 +83,15 @@
 
     if (layerSelect.classList.contains('shown')) {
       const top = layerSelect.getBoundingClientRect().top;
-      const available = Math.max(0, window.innerHeight - top - 12);
-      layerSelect.style.height = `${available}px`;
-      layerSelect.style.maxHeight = `${available}px`;
+      const replayStyle = replayBar ? getComputedStyle(replayBar) : null;
+      const replayRect = replayBar ? replayBar.getBoundingClientRect() : null;
+      const replayVisible = replayRect && replayRect.height > 0 &&
+        replayStyle.display !== 'none' && replayStyle.visibility !== 'hidden';
+      const bottom = replayVisible ? replayRect.top : window.innerHeight;
+      const available = Math.max(0, bottom - top - 12);
+      layerSelect.style.setProperty('--layer-switcher-height', `${available}px`);
     } else {
-      layerSelect.style.height = '';
-      layerSelect.style.maxHeight = '';
+      layerSelect.style.removeProperty('--layer-switcher-height');
     }
   }
 
@@ -101,6 +105,24 @@
 
   const observer = new MutationObserver(updateLayerSelectOffset);
   observer.observe(layerSelect, { attributes: true, attributeFilter: ['class', 'style'] });
+
+  if (window.ResizeObserver) {
+    const menuResizeObserver = new ResizeObserver(() => {
+      requestAnimationFrame(updateLayerSelectOffset);
+    });
+    menuIds.forEach(id => {
+      const root = document.getElementById(id);
+      if (root) menuResizeObserver.observe(root);
+    });
+    const replayBar = document.getElementById('replayBar');
+    if (replayBar) menuResizeObserver.observe(replayBar);
+  }
+
+  const replayBar = document.getElementById('replayBar');
+  if (replayBar && window.MutationObserver) {
+    const replayObserver = new MutationObserver(() => requestAnimationFrame(updateLayerSelectOffset));
+    replayObserver.observe(replayBar, { attributes: true, attributeFilter: ['class', 'style'] });
+  }
 
   updateLayerSelectOffset();
 })();
