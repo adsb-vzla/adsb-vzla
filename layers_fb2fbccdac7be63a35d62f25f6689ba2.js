@@ -1298,6 +1298,23 @@ function createBaseLayers() {
         visible: false,
     }));
 
+    // ***** IDENTIFICADORES DE PERSISTENCIA POR GRUPO DE CARTAS *****
+    // Las capas de cada grupo comparten nombre visible ("Base", "Map", etc.),
+    // por lo que se necesita un nombre de almacenamiento único por grupo.
+    function setChartLayerStorageNames(layerCollection, groupName) {
+        layerCollection.forEach(layer => {
+            layer.set('storageName', `${groupName}_${layer.get('name')}`);
+            layer.set('chartGroup', groupName);
+        });
+    }
+
+    setChartLayerStorageNames(vfr, 'vfr');
+    setChartLayerStorageNames(ifrhigh, 'ifrhigh');
+    setChartLayerStorageNames(ifrlow, 'ifrlow');
+    setChartLayerStorageNames(TMA_MIQ, 'tma_miq');
+    setChartLayerStorageNames(TMA_BNA, 'tma_bna');
+    setChartLayerStorageNames(TMA_GNA, 'tma_gna');
+
     /*world.push(new ol.layer.Tile({
         source: new ol.source.OSM({
             "url" : "https://{a-d}.tile.openstreetmap.de/{z}/{x}/{y}.png",

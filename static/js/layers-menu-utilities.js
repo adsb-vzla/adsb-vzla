@@ -205,12 +205,12 @@
 (function () {
   // Comenta o descomenta estas entradas mientras se trabaja en sus capas internas.
   const TEMPORARILY_DISABLED_LAYER_GROUPS = [
-    'vfr',
-    'ifrhigh',
-    'ifrlow',
-    'tma_miq',
-    'tma_bna',
-    'tma_gna'
+    // 'vfr',
+    // 'ifrhigh',
+    // 'ifrlow',
+    // 'tma_miq',
+    // 'tma_bna',
+    // 'tma_gna'
   ];
 
   const layerGroupTitles = {

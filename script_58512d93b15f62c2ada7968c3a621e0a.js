@@ -3834,9 +3834,46 @@ function ol_map_init() {
 
 
     let foundType = false;
+    const chartLayerGroups = ['vfr', 'ifrhigh', 'ifrlow', 'tma_miq', 'tma_bna', 'tma_gna'];
+    const getLayerStorageName = lyr => lyr.get('storageName') || lyr.get('name');
+    const getChartLayerGroup = lyr => {
+        const chartGroup = lyr.get('chartGroup');
+        if (chartGroup)
+            return chartGroup;
+
+        const storageName = lyr.get('storageName');
+        if (!storageName)
+            return null;
+
+        return chartLayerGroups.find(name => storageName.indexOf(name + '_') === 0) || null;
+    };
+    const setChartGroupOverlays = (groupName, visible) => {
+        if (!groupName)
+            return;
+
+        ol.control.LayerSwitcher.forEachRecursive(layers_group, function (layer) {
+            if (layer.get('type') !== 'overlay')
+                return;
+            if (getChartLayerGroup(layer) !== groupName)
+                return;
+
+            layer.setVisible(visible);
+            loStore['layer_' + getLayerStorageName(layer)] = visible ? 'true' : 'false';
+        });
+    };
+    const selectChartGroup = groupName => {
+        // Al cambiar de capa base se reinician las overlays de los demás grupos.
+        chartLayerGroups.forEach(name => {
+            if (name !== groupName)
+                setChartGroupOverlays(name, false);
+        });
+        if (groupName)
+            setChartGroupOverlays(groupName, true);
+    };
+
     ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
         if (lyr.get('name') && lyr.get('type') == 'base') {
-            if (MapType_tar1090 == lyr.get('name')) {
+            if (MapType_tar1090 == getLayerStorageName(lyr)) {
                 foundType = true;
             }
         }
@@ -3850,7 +3887,7 @@ function ol_map_init() {
             return;
 
         if (lyr.get('type') == 'base') {
-            if (MapType_tar1090 == lyr.get('name')) {
+            if (MapType_tar1090 == getLayerStorageName(lyr)) {
                 foundType = true;
                 lyr.setVisible(true);
 
@@ -3863,7 +3900,8 @@ function ol_map_init() {
 
             lyr.on('change:visible', function (evt) {
                 if (evt.target.getVisible()) {
-                    MapType_tar1090 = loStore['MapType_tar1090'] = evt.target.get('name');
+                    MapType_tar1090 = loStore['MapType_tar1090'] = getLayerStorageName(evt.target);
+                    selectChartGroup(getChartLayerGroup(evt.target));
                     mapTypeSettings();
                     const onVisible = lyr.get('onVisible');
                     onVisible && onVisible(lyr);
@@ -3872,24 +3910,33 @@ function ol_map_init() {
             });
         } else if (lyr.get('type') === 'overlay') {
             if (
-                loStore['layer_' + lyr.get('name')] == 'true'
-                || enableOverlays.indexOf(lyr.get('name')) >= 0
-                || (loStore['layer_' + lyr.get('name')] != 'false' && defaultOverlays.indexOf(lyr.get('name')) >= 0)
+                loStore['layer_' + getLayerStorageName(lyr)] == 'true'
+                || enableOverlays.indexOf(getLayerStorageName(lyr)) >= 0
+                || (loStore['layer_' + getLayerStorageName(lyr)] != 'false' && defaultOverlays.indexOf(getLayerStorageName(lyr)) >= 0)
             ) {
                 lyr.setVisible(true);
             }
-            if (loStore['layer_' + lyr.get('name')] == 'false') {
+            if (loStore['layer_' + getLayerStorageName(lyr)] == 'false') {
                 lyr.setVisible(false);
             }
 
             lyr.on('change:visible', function (evt) {
-                loStore['layer_' + evt.target.get('name')] = evt.target.getVisible();
+                loStore['layer_' + getLayerStorageName(evt.target)] = evt.target.getVisible();
                 if (typeof refreshLayerSwitcher === 'function') {
                     setTimeout(refreshLayerSwitcher, 0);
                 }
             });
         }
     })
+
+    let activeChartGroup = null;
+    ol.control.LayerSwitcher.forEachRecursive(layers_group, function (layer) {
+        if (layer.get('type') === 'base' &&
+            getLayerStorageName(layer) === MapType_tar1090) {
+            activeChartGroup = getChartLayerGroup(layer);
+        }
+    });
+    selectChartGroup(activeChartGroup);
 
     if (!foundType) {
         ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
