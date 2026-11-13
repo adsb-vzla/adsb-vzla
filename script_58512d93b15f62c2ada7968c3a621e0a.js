@@ -184,6 +184,10 @@ let elevationCountdownInterval = null;
 let elevationCountdownValue = 0;
 let elevationNumberSourceGA = null;
 let elevationNumberLayerGA = null;
+let elevationPointSourceGA = null;
+let elevationPointLayerGA = null;
+let elevationLineSourceGA = null;
+let elevationLineLayerGA = null;
 
 // ***** INDICADOR DE ZOOM *****
 let zoomIndicatorBaseline = null;
@@ -4520,40 +4524,6 @@ function initMap() {
         })
     });
 
-    // ***** INGRESAR CAPAS DE ELEVACIÓN EN SU RESPECTIVO MENÚ DROPDOWN *****
-    try {
-        const elevGA = window.ensureElevationGroup('ga');
-        if (elevGA) {
-            const takeLayerFromAnywhere = (layer) => {
-                if (!layer) return;
-                const idx = layers.getArray().indexOf(layer);
-                if (idx >= 0) {
-                    layers.removeAt(idx);
-                }
-                layers.forEach((lyr) => {
-                    if (lyr instanceof ol.layer.Group) {
-                        const sub = lyr.getLayers().getArray();
-                        const i = sub.indexOf(layer);
-                        if (i >= 0) {
-                            lyr.getLayers().removeAt(i);
-                        }
-                    }
-                });
-            };
-
-            takeLayerFromAnywhere(groundPointLayer);
-            takeLayerFromAnywhere(groundToPlaneLineLayer);
-
-            takeLayerFromAnywhere(planePointLayerTA);
-
-            [groundToPlaneLineLayer, planePointLayerTA, groundPointLayer]
-                .filter(Boolean)
-                .forEach(l => elevGA.getLayers().push(l));
-        }
-    } catch (e) {
-        console.error('Error moviendo capas GA al grupo de elevación:', e);
-    }
-
     // ***** MANEJAR VISIBILIDAD DE CAPA DE LÍNEA AERONAVE-AERONAVE *****
     distanceLineLayer.on('change:visible', function (evt) {
         const vis = !!evt.target.getVisible();
@@ -4727,6 +4697,38 @@ function initMap() {
         visible: true
     });
 
+    // ***** CAPA DE PUNTOS ELEVACIÓN TIERRA-AERONAVE *****
+    if (!elevationPointSourceGA) elevationPointSourceGA = new ol.source.Vector();
+    elevationPointLayerGA = new ol.layer.Vector({
+        name: 'elev_points_ga',
+        type: 'overlay',
+        title: 'A-B ground points',
+        source: elevationPointSourceGA,
+        zIndex: 262,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({ color: '#222' }),
+                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+            })
+        }),
+        visible: true
+    });
+
+    // ***** CAPA DE LÍNEA ELEVACIÓN TIERRA-AERONAVE *****
+    if (!elevationLineSourceGA) elevationLineSourceGA = new ol.source.Vector();
+    elevationLineLayerGA = new ol.layer.Vector({
+        name: 'elev_line_ga',
+        type: 'overlay',
+        title: 'A-B Line',
+        source: elevationLineSourceGA,
+        zIndex: 265,
+        style: new ol.style.Style({
+            stroke: new ol.style.Stroke({ color: '#00aaff', width: 2 })
+        }),
+        visible: true
+    });
+
     // ***** CAPA DE NÚMEROS ELEVACIÓN TIERRA-TIERRA *****
     if (!elevationNumberSourceGG) elevationNumberSourceGG = new ol.source.Vector();
     elevationNumberLayerGG = new ol.layer.Vector({
@@ -4751,9 +4753,6 @@ function initMap() {
             });
         }
     });
-
-    if (typeof groundPointLayer === 'undefined' || !groundPointLayer) {
-    }
 
     // ***** CAPA DE NÚMEROS ELEVACIÓN TIERRA-AERONAVE *****
     if (!elevationNumberSourceGA) elevationNumberSourceGA = new ol.source.Vector();
@@ -4794,7 +4793,7 @@ function initMap() {
 
     // ***** ELEVACIÓN TIERRA-AERONAVE *****
     if (elevGA) {
-        [elevationNumberLayerGA]
+        [elevationPointLayerGA, elevationLineLayerGA, elevationNumberLayerGA]
             .filter(Boolean)
             .forEach(l => elevGA.getLayers().push(l));
     }

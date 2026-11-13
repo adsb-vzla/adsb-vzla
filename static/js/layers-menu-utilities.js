@@ -55,6 +55,12 @@
       cs.visibility !== 'hidden';
   }
 
+  function getLayerSwitcher() {
+    return layerSelect.classList.contains('layer-switcher')
+      ? layerSelect
+      : layerSelect.querySelector('.layer-switcher');
+  }
+
   function updateLayerSelectOffset() {
     const extraSpacing = 12;
     const menuIds = [
@@ -89,8 +95,9 @@
       lastOffset = offset;
     }
 
-    if (layerSelect.classList.contains('shown')) {
-      const top = layerSelect.getBoundingClientRect().top;
+    const switcher = getLayerSwitcher();
+    if (switcher && switcher.classList.contains('shown')) {
+      const top = switcher.getBoundingClientRect().top;
       const replayStyle = replayBar ? getComputedStyle(replayBar) : null;
       const replayRect = replayBar ? replayBar.getBoundingClientRect() : null;
       const replayVisible = replayRect && replayRect.height > 0 &&
@@ -127,7 +134,39 @@
   window.addEventListener('resize', updateLayerSelectOffset);
 
   const observer = new MutationObserver(scheduleLayerSelectOffset);
-  observer.observe(layerSelect, { attributes: true, attributeFilter: ['class', 'style'] });
+  observer.observe(layerSelect, {
+    attributes: true,
+    attributeFilter: ['class', 'style'],
+    childList: true,
+    subtree: false
+  });
+
+  let layerSwitcherObserver = null;
+  let observedLayerSwitcher = null;
+
+  function observeLayerSwitcher() {
+    const switcher = getLayerSwitcher();
+    if (switcher === observedLayerSwitcher) return;
+
+    if (layerSwitcherObserver) {
+      layerSwitcherObserver.disconnect();
+      layerSwitcherObserver = null;
+    }
+
+    observedLayerSwitcher = switcher;
+    if (switcher) {
+      layerSwitcherObserver = new MutationObserver(scheduleLayerSelectOffset);
+      layerSwitcherObserver.observe(switcher, {
+        attributes: true,
+        attributeFilter: ['class', 'style']
+      });
+    }
+    scheduleLayerSelectOffset();
+  }
+
+  const switcherObserver = new MutationObserver(observeLayerSwitcher);
+  switcherObserver.observe(layerSelect, { childList: true, subtree: true });
+  observeLayerSwitcher();
 
   if (window.ResizeObserver) {
     const menuResizeObserver = new ResizeObserver(() => {
@@ -143,6 +182,8 @@
     });
     const replayBar = document.getElementById('replayBar');
     if (replayBar) menuResizeObserver.observe(replayBar);
+    const switcher = getLayerSwitcher();
+    if (switcher) menuResizeObserver.observe(switcher);
   }
 
   const replayBar = document.getElementById('replayBar');
