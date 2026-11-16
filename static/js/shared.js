@@ -1,42 +1,5 @@
 // ***** FUNCIONES COMPARTIDAS *****
 
-// ***** PONER EL OVERLAY PRESIONADO DELANTE DE LOS DEMÁS *****
-let _overlayFocusZIndex = 10000;
-let _focusedOverlayElement = null;
-
-function focusOverlayElement(element) {
-    const container = element && element.parentElement;
-    if (container && (
-        container.classList.contains('ol-overlaycontainer') ||
-        container.classList.contains('ol-overlaycontainer-stopevent')
-    )) {
-        container.appendChild(element);
-    }
-    if (element) {
-        if (_focusedOverlayElement && _focusedOverlayElement !== element) {
-            _focusedOverlayElement.classList.remove('overlay-focused');
-        }
-        element.classList.add('overlay-focused');
-        _focusedOverlayElement = element;
-        element.style.setProperty('z-index', String(++_overlayFocusZIndex), 'important');
-    }
-}
-
-function enableOverlayFocus(element) {
-    if (!element || element.dataset.overlayFocusEnabled === 'true') return;
-
-    element.dataset.overlayFocusEnabled = 'true';
-}
-
-document.addEventListener('click', (event) => {
-    const target = event.target instanceof Element
-        ? event.target.closest('.ol-overlaycontainer > *, .ol-overlaycontainer-stopevent > *')
-        : null;
-    if (target) {
-        setTimeout(() => focusOverlayElement(target), 0);
-    }
-}, true);
-
 // ***** ESTRUCTURA BASE PARA LAS GUÍAS DE DISTANCIA *****
 let _distanceGuideRenderer = null;
 let _distanceGuideTimeout = null;

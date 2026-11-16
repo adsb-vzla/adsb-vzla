@@ -88,7 +88,6 @@ function updateDistanceToGroundOverlay() {
                     el.style.color = 'white',
                     el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
-                    enableOverlayFocus(el);
                 el.innerHTML = `
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                 <i class="fa-solid fa-eye-slash ta-toggle-btn" style="cursor: pointer; color: white;"></i>
@@ -431,7 +430,6 @@ function updateDistanceToGroundOverlay() {
                 el.style.color = 'white',
                 el.style.pointerEvents = 'auto';
             el.style.borderRadius = '4px';
-                enableOverlayFocus(el);
 
             el.innerHTML = `
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">

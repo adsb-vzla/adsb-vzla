@@ -44,7 +44,6 @@ function updateDistanceLine() {
             element.style.color = 'white';
             element.style.pointerEvents = 'auto';
             element.style.borderRadius = '4px';
-            enableOverlayFocus(element);
 
             element.innerHTML = `
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
@@ -335,7 +334,6 @@ function updateDistanceLine() {
                     el.style.color = 'white';
                     el.style.pointerEvents = 'auto';
                     el.style.borderRadius = '4px';
-                    enableOverlayFocus(el);
                     el.innerHTML = `
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                         <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: white;"></i>
@@ -506,7 +504,6 @@ function updateDistanceLine() {
                 el.style.color = 'white';
                 el.style.pointerEvents = 'auto';
                 el.style.borderRadius = '4px';
-                enableOverlayFocus(el);
                 el.innerHTML = `
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 4px; padding-bottom: 2px;">
                     <i class="fa-solid fa-eye-slash pair-toggle-btn" style="cursor: pointer; color: white;"></i>
