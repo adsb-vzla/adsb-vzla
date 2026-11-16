@@ -1,6 +1,6 @@
 // ***** CONSULTAR EL ENDPOINT QUE DEVUELVE EL PERFIL DE ELEVACIÓN *****
 const ELEV_CONFIG = {
-    samples: 20,
+    samples: 120,
     cgiUrl: `${window.location.origin}/cgi-bin/get_elevation.sh`
 };
 
@@ -287,10 +287,10 @@ function draw3DPanorama(data, totalNm) {
     const distTotal = totalNm * config.distMultiplier;
     // ***** SI LA UNIDAD ES METROS, NO CONVERTIR (VIENE EN M DESDE EL ENDPOINT); SI ES NÁUTICO O IMPERIAL, CONVERTIR A PIES *****
     const altUnitFactor = (units === 'metric') ? 1 : 3.28084;
-    // ***** EVITAR DIBUJAR ALTURAS NEGATIVAS *****
-    const altData = data.map(d => d3.max([0, d.alt * altUnitFactor]));
-    // ***** DEJAR UNA PEQUEÑA SEPARACIÓN ENTRE LA ALTURA Y EL BORDE SUPERIOR DEL PANORAMA *****
-    const maxAlt = d3.max(altData) * 1.1;
+    // ***** EVITAR DIBUJAR ALTURAS NEGATIVAS Y RESPETAR HUECOS SIN DATO *****
+    const altData = data.map(d => (d.alt == null ? null : d3.max([0, d.alt * altUnitFactor])));
+    // ***** CALCULAR EL MÁXIMO IGNORANDO LOS PUNTOS SIN DATO *****
+    const maxAlt = d3.max(altData.filter(v => v != null)) * 1.1 || 1000;
 
     // ***** CREAR PANORAMA DENTRO DEL COMPONENTE HTML *****
     const svg = d3.select("#panorama-container")
@@ -331,11 +331,12 @@ function draw3DPanorama(data, totalNm) {
     // ***** RECONSTRUIR INFORMACIÓN EN EL FORMATO ESPERADO POR D3 *****
     const areaData = data.map(d => ({
         dist: d.distNm * config.distMultiplier,
-        alt: d3.max([0, d.alt * altUnitFactor])
+        alt: (d.alt == null ? null : d3.max([0, d.alt * altUnitFactor]))
     }));
 
     // ***** DIBUJAR ÁREA DEL PANORAMA *****
     const area = d3.area()
+        .defined(d => d.alt != null)
         .x(d => x(d.dist))
         .y0(y(0))
         .y1(d => y(d.alt))
@@ -868,7 +869,7 @@ function updateElevationGroundAircraftDrawings(plane) {
         )
     );
 
-        // ***** DETECTAR CAMBIO EN LAS CAPAS *****
+    // ***** DETECTAR CAMBIO EN LAS CAPAS *****
     elevationPointSourceGA.changed();
     elevationLineSourceGA.changed();
     elevationPointLayerGA.changed();
@@ -882,7 +883,7 @@ function updateElevationGroundAircraftDrawings(plane) {
         const aircraftWasFirst = elevationGroundAircraftModeType === 'aircraft' ||
             elevationGAAircraftWasFirst;
         const groundNum = aircraftWasFirst ? 'B' : 'A';
-        const planeNum  = aircraftWasFirst ? 'A' : 'B';
+        const planeNum = aircraftWasFirst ? 'A' : 'B';
 
         const fGround = new ol.Feature(
             new ol.geom.Point(groundCoord)
@@ -1294,7 +1295,7 @@ function handleElevationGroundAircraftGroundClick(evt, planeHex) {
             return;
         }
     }
-    
+
     // ***** MANEJAR LOS CLIC SOBRE EL MAPA *****
     else {
         const evtCoords = evt.map.getCoordinateFromPixel(evt.pixel);
