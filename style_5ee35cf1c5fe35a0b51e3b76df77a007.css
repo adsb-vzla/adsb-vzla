@@ -722,6 +722,37 @@ input.error {
     background-color: #9d9d9d !important;
 }
 
+.layer-switcher li input {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.layer-switcher li label {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.layer-switcher .chart-group-select-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    margin-left: 0.5em;
+    vertical-align: middle;
+}
+
+.layer-switcher .chart-group-select-all input {
+    position: static;
+    transform: none;
+}
+
+.layer-switcher .chart-group-select-all label {
+    padding: 0;
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+}
+
 .layer-switcher.shown.layer-switcher-activation-mode-click {
     padding-left: calc(30px * var(--SCALE));
 }

@@ -2051,7 +2051,7 @@ function createBaseLayers() {
             'rgba(77,163,255,0.15)',
             '#4DA3FF',
             true,
-            true
+            false
         )
     );
     fir.push(

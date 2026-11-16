@@ -741,6 +741,9 @@ function updateLayerTitles() {
     });
 
     refreshLayerSwitcher();
+    if (typeof window.updateChartGroupSelectAllControls === 'function') {
+        window.updateChartGroupSelectAllControls();
+    }
 }
 
 // ***** ACTUALIZAR MENÚ DE CAPAS *****
@@ -768,6 +771,9 @@ function refreshLayerSwitcher() {
             if (typeof layerSwitcherControl.updateLayers === 'function') {
                 layerSwitcherControl.updateLayers();
             }
+            if (typeof window.updateChartGroupSelectAllControls === 'function') {
+                window.updateChartGroupSelectAllControls();
+            }
             if (layerSwitcherControl.element) {
                 const panel = layerSwitcherControl.element.querySelector('.panel');
                 if (panel) {
@@ -778,6 +784,9 @@ function refreshLayerSwitcher() {
                         }
                     }
                 }
+            }
+            if (typeof window.updateChartGroupSelectAllControls === 'function') {
+                window.updateChartGroupSelectAllControls();
             }
         } catch (e) {
             console.warn('Error al actualizar LayerSwitcher:', e);
@@ -820,6 +829,8 @@ function forceRecreateLayerSwitcher() {
         setTimeout(function () {
             if (typeof window.updateLayerTitles === 'function') {
                 window.updateLayerTitles();
+            } else if (typeof window.updateChartGroupSelectAllControls === 'function') {
+                window.updateChartGroupSelectAllControls();
             }
         }, 100);
     }, 50);
@@ -3852,6 +3863,7 @@ function ol_map_init() {
 
 
     let foundType = false;
+    let activeChartGroup = null;
     const chartLayerGroups = ['vfr', 'ifrhigh', 'ifrlow', 'tma_miq', 'tma_bna', 'tma_gna'];
     const getLayerStorageName = lyr => lyr.get('storageName') || lyr.get('name');
     const getChartLayerGroup = lyr => {
@@ -3865,19 +3877,25 @@ function ol_map_init() {
 
         return chartLayerGroups.find(name => storageName.indexOf(name + '_') === 0) || null;
     };
+    const getChartGroupOverlays = groupName => {
+        const overlays = [];
+        ol.control.LayerSwitcher.forEachRecursive(layers_group, function (layer) {
+            if (layer.get('type') === 'overlay' &&
+                getChartLayerGroup(layer) === groupName) {
+                overlays.push(layer);
+            }
+        });
+        return overlays;
+    };
     const setChartGroupOverlays = (groupName, visible) => {
         if (!groupName)
             return;
 
-        ol.control.LayerSwitcher.forEachRecursive(layers_group, function (layer) {
-            if (layer.get('type') !== 'overlay')
-                return;
-            if (getChartLayerGroup(layer) !== groupName)
-                return;
-
+        getChartGroupOverlays(groupName).forEach(layer => {
             layer.setVisible(visible);
             loStore['layer_' + getLayerStorageName(layer)] = visible ? 'true' : 'false';
         });
+        updateChartGroupSelectAllControls();
     };
     const selectChartGroup = groupName => {
         // Al cambiar de capa base se reinician las overlays de los demás grupos.
@@ -3888,6 +3906,82 @@ function ol_map_init() {
         if (groupName)
             setChartGroupOverlays(groupName, true);
     };
+    const updateChartGroupSelectAllControls = () => {
+        const panel = document.querySelector('#layer-select .layer-switcher .panel');
+        if (!panel)
+            return;
+
+        let visibleBaseFound = false;
+        ol.control.LayerSwitcher.forEachRecursive(layers_group, function (layer) {
+            if (layer.get('type') === 'base' && layer.getVisible()) {
+                activeChartGroup = getChartLayerGroup(layer);
+                visibleBaseFound = true;
+            }
+        });
+        if (!visibleBaseFound)
+            activeChartGroup = null;
+
+        chartLayerGroups.forEach(groupName => {
+            const groupLayer = layers_group.getLayers().getArray().find(layer =>
+                layer.get('name') === groupName
+            );
+            if (!groupLayer)
+                return;
+
+            const groupTitle = window.getLayerTitle
+                ? window.getLayerTitle('group_' + groupName, groupLayer.get('title'))
+                : groupLayer.get('title');
+            const groupItem = Array.from(panel.querySelectorAll('li.group')).find(item => {
+                const title = item.querySelector(':scope > label');
+                return title && title.textContent.trim() === groupTitle;
+            });
+            const groupLabel = groupItem && groupItem.querySelector(':scope > label');
+            if (!groupItem)
+                return;
+
+            let control = groupItem.querySelector(':scope > .chart-group-select-all');
+            if (groupName !== activeChartGroup || !groupLabel) {
+                if (control)
+                    control.remove();
+                return;
+            }
+
+            const overlays = getChartGroupOverlays(groupName);
+            if (!overlays.length)
+                return;
+
+            if (!control) {
+                control = document.createElement('span');
+                control.className = 'chart-group-select-all';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = 'chart-group-select-all-' + groupName;
+                checkbox.addEventListener('change', function () {
+                    setChartGroupOverlays(groupName, checkbox.checked);
+                });
+                checkbox.addEventListener('click', event => event.stopPropagation());
+
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.className = 'chart-group-select-all-label';
+                control.append(checkbox, label);
+                groupLabel.after(control);
+            }
+
+            const checkbox = control.querySelector('input');
+            const label = control.querySelector('label');
+            const selectAllTitle = window.getLayerTitle
+                ? window.getLayerTitle('select_all', 'Todos')
+                : 'Todos';
+            if (label.textContent !== selectAllTitle)
+                label.textContent = selectAllTitle;
+            checkbox.checked = overlays.every(layer => layer.getVisible());
+            if (checkbox.getAttribute('aria-label') !== selectAllTitle)
+                checkbox.setAttribute('aria-label', selectAllTitle);
+        });
+    };
+    window.updateChartGroupSelectAllControls = updateChartGroupSelectAllControls;
 
     ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
         if (lyr.get('name') && lyr.get('type') == 'base') {
@@ -3907,6 +4001,7 @@ function ol_map_init() {
         if (lyr.get('type') == 'base') {
             if (MapType_tar1090 == getLayerStorageName(lyr)) {
                 foundType = true;
+                activeChartGroup = getChartLayerGroup(lyr);
                 lyr.setVisible(true);
 
                 mapTypeSettings();
@@ -3919,7 +4014,9 @@ function ol_map_init() {
             lyr.on('change:visible', function (evt) {
                 if (evt.target.getVisible()) {
                     MapType_tar1090 = loStore['MapType_tar1090'] = getLayerStorageName(evt.target);
-                    selectChartGroup(getChartLayerGroup(evt.target));
+                    activeChartGroup = getChartLayerGroup(evt.target);
+                    selectChartGroup(activeChartGroup);
+                    updateChartGroupSelectAllControls();
                     mapTypeSettings();
                     const onVisible = lyr.get('onVisible');
                     onVisible && onVisible(lyr);
@@ -3940,6 +4037,7 @@ function ol_map_init() {
 
             lyr.on('change:visible', function (evt) {
                 loStore['layer_' + getLayerStorageName(evt.target)] = evt.target.getVisible();
+                updateChartGroupSelectAllControls();
                 if (typeof refreshLayerSwitcher === 'function') {
                     setTimeout(refreshLayerSwitcher, 0);
                 }
@@ -3947,21 +4045,13 @@ function ol_map_init() {
         }
     })
 
-    let activeChartGroup = null;
-    ol.control.LayerSwitcher.forEachRecursive(layers_group, function (layer) {
-        if (layer.get('type') === 'base' &&
-            getLayerStorageName(layer) === MapType_tar1090) {
-            activeChartGroup = getChartLayerGroup(layer);
-        }
-    });
-    selectChartGroup(activeChartGroup);
-
     if (!foundType) {
         ol.control.LayerSwitcher.forEachRecursive(layers_group, function (lyr) {
             if (foundType)
                 return;
             if (lyr.get('type') === 'base') {
                 lyr.setVisible(true);
+                activeChartGroup = getChartLayerGroup(lyr);
                 foundType = true;
             }
         });
@@ -3977,11 +4067,27 @@ function ol_map_init() {
         activationMode: 'click', // click sucks in the current implementation
         target: 'layer-select',
     }));
+    updateChartGroupSelectAllControls();
+    const layerSelect = document.getElementById('layer-select');
+    if (layerSelect && window.MutationObserver) {
+        if (window.chartGroupSelectAllObserver)
+            window.chartGroupSelectAllObserver.disconnect();
+        window.chartGroupSelectAllObserver = new MutationObserver(
+            updateChartGroupSelectAllControls
+        );
+        window.chartGroupSelectAllObserver.observe(layerSelect, {
+            childList: true,
+            characterData: true,
+            subtree: true
+        });
+    }
 
     // ***** ESCUCHAR CLA ACTUALIZACIÓN DE LOS TÍTULOS DE LAS CAPAS *****
     setTimeout(function () {
         if (typeof window.updateLayerTitles === 'function') {
             window.updateLayerTitles();
+        } else {
+            updateChartGroupSelectAllControls();
         }
     }, 500);
 
