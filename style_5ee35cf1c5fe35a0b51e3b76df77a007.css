@@ -2647,6 +2647,26 @@ div.ui-slider .ui-slider-handle {
     transition: none !important;
 }
 
+.overlay-focused {
+    background: rgba(0, 0, 0, 0.88) !important;
+    border: 2px solid #00e5ff !important;
+}
+.projection-label-tag {
+    min-width: 0;
+    padding: 3px !important;
+    font-size: 10px !important;
+}
+
+.projection-label-tag > div:first-child {
+    gap: 3px !important;
+    margin-bottom: 2px !important;
+    padding-bottom: 0 !important;
+}
+
+.projection-label-tag .proj-text-content {
+    font-size: 11px !important;
+}
+
 .panorama-overlay.hidden {
     display: none !important;
 }
