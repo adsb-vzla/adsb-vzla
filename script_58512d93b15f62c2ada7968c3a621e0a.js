@@ -8729,28 +8729,32 @@ function initFilters() {
     group7.className = 'filter-group';
     group7.innerHTML = `
         <div class="filter-group-header" data-group="receivers">
-            <span class="filter-group-title">Receptores</span>
+            <span class="filter-group-title" data-i18n="receiver_title">Receivers</span>
             <span class="accordion-icon">▶</span>
         </div>
         <div class="filter-group-content">
             <div class="filter-group-content-inner">
                 <div id="receiverCheckboxes" style="display: flex; flex-direction: column; gap: 6px; padding: 4px 0;">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="a" checked> Receptor A
+                        <input type="checkbox" class="receiver-cb" value="a" checked>
+                        <span data-i18n="receiver_a">Receiver A</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="b" checked> Receptor B
+                        <input type="checkbox" class="receiver-cb" value="b" checked>
+                        <span data-i18n="receiver_b">Receiver B</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="c" checked> Receptor C
+                        <input type="checkbox" class="receiver-cb" value="c" checked>
+                        <span data-i18n="receiver_c">Receiver C</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" class="receiver-cb" value="d" checked> Receptor D
+                        <input type="checkbox" class="receiver-cb" value="d" checked>
+                        <span data-i18n="receiver_d">Receiver D</span>
                     </label>
                 </div>
                 <div class="filter-buttons" style="margin-top: 8px;">
-                    <button class="formButton" id="receiver_filter_apply">Apply</button>
-                    <button class="formButton" id="receiver_filter_reset_button">Reset</button>
+                    <button class="formButton" id="receiver_filter_apply" data-i18n="apply">Apply</button>
+                    <button class="formButton" id="receiver_filter_reset_button" data-i18n="reset">Reset</button>
                 </div>
             </div>
         </div>
