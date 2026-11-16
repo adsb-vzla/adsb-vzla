@@ -1740,6 +1740,8 @@ PlaneObject.prototype.updateFeatures = function(redraw) {
 PlaneObject.prototype.clearMarker = function() {
     this.markerDrawn = false;
     this.clearReceiverBadge();
+    this.clearNotableBadge();
+    this.clearMultiSelectBadge();
     if (this.marker && this.marker.visible) {
         PlaneIconFeatures.removeFeature(this.marker);
         this.marker.visible = false;
@@ -1818,6 +1820,121 @@ PlaneObject.prototype.clearReceiverBadge = function() {
     // ***** ELIMINA LAS REFERENCIAS AL FEATURE Y A LA CLAVE DE CACHÉ *****
     delete this.receiverBadge;
     delete this.receiverBadgeKey;
+};
+
+// ***** BADGE AMARILLO PARA AVIONES DE INTERÉS *****
+PlaneObject.prototype.updateNotableBadge = function() {
+    if (typeof getStatusBadgeStyle !== 'function' || typeof notableBadgeFeatures === 'undefined') {
+        return;
+    }
+    if (!this.visible || this.position == null || !this.olPoint) {
+        this.clearNotableBadge();
+        return;
+    }
+
+    const featureEnabled = typeof toggles !== 'undefined'
+        && toggles['enableStarredAircraft']
+        && toggles['enableStarredAircraft'].state;
+    const isNotable = featureEnabled
+        && typeof starredAircraft !== 'undefined'
+        && starredAircraft.has(this.icao);
+
+    if (!isNotable) {
+        this.clearNotableBadge();
+        return;
+    }
+
+    const scale = (typeof globalScale === 'number' && globalScale > 0) ? globalScale : 1;
+    const radius = Math.max(4, Math.round(6 * scale));
+
+    if (!this.notableBadge) {
+        this.notableBadge = new ol.Feature(this.olPoint);
+        this.notableBadge.hex = `${this.icao}`;
+        this.notableBadge.visible = false;
+        this.notableBadgeStyle = null;
+    } else if (this.notableBadge.getGeometry() !== this.olPoint) {
+        this.notableBadge.setGeometry(this.olPoint);
+    }
+
+    const style = getStatusBadgeStyle('notable', radius);
+    if (this.notableBadgeStyle !== style) {
+        this.notableBadge.setStyle(style);
+        this.notableBadgeStyle = style;
+    }
+
+    if (!this.notableBadge.visible) {
+        this.notableBadge.visible = true;
+        notableBadgeFeatures.addFeature(this.notableBadge);
+    }
+};
+
+// ***** FUNCIÓN PARA ELIMINAR EL BADGE DE AVIONES DE INTERÉS *****
+PlaneObject.prototype.clearNotableBadge = function() {
+    if (typeof notableBadgeFeatures === 'undefined') {
+        return;
+    }
+    if (this.notableBadge && this.notableBadge.visible) {
+        notableBadgeFeatures.removeFeature(this.notableBadge);
+        this.notableBadge.visible = false;
+    }
+    delete this.notableBadge;
+    delete this.notableBadgeStyle;
+};
+
+// ***** BADGE CIAN PARA SELECCIÓN MÚLTIPLE *****
+PlaneObject.prototype.updateMultiSelectBadge = function() {
+    if (typeof getStatusBadgeStyle !== 'function' || typeof multiSelectBadgeFeatures === 'undefined') {
+        return;
+    }
+    if (!this.visible || this.position == null || !this.olPoint) {
+        this.clearMultiSelectBadge();
+        return;
+    }
+
+    const isMultiSelected = typeof multiSelect !== 'undefined'
+        && multiSelect
+        && this.selected;
+
+    if (!isMultiSelected) {
+        this.clearMultiSelectBadge();
+        return;
+    }
+
+    const scale = (typeof globalScale === 'number' && globalScale > 0) ? globalScale : 1;
+    const radius = Math.max(4, Math.round(6 * scale));
+
+    if (!this.multiSelectBadge) {
+        this.multiSelectBadge = new ol.Feature(this.olPoint);
+        this.multiSelectBadge.hex = `${this.icao}`;
+        this.multiSelectBadge.visible = false;
+        this.multiSelectBadgeStyle = null;
+    } else if (this.multiSelectBadge.getGeometry() !== this.olPoint) {
+        this.multiSelectBadge.setGeometry(this.olPoint);
+    }
+
+    const style = getStatusBadgeStyle('multiSelect', radius);
+    if (this.multiSelectBadgeStyle !== style) {
+        this.multiSelectBadge.setStyle(style);
+        this.multiSelectBadgeStyle = style;
+    }
+
+    if (!this.multiSelectBadge.visible) {
+        this.multiSelectBadge.visible = true;
+        multiSelectBadgeFeatures.addFeature(this.multiSelectBadge);
+    }
+};
+
+// ***** FUNCIÓN PARA ELIMINAR EL BADGE DE SELECCIÓN MÚLTIPLE *****
+PlaneObject.prototype.clearMultiSelectBadge = function() {
+    if (typeof multiSelectBadgeFeatures === 'undefined') {
+        return;
+    }
+    if (this.multiSelectBadge && this.multiSelectBadge.visible) {
+        multiSelectBadgeFeatures.removeFeature(this.multiSelectBadge);
+        this.multiSelectBadge.visible = false;
+    }
+    delete this.multiSelectBadge;
+    delete this.multiSelectBadgeStyle;
 };
 
 // Update our marker on the map
@@ -1902,8 +2019,10 @@ PlaneObject.prototype.updateMarker = function(moved) {
         webglFeatures.removeFeature(this.glMarker);
         this.glMarker.visible = false;
     }
-    // ***** ACTUALIZAR BADGE *****
+    // ***** ACTUALIZAR BADGES *****
     this.updateReceiverBadge();
+    this.updateNotableBadge();
+    this.updateMultiSelectBadge();
 };
 
 

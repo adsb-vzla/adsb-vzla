@@ -34,6 +34,12 @@ let PlaneIconFeatures = new ol.source.Vector();
 let receiverBadgeFeatures = new ol.source.Vector();
 let receiverBadgeLayer;
 
+// ***** CAPAS DE BADGE PARA AVIONES DE INTERÉS Y SELECCIÓN MÚLTIPLE *****
+let notableBadgeFeatures = new ol.source.Vector();
+let notableBadgeLayer;
+let multiSelectBadgeFeatures = new ol.source.Vector();
+let multiSelectBadgeLayer;
+
 let trailGroup = new ol.Collection();
 let siteCircleLayer;
 let siteCircleFeatures = new ol.source.Vector();
@@ -438,6 +444,33 @@ function getReceiverBadgeStyle(receiverIds, size) {
 
     // ***** GUARDA EL ESTILO EN LA CACHÉ Y LO DEVUELVE *****
     receiverBadgeStyleCache.set(key, style);
+    return style;
+}
+
+// ***** ESTILOS DE LOS BADGES DE INTERÉS Y SELECCIÓN MÚLTIPLE *****
+const statusBadgeStyleCache = new Map();
+
+function getStatusBadgeStyle(kind, radius) {
+    const scale = (typeof globalScale === 'number' && globalScale > 0) ? globalScale : 1;
+    const color = kind === 'notable' ? '#FFD400' : '#00C8FF';
+    const key = kind + '@' + radius;
+
+    const cached = statusBadgeStyleCache.get(key);
+    if (cached) return cached;
+
+    const style = new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: radius,
+            fill: new ol.style.Fill({ color: color }),
+            stroke: new ol.style.Stroke({
+                color: 'rgba(0,0,0,0.78)',
+                width: Math.max(1, 1.4 * scale),
+            }),
+        }),
+        zIndex: 1000,
+    });
+
+    statusBadgeStyleCache.set(key, style);
     return style;
 }
 
@@ -2630,6 +2663,12 @@ function earlyInitPage() {
                 }
             }
             updateStarredButtonInInfoblock();
+            for (const hex of starredAircraft) {
+                const plane = g.planes[hex];
+                if (plane && typeof plane.updateNotableBadge === 'function') {
+                    plane.updateNotableBadge();
+                }
+            }
         }
     });
 
@@ -4555,6 +4594,30 @@ function initMap() {
         renderBuffer: renderBuffer,
     });
     layers.push(receiverBadgeLayer);
+
+    // ***** BADGE AMARILLO PARA AVIONES DE INTERÉS *****
+    notableBadgeLayer = new ol.layer.Vector({
+        name: 'notableBadgeLayer',
+        type: 'overlay',
+        title: 'Notable aircraft badge',
+        source: notableBadgeFeatures,
+        declutter: false,
+        zIndex: 202,
+        renderBuffer: renderBuffer,
+    });
+    layers.push(notableBadgeLayer);
+
+    // ***** BADGE CIAN PARA SELECCIÓN MÚLTIPLE *****
+    multiSelectBadgeLayer = new ol.layer.Vector({
+        name: 'multiSelectBadgeLayer',
+        type: 'overlay',
+        title: 'Multiple selection badge',
+        source: multiSelectBadgeFeatures,
+        declutter: false,
+        zIndex: 203,
+        renderBuffer: renderBuffer,
+    });
+    layers.push(multiSelectBadgeLayer);
 
     // ***** DROPDOWN PARA LOS MENÚS DE DISTANCIA *****
     try {
@@ -8173,6 +8236,12 @@ function toggleMultiSelect(newState) {
     }
 
     buttonActive('#M', multiSelect);
+
+    for (const plane of SelPlanes) {
+        if (plane && typeof plane.updateMultiSelectBadge === 'function') {
+            plane.updateMultiSelectBadge();
+        }
+    }
 }
 
 /*
