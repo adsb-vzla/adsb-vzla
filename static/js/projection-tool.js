@@ -298,15 +298,16 @@
         el.style.color = 'white';
         el.style.pointerEvents = 'auto';
         el.style.borderRadius = '4px';
+        enableOverlayFocus(el);
 
         el.innerHTML = `
             <div style="display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 4px; padding-bottom: 2px;">
                 <button type="button" class="proj-toggle-btn" aria-label="${T('projection_hide', 'Hide')}"
-                        style="cursor: pointer; color: white; width: 28px; height: 26px; padding: 0;">
+                        style="cursor: pointer; color: white; width: 20px; height: 18px; padding: 0; line-height: 1;">
                     <i class="fa-solid fa-eye-slash"></i>
                 </button>
                 <button type="button" class="proj-close-btn" aria-label="${T('projection_remove', 'Remove')}"
-                        style="cursor: pointer; color: #c00; width: 28px; height: 26px; padding: 0;">
+                        style="cursor: pointer; color: #c00; width: 20px; height: 18px; padding: 0; line-height: 1;">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -318,20 +319,20 @@
             e.preventDefault();
             toggleEntryVisibility(entry.hex);
 
-            const icon = el.querySelector('.proj-toggle-btn');
+            const icon = el.querySelector('.proj-toggle-btn i');
             const text = el.querySelector('.proj-text-content');
             const lineFeat = entry.lineFeature;
             const pointFeat = entry.pointFeature;
             const ghostFeat = entry.ghostFeature;
             if (entry.hidden) {
                 if (text) text.style.display = 'none';
-                icon.innerHTML = '<i class="fa-solid fa-eye"></i>';
+                if (icon) icon.className = 'fa-solid fa-eye';
                 if (lineFeat) lineFeat.setStyle(new ol.style.Style({}));
                 if (pointFeat) pointFeat.setStyle(new ol.style.Style({}));
                 if (ghostFeat) ghostFeat.setStyle(new ol.style.Style({}));
             } else {
                 if (text) text.style.display = 'block';
-                icon.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+                if (icon) icon.className = 'fa-solid fa-eye-slash';
                 if (lineFeat) lineFeat.setStyle(new ol.style.Style({
                     stroke: new ol.style.Stroke({ color: entry.color, width: 2, lineDash: [8, 6] })
                 }));
@@ -792,12 +793,13 @@
             if (el) {
                 const icon = el.querySelector('.proj-toggle-btn');
                 const text = el.querySelector('.proj-text-content');
+                const iconElement = icon && icon.querySelector('i');
                 if (entry.hidden) {
                     if (text) text.style.display = 'none';
-                    if (icon) icon.className = 'fa-solid fa-eye proj-toggle-btn';
+                    if (iconElement) iconElement.className = 'fa-solid fa-eye';
                 } else {
                     if (text) text.style.display = 'block';
-                    if (icon) icon.className = 'fa-solid fa-eye-slash proj-toggle-btn';
+                    if (iconElement) iconElement.className = 'fa-solid fa-eye-slash';
                 }
             }
         }
