@@ -6892,6 +6892,10 @@ function refreshFeatures() {
         tbody.remove();
         tbody = newBody;
 
+        if (typeof window.refreshReceiversTab === 'function') {
+            window.refreshReceiversTab();
+        }
+
         ctime && console.timeEnd("DOM2");
 
         ctime && console.timeEnd("planeMan.refresh()");
@@ -9067,38 +9071,6 @@ function initFilters() {
     `;
     container.appendChild(group6);
 
-    // ***** PUNTO DE COLOR DE LOS RECEPTORES *****
-    const receiverCheckboxHtml = RECEIVERS.map(function (receiver) {
-        return '<label class="receiver-filter-row">'
-            + '<span class="receiver-color-dot" style="background-color:' + receiver.color + ';"></span>'
-            + '<input type="checkbox" class="receiver-cb" value="' + receiver.id + '" data-receiver="' + receiver.id + '" checked>'
-            + '<span class="receiver-filter-name" data-i18n="receiver_' + receiver.id + '">'
-            + getReceiverDisplayName(receiver) + '</span>'
-            + '</label>';
-    }).join('');
-
-    // ***** RECEPTORES *****
-    const group7 = document.createElement('div');
-    group7.className = 'filter-group';
-    group7.innerHTML = `
-        <div class="filter-group-header" data-group="receivers">
-            <span class="filter-group-title" data-i18n="receiver_title">Receivers</span>
-            <span class="accordion-icon">▶</span>
-        </div>
-        <div class="filter-group-content">
-            <div class="filter-group-content-inner">
-                <div id="receiverCheckboxes" style="display: flex; flex-direction: column; gap: 6px; padding: 4px 0;">
-                    ${receiverCheckboxHtml}
-                </div>
-                <div class="filter-buttons" style="margin-top: 8px;">
-                    <button class="formButton" id="receiver_filter_apply" data-i18n="apply">Apply</button>
-                    <button class="formButton" id="receiver_filter_reset_button" data-i18n="reset">Reset</button>
-                </div>
-            </div>
-        </div>
-    `;
-    container.appendChild(group7);
-
     // ***** TABLA FILTRADA *****
     if (filterTable) {
         filterTable.innerHTML = '';
@@ -9334,7 +9306,7 @@ function initFilters() {
     });
 
     // ***** TRADUCIR TEXTO DE APLICAR FILTRO *****
-    document.querySelectorAll('#altitude_filter_apply, #source_filter_form button[type="submit"], #flag_filter_form button[type="submit"], #receiver_filter_apply').forEach(btn => {
+    document.querySelectorAll('#altitude_filter_apply, #source_filter_form button[type="submit"], #flag_filter_form button[type="submit"]').forEach(btn => {
         let applyText = 'Apply';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
             applyText = window.translate.t('apply') || applyText;
@@ -9345,7 +9317,7 @@ function initFilters() {
     });
 
     // ***** TRADUCIR TEXTO DE RESETEAR FILTRO *****
-    document.querySelectorAll('#altitude_filter_reset_button, #source_filter_reset_button, #flag_filter_reset_button, #receiver_filter_reset_button').forEach(btn => {
+    document.querySelectorAll('#altitude_filter_reset_button, #source_filter_reset_button, #flag_filter_reset_button').forEach(btn => {
         let resetText = 'Reset';
         if (typeof window.translate !== 'undefined' && window.translate.t) {
             resetText = window.translate.t('reset') || resetText;
@@ -9419,40 +9391,6 @@ function initFilters() {
             jQuery("#altitude_filter_min").val("");
             jQuery("#altitude_filter_max").val("");
             updateAltFilter();
-            refreshFilter();
-        });
-    }
-
-    // ***** APLICAR FILTRO DE RECEPTORES *****
-    const receiverApply = document.getElementById('receiver_filter_apply');
-    if (receiverApply) {
-        receiverApply.addEventListener('click', (e) => {
-            e.preventDefault();
-            const checked = [];
-            document.querySelectorAll('.receiver-cb:checked').forEach(cb => {
-                checked.push(cb.value);
-            });
-            // ***** NO APLICAR FILTRO SI NO HAY NINGÚN CHECK MARCADO *****
-            if (checked.length === RECEIVERS.length) {
-                receiverFilter = null;
-            } else {
-                receiverFilter = new Set(checked);
-            }
-            // ***** REFRESCAR FILTRO *****
-            refreshFilter();
-        });
-    }
-
-    // ***** RESETEAR FILTRO DE RECEPTORES *****
-    const receiverReset = document.getElementById('receiver_filter_reset_button');
-    if (receiverReset) {
-        receiverReset.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.querySelectorAll('.receiver-cb').forEach(cb => {
-                cb.checked = true;
-            });
-            receiverFilter = null;
-            // ***** REFRESCAR FILTRO *****
             refreshFilter();
         });
     }

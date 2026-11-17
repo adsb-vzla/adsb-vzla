@@ -1424,6 +1424,8 @@
             <ul>
               <li data-i18n-title="filter_flights_tooltip" title="Filter flights by specific criteria."><a
                   href="#tab-filters" data-i18n="filters">Filters</a></li>
+              <li data-i18n-title="receivers_tab_tooltip" title="See which aircraft are received by each receiver."><a
+                  href="#tab-receivers" data-i18n="receivers">Receivers</a></li>
               <li data-i18n-title="select_columns_tooltip"
                 title="Select which columns to display in the aircraft table."><a href="#tab-columns"
                   data-i18n="columns">Columns</a></li>
@@ -1519,6 +1521,12 @@
               </table>
             </div>
             <!-- ***** FIN SELECTOR DE FILTROS ***** -->
+
+            <!-- ***** INICIO VISTA DE RECEPTORES ***** -->
+            <div id="tab-receivers">
+              <div id="receivers-tab-content"></div>
+            </div>
+            <!-- ***** FIN VISTA DE RECEPTORES ***** -->
 
             <!-- ***** INICIO SELECTOR DE COLUMNAS ***** -->
             <div id="tab-columns">
@@ -1656,6 +1664,7 @@
   <!-- ***** PANEL DE RECEPTORES EN MENÚ LATERAL IZQUIERDO ***** -->
   <script src="./static/js/receivers-panel.js"></script>
   <!-- ***** UBICACIÓN DE CADA RECEPTOR ***** -->
+  <script src="./static/js/receivers-tab.js"></script>
   <script src="./static/js/receivers-locations.js"></script>
 
   <!-- TURF.JS -->
