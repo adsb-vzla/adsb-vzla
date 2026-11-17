@@ -900,7 +900,7 @@ input.error {
     display: block;
     margin: calc(1px * var(--SCALE));
     text-align: center;
-    margin-top: 100px;
+    margin-top: calc(56px * var(--SCALE));
 }
 
 .buttonSpacer {
